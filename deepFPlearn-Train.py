@@ -58,6 +58,40 @@ def parseInput():
 
 # ------------------------------------------------------------------------------------- #
 
+def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
+    """
+    Plot the training performance in terms of accuracy and loss values for each epoch.
+    :param hist: The history returned by model.fit function
+    :param target: The name of the target of the model
+    :param fileAccuracy: The filename for plotting accuracy values
+    :param fileLoss: The filename for plotting loss values
+    :return: none
+    """
+
+    # plot accuracy
+    plt.figure()
+    plt.plot(hist.history['accuracy'])
+    plt.plot(hist.history['val_accuracy'])
+    plt.title('Model accuracy - ' + target)
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.savefig(fname=fileAccuracy, format='svg')
+
+    # Plot training & validation loss values
+    plt.figure()
+    plt.plot(hist.history['loss'])
+    plt.plot(hist.history['val_loss'])
+    plt.title('Model loss - ' + target)
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    #        plt.show()
+    plt.savefig(fname=fileLoss, format='svg')
+
+
+# ------------------------------------------------------------------------------------- #
+
 def trainNNmodels(model, modelfilepathprefix, x, y, split=0.8, e=50):
     """
     Train one model of the provided structure for each target (column) provided in y
@@ -90,26 +124,7 @@ def trainNNmodels(model, modelfilepathprefix, x, y, split=0.8, e=50):
         hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=0)
         # print(hist.history)
 
-        # plot accuracy
-        plt.figure()
-        plt.plot(hist.history['accuracy'])
-        plt.plot(hist.history['val_accuracy'])
-        plt.title('Model accuracy')
-        plt.ylabel('Accuracy')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-        plt.savefig(fname=modelhistplotpathA, format='svg')
-
-        # Plot training & validation loss values
-        plt.figure()
-        plt.plot(hist.history['loss'])
-        plt.plot(hist.history['val_loss'])
-        plt.title('Model loss')
-        plt.ylabel('Loss')
-        plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
-#        plt.show()
-        plt.savefig(fname=modelhistplotpathL, format='svg')
+        plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
 
         scores=model.evaluate(x[~naRows],Y[~naRows],verbose=0)
         model.save_weights(modelfilepath)
