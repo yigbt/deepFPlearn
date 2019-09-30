@@ -202,7 +202,7 @@ if __name__ == '__main__':
     #exit(1)
 
     # transform X to feature matrix
-    xmatrix = dfpl.XfromInput(csvfilename=args.i[0], rtype=args.t, fptype=args.k[0], printfp=True)
+    xmatrix = dfpl.XfromInput(csvfilename=args.i[0], rtype=args.t[0], fptype=args.k[0], printfp=True)
 
     print(xmatrix.shape)
 
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     print(model.summary())
 
     # train one model per target (individually)
-    modelstats = trainNNmodels(model=model, modelfilepathprefix=args.o[0], x=xmatrix, y=ymatrix, split=0.8, e=args.e[0])
+    modelstats = trainNNmodels(model=model, modelfilepathprefix=args.o[0], pdx=xmatrix, y=ymatrix, split=0.8, e=args.e[0])
 
     print(modelstats)
 
