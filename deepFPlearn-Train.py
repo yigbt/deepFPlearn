@@ -44,7 +44,7 @@ def parseInput():
                              'respective stats will be returned in 2 output files '
                              'with this prefix. Default: prefix of input file name.')
     parser.add_argument('-t', metavar='STR', type=str, nargs=1, choices=['fp', 'smile'],
-                        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
+                        help="Type of the chemical representation. Choices: 'fp', 'smile'.",
                         required=True)
     parser.add_argument('-k', metavar='STR', type=str, nargs=1,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
@@ -92,13 +92,14 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(model, modelfilepathprefix, x, y, split=0.8, e=50):
+def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
     """
     Train one model of the provided structure for each target (column) provided in y
     using the features x and the outcomes y and a train/validation data set split of
     split.
     :param model: a compiled neural network model
-    :param x: a numpy array of training features, one row per data set, features in cols.
+    :param x: a pandas data frame of training features, one row per data set, features in cols,
+    rownames or numbers provided.
     :param y: a pandas data frame of training outcomes, one column per outcome.
     Cell value (0,1). Name of column used as name of target.
     :param split: the percentage data sets used for training. Remaining percentage is
@@ -110,6 +111,9 @@ def trainNNmodels(model, modelfilepathprefix, x, y, split=0.8, e=50):
 
     # for each target train a model
     stats = []
+
+    # transform pd dataframe to numpy array for keras
+    x = pdx.to_numpy()
 
     for target in y.columns:
         # target=y.columns[1]

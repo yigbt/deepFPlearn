@@ -103,7 +103,7 @@ def smi2fp(smile, fptype):
 
 # ------------------------------------------------------------------------------------- #
 
-def XfromInput(csvfilename, rtype, fptype, printfp=False):
+def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False):
     """
     Return the matrix of features for training and testing NN models (X) as numpy array.
     Provided SMILES are transformed to fingerprints, fingerprint strings are then split
@@ -111,27 +111,44 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False):
 
     :param csvfilename: Filename of CSV files containing the training data. The
     SMILES/Fingerprints are stored 1st column
-    :param rtype: Type of structure represetation. Valid values are: 'fp' and 'smiles'
+    :param rtype: Type of structure represetation. Valid values are: 'fp' and 'smile'
     :param fptype: Type of fingerprint to be generated out
     :param printfp: Print generated fingerprints to file, namely the input file with the
     file ending '.fingerprints.csv'. Default:False
-    :return: A numpy array containing the X matrix for training a NN model
+    :return: A pandas dataframe containing the X matrix for training a NN model,
+    rownames/numbers of rows, colnames are the positions of the fp vector.
     """
 
     # dict to store the fingerprints
     fps = {}
     rows = {}
+    rnames = []
 
     # read csv and generate/add fingerprints to dict
     with open(csvfilename, 'r') as f:
         reader = csv.DictReader(f, delimiter=',')
         names = reader.fieldnames
-        feature = names[0]  # 1st col only
+        #print(names)
+        feature = names[names.index(rtype)]  # rtype column ('smile' or 'fp')
+        if 'id' in names:
+            rnameIDX = names[names.index('id')]
+        else:
+            rnameIDX = None
 
         i = 0
 
         for row in reader:
             rows.update({i:row})
+
+            # add rowname or number
+            if rnameIDX is None:
+                rnames.append(str(i))
+            else:
+                rnames.append(row['id'])
+
+            #print(rnames[i] + ' ' + row[feature])
+
+            # add fp or smile
             if rtype == 'fp':
                 # type == fp, fine - add it
               fps.update({i: row[feature]})
@@ -170,7 +187,9 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False):
             # split fp into list of integers
             x[i] = list(map(int, [char for char in fp]))
 
-    return x
+    pdx = pd.DataFrame(data=x, index=rnames)
+
+    return pdx
 
 
 # ------------------------------------------------------------------------------------- #
@@ -234,4 +253,26 @@ def defineNNmodel(inputSize):
 
 
 # ------------------------------------------------------------------------------------- #
+
+def predictValues(modelRandom, modelTrained, pdx):
+    """
+
+    :param modelRandom:
+    :param modelTrained:
+    :param pdx:
+    :return:
+    """
+
+    x = pdx.loc[pdx.index[:],:].to_numpy()
+
+    pR = modelRandom.predict(x)
+    pT = modelTrained.predict(x)
+
+    predictions = pd.DataFrame(data={'random':pR.flatten(),
+                                     'trained':pT.flatten()},
+                               columns=['random','trained'],
+                               index=pdx.index)
+
+    return predictions
+
 
