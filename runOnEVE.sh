@@ -17,13 +17,13 @@ d=`date +%Y-%m-%d_%T`;
 
 INPUT="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv"
 OUTDIR="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/${d}/"
-EPOCHS=100
+EPOCHS=200
 log="${OUTDIR}train.log"
 err="${OUTDIR}train.err"
 
 mkdir -p $OUTDIR
 
-/home/hertelj/git-hertelj/code/deepFPlearn/deepFPlearn-Train.py -i $INPUT -o $OUTDIR  -t smile -k topological -e $EPOCHS 1>$log 2>$err
+python /home/hertelj/git-hertelj/code/deepFPlearn/deepFPlearn-Train.py -i $INPUT -o $OUTDIR  -t smiles -k topological -e $EPOCHS 1>$log 2>$err
 
 ### PREDICTIONS
 
@@ -31,4 +31,4 @@ INPUT="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/multiAOPtox.sm
 MODEL="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.AR.h5"
 OUTPUT="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/prediction/multiAOPtox.smiles.predictions.AR.csv"
 
-/home/hertelj/git-hertelj/code/deepFPlearn/deepFPlearn-Predict.py -i $INPUT -m $MODEL -o $OUTPUT -t smile -k topological
+python /home/hertelj/git-hertelj/code/deepFPlearn/deepFPlearn-Predict.py -i $INPUT -m $MODEL -o $OUTPUT -t smiles -k topological
