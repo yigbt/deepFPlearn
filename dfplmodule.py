@@ -37,7 +37,7 @@ def smi2fp(smile, fptype):
     mol = Chem.MolFromSmiles(smile)
 
     # init fp, any better idea? e.g. calling a constructor?
-    fp = FingerprintMols.FingerprintMol(mol)
+    fp = Chem.Mol #FingerprintMols.FingerprintMol(mol)
 
     if fptype == 'topological':  # 2048 bits
         # Topological Fingerprints:
@@ -47,10 +47,7 @@ def smi2fp(smile, fptype):
         # lengths. After all paths have been identified, the fingerprint is typically
         # folded down until a particular density of set bits is obtained.
         try:
-            fp = FingerprintMols.FingerprintMol(mol, minPath=1,
-                                                maxPath=7, fpSize=2048,
-                                                minSize=2048, bitsPerHash=2,
-                                                useHs=1, tgtDensity=0.3)
+            fp = Chem.RDKFingerprint(mol, fpSize=2048)
         except:
             print('SMILES not convertable to topological fingerprint:')
             assert isinstance(smile, object)
