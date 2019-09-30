@@ -129,7 +129,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False):
         reader = csv.DictReader(f, delimiter=',')
         names = reader.fieldnames
         #print(names)
-        feature = names[names.index(rtype)]  # rtype column ('smile' or 'fp')
+        feature = names[names.index(rtype)]  # rtype column ('smiles' or 'fp')
         if 'id' in names:
             rnameIDX = names[names.index('id')]
         else:

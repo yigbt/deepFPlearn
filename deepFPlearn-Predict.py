@@ -52,8 +52,8 @@ def parseInput():
                              "was given in the input, respective IDs are used, otherwise the"
                              "rows of output are numbered and provided in the order of occurence"
                              "in the input file.")
-    parser.add_argument('-t', metavar='STR', type=str, nargs=1, choices=['fp', 'smile'],
-                        help="Type of the chemical representation. Choices: 'fp', 'smile'.",
+    parser.add_argument('-t', metavar='STR', type=str, nargs=1, choices=['fp', 'smiles'],
+                        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
                         required=True)
     parser.add_argument('-k', metavar='STR', type=str, nargs=1,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],

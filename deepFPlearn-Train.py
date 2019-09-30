@@ -43,8 +43,8 @@ def parseInput():
                         help='Prefix of output file name. Trained model(s) and '
                              'respective stats will be returned in 2 output files '
                              'with this prefix. Default: prefix of input file name.')
-    parser.add_argument('-t', metavar='STR', type=str, nargs=1, choices=['fp', 'smile'],
-                        help="Type of the chemical representation. Choices: 'fp', 'smile'.",
+    parser.add_argument('-t', metavar='STR', type=str, nargs=1, choices=['fp', 'smiles'],
+                        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
                         required=True)
     parser.add_argument('-k', metavar='STR', type=str, nargs=1,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
@@ -202,21 +202,28 @@ if __name__ == '__main__':
     #exit(1)
 
     # transform X to feature matrix
+    # -i /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv
+    # -o /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/
+    # -t smiles -k topological -e 5
+    #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv",
+    #                          rtype="smiles", fptype="topological", printfp=True)
     xmatrix = dfpl.XfromInput(csvfilename=args.i[0], rtype=args.t[0], fptype=args.k[0], printfp=True)
 
     print(xmatrix.shape)
 
     # transform Y to feature matrix
+    #ymatrix = dfpl.YfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv")
     ymatrix = dfpl.YfromInput(csvfilename=args.i[0])
 
     print(ymatrix.shape)
 
     # define model structure - the same for all targets
-    model = dfpl.defineNNmodel(inputSize=len(xmatrix[1]))
+    model = dfpl.defineNNmodel(inputSize=xmatrix.shape[1])
 
     print(model.summary())
 
     # train one model per target (individually)
+    #modelstats = trainNNmodels(model=model, modelfilepathprefix="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/", pdx=xmatrix, y=ymatrix, split=0.8, e=5)
     modelstats = trainNNmodels(model=model, modelfilepathprefix=args.o[0], pdx=xmatrix, y=ymatrix, split=0.8, e=args.e[0])
 
     print(modelstats)
