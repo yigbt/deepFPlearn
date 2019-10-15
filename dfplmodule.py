@@ -273,3 +273,38 @@ def predictValues(modelRandom, modelTrained, pdx):
     return predictions
 
 
+# ------------------------------------------------------------------------------------- #
+
+def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
+    """
+    Plot the training performance in terms of accuracy and loss values for each epoch.
+    :param hist: The history returned by model.fit function
+    :param target: The name of the target of the model
+    :param fileAccuracy: The filename for plotting accuracy values
+    :param fileLoss: The filename for plotting loss values
+    :return: none
+    """
+
+    # plot accuracy
+    plt.figure()
+    plt.plot(hist.history['accuracy'])
+    plt.plot(hist.history['val_accuracy'])
+    plt.title('Model accuracy - ' + target)
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.savefig(fname=fileAccuracy, format='svg')
+
+    # Plot training & validation loss values
+    plt.figure()
+    plt.plot(hist.history['loss'])
+    plt.plot(hist.history['val_loss'])
+    plt.title('Model loss - ' + target)
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    #        plt.show()
+    plt.savefig(fname=fileLoss, format='svg')
+
+
+# ------------------------------------------------------------------------------------- #

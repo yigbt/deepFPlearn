@@ -58,40 +58,6 @@ def parseInput():
 
 # ------------------------------------------------------------------------------------- #
 
-def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
-    """
-    Plot the training performance in terms of accuracy and loss values for each epoch.
-    :param hist: The history returned by model.fit function
-    :param target: The name of the target of the model
-    :param fileAccuracy: The filename for plotting accuracy values
-    :param fileLoss: The filename for plotting loss values
-    :return: none
-    """
-
-    # plot accuracy
-    plt.figure()
-    plt.plot(hist.history['accuracy'])
-    plt.plot(hist.history['val_accuracy'])
-    plt.title('Model accuracy - ' + target)
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Test'], loc='upper left')
-    plt.savefig(fname=fileAccuracy, format='svg')
-
-    # Plot training & validation loss values
-    plt.figure()
-    plt.plot(hist.history['loss'])
-    plt.plot(hist.history['val_loss'])
-    plt.title('Model loss - ' + target)
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Test'], loc='upper left')
-    #        plt.show()
-    plt.savefig(fname=fileLoss, format='svg')
-
-
-# ------------------------------------------------------------------------------------- #
-
 def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
     """
     Train one model of the provided structure for each target (column) provided in y
@@ -116,7 +82,7 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
     x = pdx.to_numpy()
 
     for target in y.columns:
-        # target=y.columns[1]
+        # target=y.columns[2]
         tmp=y[target].astype('category')
         Y=np.asarray(tmp)
         naRows = np.isnan(Y)
@@ -124,17 +90,40 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
         modelhistplotpathL = str(modelfilepathprefix) + '/model.' + target + '.loss.svg'
         modelhistplotpathA = str(modelfilepathprefix) + '/model.' + target + '.acc.svg'
 
+        modelhistcsvpath=str(modelfilepathprefix) + '/model.' + target + '.history.csv'
+
+        # define model structure - the same for all targets
+        # An empty (weights) model needs to be defined each time prior to fitting
+        model = dfpl.defineNNmodel(inputSize=pdx.shape[1])
+
         # Train the model
         hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=0)
         # print(hist.history)
+        with open(modelhistcsvpath, 'w') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(["metrictype", "epoch", "value"])
+            for key, value in hist.history.items():
+                for i, ep in enumerate(value):
+                    writer.writerow([key, i+1, ep])
 
+        # read it back in
+        #with open('dict.csv') as csv_file:
+         #   reader = csv.reader(csv_file)
+          #  mydict = dict(reader)
+
+        # plot accuracy and loss for the training and validation during training
         plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
+
+        # plot weights
+
 
         scores=model.evaluate(x[~naRows],Y[~naRows],verbose=0)
         model.save_weights(modelfilepath)
 
         stats.append([target, scores[0].__round__(2), scores[1].__round__(2)])
         print(target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
+
+        del model
 
     #print(stats)
     return stats
@@ -205,8 +194,7 @@ if __name__ == '__main__':
     # -i /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv
     # -o /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/
     # -t smiles -k topological -e 5
-    #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv",
-    #                          rtype="smiles", fptype="topological", printfp=True)
+    #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv", rtype="smiles", fptype="topological", printfp=True)
     xmatrix = dfpl.XfromInput(csvfilename=args.i[0], rtype=args.t[0], fptype=args.k[0], printfp=True)
 
     print(xmatrix.shape)
