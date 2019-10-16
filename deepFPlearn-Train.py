@@ -97,7 +97,7 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
         model = dfpl.defineNNmodel(inputSize=pdx.shape[1])
 
         # Train the model
-        hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=0)
+        hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=1)
         # print(hist.history)
         with open(modelhistcsvpath, 'w') as csv_file:
             writer = csv.writer(csv_file)
@@ -112,7 +112,7 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
           #  mydict = dict(reader)
 
         # plot accuracy and loss for the training and validation during training
-        plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
+        dfpl.plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
 
         # plot weights
 

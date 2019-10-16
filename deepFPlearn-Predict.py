@@ -100,17 +100,17 @@ if __name__ == '__main__':
 #    exit(1)
 
     # define an unweighted model structure - the same for all targets
-    modelRandom = dfpl.defineNNmodel(inputSize=xpd.shape[1])
+    #modelRandom = dfpl.defineNNmodel(inputSize=xpd.shape[1])
 
-    print(modelRandom.summary())
+    #print(modelRandom.summary())
 
     # load trained model into model structure
-    modelTrained = dfpl.defineNNmodel(inputSize=xpd.shape[1])
+    #modelTrained = dfpl.defineNNmodel(inputSize=xpd.shape[1])
     #modelTrained.load_weights("/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.AR.h5")
-    modelTrained.load_weights(args.m[0])
+    #modelTrained.load_weights(args.m[0])
 
     # predict values for provided data and model
-    ypredictions = dfpl.predictValues(modelRandom=modelRandom, modelTrained=modelTrained, pdx=xpd)
+    ypredictions = dfpl.predictValues(modelfilepath=args.m[0], pdx=xpd)
 
     #print(ypredictions)
     pd.DataFrame.to_csv(ypredictions, args.o[0])

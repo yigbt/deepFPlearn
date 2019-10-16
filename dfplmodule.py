@@ -251,7 +251,7 @@ def defineNNmodel(inputSize):
 
 # ------------------------------------------------------------------------------------- #
 
-def predictValues(modelRandom, modelTrained, pdx):
+def predictValues(modelfilepath, pdx):
     """
 
     :param modelRandom:
@@ -261,6 +261,10 @@ def predictValues(modelRandom, modelTrained, pdx):
     """
 
     x = pdx.loc[pdx.index[:],:].to_numpy()
+
+    modelRandom  = defineNNmodel(inputSize=x.shape[1])
+    modelTrained = defineNNmodel(inputSize=x.shape[1])
+    modelTrained.load_weights(modelfilepath)
 
     pR = modelRandom.predict(x)
     pT = modelTrained.predict(x)

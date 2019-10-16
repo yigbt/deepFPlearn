@@ -1,6 +1,10 @@
 #!/bin/bash
 
-for M in /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-09-30_16\:01\:46/model*.h5;
+#ml purge
+#ml anaconda/5/5.0.1
+#source activate rdkit2019
+
+for M in /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model*.h5;
 do
     G=`basename $M`;
     H=${G//model\./};
@@ -10,12 +14,12 @@ do
 
     # files
     I="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/multiAOPtox.smiles.csv"
-    O=${I//\.csv/\.$T\.csv}
+    O="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/results/multiAOPtox.smiles.$T.predictions.csv"
 
     echo $O;
 
-    python deepFPlearn-Predict.py -i $I -m $M -o $O -t smile -k topological 1>runAll.out 2>runAll.err;
+    echo "python deepFPlearn-Predict.py -i $I -m $M -o $O -t smiles -k topological 1>runAll.out 2>runAll.err;"
 
-    head $O;
+#    head $O;
 
 done
