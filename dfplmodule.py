@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 # for fingerprint generation
 from rdkit import Chem
 from rdkit import DataStructs
-from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit.Chem import MACCSkeys
 from rdkit.Chem.AtomPairs import Pairs
 from rdkit.Chem.AtomPairs import Torsions
@@ -20,7 +19,6 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras import regularizers
 from keras import optimizers
-from keras.models import load_model
 from keras.models import model_from_json
 
 # ------------------------------------------------------------------------------------- #
@@ -216,7 +214,7 @@ def defineNNmodel(inputSize):
     Define the Keras NN model used for training and prediction.
 
     :param inputSize: The size of the input layer (1dimensional, equals size of fingerprint)
-    :return: A compiled keras NN sequential model
+    :return: A keras NN sequential model that needs to be compiled before usage
     """
 
     l2reg = 0.001
@@ -250,13 +248,14 @@ def defineNNmodel(inputSize):
 
 def predictValues(modelfilepath, pdx):
     """
+    Predict a set of chemicals using a selected model.
 
-    :param modelRandom:
-    :param modelTrained:
-    :param pdx:
-    :return:
+    :param modelfilepath: Path prefix to the two model files (without .weights.h5 and .csv)
+    :param pdx: A matrix containing the fingerprints of the chemicals, generated via XfromInput function
+    :return: A dataframe of 2 columns: random - predicted values using random model, trained - predicted values
+    using trained model. Rownames are consecutive numbers of the input rows, or if provided in the input file
+    the values of the id column
     """
-
     mfpW = modelfilepath + '.weights.h5'
     mfpM = modelfilepath + '.json'
 
@@ -272,7 +271,6 @@ def predictValues(modelfilepath, pdx):
     x = pdx.loc[pdx.index[:],:].to_numpy()
 
     # random model
-    #modelRandom  = dfpl.defineNNmodel(inputSize=x.shape[1])
     modelRandom = defineNNmodel(inputSize=x.shape[1])
     modelRandom.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
     # predict with random model

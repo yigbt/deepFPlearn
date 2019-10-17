@@ -1,23 +1,13 @@
 import argparse
 import csv
 import numpy as np
-import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 # for fingerprint generation
-from rdkit import Chem
 from rdkit import DataStructs
-from rdkit.Chem.Fingerprints import FingerprintMols
-from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
 
 # for NN model functions
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras import regularizers
 from keras import optimizers
 
 # import my own functions for deepFPlearn
@@ -31,7 +21,9 @@ def parseInput():
 
     :return: A namespace object built up from attributes parsed out of the cmd line.
     """
-    parser = argparse.ArgumentParser(description='Train DNN on chemical fingerprints.')
+    parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
+                                     'target(s). Trained models are saved to disk including fitted weights and '
+                                     'can be used in the deepFPlearn-Predict.py tool to make predictions.')
     parser.add_argument('-i', metavar='FILE', type=str, nargs=1,
                         help="The file containin the data for training in (unquoted) "
                              "comma separated CSV format. First column contain the feature string in "
@@ -106,7 +98,7 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
         model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
 
         # Train the model
-        hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=2)
+        hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=4)
 
         # serialize model to JSON
         model_json = model.to_json()
@@ -114,7 +106,6 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
             json_file.write(model_json)
         # serialize weights to HDF5
         model.save_weights(modelfilepathW)
-        print('Saved model and weigths to disk: ' + target)
 
         # print(hist.history)
         with open(modelhistcsvpath, 'w') as csv_file:
@@ -140,14 +131,23 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
         #model.save_weights(modelfilepath)
 
         stats.append([target, scores[0].__round__(2), scores[1].__round__(2)])
-        print(target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
+        print('\n' + target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
+
+        print("FILES saved to disk for target " + target + ":")
+        print("   [01] The trained model in JSON format: " + modelfilepathM)
+        print("   [02] Weights of the model: " + modelfilepathW)
+        print("   [03] Model history as .csv:" + modelhistcsvpath)
+        print("   [04] Plot visualizing training accuracy: " + modelhistplotpathA)
+        print("   [05] Plot visualizing training loss: " + modelhistplotpathL + '\n')
+        print("The Path prefix for making predictions using deepFPlearn-predict is:\n")
+        print(    str(modelfilepathprefix) + '/model.' + target)
+        print('\n-------------------------------------------------------------------------------\n\n')
 
         del model
         del naRows
         del Y
         del tmp
 
-    #print(stats)
     return stats
 
 
