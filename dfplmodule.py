@@ -20,6 +20,8 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras import regularizers
 from keras import optimizers
+from keras.models import load_model
+from keras.models import model_from_json
 
 # ------------------------------------------------------------------------------------- #
 
@@ -217,11 +219,8 @@ def defineNNmodel(inputSize):
     :return: A compiled keras NN sequential model
     """
 
-    lr = 0.001
     l2reg = 0.001
     dropout = 0.2
-
-    adam = optimizers.Adam(lr=lr)
 
     model = Sequential()
 
@@ -244,8 +243,6 @@ def defineNNmodel(inputSize):
     # output layer
     model.add(Dense(units=1, activation='sigmoid'))
 
-    model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
-
     return model
 
 
@@ -260,13 +257,35 @@ def predictValues(modelfilepath, pdx):
     :return:
     """
 
+    mfpW = modelfilepath + '.weights.h5'
+    mfpM = modelfilepath + '.json'
+
+    print(modelfilepath)
+    print(mfpW)
+    print(mfpM)
+
+    # learning rate
+    lr = 0.001
+    # type of optimizer
+    adam = optimizers.Adam(lr=lr)
+
     x = pdx.loc[pdx.index[:],:].to_numpy()
 
-    modelRandom  = defineNNmodel(inputSize=x.shape[1])
-    modelTrained = defineNNmodel(inputSize=x.shape[1])
-    modelTrained.load_weights(modelfilepath)
-
+    # random model
+    #modelRandom  = dfpl.defineNNmodel(inputSize=x.shape[1])
+    modelRandom = defineNNmodel(inputSize=x.shape[1])
+    modelRandom.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
+    # predict with random model
     pR = modelRandom.predict(x)
+
+    # trained model
+    json_file = open(mfpM, "r")
+    loaded_model_json = json_file.read()
+    json_file.close()
+    modelTrained = model_from_json(loaded_model_json)
+    modelTrained.load_weights(mfpW)
+    modelTrained.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
+    # predict with trained model
     pT = modelTrained.predict(x)
 
     predictions = pd.DataFrame(data={'random':pR.flatten(),

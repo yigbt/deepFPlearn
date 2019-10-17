@@ -92,8 +92,8 @@ if __name__ == '__main__':
     # -m /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.AR.h5
     # -o /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/prediction/multiAOPtox.smiles.predictions.AR.csv
     # -t smile -k topological
-    #xpd = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/multiAOPtox.smiles.csv",
-    #                      rtype="smile", fptype="topological", printfp=True)
+    #xpd = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/multiAOPtox.smiles.csv", rtype="smile", fptype="topological", printfp=True)
+
     xpd = dfpl.XfromInput(csvfilename=args.i[0], rtype=args.t[0], fptype=args.k[0], printfp=True)
 
 #    print(xpd.shape)
@@ -111,6 +111,8 @@ if __name__ == '__main__':
 
     # predict values for provided data and model
     ypredictions = dfpl.predictValues(modelfilepath=args.m[0], pdx=xpd)
+    #ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
+
 
     #print(ypredictions)
     pd.DataFrame.to_csv(ypredictions, args.o[0])

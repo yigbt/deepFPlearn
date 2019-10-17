@@ -81,12 +81,19 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
     # transform pd dataframe to numpy array for keras
     x = pdx.to_numpy()
 
+    # learning rate
+    lr = 0.001
+    # type of optimizer
+    adam = optimizers.Adam(lr=lr)
+
     for target in y.columns:
         # target=y.columns[2]
         tmp=y[target].astype('category')
         Y=np.asarray(tmp)
+#        print(Y)
         naRows = np.isnan(Y)
-        modelfilepath=str(modelfilepathprefix) + '/model.' + target + '.h5'
+        modelfilepathW=str(modelfilepathprefix) + '/model.' + target + '.weights.h5'
+        modelfilepathM = str(modelfilepathprefix) + '/model.' + target + '.json'
         modelhistplotpathL = str(modelfilepathprefix) + '/model.' + target + '.loss.svg'
         modelhistplotpathA = str(modelfilepathprefix) + '/model.' + target + '.acc.svg'
 
@@ -95,9 +102,20 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
         # define model structure - the same for all targets
         # An empty (weights) model needs to be defined each time prior to fitting
         model = dfpl.defineNNmodel(inputSize=pdx.shape[1])
+        # compile model
+        model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
 
         # Train the model
-        hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=1)
+        hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=2)
+
+        # serialize model to JSON
+        model_json = model.to_json()
+        with open(modelfilepathM, "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        model.save_weights(modelfilepathW)
+        print('Saved model and weigths to disk: ' + target)
+
         # print(hist.history)
         with open(modelhistcsvpath, 'w') as csv_file:
             writer = csv.writer(csv_file)
@@ -111,6 +129,7 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
          #   reader = csv.reader(csv_file)
           #  mydict = dict(reader)
 
+
         # plot accuracy and loss for the training and validation during training
         dfpl.plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
 
@@ -118,12 +137,15 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
 
 
         scores=model.evaluate(x[~naRows],Y[~naRows],verbose=0)
-        model.save_weights(modelfilepath)
+        #model.save_weights(modelfilepath)
 
         stats.append([target, scores[0].__round__(2), scores[1].__round__(2)])
         print(target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
 
         del model
+        del naRows
+        del Y
+        del tmp
 
     #print(stats)
     return stats
