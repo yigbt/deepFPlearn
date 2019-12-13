@@ -1,8 +1,6 @@
 import argparse
 import csv
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 
 # for fingerprint generation
 from rdkit import DataStructs
@@ -12,7 +10,9 @@ from keras import optimizers
 
 # import my own functions for deepFPlearn
 import dfplmodule as dfpl
-
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import plot_confusion_matrix
+from sklearn.model_selection import train_test_split
 # ------------------------------------------------------------------------------------- #
 
 def parseInput():
@@ -50,55 +50,65 @@ def parseInput():
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
+def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50):
     """
-    Train one model of the provided structure for each target (column) provided in y
-    using the features x and the outcomes y and a train/validation data set split of
-    split.
-    :param model: a compiled neural network model
-    :param x: a pandas data frame of training features, one row per data set, features in cols,
-    rownames or numbers provided.
-    :param y: a pandas data frame of training outcomes, one column per outcome.
-    Cell value (0,1). Name of column used as name of target.
-    :param split: the percentage data sets used for training. Remaining percentage is
-    used in cross-validation steps.
-    :param e: the number of epochs for training. Default: 50
-    :param modelfilepathprefix: the path for saving the model weigths for each epoch
-    :return: matrix of statistics per target
+    Train individual models for all targets (columns) present in the provided target data (y).
+    For each individual target the data is first subsetted to exclude NA values (for target associations).
+    A random sample of the remaining data (size is the split fraction) is used for training and the
+    remaining data for validation.
+
+    :param modelfilepathprefix:
+    :param x:
+    :param y:
+    :param split:
+    :param epochs:
+    :return:
     """
 
-    # for each target train a model
+    # for testing
+    #(modelfilepathprefix, x, y, split, epochs)  = (mfp, xmatrix, ymatrix, 0.2, 5)
+
     stats = []
 
-    # transform pd dataframe to numpy array for keras
-    x = pdx.to_numpy()
-
+    ### General model parameters
     # learning rate
     lr = 0.001
     # type of optimizer
     adam = optimizers.Adam(lr=lr)
 
+    ### For each individual target
     for target in y.columns:
-        # target=y.columns[2]
-        tmp=y[target].astype('category')
-        Y=np.asarray(tmp)
-#        print(Y)
-        naRows = np.isnan(Y)
-        modelfilepathW=str(modelfilepathprefix) + '/model.' + target + '.weights.h5'
+        # target=y.columns[0]
+        modelfilepathW = str(modelfilepathprefix) + '/model.' + target + '.weights.h5'
         modelfilepathM = str(modelfilepathprefix) + '/model.' + target + '.json'
         modelhistplotpathL = str(modelfilepathprefix) + '/model.' + target + '.loss.svg'
         modelhistplotpathA = str(modelfilepathprefix) + '/model.' + target + '.acc.svg'
+        modelhistcsvpath = str(modelfilepathprefix) + '/model.' + target + '.history.csv'
 
-        modelhistcsvpath=str(modelfilepathprefix) + '/model.' + target + '.history.csv'
+        # which rows contain 'NA' in target column
+        tmp = y[target].astype('category')
+        Y = np.asarray(tmp)
+        naRows = np.isnan(Y)
+
+        # transform pd dataframe to numpy array for keras
+        X = x.to_numpy()
+
+        # subset data according to target non-NA values
+        Yt = Y[~naRows]
+        Xt = X[~naRows]
+
+        # randomly split into train and test sets
+        (X_train, X_test, y_train, y_test) = train_test_split(Xt, Yt, test_size=split, random_state=0)
 
         # define model structure - the same for all targets
         # An empty (weights) model needs to be defined each time prior to fitting
-        model = dfpl.defineNNmodel(inputSize=pdx.shape[1])
+        model = dfpl.defineNNmodel(inputSize=X_train.shape[1])
         # compile model
         model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
 
-        # Train the model
-        hist=model.fit(x[~naRows], Y[~naRows], epochs=e, validation_split=split,verbose=4)
+        # train and validate
+        hist = model.fit(X_train, y_train, epochs=epochs, verbose=2, validation_split=0.2,
+                         validation_data=(X_test, y_test)) # this overwrites val_split!
 
         # serialize model to JSON
         model_json = model.to_json()
@@ -125,10 +135,13 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
         dfpl.plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
 
         # plot weights
+        # svmtest
 
+        predictions = model.predict(X_test)
 
-        scores=model.evaluate(x[~naRows],Y[~naRows],verbose=0)
-        #model.save_weights(modelfilepath)
+        confusion_matrix(y_test, predictions.round(), normalize='all')
+
+        scores=model.evaluate(X_test, y_test,verbose=0)
 
         stats.append([target, scores[0].__round__(2), scores[1].__round__(2)])
         print('\n' + target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
@@ -150,9 +163,7 @@ def trainNNmodels(model, modelfilepathprefix, pdx, y, split=0.8, e=50):
 
     return stats
 
-
 # ------------------------------------------------------------------------------------- #
-
 
 def trainMultiNNmodel(model, x, y, split=0.8):
     """
@@ -203,8 +214,10 @@ def smilesSet2fpSet(csvfilename, outfilename, fptype):
 
 # ===================================================================================== #
 
-
 if __name__ == '__main__':
+
+    # increase recursion limit to draw heatmaps later
+    sys.setrecursionlimit(10000)
 
     # get all arguments
     args = parseInput()
@@ -216,25 +229,30 @@ if __name__ == '__main__':
     # -i /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv
     # -o /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/
     # -t smiles -k topological -e 5
-    #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv", rtype="smiles", fptype="topological", printfp=True)
+    #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv", rtype="smiles", fptype="topological", printfp=False)
+    #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/toxCastData/AhR/results/02_training_Ahr.noNA.csv", rtype="smiles", fptype="topological", printfp=True)
     xmatrix = dfpl.XfromInput(csvfilename=args.i[0], rtype=args.t[0], fptype=args.k[0], printfp=True)
 
     print(xmatrix.shape)
 
     # transform Y to feature matrix
     #ymatrix = dfpl.YfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv")
+    #ymatrix = dfpl.YfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/toxCastData/AhR/results/02_training_Ahr.noNA.csv")
     ymatrix = dfpl.YfromInput(csvfilename=args.i[0])
 
     print(ymatrix.shape)
 
     # define model structure - the same for all targets
-    model = dfpl.defineNNmodel(inputSize=xmatrix.shape[1])
+#    model = dfpl.defineNNmodel(inputSize=xmatrix.shape[1])
 
-    print(model.summary())
+#    print(model.summary())
 
+    epochs = args.e[0] # epochs=20
+    mfp = args.o[0] # mfp = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/"#AhR"
     # train one model per target (individually)
-    #modelstats = trainNNmodels(model=model, modelfilepathprefix="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/", pdx=xmatrix, y=ymatrix, split=0.8, e=5)
-    modelstats = trainNNmodels(model=model, modelfilepathprefix=args.o[0], pdx=xmatrix, y=ymatrix, split=0.8, e=args.e[0])
+    #modelstats = trainNNmodels(model=model, modelfilepathprefix="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/AhR", pdx=xmatrix, y=ymatrix, split=0.8, e=args.e[0], valdata=(xmatrixTest, ymatrixTest))
+    #modelstats = trainNNmodels(model=model, modelfilepathprefix=mfp, pdx=xmatrix, y=ymatrix, split=0.8, e=epochs, valdata=(xmatrixTest, ymatrixTest))
+    modelstats = trainNNmodels(modelfilepathprefix=mfp, x=xmatrix, y=ymatrix, split=0.8, epochs=epochs)
 
     print(modelstats)
 

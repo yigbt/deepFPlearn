@@ -3,9 +3,12 @@ import argparse
 import csv
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.colors import LinearSegmentedColormap
+#%matplotlib inline
+# for drawing the heatmaps
+import seaborn as sns
 
 # for fingerprint generation
 from rdkit import Chem
@@ -20,6 +23,12 @@ from keras.layers import Dense, Dropout
 from keras import regularizers
 from keras import optimizers
 from keras.models import model_from_json
+
+# for model prediction metrics
+import sklearn
+from sklearn.metrics import confusion_matrix
+
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -209,6 +218,26 @@ def YfromInput(csvfilename):
 
 # ------------------------------------------------------------------------------------- #
 
+def TrainingDataHeatmap(x, y):
+
+    x['ID'] = x.index
+    y['ID'] = y.index
+
+    #xy = pd.merge(x,y,on="ID")
+
+    # clustermap dies because of too many iterations..
+    #sns.clustermap(x, metric="correlation", method="single", cmap="Blues", standard_scale=1) #, row_colors=row_colors)
+
+    # try to cluster prior to viz
+    # check this out
+    # https://stackoverflow.com/questions/2455761/reordering-matrix-elements-to-reflect-column-and-row-clustering-in-naiive-python
+
+    # viz using matplotlib heatmap https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/image_annotated_heatmap.html
+
+    return 1
+
+# ------------------------------------------------------------------------------------- #
+
 def defineNNmodel(inputSize):
     """
     Define the Keras NN model used for training and prediction.
@@ -329,3 +358,33 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
 
 
 # ------------------------------------------------------------------------------------- #
+
+def drawHeatmap(data, anno):
+
+    #(data=pd.DataFrame(Xt), anno = pd.DataFrame(Yt.astype(int)))
+
+    # annotation bar colors
+    my_ann_colors = dict(zip(anno[0].unique(), ["blue", "red"]))
+    row_colors = anno[0].map(my_ann_colors)
+
+
+    cl = sns.clustermap(data, metric="euclidean", method="single", z_score=None, standard_scale=None,
+                        col_cluster=False, cmap="Greys", row_colors=row_colors, yticklabels=False)
+    cl.fig.suptitle('Distributions of [1,0] in fingerprints of target: AR')
+
+    url = 'https://python-graph-gallery.com/wp-content/uploads/mtcars.csv'
+    df = pd.read_csv(url)
+    # set df index using existing columns
+    df = df.set_index('model')
+    # remove name of index column, numbered rows have been the index before, they are gone now
+    del df.index.name
+    df
+    my_palette = dict(zip(df.cyl.unique(), ["orange", "yellow", "brown"]))
+    row_colors = df.cyl.map(my_palette)
+
+    # Default plot
+    #sns.clustermap(df)
+
+    # Clustermethods
+    my_palette = dict()
+    sns.clustermap(df, metric="correlation", standard_scale=1, method="single", cmap="Blues", row_colors=row_colors)

@@ -5,7 +5,7 @@
  
 #$ -l h_rt=168:00:00
 #$ -l h_vmem=8G
-#$ -p smp 14-28
+#$ -pe smp 14-28
  
 #$ -o /work/$USER/$JOB_NAME-$JOB_ID.log
 #$ -j y
