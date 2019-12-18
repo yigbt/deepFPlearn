@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 
 from keras.utils import to_categorical
+from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.wrappers.scikit_learn import KerasClassifier
 
@@ -46,7 +47,7 @@ le = LabelEncoder()
 
 # which target column to use? put this in a loop later for all targets
 # here we need a for loop
-for target in dataset.columns:
+for target in dataset.columns[1:7]:
     #target = dataset.columns[1] # 'AR'
 
     modelfilepathW = str(modelfilepathprefix) + '/model.' + target + '.weights.h5'
@@ -65,6 +66,7 @@ for target in dataset.columns:
     # Store all fingerprints in numpy array
     X = np.empty((Nrows, Ncols), int)
 
+
     # keep old indexes of this subset of arrays
     d['oldIdx'] = d.index.values
     d['newIdx'] = range(Nrows)
@@ -74,10 +76,10 @@ for target in dataset.columns:
     # generate X matrix
     for i in range(Nrows):
         fp = d['fp'][i]
-        X[i] = list(map(int, [char for char in fp]))
+        X[i] = np.array(list(fp), dtype='int')
 
     # generate y vector(s)
-    y = to_categorical(np.array(d['outcome']), num_classes=2)
+    y = to_categorical(np.array(d[target]), num_classes=2)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 

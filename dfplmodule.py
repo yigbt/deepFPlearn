@@ -272,6 +272,34 @@ def defineNNmodel(inputSize):
 
     return model
 
+# ------------------------------------------------------------------------------------- #
+
+def defineNNmodel2(l2reg=0.001, dropout=0.2, activation='relu', optmizier='adam'):
+
+    model = Sequential()
+
+    # input layer has shape of 'inputSize', its the input to 1st hidden layer
+
+    # hidden layers
+    model.add(Dense(units=500, activation=activation, #input_dim=2048,
+                    kernel_regularizer=regularizers.l2(l2reg)))
+    model.add(Dropout(dropout))
+    model.add(Dense(units=200, activation=activation,
+                    kernel_regularizer=regularizers.l2(l2reg)))
+    model.add(Dropout(dropout))
+    model.add(Dense(units=100, activation=activation,
+                    kernel_regularizer=regularizers.l2(l2reg)))
+    model.add(Dropout(dropout))
+    model.add(Dense(units=20, activation=activation,
+                    kernel_regularizer=regularizers.l2(l2reg)))
+    model.add(Dropout(dropout))
+
+    # output layer
+    model.add(Dense(units=2, activation='softmax'))
+
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
+    return model
 
 # ------------------------------------------------------------------------------------- #
 
