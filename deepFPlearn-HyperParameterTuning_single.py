@@ -134,8 +134,6 @@ if __name__ == '__main__':
     #outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(filepath))
     #dataset = pd.read_csv(filepath)
 
-    outfilepath = args.p[0] + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(args.i[0]))
-
     dataset = pd.read_csv(args.i[0])
 
     #le = LabelEncoder()
@@ -146,6 +144,8 @@ if __name__ == '__main__':
     for target in args.t:
         #target = 'ER'
         print(target)
+        outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(args.i[0]))
+
         if(target in dataset.columns):
             #modelfilepathW = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.weights.h5'
             #modelfilepathM = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.json'
