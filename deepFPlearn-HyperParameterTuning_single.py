@@ -122,8 +122,8 @@ if __name__ == '__main__':
     # get all arguments
     args = parseInput()
 
-    print(args)
-    exit(1)
+    #print(args)
+    #exit(1)
 
     # this stores the best performing parameters for each model for each target
     results = pd.DataFrame()
