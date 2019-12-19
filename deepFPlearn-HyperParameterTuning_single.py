@@ -4,6 +4,8 @@ import re
 import pandas as pd
 import numpy as np
 
+from importlib import reload
+
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
@@ -120,13 +122,16 @@ if __name__ == '__main__':
     # get all arguments
     args = parseInput()
 
+    print(args)
+    exit(1)
+
     # this stores the best performing parameters for each model for each target
     results = pd.DataFrame()
 
     np.random.seed(0)
 
     #filepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.fingerprints.csv"
-    #outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(args.i[0]))
+    #outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(filepath))
     #dataset = pd.read_csv(filepath)
 
     outfilepath = args.p[0] + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(args.i[0]))
@@ -145,7 +150,7 @@ if __name__ == '__main__':
             #modelfilepathW = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.weights.h5'
             #modelfilepathM = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.json'
             modelfilepathW = args.p[0] + '/model.' + target + '.weights.h5'
-            modelfilepathM = str(modelfilepathprefix) + '/model.' + target + '.json'
+            modelfilepathM = args.p[0] + '/model.' + target + '.json'
 
             tmp = dataset[target].astype('category')
             Y = np.asarray(tmp)
@@ -178,46 +183,120 @@ if __name__ == '__main__':
 
             start = time()
 
-            # Start optimizing epochs and batchsizes (if more than one provided)
-            model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
-
-            batchSizes = args.batchSizes # batchSizes = [20]
-            epochs = args.epochs # epochs = [5, 10]
-
-            parameters = {'batch_size': batchSizes,
-                          'epochs': epochs}
-
-            clf = GridSearchCV(model, parameters, verbose=0)
-            clf_results = clf.fit(X_train, y_train)
-
-
-
-            inits = ['glorot_uniform', 'normal', 'uniform']
-            optimizers = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
-            activation_functions = ['sigmoid', 'tanh', 'relu']
-            parameters = {'batch_size': batch_sizes,
-                          'epochs': epochs,
-                          'optimizer': optimizers,
-                          'activation': activation_functions,
-                          'init': inits}
-
-            # Tuning ALL parameters, Note, this takes hours of computation!!!
-            clf = GridSearchCV(model, parameters, verbose=0)
-            clf_results = clf.fit(X_train, y_train)
-
-            # save best estimator per target
-            clf_results.best_estimator_.model.save(filepath=modelfilepathM)
-            clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
-
             ### find best performing parameters
             file = open(outfilepath, "a")
             file.write("# --------------------------------------------------------------------------- #\n")
             file.write("### Results for %s target ###\n" % target)
-            file.write("Best: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
+            file.close()
+
+            # Start optimizing epochs and batchsizes (if more than one provided)
+
+            batchSizes = args.batchSizes  # batchSizes = [32]
+            epochs = args.epochs  # epochs = [30, 50, 100]
+
+            if (batchSizes.__len__() > 1) | (epochs.__len__() > 1):
+
+                model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
+
+                parameters = {'batch_size': batchSizes,
+                              'epochs': epochs}
+
+                clf = GridSearchCV(model, parameters, verbose=0)
+                clf_results = clf.fit(X_train, y_train)
+
+                # save best estimator for epoochs/batchSize tuning per target
+                modelfilepathW = args.p[0] + '/model.tuning-BS-E.' + target + '.weights.h5'
+                modelfilepathM = args.p[0] + '/model.tuning-BS-E.' + target + '.json'
+
+                clf_results.best_estimator_.model.save(filepath=modelfilepathM)
+                clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
+
+                file = open(outfilepath, "a")
+                file.write("Best epochs/batchSize: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
+                file.close()
+
+                selected_bs = clf_results.best_params_['batch_size']
+                selected_epochs = clf_results.best_params_['epochs']
+
+            else:
+                selected_bs = batchSizes[0]
+                selected_epochs = epochs[0]
+
+            file = open(outfilepath, "a")
+            file.write("Selected epochs: %d\nSelected batchSize: %d\n" % (selected_epochs, selected_bs))
+            file.close()
+
+
+            # Hypertune optimizers
+            optimizers = args.optimizers
+
+            if optimizers.__len__() > 1:
+                model = KerasClassifier(build_fn=dfpl.defineNNmodel2, epochs=selected_epochs, batch_size=selected_bs)
+                parameters = {'optimizer': optimizers} #['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']}
+                clf = GridSearchCV(model, parameters, verbose=0)
+                clf_results = clf.fit(X_train, y_train)
+
+                # save best estimator for optimizer tuning per target
+                modelfilepathW = args.p[0] + '/model.tuning-optimizer.' + target + '.weights.h5'
+                modelfilepathM = args.p[0] + '/model.tuning-optimizer.' + target + '.json'
+
+                clf_results.best_estimator_.model.save(filepath=modelfilepathM)
+                clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
+
+                file = open(outfilepath, "a")
+                file.write("Best optimizer: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
+                file.close()
+
+                selected_optimizer = clf_results.best_params_['optimizer']
+
+            else:
+                selected_optimizer = optimizers[0]
+
+            file = open(outfilepath, "a")
+            file.write("Selected optimizer: %s\n" % (selected_optimizer))
+            file.close()
+
+            # Hypertune activation functions
+            activations = args.activations
+
+            if activations.__len__() > 1:
+                model = KerasClassifier(build_fn=dfpl.defineNNmodel2, epochs=selected_epochs, batch_size=selected_bs)
+                parameters = {'optimizer': [selected_optimizer],
+                              'activation': ['sigmoid', 'tanh', 'relu']}
+                clf = GridSearchCV(model, parameters, verbose=0)
+                clf_results = clf.fit(X_train, y_train)
+
+                # save best estimator for optimizer tuning per target
+                modelfilepathW = args.p[0] + '/model.tuning-activation.' + target + '.weights.h5'
+                modelfilepathM = args.p[0] + '/model.tuning-activation.' + target + '.json'
+
+                clf_results.best_estimator_.model.save(filepath=modelfilepathM)
+                clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
+
+                file = open(outfilepath, "a")
+                file.write("Best activationF: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
+                file.close()
+
+                selected_activation = clf_results.best_params_['activation']
+
+            else:
+                selected_activation = activations[0]
+
+            file = open(outfilepath, "a")
+            file.write("Selected activationF: %s\n" % (selected_activation))
+            file.close()
+
+            # Maybe also optimize weight initializations??
+            #inits = ['glorot_uniform', 'normal', 'uniform']
+
+
+            ### find best performing parameters
+            file = open(outfilepath, "a")
             file.write("Calculation time: %s min\n\n" % str(round((time()-start)/60, ndigits=2)))
             file.close()
 
         else:
             print("ERROR: the target that you provide (%s) "
                   "is not contained in your data file (%s)" %
-                  (target, args.i[0])
+                  (target, args.i[0]))
+

@@ -274,7 +274,7 @@ def defineNNmodel(inputSize):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineNNmodel2(l2reg=0.001, dropout=0.2, activation='relu', optmizier='adam'):
+def defineNNmodel2(l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam'):
 
     model = Sequential()
 
