@@ -144,7 +144,9 @@ if __name__ == '__main__':
     for target in args.t:
         #target = 'ER'
         print(target)
+        #outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(filepath))
         outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(args.i[0]))
+
 
         if(target in dataset.columns):
             #modelfilepathW = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.weights.h5'
@@ -191,7 +193,7 @@ if __name__ == '__main__':
 
             # Start optimizing epochs and batchsizes (if more than one provided)
 
-            batchSizes = args.batchSizes  # batchSizes = [32]
+            batchSizes = args.batchSizes  # batchSizes = [128]
             epochs = args.epochs  # epochs = [30, 50, 100]
 
             if (batchSizes.__len__() > 1) | (epochs.__len__() > 1):
@@ -202,21 +204,25 @@ if __name__ == '__main__':
                               'epochs': epochs}
 
                 clf = GridSearchCV(model, parameters, verbose=0)
-                clf_results = clf.fit(X_train, y_train)
+                clf.fit(X_train, y_train)
 
                 # save best estimator for epoochs/batchSize tuning per target
                 modelfilepathW = args.p[0] + '/model.tuning-BS-E.' + target + '.weights.h5'
                 modelfilepathM = args.p[0] + '/model.tuning-BS-E.' + target + '.json'
 
-                clf_results.best_estimator_.model.save(filepath=modelfilepathM)
-                clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
+                clf.best_estimator_.model.save(filepath=modelfilepathM)
+                clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
                 file = open(outfilepath, "a")
-                file.write("Best epochs/batchSize: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
+                file.write("Best epochs/batchSize: %5.2f using %s\n" % (clf.best_score_, clf.best_params_))
+                means = clf.cv_results_['mean_test_score']
+                parameters = clf.cv_results_['params']
+                for mean, parammeter in zip(means, parameters):
+                    file.write("\t%5.2f %s\n" % (mean, parammeter))
                 file.close()
 
-                selected_bs = clf_results.best_params_['batch_size']
-                selected_epochs = clf_results.best_params_['epochs']
+                selected_bs = clf.best_params_['batch_size']
+                selected_epochs = clf.best_params_['epochs']
 
             else:
                 selected_bs = batchSizes[0]
@@ -234,20 +240,24 @@ if __name__ == '__main__':
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel2, epochs=selected_epochs, batch_size=selected_bs)
                 parameters = {'optimizer': optimizers} #['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']}
                 clf = GridSearchCV(model, parameters, verbose=0)
-                clf_results = clf.fit(X_train, y_train)
+                clf.fit(X_train, y_train)
 
                 # save best estimator for optimizer tuning per target
                 modelfilepathW = args.p[0] + '/model.tuning-optimizer.' + target + '.weights.h5'
                 modelfilepathM = args.p[0] + '/model.tuning-optimizer.' + target + '.json'
 
-                clf_results.best_estimator_.model.save(filepath=modelfilepathM)
-                clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
+                clf.best_estimator_.model.save(filepath=modelfilepathM)
+                clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
                 file = open(outfilepath, "a")
-                file.write("Best optimizer: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
+                file.write("Best optimizer: %f using %s\n" % (clf.best_score_, clf.best_params_))
+                means = clf.cv_results_['mean_test_score']
+                parameters = clf.cv_results_['params']
+                for mean, parammeter in zip(means, parameters):
+                    file.write("\t%5.2f %s\n" % (mean, parammeter))
                 file.close()
 
-                selected_optimizer = clf_results.best_params_['optimizer']
+                selected_optimizer = clf.best_params_['optimizer']
 
             else:
                 selected_optimizer = optimizers[0]
@@ -264,20 +274,24 @@ if __name__ == '__main__':
                 parameters = {'optimizer': [selected_optimizer],
                               'activation': ['sigmoid', 'tanh', 'relu']}
                 clf = GridSearchCV(model, parameters, verbose=0)
-                clf_results = clf.fit(X_train, y_train)
+                clf.fit(X_train, y_train)
 
                 # save best estimator for optimizer tuning per target
                 modelfilepathW = args.p[0] + '/model.tuning-activation.' + target + '.weights.h5'
                 modelfilepathM = args.p[0] + '/model.tuning-activation.' + target + '.json'
 
-                clf_results.best_estimator_.model.save(filepath=modelfilepathM)
-                clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
+                clf.best_estimator_.model.save(filepath=modelfilepathM)
+                clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
                 file = open(outfilepath, "a")
-                file.write("Best activationF: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
+                file.write("Best activationF: %f using %s\n" % (clf.best_score_, clf.best_params_))
+                means = clf.cv_results_['mean_test_score']
+                parameters = clf.cv_results_['params']
+                for mean, parammeter in zip(means, parameters):
+                    file.write("\t%5.2f %s\n" % (mean, parammeter))
                 file.close()
 
-                selected_activation = clf_results.best_params_['activation']
+                selected_activation = clf.best_params_['activation']
 
             else:
                 selected_activation = activations[0]
