@@ -1,5 +1,15 @@
 #!/bin/bash
 
+#$ -N dfplTrain
+#$ -S /bin/bash
+
+#$ -l h_rt=168:00:00
+#$ -l h_vmem=8G
+#$ -pe smp 4-8
+
+#$ -o /work/$USER/$JOB_NAME-$JOB_ID.log
+#$ -j y
+
 ml purge
 ml anaconda/5/5.0.1
 
@@ -7,7 +17,7 @@ ml anaconda/5/5.0.1
 #conda env create -f conda_env.rdkit2019.yaml
 
 # otherwise load it
-conda activate rdkit2019
+source activate rdkit2019
 
 
 ### TRAINING
