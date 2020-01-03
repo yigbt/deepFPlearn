@@ -238,7 +238,7 @@ def TrainingDataHeatmap(x, y):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineNNmodel(inputSize):
+def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam'):
     """
     Define the Keras NN model used for training and prediction.
 
@@ -246,29 +246,33 @@ def defineNNmodel(inputSize):
     :return: A keras NN sequential model that needs to be compiled before usage
     """
 
-    l2reg = 0.001
-    dropout = 0.2
+    #l2reg = 0.001
+    #dropout = 0.2
 
     model = Sequential()
 
     # input layer has shape of 'inputSize', its the input to 1st hidden layer
 
     # hidden layers
-    model.add(Dense(units=500, activation='relu', input_dim=inputSize,
+    model.add(Dense(units=500, activation=activation, input_dim=inputSize,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
-    model.add(Dense(units=200, activation='relu',
+    model.add(Dense(units=200, activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
-    model.add(Dense(units=100, activation='relu',
+    model.add(Dense(units=100, activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
-    model.add(Dense(units=20, activation='relu',
+    model.add(Dense(units=20, activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
 
     # output layer
     model.add(Dense(units=1, activation='sigmoid'))
+
+    # compile model
+    model.compile(loss="mse", optimizer=optimizer, metrics=['accuracy'])
+#   model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
     return model
 
