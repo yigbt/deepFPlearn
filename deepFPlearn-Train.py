@@ -13,6 +13,9 @@ import dfplmodule as dfpl
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
+
+from time import time
+
 # ------------------------------------------------------------------------------------- #
 
 def parseInput():
@@ -76,6 +79,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50):
     # type of optimizer
     adam = optimizers.Adam(lr=lr)
 
+
     ### For each individual target
     for target in y.columns:
         # target=y.columns[0]
@@ -84,6 +88,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50):
         modelhistplotpathL = str(modelfilepathprefix) + '/model.' + target + '.loss.svg'
         modelhistplotpathA = str(modelfilepathprefix) + '/model.' + target + '.acc.svg'
         modelhistcsvpath = str(modelfilepathprefix) + '/model.' + target + '.history.csv'
+        outfilepath = str(modelfilepathprefix) + '/model.' + target + '.trainingResults.csv'
 
         # which rows contain 'NA' in target column
         tmp = y[target].astype('category')
@@ -102,13 +107,19 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50):
 
         # define model structure - the same for all targets
         # An empty (weights) model needs to be defined each time prior to fitting
-        model = dfpl.defineNNmodel(inputSize=X_train.shape[1])
+        #model = dfpl.defineNNmodel(inputSize=X_train.shape[1])
         # compile model
-        model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
+        #model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
+
+        # standard parameters are the tuning results
+        model = dfpl.defineNNmodel2()
+
+        start = time()
 
         # train and validate
         hist = model.fit(X_train, y_train, epochs=epochs, verbose=2, validation_split=0.2,
-                         validation_data=(X_test, y_test)) # this overwrites val_split!
+                         validation_data=(X_test, y_test), batch_size=128) # this overwrites val_split!
+
 
         # serialize model to JSON
         model_json = model.to_json()
@@ -144,17 +155,28 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50):
         scores=model.evaluate(X_test, y_test,verbose=0)
 
         stats.append([target, scores[0].__round__(2), scores[1].__round__(2)])
-        print('\n' + target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
 
-        print("FILES saved to disk for target " + target + ":")
-        print("   [01] The trained model in JSON format: " + modelfilepathM)
-        print("   [02] Weights of the model: " + modelfilepathW)
-        print("   [03] Model history as .csv:" + modelhistcsvpath)
-        print("   [04] Plot visualizing training accuracy: " + modelhistplotpathA)
-        print("   [05] Plot visualizing training loss: " + modelhistplotpathL + '\n')
-        print("The Path prefix for making predictions using deepFPlearn-predict is:\n")
-        print(    str(modelfilepathprefix) + '/model.' + target)
-        print('\n-------------------------------------------------------------------------------\n\n')
+        # write stats to file
+        file = open(outfilepath, "a")
+
+        print('\n' + target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
+        file.write("\n" + target + " -----------------------------------------------------------------------------\n")
+        file.write("Loss: " + scores[0].__round__(2) + "\n")
+        file.write("Acc:  " + scores[1].__round__(2) + "\n\n")
+        
+        file.write("Training time: %s min\n\n" % str(round((time() - start) / 60, ndigits=2)))
+
+        file.write("FILES saved to disk for target " + target + ":")
+        file.write("   [01] The trained model in JSON format: " + modelfilepathM)
+        file.write("   [02] Weights of the model: " + modelfilepathW)
+        file.write("   [03] Model history as .csv:" + modelhistcsvpath)
+        file.write("   [04] Plot visualizing training accuracy: " + modelhistplotpathA)
+        file.write("   [05] Plot visualizing training loss: " + modelhistplotpathL + '\n')
+        file.write("The Path prefix for making predictions using deepFPlearn-predict is:\n")
+        file.write(    str(modelfilepathprefix) + '/model.' + target)
+        file.write('\n-------------------------------------------------------------------------------\n\n')
+        ### find best performing parameters
+        file.close()
 
         del model
         del naRows
