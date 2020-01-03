@@ -1,3 +1,4 @@
+import sys
 import argparse
 import os
 import re
@@ -179,26 +180,25 @@ if __name__ == '__main__':
                 X[i] = np.array(list(fp), dtype='int')
 
             # generate y vector(s)
-            y = to_categorical(np.array(d[target]), num_classes=2)
-
+            #y = to_categorical(np.array(d[target]), num_classes=2)
+            y = d[target]
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
             start = time()
 
             ### find best performing parameters
-            file = open(outfilepath, "a")
-            file.write("# --------------------------------------------------------------------------- #\n")
-            file.write("### Results for %s target ###\n" % target)
-            file.close()
-
+            sys.stdout.write("# --------------------------------------------------------------------------- #\n")
+            sys.stdout.write("#target = %s\n" % target)
+            
             # Start optimizing epochs and batchsizes (if more than one provided)
 
-            batchSizes = args.batchSizes  # batchSizes = [128]
-            epochs = args.epochs  # epochs = [30, 50, 100]
+            batchSizes = args.batchSizes  # batchSizes = [32, 128]
+            epochs = args.epochs  # epochs = [5, 10]
 
             if (batchSizes.__len__() > 1) | (epochs.__len__() > 1):
 
-                model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
+                #model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
+                model = KerasClassifier(build_fn=dfpl.defineNNmodel)
 
                 parameters = {'batch_size': batchSizes,
                               'epochs': epochs}
@@ -209,17 +209,20 @@ if __name__ == '__main__':
                 # save best estimator for epoochs/batchSize tuning per target
                 modelfilepathW = args.p[0] + '/model.tuning-BS-E.' + target + '.weights.h5'
                 modelfilepathM = args.p[0] + '/model.tuning-BS-E.' + target + '.json'
-
+                outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.01-EpochsBatchSize' + target + '.csv',
+                                                 os.path.basename(args.i[0]))
+                # outfilepath = '/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/Sun_etal_dataset.fingerprints.hpTuningResults.ER.txt'
                 clf.best_estimator_.model.save(filepath=modelfilepathM)
                 clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
-                file = open(outfilepath, "a")
-                file.write("Best epochs/batchSize: %5.2f using %s\n" % (clf.best_score_, clf.best_params_))
-                means = clf.cv_results_['mean_test_score']
-                parameters = clf.cv_results_['params']
-                for mean, parammeter in zip(means, parameters):
-                    file.write("\t%5.2f %s\n" % (mean, parammeter))
-                file.close()
+                df = pd.concat([pd.DataFrame(clf.cv_results_['param_epochs']),
+                                pd.DataFrame(clf.cv_results_['param_batch_size']),
+                                pd.DataFrame(clf.cv_results_['mean_test_score']),
+                                pd.DataFrame(clf.cv_results_['std_test_score']),
+                                pd.DataFrame(clf.cv_results_['rank_test_score'])],
+                               axis=1)
+                df.columns = ['epoch', 'batch_size', 'mean_test_score', 'std_test_score', 'rank_test_score']
+                df.to_csv(outfilepath, header=True)
 
                 selected_bs = clf.best_params_['batch_size']
                 selected_epochs = clf.best_params_['epochs']
@@ -228,16 +231,12 @@ if __name__ == '__main__':
                 selected_bs = batchSizes[0]
                 selected_epochs = epochs[0]
 
-            file = open(outfilepath, "a")
-            file.write("Selected epochs: %d\nSelected batchSize: %d\n" % (selected_epochs, selected_bs))
-            file.close()
-
-
             # Hypertune optimizers
+            #optimizers = ['SGD', 'Adam']
             optimizers = args.optimizers
 
             if optimizers.__len__() > 1:
-                model = KerasClassifier(build_fn=dfpl.defineNNmodel2, epochs=selected_epochs, batch_size=selected_bs)
+                model = KerasClassifier(build_fn=dfpl.defineNNmodel, epochs=selected_epochs, batch_size=selected_bs)
                 parameters = {'optimizer': optimizers} #['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']}
                 clf = GridSearchCV(model, parameters, verbose=0)
                 clf.fit(X_train, y_train)
@@ -245,32 +244,30 @@ if __name__ == '__main__':
                 # save best estimator for optimizer tuning per target
                 modelfilepathW = args.p[0] + '/model.tuning-optimizer.' + target + '.weights.h5'
                 modelfilepathM = args.p[0] + '/model.tuning-optimizer.' + target + '.json'
+                outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.02-Optimizer' + target + '.csv',
+                                                 os.path.basename(args.i[0]))
 
                 clf.best_estimator_.model.save(filepath=modelfilepathM)
                 clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
-                file = open(outfilepath, "a")
-                file.write("Best optimizer: %f using %s\n" % (clf.best_score_, clf.best_params_))
-                means = clf.cv_results_['mean_test_score']
-                parameters = clf.cv_results_['params']
-                for mean, parammeter in zip(means, parameters):
-                    file.write("\t%5.2f %s\n" % (mean, parammeter))
-                file.close()
+                df = pd.concat([pd.DataFrame(clf.cv_results_['param_optimizer']),
+                                pd.DataFrame(clf.cv_results_['mean_test_score']),
+                                pd.DataFrame(clf.cv_results_['std_test_score']),
+                                pd.DataFrame(clf.cv_results_['rank_test_score'])],
+                               axis=1)
+                df.columns = ['optimizer', 'mean_test_score', 'std_test_score', 'rank_test_score']
+                df.to_csv(outfilepath, header=True)
 
                 selected_optimizer = clf.best_params_['optimizer']
 
             else:
                 selected_optimizer = optimizers[0]
 
-            file = open(outfilepath, "a")
-            file.write("Selected optimizer: %s\n" % (selected_optimizer))
-            file.close()
-
             # Hypertune activation functions
             activations = args.activations
 
             if activations.__len__() > 1:
-                model = KerasClassifier(build_fn=dfpl.defineNNmodel2, epochs=selected_epochs, batch_size=selected_bs)
+                model = KerasClassifier(build_fn=dfpl.defineNNmodel, epochs=selected_epochs, batch_size=selected_bs)
                 parameters = {'optimizer': [selected_optimizer],
                               'activation': ['sigmoid', 'tanh', 'relu']}
                 clf = GridSearchCV(model, parameters, verbose=0)
@@ -279,38 +276,35 @@ if __name__ == '__main__':
                 # save best estimator for optimizer tuning per target
                 modelfilepathW = args.p[0] + '/model.tuning-activation.' + target + '.weights.h5'
                 modelfilepathM = args.p[0] + '/model.tuning-activation.' + target + '.json'
+                outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.03-Activation' + target + '.csv',
+                                                 os.path.basename(args.i[0]))
 
                 clf.best_estimator_.model.save(filepath=modelfilepathM)
                 clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
-                file = open(outfilepath, "a")
-                file.write("Best activationF: %f using %s\n" % (clf.best_score_, clf.best_params_))
-                means = clf.cv_results_['mean_test_score']
-                parameters = clf.cv_results_['params']
-                for mean, parammeter in zip(means, parameters):
-                    file.write("\t%5.2f %s\n" % (mean, parammeter))
-                file.close()
+                df = pd.concat([pd.DataFrame(clf.cv_results_['param_optimizer']),
+                                pd.DataFrame(clf.cv_results_['param_activation']),
+                                pd.DataFrame(clf.cv_results_['mean_test_score']),
+                                pd.DataFrame(clf.cv_results_['std_test_score']),
+                                pd.DataFrame(clf.cv_results_['rank_test_score'])],
+                               axis=1)
+                df.columns = ['optimizer', 'activation', 'mean_test_score', 'std_test_score', 'rank_test_score']
+                df.to_csv(outfilepath, header=True)
 
                 selected_activation = clf.best_params_['activation']
 
             else:
                 selected_activation = activations[0]
 
-            file = open(outfilepath, "a")
-            file.write("Selected activationF: %s\n" % (selected_activation))
-            file.close()
-
             # Maybe also optimize weight initializations??
             #inits = ['glorot_uniform', 'normal', 'uniform']
 
 
             ### find best performing parameters
-            file = open(outfilepath, "a")
-            file.write("Calculation time: %s min\n\n" % str(round((time()-start)/60, ndigits=2)))
-            file.close()
+            sys.stdout.write("Calculation time: %s min\n\n" % str(round((time()-start)/60, ndigits=2)))
 
         else:
-            print("ERROR: the target that you provide (%s) "
+            sys.stderr.write("ERROR: the target that you provide (%s) "
                   "is not contained in your data file (%s)" %
                   (target, args.i[0]))
 
