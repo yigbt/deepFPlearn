@@ -1,5 +1,6 @@
 # Python module for deepFPlearn tools
 import argparse
+import math
 import csv
 import numpy as np
 import pandas as pd
@@ -19,9 +20,11 @@ from rdkit.Chem.AtomPairs import Torsions
 
 # for NN model functions
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.layers import Input, Dense, Dropout
+from keras.models import Model
 from keras import regularizers
 from keras import optimizers
+from keras.optimizers import SGD
 from keras.models import model_from_json
 
 # for model prediction metrics
@@ -29,10 +32,22 @@ import sklearn
 from sklearn.metrics import confusion_matrix
 
 
+# ------------------------------------------------------------------------------------- #
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 # ------------------------------------------------------------------------------------- #
 
-def smi2fp(smile, fptype):
+def smi2fp(smile, fptype, size=2048):
     """
     Convert a SMILES string to a fingerprint object of a certain type using functions
     from the RDKIT python library.
@@ -56,7 +71,7 @@ def smi2fp(smile, fptype):
         # lengths. After all paths have been identified, the fingerprint is typically
         # folded down until a particular density of set bits is obtained.
         try:
-            fp = Chem.RDKFingerprint(mol, fpSize=2048)
+            fp = Chem.RDKFingerprint(mol, fpSize=size)
         except:
             print('SMILES not convertable to topological fingerprint:')
             assert isinstance(smile, object)
@@ -109,7 +124,7 @@ def smi2fp(smile, fptype):
 
 # ------------------------------------------------------------------------------------- #
 
-def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False):
+def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2048):
     """
     Return the matrix of features for training and testing NN models (X) as numpy array.
     Provided SMILES are transformed to fingerprints, fingerprint strings are then split
@@ -160,7 +175,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False):
               fps.update({i: row[feature]})
             else:
                 # smiles, need to be converted to fp first
-                fp=smi2fp(smile=row[feature], fptype=fptype)
+                fp=smi2fp(smile=row[feature], fptype=fptype, size=size)
                 fps.update({i: fp})
             i = i + 1
 
@@ -172,7 +187,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False):
     x = np.empty((Nrows, Ncols), int)
 
     if printfp:
-        csvoutfilename=csvfilename.replace(".csv", ".fingerprints.csv")
+        csvoutfilename=csvfilename.replace(".csv", "." + size + ".fingerprints.csv")
         fnames=names.copy()
         fnames.append('fp')
         f=open(csvoutfilename, 'w')
@@ -238,7 +253,7 @@ def TrainingDataHeatmap(x, y):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam'):
+def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
     """
     Define the Keras NN model used for training and prediction.
 
@@ -249,30 +264,42 @@ def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', o
     #l2reg = 0.001
     #dropout = 0.2
 
+    if optimizer=='Adam':
+        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)#, beta_1=0.9, beta_2=0.999, amsgrad=False)
+    elif optimizer=='SGD':
+        myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
+    else:
+        myoptimizer = optimizer
+
+    myhiddenlayers = {"2048":6, "1024":5, "999":5, "512":4, "256":3}
+
+    if not str(inputSize) in myhiddenlayers.keys():
+        print("Wrong inputsize. Must be in {2048, 1024, 999, 512, 256}.")
+        return None
+
+    nhl = myhiddenlayers[str(inputSize)]
+
     model = Sequential()
-
-    # input layer has shape of 'inputSize', its the input to 1st hidden layer
-
-    # hidden layers
-    model.add(Dense(units=500, activation=activation, input_dim=inputSize,
+    # From input to 1st hidden layer
+    model.add(Dense(units=int(inputSize/2), input_dim=inputSize,
+                    activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
-    model.add(Dense(units=200, activation=activation,
+    # next hidden layers
+    for i in range(1,nhl):
+        factorunits = 2**(i+1)
+        factordropout = 2*i
+        model.add(Dense(units=int(inputSize/factorunits),
+                    activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
-    model.add(Dropout(dropout))
-    model.add(Dense(units=100, activation=activation,
-                    kernel_regularizer=regularizers.l2(l2reg)))
-    model.add(Dropout(dropout))
-    model.add(Dense(units=20, activation=activation,
-                    kernel_regularizer=regularizers.l2(l2reg)))
-    model.add(Dropout(dropout))
-
-    # output layer
+        model.add(Dropout(dropout/factordropout))
+    #output layer
     model.add(Dense(units=1, activation='sigmoid'))
 
+    model.summary()
+
     # compile model
-    model.compile(loss="mse", optimizer=optimizer, metrics=['accuracy'])
-#   model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    model.compile(loss="mse", optimizer=myoptimizer, metrics=['accuracy'])
 
     return model
 
@@ -304,6 +331,71 @@ def defineNNmodel2(l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam'
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
     return model
+
+# ------------------------------------------------------------------------------------- #
+
+def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myloss='binary_crossentropy', myregularization=10-3, mylr=0.001, mydecay=0.01):
+    """
+    This function provides an autoencoder model to reduce a certain input to a compressed version.
+
+    :param encoding_dim: Size of the compressed representation. Default: 85
+    :param input_size: Size of the input. Default: 2048
+    :param myactivation: Activation function, see Keras activation functions for potential values. Default: relu
+    :param myoptimizer: Optimizer, see Keras optmizers for potential values. Default: adadelta
+    :param myloss: Loss function, see Keras Loss functions for potential values. Default: binary_crossentropy
+    :return: a tuple of autoencoder, encoder and decoder models
+    """
+
+    myoptimizer = optimizers.Adam(learning_rate=mylr, decay=mydecay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+
+    # get the number of meaningful hidden layers (bottle neck included)
+    nhl = round(math.log2(input_size/encoding_dim))
+
+    # the input placeholder
+    input_vec = Input(shape=(input_size,))
+
+    # 1st hidden layer, that receives weights from input layer
+    # equals bottle neck layer, if nhl==1!
+    encoded = Dense(units=int(input_size/2), activation='relu')(input_vec)
+
+    if nhl > 1:
+        # encoding layers, incl. bottle neck
+        for i in range(1, nhl):
+            factorunits = 2 ** (i + 1)
+            #print(f'{factorunits}: {int(input_size / factorunits)}')
+            encoded = Dense(units=int(input_size / factorunits), activation='relu')(encoded)
+
+#        encoding_dim = int(input_size/factorunits)
+
+        # 1st decoding layer
+        factorunits = 2 ** (nhl - 1)
+        decoded = Dense(units=int(input_size/factorunits), activation='relu')(encoded)
+
+        # decoding layers
+        for i in range(nhl-2, 0, -1):
+            factorunits = 2 ** i
+            #print(f'{factorunits}: {int(input_size/factorunits)}')
+            decoded = Dense(units=int(input_size/factorunits), activation='relu')(decoded)
+
+        # output layer
+        # The output layer needs to predict the probability of an output which needs to either 0 or 1 and hence we use sigmoid activation function.
+        decoded = Dense(units=input_size, activation='sigmoid')(decoded)
+
+    else:
+        # output layer
+        decoded = Dense(units=input_size, activation='sigmoid')(encoded)
+
+    autoencoder = Model(input_vec, decoded)
+    encoder = Model(input_vec, encoded)
+
+    autoencoder.summary()
+    encoder.summary()
+
+    # We compile the autoencoder model with adam optimizer.
+    # As fingerprint positions have a value of 0 or 1 we use binary_crossentropy as the loss function
+    autoencoder.compile(optimizer=myoptimizer, loss=myloss)
+
+    return (autoencoder, encoder)
 
 # ------------------------------------------------------------------------------------- #
 
@@ -370,11 +462,15 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     # plot accuracy
     plt.figure()
     plt.plot(hist.history['accuracy'])
-    plt.plot(hist.history['val_accuracy'])
+    if 'val_accuracy' in hist.history.keys():
+        plt.plot(hist.history['val_accuracy'])
     plt.title('Model accuracy - ' + target)
     plt.ylabel('Accuracy')
     plt.xlabel('Epoch')
-    plt.legend(['Train', 'Test'], loc='upper left')
+    if 'val_accuracy' in hist.history.keys():
+        plt.legend(['Train', 'Test'], loc='upper left')
+    else:
+        plt.legend(['Train'], loc='upper_left')
     plt.savefig(fname=fileAccuracy, format='svg')
 
     # Plot training & validation loss values
@@ -387,6 +483,134 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     plt.legend(['Train', 'Test'], loc='upper left')
     #        plt.show()
     plt.savefig(fname=fileLoss, format='svg')
+
+# ------------------------------------------------------------------------------------- #
+
+def plotAUC(fpr, tpr, auc, target, filename, title=""):
+
+    plt.figure()
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.plot(fpr, tpr, label='Keras (area = {:.3f})'.format(auc))
+    plt.xlabel('False positive rate')
+    plt.ylabel('True positive rate')
+    plt.title(f'ROC curve {target}')
+    plt.legend(loc='best')
+    plt.savefig(fname=filename, format='svg')
+
+
+# ------------------------------------------------------------------------------------- #
+
+def plotHeatmap(matrix, filename, title=""):
+
+    plt.figure()
+    plt.imshow(matrix, cmap='hot', interpolation='nearest')
+    plt.title(title)
+    plt.savefig(fname=filename, format='svg')
+
+# ------------------------------------------------------------------------------------- #
+
+# plot model history more easily, see whyboris@github: https://gist.github.com/whyboris/91ee793ddc92cf1e824978cf31bb790c
+# when plotting, smooth out the points by some factor (0.5 = rough, 0.99 = smooth)
+# method taken from `Deep Learning with Python` by François Chollet
+
+# 01 --------------------------------------------------------------------------------- #
+
+def smooth_curve(points, factor=0.75):
+    smoothed_points = []
+    for point in points:
+        if smoothed_points:
+            previous = smoothed_points[-1]
+            smoothed_points.append(previous * factor + point * (1 - factor))
+        else:
+            smoothed_points.append(point)
+    return smoothed_points
+
+# 02 ---------------------------------------------------------------------------------- #
+
+def set_plot_history_data(ax, history, which_graph):
+
+    if which_graph == 'acc':
+        train = smooth_curve(history.history['accuracy'])
+        valid = smooth_curve(history.history['val_accuracy'])
+
+    if which_graph == 'loss':
+        train = smooth_curve(history.history['loss'])
+        valid = smooth_curve(history.history['val_loss'])
+
+    plt.xkcd() # make plots look like xkcd
+
+    epochs = range(1, len(train) + 1)
+
+    trim = 0 # remove first 5 epochs
+    # when graphing loss the first few epochs may skew the (loss) graph
+
+    ax.plot(epochs[trim:], train[trim:], 'dodgerblue', linewidth=15, alpha=0.1)
+    ax.plot(epochs[trim:], train[trim:], 'dodgerblue', label=('Training'))
+
+    ax.plot(epochs[trim:], valid[trim:], 'g', linewidth=15, alpha=0.1)
+    ax.plot(epochs[trim:], valid[trim:], 'g', label=('Validation'))
+
+# 03 ---------------------------------------------------------------------------------- #
+
+def get_max_validation_accuracy(history):
+    validation = smooth_curve(history.history['val_accuracy'])
+    ymax = max(validation)
+    return 'Max validation accuracy ≈ ' + str(round(ymax, 3)*100) + '%'
+
+def get_max_training_accuracy(history):
+    training = smooth_curve(history.history['accuracy'])
+    ymax = max(training)
+    return 'Max training accuracy ≈ ' + str(round(ymax, 3)*100) + '%'
+
+# 04---------------------------------------------------------------------------------- #
+
+def plot_history(history, file):
+    fig, (ax1, ax2) = plt.subplots(nrows=2,
+                                   ncols=1,
+                                   figsize=(10, 6),
+                                   sharex=True,
+                                   gridspec_kw={'height_ratios': [5, 2]})
+
+    set_plot_history_data(ax1, history, 'acc')
+
+    set_plot_history_data(ax2, history, 'loss')
+
+    # Accuracy graph
+    ax1.set_ylabel('Accuracy')
+    ax1.set_ylim(bottom=0.5, top=1)
+    ax1.legend(loc="lower right")
+    ax1.spines['top'].set_visible(False)
+    ax1.spines['right'].set_visible(False)
+    ax1.xaxis.set_ticks_position('none')
+    ax1.spines['bottom'].set_visible(False)
+
+    # max accuracy text
+    plt.text(0.5,
+             0.6,
+             get_max_validation_accuracy(history),
+             horizontalalignment='right',
+             verticalalignment='top',
+             transform=ax1.transAxes,
+             fontsize=12)
+    plt.text(0.5,
+             0.8,
+             get_max_training_accuracy(history),
+             horizontalalignment='right',
+             verticalalignment='top',
+             transform=ax1.transAxes,
+             fontsize=12)
+
+    # Loss graph
+    ax2.set_ylabel('Loss')
+    ax2.set_yticks([])
+    ax2.plot(legend=False)
+    ax2.set_xlabel('Epochs')
+    ax2.spines['top'].set_visible(False)
+    ax2.spines['right'].set_visible(False)
+
+    plt.tight_layout()
+    plt.savefig(fname=file, format='svg')
+
 
 
 # ------------------------------------------------------------------------------------- #
