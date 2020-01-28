@@ -43,34 +43,37 @@ def parseInput():
     parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
                                      'target(s). Trained models are saved to disk including fitted weights and '
                                      'can be used in the deepFPlearn-Predict.py tool to make predictions.')
-    parser.add_argument('-i', metavar='FILE', type=str, nargs=1,
+    parser.add_argument('-i', metavar='FILE', type=str,
                         help="The file containin the data for training in (unquoted) "
                              "comma separated CSV format. First column contain the feature string in "
                              "form of a fingerprint or a SMILES (see -t option). "
                              "The remaining columns contain the outcome(s) (Y matrix). "
                              "A header is expected and respective column names are used "
                              "to refer to outcome(s) (target(s)).", required=True)
-    parser.add_argument('-o', metavar='FILE', type=str, nargs=1,
+    parser.add_argument('-o', metavar='FILE', type=str,
                         help='Prefix of output file name. Trained model(s) and '
                              'respective stats will be returned in 2 output files '
                              'with this prefix. Default: prefix of input file name.')
     parser.add_argument('-t', metavar='STR', type=str, nargs=1, choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
                         required=True)
-    parser.add_argument('-k', metavar='STR', type=str, nargs=1,
+    parser.add_argument('-k', metavar='STR', type=str,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
                         help='The type of fingerprint to be generated/used in input file.',
                         default=['topological'])
-    parser.add_argument('-s', metavar='INT', type=int, nargs=1,
+    parser.add_argument('-s', type=int,
                         help = 'Size of fingerprint that should be generated.',
                         default=2048)
-    parser.add_argument('-d', metavar='INT', type=int, nargs=1,
+    parser.add_argument('-a', metavar='BOOL', type=bool, nargs='?',
+                        help='Use autoencoder to reduce dimensionality of fingerprint.',
+                        default=True)
+    parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
                         default=256)
-    parser.add_argument('-e', metavar='INT', type=int, nargs=1,
+    parser.add_argument('-e', metavar='INT', type=int,
                         help='Number of epochs that should be trained',
-                        default=[50])
-    parser.add_argument('-p', metavar='FILE', type=str, nargs=1,
+                        default=50)
+    parser.add_argument('-p', metavar='FILE', type=str,
                         help="CSV file containing the parameters for the epochs per target model."
                              "The target abbreviation should be the same as in the input file and"
                              "the columns/parameters are: \n\ttarget,batch_size,epochs,optimizer,activation."
@@ -92,7 +95,7 @@ def step_decay(history, losses):
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, enc_dim=256):
+def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, enc_dim=256, autoenc=True):
     """
     Train individual models for all targets (columns) present in the provided target data (y).
     For each individual target the data is first subsetted to exclude NA values (for target associations).
@@ -175,33 +178,38 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
 
         dfpl.plotHeatmap(X_train, filename=modelheatmapX, title=("X representation " + target))
 
-        checkpoint = ModelCheckpoint(checkpointpathAC, monitor='val_loss', verbose=1,
-                                     save_best_only=True, mode='min', save_weights_only=True)
+        if autoenc:
+            checkpoint = ModelCheckpoint(checkpointpathAC, monitor='val_loss', verbose=1,
+                                         save_best_only=True, mode='min', save_weights_only=True)
 
-        # enable early stopping if val_loss is not improving anymore
-        earlystop = EarlyStopping(monitor='val_loss',
-                                  min_delta=0,
-                                  patience=20,
-                                  verbose=1,
-                                  restore_best_weights=True)
+            # enable early stopping if val_loss is not improving anymore
+            earlystop = EarlyStopping(monitor='val_loss',
+                                      min_delta=0,
+                                      patience=20,
+                                      verbose=1,
+                                      restore_best_weights=True)
 
-        callback_list = [checkpoint, earlystop]
+            callback_list = [checkpoint, earlystop]
 
-        # use the autoencoder to reduce the feature set
-        # (autoencoder, encoder) = autoencoderModel(input_size=2048)
-        (autoencoder, encoder) = dfpl.autoencoderModel(input_size=X_train.shape[1], encoding_dim=enc_dim)
+            # use the autoencoder to reduce the feature set
+            # (autoencoder, encoder) = autoencoderModel(input_size=2048)
+            (autoencoder, encoder) = dfpl.autoencoderModel(input_size=X_train.shape[1], encoding_dim=enc_dim)
 
-        autohist = autoencoder.fit(X_train, X_train,
-                            callbacks=callback_list,
-                            epochs=1000, batch_size=128, shuffle=True, verbose=2,
-                            validation_data=(X_test, X_test))
+            autohist = autoencoder.fit(X_train, X_train,
+                                callbacks=callback_list,
+                                epochs=1000, batch_size=128, shuffle=True, verbose=2,
+                                validation_data=(X_test, X_test))
 
-        # model needs to be saved and restored when predicting new input!
-        # use encode() of train data as input for DL model to associate to chemical
-        Z_train = encoder.predict(X_train)
-        Z_test = encoder.predict(X_test)
+            # model needs to be saved and restored when predicting new input!
+            # use encode() of train data as input for DL model to associate to chemical
+            Z_train = encoder.predict(X_train)
+            Z_test = encoder.predict(X_test)
 
-        dfpl.plotHeatmap(Z_train, filename=modelheatmapZ,title=("Z representation "+target))
+            dfpl.plotHeatmap(Z_train, filename=modelheatmapZ,title=("Z representation "+target))
+
+        else:
+            Z_train = X_train
+            Z_test = X_test
 
         # standard parameters are the tuning results
 #        model = dfpl.defineNNmodel2()
@@ -440,7 +448,7 @@ if __name__ == '__main__':
     #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv", rtype="smiles", fptype="topological", printfp=False)
     # xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.999.csv", rtype="smiles", fptype="topological", printfp=True, size=999)
     #xmatrix = dfpl.XfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/toxCastData/AhR/results/02_training_Ahr.noNA.csv", rtype="smiles", fptype="topological", printfp=True)
-    xmatrix = dfpl.XfromInput(csvfilename=args.i[0], rtype=args.t[0], fptype=args.k[0], printfp=True, size=args.s[0])
+    xmatrix = dfpl.XfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True, size=args.s)
 
     print(xmatrix.shape)
 
@@ -448,7 +456,7 @@ if __name__ == '__main__':
     #ymatrix = dfpl.YfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv")
     #ymatrix = dfpl.YfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.999.csv")
     #ymatrix = dfpl.YfromInput(csvfilename="/data/bioinf/projects/data/2019_IDA-chem/toxCastData/AhR/results/02_training_Ahr.noNA.csv")
-    ymatrix = dfpl.YfromInput(csvfilename=args.i[0])
+    ymatrix = dfpl.YfromInput(csvfilename=args.i)
 
     print(ymatrix.shape)
 
@@ -457,17 +465,17 @@ if __name__ == '__main__':
 
 #    print(model.summary())
 
-    epochs = args.e[0] # epochs=20
-    mfp = args.o[0] # mfp = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/"#AhR"
+    epochs = args.e # epochs=20
+    mfp = args.o # mfp = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/"#AhR"
     # mfp = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2020-01-27_11:28:00/"
     # train one model per target (individually)
     #modelstats = trainNNmodels(model=model, modelfilepathprefix="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/AhR", pdx=xmatrix, y=ymatrix, split=0.8, e=args.e[0], valdata=(xmatrixTest, ymatrixTest))
     #modelstats = trainNNmodels(model=model, modelfilepathprefix=mfp, pdx=xmatrix, y=ymatrix, split=0.8, e=epochs, valdata=(xmatrixTest, ymatrixTest))
     # (modelfilepathprefix, x, y, split, epochs) = (mfp, xmatrix, ymatrix, 0.8, 1000)
     if args.p:
-        modelstats = trainNNmodels(modelfilepathprefix=mfp, x=xmatrix, y=ymatrix, split=0.8, params=args.p[0])
+        modelstats = trainNNmodels(modelfilepathprefix=mfp, x=xmatrix, y=ymatrix, split=0.8, params=args.p)
     else:
-        modelstats = trainNNmodels(modelfilepathprefix=mfp, x=xmatrix, y=ymatrix, split=0.8, enc_dim=args.d[0], epochs=epochs)
+        modelstats = trainNNmodels(modelfilepathprefix=mfp, x=xmatrix, y=ymatrix, split=0.8, enc_dim=args.d, epochs=epochs, autoenc=args.a)
 
     print(modelstats)
 
