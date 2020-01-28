@@ -187,7 +187,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
     x = np.empty((Nrows, Ncols), int)
 
     if printfp:
-        csvoutfilename=csvfilename.replace(".csv", "." + size + ".fingerprints.csv")
+        csvoutfilename=csvfilename.replace(".csv", "." + str(size) + ".fingerprints.csv")
         fnames=names.copy()
         fnames.append('fp')
         f=open(csvoutfilename, 'w')
