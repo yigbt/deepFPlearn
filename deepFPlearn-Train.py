@@ -131,20 +131,20 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
     ### For each individual target
     for target in y.columns:
         # target=y.columns[0]
-        modelfilepathW = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.weights.h5'
-        modelfilepathM = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.json'
-        modelhistplotpathL = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.loss.svg'
-        modelhistplotpathA = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.acc.svg'
-        modelhistplotpath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.history.svg'
-        modelhistcsvpath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.history.csv'
-        modelvalidation = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.validation.csv'
-        modelAUCfile = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.auc.svg'
-        modelAUCfiledata = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.auc.data.csv'
-        outfilepath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.trainingResults.txt'
-        checkpointpath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.checkpoint.model.hdf5'
-        checkpointpathAC = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.checkpoint.AC-model.hdf5'
-        modelheatmapX = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.AC.heatmap.X.svg'
-        modelheatmapZ = str(modelfilepathprefix) + '/model.' + str(size) + '.' + enc_dim + '.' + target + '.AC.heatmap.Z.svg'
+        modelfilepathW = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.weights.h5'
+        modelfilepathM = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.json'
+        modelhistplotpathL = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.loss.svg'
+        modelhistplotpathA = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.acc.svg'
+        modelhistplotpath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.history.svg'
+        modelhistcsvpath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.history.csv'
+        modelvalidation = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.validation.csv'
+        modelAUCfile = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.auc.svg'
+        modelAUCfiledata = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.auc.data.csv'
+        outfilepath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.trainingResults.txt'
+        checkpointpath = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.checkpoint.model.hdf5'
+        checkpointpathAC = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.checkpoint.AC-model.hdf5'
+        modelheatmapX = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.AC.heatmap.X.svg'
+        modelheatmapZ = str(modelfilepathprefix) + '/model.' + str(size) + '.' + str(enc_dim) + '.' + target + '.AC.heatmap.Z.svg'
 
         # which rows contain 'NA' in target column
         tmp = y[target].astype('category')
