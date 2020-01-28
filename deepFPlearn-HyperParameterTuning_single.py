@@ -189,7 +189,7 @@ if __name__ == '__main__':
             ### find best performing parameters
             sys.stdout.write("# --------------------------------------------------------------------------- #\n")
             sys.stdout.write("#target = %s\n" % target)
-            
+
             # Start optimizing epochs and batchsizes (if more than one provided)
 
             batchSizes = args.batchSizes  # batchSizes = [32, 128]

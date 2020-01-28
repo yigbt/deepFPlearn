@@ -42,3 +42,6 @@ MODEL="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.
 OUTPUT="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/prediction/multiAOPtox.smiles.predictions.AR.csv"
 
 python /home/hertelj/git-hertelj/code/deepFPlearn/deepFPlearn-Predict.py -i $INPUT -m $MODEL -o $OUTPUT -t smiles -k topological
+
+# qsub job id
+20200103 10:04 Your job 6076958 ("dfplTrain") has been submitted
