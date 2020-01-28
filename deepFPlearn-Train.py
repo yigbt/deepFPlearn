@@ -54,7 +54,7 @@ def parseInput():
                         help='Prefix of output file name. Trained model(s) and '
                              'respective stats will be returned in 2 output files '
                              'with this prefix. Default: prefix of input file name.')
-    parser.add_argument('-t', metavar='STR', type=str, nargs=1, choices=['fp', 'smiles'],
+    parser.add_argument('-t', metavar='STR', type=str, choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
                         required=True)
     parser.add_argument('-k', metavar='STR', type=str,
@@ -438,8 +438,8 @@ if __name__ == '__main__':
     # get all arguments
     args = parseInput()
 
-    #print(args)
-    #exit(1)
+    print(args)
+    exit(1)
 
     # transform X to feature matrix
     # -i /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv
