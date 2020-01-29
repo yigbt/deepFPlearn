@@ -525,7 +525,7 @@ def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs):
     callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20, rlrop=False)
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    (autoencoder, encoder) = dfpl.autoencoderModel(input_size=X_train.shape[1], encoding_dim=enc_dim)
+    (autoencoder, encoder) = autoencoderModel(input_size=X_train.shape[1], encoding_dim=enc_dim)
 
     # Fit the AC
     autohist = autoencoder.fit(X_train, X_train,
