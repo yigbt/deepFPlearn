@@ -442,8 +442,8 @@ if __name__ == '__main__':
     # get all arguments
     args = parseInput()
 
-    print(args)
-    exit(1)
+    #print(args)
+    #exit(1)
 
     # transform X to feature matrix
     # -i /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv
