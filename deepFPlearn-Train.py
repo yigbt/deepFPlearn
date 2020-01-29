@@ -210,7 +210,8 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
             (Z_train, Z_test) = dfpl.trainAutoencoder(checkpointpath=checkpointpathAC,
                                                       X_train=X_train, X_test=X_test,
                                                       y_train=y_train, y_test=y_train,
-                                                      epochs=epochs)
+                                                      epochs=epochs,
+                                                      enc_dim=enc_dim)
 
             dfpl.plotHeatmap(Z_train, filename=modelheatmapZ,title=("Z representation "+target))
 

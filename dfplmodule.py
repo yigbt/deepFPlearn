@@ -509,7 +509,7 @@ def predictValues(modelfilepath, pdx):
 
 # ------------------------------------------------------------------------------------- #
 
-def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs):
+def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs, enc_dim):
     """
 
     :param checkpointpath:
