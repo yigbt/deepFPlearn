@@ -64,9 +64,8 @@ def parseInput():
     parser.add_argument('-s', type=int,
                         help = 'Size of fingerprint that should be generated.',
                         default=2048)
-    parser.add_argument('-a', metavar='BOOL', type=bool, nargs='?',
-                        help='Use autoencoder to reduce dimensionality of fingerprint.',
-                        default=True)
+    parser.add_argument('-a', action='store_true',
+                        help='Use autoencoder to reduce dimensionality of fingerprint.')
     parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
                         default=256)
@@ -443,8 +442,8 @@ if __name__ == '__main__':
     # get all arguments
     args = parseInput()
 
-    #print(args)
-    #exit(1)
+    print(args)
+    exit(1)
 
     # transform X to feature matrix
     # -i /data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv
