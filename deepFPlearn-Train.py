@@ -94,7 +94,7 @@ def step_decay(history, losses):
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, enc_dim=256, autoenc=True):
+def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, enc_dim=256, autoenc=False):
     """
     Train individual models for all targets (columns) present in the provided target data (y).
     For each individual target the data is first subsetted to exclude NA values (for target associations).
@@ -131,9 +131,10 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
     for target in y.columns:
         # target=y.columns[0]
 
-        modeltype = 'noAC'
         if autoenc:
             modeltype = str(size) + '.' + str(enc_dim)
+        else:
+            modeltype = str(size) + '.noAC'
 
         modelfilepathW = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.weights.h5'
         modelfilepathM = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.json'
@@ -479,7 +480,7 @@ if __name__ == '__main__':
     if args.p:
         modelstats = trainNNmodels(modelfilepathprefix=mfp, x=xmatrix, y=ymatrix, split=0.8, params=args.p)
     else:
-        modelstats = trainNNmodels(modelfilepathprefix=mfp, x=xmatrix, y=ymatrix, split=0.8, enc_dim=args.d, epochs=epochs, autoenc=args.a)
+        modelstats = trainNNmodels(modelfilepathprefix=args.o, x=xmatrix, y=ymatrix, split=0.8, enc_dim=args.d, epochs=args.e, autoenc=args.a)
 
     print(modelstats)
 
