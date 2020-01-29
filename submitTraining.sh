@@ -15,7 +15,7 @@ ml anaconda/5/5.0.1
 conda activate rdkit2019
 
 d=`date +%Y-%m-%d_%N`;
-EPOCHS=1000;
+EPOCHS=100;
 
 INPUT="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv"
 OUTDIR="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/${d}_${EPOCHS}/"
