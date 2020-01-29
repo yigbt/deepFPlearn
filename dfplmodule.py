@@ -483,6 +483,7 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     plt.legend(['Train', 'Test'], loc='upper left')
     #        plt.show()
     plt.savefig(fname=fileLoss, format='svg')
+    plt.close()
 
 # ------------------------------------------------------------------------------------- #
 
@@ -496,7 +497,7 @@ def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.title(f'ROC curve {target}')
     plt.legend(loc='best')
     plt.savefig(fname=filename, format='svg')
-
+    plt.close()
 
 # ------------------------------------------------------------------------------------- #
 
@@ -506,6 +507,7 @@ def plotHeatmap(matrix, filename, title=""):
     plt.imshow(matrix, cmap='hot', interpolation='nearest')
     plt.title(title)
     plt.savefig(fname=filename, format='svg')
+    plt.close()
 
 # ------------------------------------------------------------------------------------- #
 
@@ -610,6 +612,7 @@ def plot_history(history, file):
 
     plt.tight_layout()
     plt.savefig(fname=file, format='svg')
+    plt.close()
 
 
 
