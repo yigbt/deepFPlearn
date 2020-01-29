@@ -301,9 +301,10 @@ def defineCallbacks(checkpointpath, patience, rlrop=False, rlropfactor=0.1, rlro
                               verbose=1,
                               restore_best_weights=True)
 
+    callbacks = []
     if rlrop:
         rlrop = ReduceLROnPlateau(monitor='val_loss', factor=rlropfactor, patience=rlroppatience)
-        callback = [checkpoint, earlystop, rlrop]
+        callbacks = [checkpoint, earlystop, rlrop]
     else:
         callbacks = [checkpoint, earlystop]
 
