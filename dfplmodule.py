@@ -26,6 +26,9 @@ from keras import regularizers
 from keras import optimizers
 from keras.optimizers import SGD
 from keras.models import model_from_json
+from keras.callbacks import ModelCheckpoint
+from keras.callbacks import EarlyStopping
+from keras.callbacks import ReduceLROnPlateau
 
 # for model prediction metrics
 import sklearn
@@ -252,17 +255,75 @@ def TrainingDataHeatmap(x, y):
     return 1
 
 # ------------------------------------------------------------------------------------- #
+def removeDuplicates(x, y):
+    """
+    Remove duplicated feature - outcome pairs from feature matrix and outcome vector combination.
+
+    :param x: Feature matrix
+    :param y: Outcome vector
+
+    :return: Tuple of unique Feature matrix and outcome vector combinations
+    """
+
+    # add y as additional column to x
+    joined = np.append(x, [[x] for x in y], axis=1)
+    # merge all columns into one string per row
+
+    fpstrings = []
+    for i in range(0, len(y)):
+        fpstrings.append(["".join([str(int(c)) for c in joined[i]])])
+
+    fpstrings_unique = np.unique(fpstrings, return_index=True)
+
+    return (x[fpstrings_unique[1]], y[fpstrings_unique[1]])
+
+# ------------------------------------------------------------------------------------- #
+
+def defineCallbacks(checkpointpath, patience, rlrop=False, rlropfactor=0.1, rlroppatience=50):
+    """
+
+    :param checkpointpath:
+    :param patience:
+    :param rlrop:
+    :param rlropfactor:
+    :param rlroppatience:
+    :return:
+    """
+
+    # enable this checkpoint to restore the weights of the best performing model
+    checkpoint = ModelCheckpoint(checkpointpath, monitor='val_loss', verbose=1,
+                                 save_best_only=True, mode='min', save_weights_only=True)
+
+    # enable early stopping if val_loss is not improving anymore
+    earlystop = EarlyStopping(monitor='val_loss',
+                              min_delta=0,
+                              patience=patience,
+                              verbose=1,
+                              restore_best_weights=True)
+
+    if rlrop:
+        rlrop = ReduceLROnPlateau(monitor='val_loss', factor=rlropfactor, patience=rlroppatience)
+        callback = [checkpoint, earlystop, rlrop]
+    else:
+        callbacks = [checkpoint, earlystop]
+
+    # Return list of callbacks - collect the callbacks for training
+    return(callbacks)
+
+# ------------------------------------------------------------------------------------- #
 
 def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
     """
-    Define the Keras NN model used for training and prediction.
 
-    :param inputSize: The size of the input layer (1dimensional, equals size of fingerprint)
-    :return: A keras NN sequential model that needs to be compiled before usage
+    :param inputSize:
+    :param l2reg:
+    :param dropout:
+    :param activation:
+    :param optimizer:
+    :param lr:
+    :param decay:
+    :return:
     """
-
-    #l2reg = 0.001
-    #dropout = 0.2
 
     if optimizer=='Adam':
         myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)#, beta_1=0.9, beta_2=0.999, amsgrad=False)
@@ -446,6 +507,35 @@ def predictValues(modelfilepath, pdx):
 
     return predictions
 
+# ------------------------------------------------------------------------------------- #
+
+def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs):
+    """
+
+    :param checkpointpath:
+    :param X_train:
+    :param X_test:
+    :param y_train:
+    :param y_test:
+    :param epochs:
+    :return:
+    """
+
+    # collect the callbacks for training
+    callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20, rlrop=False)
+
+    # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
+    (autoencoder, encoder) = dfpl.autoencoderModel(input_size=X_train.shape[1], encoding_dim=enc_dim)
+
+    # Fit the AC
+    autohist = autoencoder.fit(X_train, X_train,
+                               callbacks=callback_list,
+                               epochs=1000, batch_size=128, shuffle=True, verbose=2,
+                               validation_data=(X_test, X_test))
+
+    # model needs to be saved and restored when predicting new input!
+    # use encode() of train data as input for DL model to associate to chemical
+    return(encoder.predict(X_train), encoder.predict(X_test))
 
 # ------------------------------------------------------------------------------------- #
 
