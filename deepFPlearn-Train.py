@@ -2,35 +2,18 @@ import argparse
 import csv
 import pandas as pd
 import numpy as np
-from numpy.testing import assert_allclose
-from numpy import argmax
-import matplotlib.pyplot as plt
 
 # for fingerprint generation
 from rdkit import DataStructs
 
-# for NN model functions
-from keras.utils import to_categorical
-from keras import optimizers
-from keras.models import Sequential, load_model
-from keras.callbacks import ModelCheckpoint
-from keras.callbacks import EarlyStopping
-from keras.callbacks import LearningRateScheduler
-from keras.callbacks import ReduceLROnPlateau
-from keras.models import model_from_json
-
 # import my own functions for deepFPlearn
 import dfplmodule as dfpl
-from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.datasets import make_classification
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_curve
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import auc
 
 from time import time
-
 
 # ------------------------------------------------------------------------------------- #
 
@@ -65,7 +48,7 @@ def parseInput():
                         help = 'Size of fingerprint that should be generated.',
                         default=2048)
     parser.add_argument('-a', action='store_true',
-                        help='Use autoencoder to reduce dimensionality of fingerprint.')
+                        help='Use autoencoder to reduce dimensionality of fingerprint. Default: not set.')
     parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
                         default=256)
@@ -82,42 +65,97 @@ def parseInput():
 
 # ------------------------------------------------------------------------------------- #
 
-def step_decay(history, losses):
-    if float(2*np.sqrt(np.array(history.losses[-1])))<0.3:
-        lrate=0.01*1/(1+0.1*len(history.losses))
-        momentum=0.8
-        decay_rate=2e-6
-        return lrate
-    else:
-        lrate=0.1
-        return lrate
+def defineOutfileNames(pathprefix, mtype, target):
+    """
+    This function returns the required paths for output files or directories.
+
+    :param pathprefix: A file path prefix for all files.
+    :param mtype: The model type. Its set by the trainNNmodels function with information on autoencoder or not,
+    and if AC is used, then with its parameters.
+    :param target: The name of the target.
+
+    :return: A tuple of 14 output file names.
+    """
+
+    modelfilepathW = str(pathprefix) + '/model.' + mtype + '.' + target + '.weights.h5'
+    modelfilepathM = str(pathprefix) + '/model.' + mtype + '.' + target + '.json'
+    modelhistplotpathL = str(pathprefix) + '/model.' + mtype + '.' + target + '.loss.svg'
+    modelhistplotpathA = str(pathprefix) + '/model.' + mtype + '.' + target + '.acc.svg'
+    modelhistplotpath = str(pathprefix) + '/model.' + mtype + '.' + target + '.history.svg'
+    modelhistcsvpath = str(pathprefix) + '/model.' + mtype + '.' + target + '.history.csv'
+    modelvalidation = str(pathprefix) + '/model.' + mtype + '.' + target + '.validation.csv'
+    modelAUCfile = str(pathprefix) + '/model.' + mtype + '.' + target + '.auc.svg'
+    modelAUCfiledata = str(pathprefix) + '/model.' + mtype + '.' + target + '.auc.data.csv'
+    outfilepath = str(pathprefix) + '/model.' + mtype + '.' + target + '.trainingResults.txt'
+    checkpointpath = str(pathprefix) + '/model.' + mtype + '.' + target + '.checkpoint.model.hdf5'
+    checkpointpathAC = str(pathprefix) + '/model.' + mtype + '.' + target + '.checkpoint.AC-model.hdf5'
+    modelheatmapX = str(pathprefix) + '/model.' + mtype + '.' + target + '.heatmap.X.svg'
+    modelheatmapZ = str(pathprefix) + '/model.' + mtype + '.' + target + '.AC.heatmap.Z.svg'
+
+    return (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
+            modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
+            modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
+            modelheatmapX, modelheatmapZ)
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, enc_dim=256, autoenc=False):
+def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
+    """
+    Evaluate the percentage of 0 values in the outcome variable of the whole dataset and the splitted (train,test)
+    dataset, and the percentage of 0 values in the feature matrix.
+
+    :param Xt: The whole feature matrix
+    :param Yt: The whole outcome vector
+    :param y_train: The outcome vector of the training set
+    :param y_test: The outcome vector of the test set
+    :param verbosity: The verbosity level. Info is only printed if verbosity is not 0.
+
+    :return: Nothing is returned.
+    """
+
+    if verbosity == 0:
+        return
+    else:
+        unique, counts = np.unique(Yt, return_counts=True)
+        perc = round(100 / len(Yt) * counts[1])
+        print(f"[INFO:] Percentage of '1' values in outcome variable (whole dataset): {perc}\n")
+
+        uniqueRtr, countsRtr = np.unique(y_train, return_counts=True)
+        uniqueRte, countsRte = np.unique(y_test, return_counts=True)
+        perc = round(100 / len(y_train) * countsRtr[1])
+        print(f"[INFO:] Percentage of '1' values in training outcomes: {perc}\n")
+        perc = round(100 / len(y_test) * countsRte[1])
+        print(f"[INFO:] Percentage of '1' values in test outcomes: {perc}\n")
+
+        print(
+            f"[INFO:] Percentage of '0' values in fingerprints: {round(np.sum(Xt == 0) / (np.sum(Xt == 0) + np.sum(Xt == 1)), ndigits=4)}")
+    return
+
+# ------------------------------------------------------------------------------------- #
+
+def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, enc_dim=256, autoenc=False, verbose=0):
     """
     Train individual models for all targets (columns) present in the provided target data (y).
     For each individual target the data is first subsetted to exclude NA values (for target associations).
     A random sample of the remaining data (size is the split fraction) is used for training and the
     remaining data for validation.
 
-    :param modelfilepathprefix:
-    :param x:
-    :param y:
-    :param split:
-    :param epochs:
-    :param params: File containing the parameters per model
-    :return:
-    """
+    :param modelfilepathprefix: A path prefix for all output files
+    :param x: The feature matrix.
+    :param y: The outcome matrix.    :param split: The percentage of data used for validation.
+    :param epochs: The number of epochs for training the autoencoder and the DNN for classification.
+    Note: Early stopping is enabled.
+    :param params: A .csv files containing paramters that should be evaluated. See file tunedParams.csv.
+    :param enc_dim: The dimension of bottle neck layer (z) of the autoencoder.
+    :param autoenc: Use the autoencoder.
+    :param verbose: Verbosity level.
 
-    # for testing
-    #(modelfilepathprefix, x, y, split, epochs)  = (mfp, xmatrix, ymatrix, 0.2, 5)
+    :return: A list with loss and accuracy values for each individual model.
+    """
 
     size = x.shape[1]
 
     stats = []
-
-    #params="/home/hertelj/git-hertelj/code/2019_deepFPlearn/tunedParams.csv"
 
     if params:
         parameters = pd.read_csv(params)
@@ -129,27 +167,18 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
 
     ### For each individual target
     for target in y.columns:
-        # target=y.columns[0]
+        # target=y.columns[0] # --> only for testing the code
 
         if autoenc:
             modeltype = str(size) + '.' + str(enc_dim)
         else:
             modeltype = str(size) + '.noAC'
 
-        modelfilepathW = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.weights.h5'
-        modelfilepathM = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.json'
-        modelhistplotpathL = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.loss.svg'
-        modelhistplotpathA = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.acc.svg'
-        modelhistplotpath = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.history.svg'
-        modelhistcsvpath = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.history.csv'
-        modelvalidation = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.validation.csv'
-        modelAUCfile = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.auc.svg'
-        modelAUCfiledata = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.auc.data.csv'
-        outfilepath = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.trainingResults.txt'
-        checkpointpath = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.checkpoint.model.hdf5'
-        checkpointpathAC = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.checkpoint.AC-model.hdf5'
-        modelheatmapX = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.heatmap.X.svg'
-        modelheatmapZ = str(modelfilepathprefix) + '/model.' + modeltype + '.' + target + '.AC.heatmap.Z.svg'
+        # define all the output file/path names
+        (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
+         modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
+         modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
+         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix, mtype=modeltype, target=target)
 
         # which rows contain 'NA' in target column
         tmp = y[target].astype('category')
@@ -160,61 +189,33 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         X = x.to_numpy()
 
         # subset data according to target non-NA values
-        Yt = Y[~naRows]
-        Xt = X[~naRows]
+        Ytall = Y[~naRows]
+        Xtall = X[~naRows]
 
-        unique, counts = np.unique(Yt, return_counts=True)
-        perc = round(100 / len(Yt) * counts[1])
-        print(f"Percentage of '1' values in whole dataset: {perc}\n")
+        # remove all duplicated feature values - outcome pairs
+        (Xt, Yt) = dfpl.removeDuplicates(x=Xtall, y=Ytall)
+
+        # split data (features and outcome) into test and train set
+        # Note: the distribution of outcome values is retained
         (X_train, X_test, y_train, y_test) = train_test_split(Xt, Yt, test_size=(1-split), random_state=0)
-        uniqueRtr, countsRtr = np.unique(y_train, return_counts=True)
-        uniqueRte, countsRte = np.unique(y_test, return_counts=True)
-        perc = round(100/len(y_train)*countsRtr[1])
-        print(f"Percentage of '1' values in training set: {perc}\n")
-        perc = round(100/len(y_test)*countsRte[1])
-        print(f"Percentage of '1' values in test set: {perc}\n")
-        # define model structure - the same for all targets
-        # An empty (weights) model needs to be defined each time prior to fitting
-        #model = dfpl.defineNNmodel(inputSize=X_train.shape[1])
-        # compile model
-        #model.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
 
-        print(f"Percentage of '0' values in fingerprints: {round(np.sum(Xt==0)/(np.sum(Xt==0)+np.sum(Xt==1)), ndigits=4)}")
+        eval01Distributions(Xt=Xt, Yt=Yt, y_train=y_train, y_test=y_test, verbosity=verbose)
 
+        # Plot a heatmap of the 0-1 values of the feature matrix used for training
+        # This should contain mainly zeros for this problem
         dfpl.plotHeatmap(X_train, filename=modelheatmapX, title=("X representation " + target))
 
+        # Train the autoencoder (AC) to reduce the feature vector for the input layer of the DNN classificator
         if autoenc:
-            checkpoint = ModelCheckpoint(checkpointpathAC, monitor='val_loss', verbose=1,
-                                         save_best_only=True, mode='min', save_weights_only=True)
-
-            # enable early stopping if val_loss is not improving anymore
-            earlystop = EarlyStopping(monitor='val_loss',
-                                      min_delta=0,
-                                      patience=20,
-                                      verbose=1,
-                                      restore_best_weights=True)
-
-            callback_list = [checkpoint, earlystop]
-
-            # use the autoencoder to reduce the feature set
-            # (autoencoder, encoder) = autoencoderModel(input_size=2048)
-            (autoencoder, encoder) = dfpl.autoencoderModel(input_size=X_train.shape[1], encoding_dim=enc_dim)
-
-            autohist = autoencoder.fit(X_train, X_train,
-                                callbacks=callback_list,
-                                epochs=1000, batch_size=128, shuffle=True, verbose=2,
-                                validation_data=(X_test, X_test))
-
-            # model needs to be saved and restored when predicting new input!
-            # use encode() of train data as input for DL model to associate to chemical
-            Z_train = encoder.predict(X_train)
-            Z_test = encoder.predict(X_test)
+            (Z_train, Z_test) = dfpl.trainAutoencoder(checkpointpath=checkpointpathAC,
+                                                      X_train=X_train, X_test=X_test,
+                                                      y_train=y_train, y_test=y_train,
+                                                      epochs=epochs)
 
             dfpl.plotHeatmap(Z_train, filename=modelheatmapZ,title=("Z representation "+target))
 
         else:
-            Z_train = X_train
-            Z_test = X_test
+            (Z_train, Z_test) = (X_train, X_test)
 
         # standard parameters are the tuning results
 #        model = dfpl.defineNNmodel2()
@@ -223,21 +224,9 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
             model = dfpl.defineNNmodel(inputSize=X_train.shape[1], activation=ps['activation'][0], optimizer=ps['optimizer'][0])
 
             start = time()
-            # define the checkpoint
-            checkpoint = ModelCheckpoint(checkpointpath, monitor='val_loss', verbose=1,
-                                         save_best_only=True, mode='min')
 
-            # enable early stopping if val_loss is not improving anymore
-            earlystop = EarlyStopping(monitor='val_loss',
-                                      min_delta=0,
-                                      patience=20,
-                                      verbose=1,
-                                      restore_best_weights=True)
-            # schedule learning rate based on current epoch
-            #history=Lo
-            #scheduler = LearningRateScheduler(stop_decay, verbose=0)  # schedule is a function
-
-            callback_list = [checkpoint, earlystop]#, scheduler]
+            callback_list = dfpl.defineCallbacks(checkpointpath=checkpointpath, patience=50,
+                                                 rlrop=True, rlropfactor=0.1, rlroppatience=100)
 
             # train and validate
             hist = model.fit(X_train, y_train,
@@ -250,81 +239,45 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         else:
             model = dfpl.defineNNmodel(inputSize=Z_train.shape[1]) #X_train.shape[1])
 
-            # define the checkpoint
-            checkpoint = ModelCheckpoint(checkpointpath, monitor='val_loss', verbose=1,
-                                         save_best_only=True, mode='min', save_weights_only=True)
-
-            # enable early stopping if val_loss is not improving anymore
-            # reduce overfitting by adding an early stopping to an existing model.
-            earlystop = EarlyStopping(monitor='val_loss',
-                                      min_delta=0,
-                                      patience=50,
-                                      verbose=1,
-                                      restore_best_weights=True)
-
-            rlrop = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=100)
-
-            callback_list = [checkpoint, earlystop, rlrop]  # , scheduler]
-
+            callback_list = dfpl.defineCallbacks(checkpointpath=checkpointpath, patience=50,
+                                                 rlrop=True, rlropfactor=0.1, rlroppatience=100)
+            # measure the training time
             start = time()
+
             # train and validate
             hist = model.fit(Z_train, y_train, #X_train, y_train,
                              callbacks=callback_list,
                              epochs=epochs, batch_size=128, verbose=2, # validation_split=0.2,
                              validation_data=(Z_test, y_test)) # this overwrites val_split!
+
             trainTime = str(round((time() - start) / 60, ndigits=2))
+            if verbose > 0:
+                print(f"[INFO:] Computation time for training the classification DNN: {trainTime}")
 
         dfpl.plot_history(history=hist, file=modelhistplotpath)
         histDF = pd.DataFrame(hist.history)
         histDF.to_csv(modelhistcsvpath)
 
-        # serialize model to JSON
-        # model_json = model.to_json()
-        # with open(modelfilepathM, "w") as json_file:
-        #     json_file.write(model_json)
-        # # serialize weights to HDF5
-        # model.save_weights(modelfilepathW)
-        #
-        # # print(hist.history)
-        # with open(modelhistcsvpath, 'w') as csv_file:
-        #     writer = csv.writer(csv_file)
-        #     writer.writerow(["metrictype", "epoch", "value"])
-        #     for key, value in hist.history.items():
-        #         for i, ep in enumerate(value):
-        #             writer.writerow([key, i+1, ep])
-
-        # read it back in
-        #with open('dict.csv') as csv_file:
-         #   reader = csv.reader(csv_file)
-          #  mydict = dict(reader)
-
-
         # plot accuracy and loss for the training and validation during training
         dfpl.plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
 
-        # plot weights
-        # svmtest
-
-        # use best saved model for prediction of validation data
-        #new_model = load_model(checkpointpath)
-        #assert_allclose(model.predict(x_train),
-        #                new_model.predict(x_train),
-        #                1e-5)
-
         # load checkpoint model with min(val_loss)
-        trainedmodel = dfpl.defineNNmodel(inputSize=Z_train.shape[1])#X_train.shape[1])
+        trainedmodel = dfpl.defineNNmodel(inputSize=Z_train.shape[1])
 
-        predictions_random = trainedmodel.predict(Z_test)#X_test)
+        predictions_random = trainedmodel.predict(Z_test)
 
         trainedmodel.load_weights(checkpointpath)
 
-        predictions = trainedmodel.predict(Z_test)#X_test)
+        predictions = trainedmodel.predict(Z_test)
 
-        validation = pd.DataFrame({'predicted': predictions.ravel(), 'true': list(y_test), 'predicted_random':predictions_random.ravel(), 'modeltype': modeltype})
+        # save validation data to .csv file
+        validation = pd.DataFrame({'predicted': predictions.ravel(),
+                                   'true': list(y_test),
+                                   'predicted_random':predictions_random.ravel(),
+                                   'modeltype': modeltype})
         validation.to_csv(modelvalidation)
 
-
-        #fpr_keras, tpr_keras, thresholds_keras = roc_curve(argmax(y_test, axis=1), argmax(predictions, axis=1).round(), drop_intermediate=False)
+        # generate the AUC-ROC curve data from the validation data
         fpr_keras, tpr_keras, thresholds_keras = roc_curve(y_test, predictions, drop_intermediate=False)
         auc_keras = auc(fpr_keras, tpr_keras)
 
@@ -336,20 +289,10 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         aucdata.to_csv(modelAUCfiledata)
 
         dfpl.plotAUC(fpr=fpr_keras, tpr=tpr_keras, target=target, auc=auc_keras, filename=modelAUCfile)
-        #
-        # plt.figure(3)
-        # plt.plot([0, 1], [0, 1], 'k--')
-        # plt.plot(fpr_keras, tpr_keras, label='Keras (area = {:.3f})'.format(auc_keras))
-        # plt.xlabel('False positive rate')
-        # plt.ylabel('True positive rate')
-        # plt.title(f'ROC curve {target}')
-        # plt.legend(loc='best')
-        # #plt.show()
-        # plt.savefig(fname=modelAUCfile, format='svg')
 
         print(f'CFM: \n{confusion_matrix(predictions.round(), y_test)}')
 
-        scores=trainedmodel.evaluate(Z_test, y_test, verbose=0)#X_test, y_test,verbose=0)
+        scores=trainedmodel.evaluate(Z_test, y_test, verbose=0)
 
         print(f'TARGET: {target} Loss: {scores[0].__round__(2)} Acc: {scores[1].__round__(2)}')
 
@@ -358,7 +301,6 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         # write stats to file
         file = open(outfilepath, "a")
 
-        #print('\n' + target, "--> Loss:", scores[0].__round__(2), "Acc:", scores[1].__round__(2), sep=" ")
         file.write("\n" + target + " -----------------------------------------------------------------------------\n")
         file.write("Loss: " + str(scores[0].__round__(2)) + "\n")
         file.write("Acc:  " + str(scores[1].__round__(2)) + "\n\n")
@@ -374,7 +316,6 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         file.write("The Path prefix for making predictions using deepFPlearn-predict is:\n")
         file.write(    str(modelfilepathprefix) + '/model.' + target)
         file.write('\n-------------------------------------------------------------------------------\n\n')
-        ### find best performing parameters
         file.close()
 
         del model
@@ -404,7 +345,7 @@ def trainMultiNNmodel(model, x, y, split=0.8):
 
     return stats
 
-
+# [['AR', 0.15, 0.86], ['ER', 0.18, 0.81], ['GR', 0.09, 0.92], ['Aromatase', 0.1, 0.91], ['TR', 0.08, 0.92], ['PPARg', 0.12, 0.88], ['ED', 0.21, 0.78]]
 # ------------------------------------------------------------------------------------- #
 
 def smilesSet2fpSet(csvfilename, outfilename, fptype):
