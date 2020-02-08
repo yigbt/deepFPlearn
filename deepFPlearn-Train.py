@@ -253,7 +253,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
 
             trainTime = str(round((time() - start) / 60, ndigits=2))
             if verbose > 0:
-                print(f"[INFO:] Computation time for training the classification DNN: {trainTime}")
+                print(f"[INFO:] Computation time for training the classification DNN: {trainTime} min")
 
         dfpl.plot_history(history=hist, file=modelhistplotpath)
         histDF = pd.DataFrame(hist.history)
