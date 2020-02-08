@@ -30,6 +30,9 @@ from keras.callbacks import ModelCheckpoint
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ReduceLROnPlateau
 
+from time import time
+
+
 # for model prediction metrics
 import sklearn
 from sklearn.metrics import confusion_matrix
@@ -58,7 +61,8 @@ def smi2fp(smile, fptype, size=2048):
     :param smile: A single SMILES string
     :param fptype: The type of fingerprint to which the SMILES should be converted. Valid
                    values are: 'topological' (default), 'MACCS'
-    :return: A fingerprint object
+    :return: A fingerprint object or None, if fingerprint object could not be created
+    (Respective error message is provided in STDERR).
     """
     # generate a mol object from smiles string
     mol = Chem.MolFromSmiles(smile)
@@ -74,11 +78,13 @@ def smi2fp(smile, fptype, size=2048):
         # lengths. After all paths have been identified, the fingerprint is typically
         # folded down until a particular density of set bits is obtained.
         try:
-            fp = Chem.RDKFingerprint(mol, fpSize=size)
+            #fp = Chem.RDKFingerprint(mol, fpSize=size)
+            return(Chem.RDKFingerprint(mol, fpSize=size))
         except:
             print('SMILES not convertable to topological fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
+            return(None)
 
     elif fptype == 'MACCS':
         # MACCS Keys:
@@ -88,11 +94,13 @@ def smi2fp(smile, fptype, size=2048):
         # things looked pretty good.
 
         try:
-            fp = MACCSkeys.GenMACCSKeys(mol)
+            #fp = MACCSkeys.GenMACCSKeys(mol)
+            return(MACCSkeys.GenMACCSKeys(mol))
         except:
             print('SMILES not convertable to MACSS fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
+            return(None)
 
     elif fptype == 'atompairs':
         # Atom Pairs:
@@ -101,13 +109,15 @@ def smi2fp(smile, fptype, size=2048):
         # of just zeros and ones. Nevertheless we use the BitVect variant here.
 
         try:
-            fp = Pairs.GetAtomPairFingerprintAsBitVect(mol)
+            #fp = Pairs.GetAtomPairFingerprintAsBitVect(mol)
+            return(Pairs.GetAtomPairFingerprintAsBitVect(mol))
             # counts if features also possible here! needs to be parsed differently
             # fps.update({i:Pairs.GetAtomPairFingerprintAsIntVect(mols[i])})
         except:
             print('SMILES not convertable to atompairs fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
+            return(None)
 
     else:
         # Topological Torsions:
@@ -116,14 +126,13 @@ def smi2fp(smile, fptype, size=2048):
         # GetTopologicalTorsionFingerprintAsBitVect function.
 
         try:
-            fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
+            #fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
+            return(Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol))
         except:
             print('SMILES not convertable to torsions fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
-
-    return fp
-
+            return(None)
 
 # ------------------------------------------------------------------------------------- #
 
@@ -145,7 +154,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
 
     # dict to store the fingerprints
     fps = {}
-    rows = {}
+    rows = {} # remove this from memory!
     rnames = []
 
     # read csv and generate/add fingerprints to dict
@@ -162,29 +171,44 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
         i = 0
 
         for row in reader:
-            rows.update({i:row})
+            #if i==5:
+            #    break
 
-            # add rowname or number
-            if rnameIDX is None:
-                rnames.append(str(i))
-            else:
-                rnames.append(row['id'])
-
+            print(f'i={i}: {row}')
+            if printfp:
+                rows.update({i:row})
             #print(rnames[i] + ' ' + row[feature])
 
             # add fp or smile
             if rtype == 'fp':
                 # type == fp, fine - add it
-              fps.update({i: row[feature]})
+                # add rowname or number
+                if rnameIDX is None:
+                    rnames.append(str(i))
+                else:
+                    rnames.append(row['id'])
+                # add fingerprint to dictionay
+                fps.update({i: row[feature]})
+                i = i + 1
             else:
                 # smiles, need to be converted to fp first
                 fp=smi2fp(smile=row[feature], fptype=fptype, size=size)
-                fps.update({i: fp})
-            i = i + 1
+                if fp:
+                    # add rowname or number
+                    if rnameIDX is None:
+                        rnames.append(str(i))
+                    else:
+                        rnames.append(row['id'])
+
+                    # add fingerprint to dictionay
+                    fps.update({i: fp})
+                    i = i + 1
+            print(f' .. Row done.\n')
 
     # split all fingerprints into vectors
     Nrows = len(fps)
     Ncols = len(DataStructs.BitVectToText(fps[0]))
+    print(f"Returned # of fingerprints: {Nrows}")
 
     # Store all fingerprints in numpy array
     x = np.empty((Nrows, Ncols), int)
@@ -198,16 +222,19 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
         writer.writeheader()
 
         for i in fps:
-            fp = DataStructs.BitVectToText(fps[i])
+            fp=DataStructs.BitVectToText(fps[i])
+            #fp = fps[i]
             rows[i]['fp']=fp
             writer.writerow(rows[i])
             x[i] = list(map(int, [char for char in fp]))
 
         f.close()
+        del rows
     else:
         for i in fps:
             # get fingerprint as string
             fp=DataStructs.BitVectToText(fps[i])
+            #fp = fps[i]
             # split fp into list of integers
             x[i] = list(map(int, [char for char in fp]))
 
@@ -461,52 +488,53 @@ def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myl
 
 # ------------------------------------------------------------------------------------- #
 
-def predictValues(modelfilepath, pdx):
+def predictValues(acmodelfilepath, modelfilepath, pdx):
     """
     Predict a set of chemicals using a selected model.
 
-    :param modelfilepath: Path prefix to the two model files (without .weights.h5 and .csv)
+    :param modelfilepath: Path to the model weights of the prediction DNN
     :param pdx: A matrix containing the fingerprints of the chemicals, generated via XfromInput function
     :return: A dataframe of 2 columns: random - predicted values using random model, trained - predicted values
     using trained model. Rownames are consecutive numbers of the input rows, or if provided in the input file
     the values of the id column
     """
-    mfpW = modelfilepath + '.weights.h5'
-    mfpM = modelfilepath + '.json'
 
-    print(modelfilepath)
-    print(mfpW)
-    print(mfpM)
+    #acmodelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.AC-model.hdf5"
+    #modelfilepath  ="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.model.hdf5"
 
-    # learning rate
-    lr = 0.001
-    # type of optimizer
-    adam = optimizers.Adam(lr=lr)
+    print(f"[INFO:] Loaded model weights for autoencoder: '{modelfilepath}'")
+    print(f"[INFO:] Loaded model weights for prediction DNN: '{modelfilepath}'")
 
-    x = pdx.loc[pdx.index[:],:].to_numpy()
+    start = time()
+    # create autoencoder
+    (autoencoder, encoder) = autoencoderModel(input_size=pdx.shape[1], encoding_dim=256)
+    # load AC weights
+    autoencoder.load_weights(acmodelfilepath)
+    # encode input
+    encodedX = encoder.predict(pdx)
 
-    # random model
-    modelRandom = defineNNmodel(inputSize=x.shape[1])
-    modelRandom.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
-    # predict with random model
-    pR = modelRandom.predict(x)
+    trainTime = str(round((time() - start) / 60, ndigits=2))
+    print(f"[INFO:] Computation time used for encoding: {trainTime} min")
 
-    # trained model
-    json_file = open(mfpM, "r")
-    loaded_model_json = json_file.read()
-    json_file.close()
-    modelTrained = model_from_json(loaded_model_json)
-    modelTrained.load_weights(mfpW)
-    modelTrained.compile(loss="mse", optimizer=adam, metrics=['accuracy'])
-    # predict with trained model
-    pT = modelTrained.predict(x)
+    start = time()
+    # create DNN
+    predictor = defineNNmodel(inputSize=encodedX.shape[1])
+    # predict with random weights
+    predictions_random = predictor.predict(encodedX)
+    # load DNN weights
+    predictor.load_weights(modelfilepath)
+    # predict encoded input
+    predictions = predictor.predict(encodedX)
 
-    predictions = pd.DataFrame(data={'random':pR.flatten(),
-                                     'trained':pT.flatten()},
-                               columns=['random','trained'],
-                               index=pdx.index)
+    trainTime = str(round((time() - start) / 60, ndigits=2))
+    print(f"[INFO:] Computation time used for the predictions: {trainTime} min")
 
-    return predictions
+    df = pd.DataFrame(data={'random':predictions_random.flatten(),
+                            'trained':predictions.flatten()},
+                      columns=['random','trained'],
+                      index=pdx.index)
+    print(df)
+    return(df)
 
 # ------------------------------------------------------------------------------------- #
 
