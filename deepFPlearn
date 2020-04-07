@@ -1,0 +1,81 @@
+import argparse
+from argparse import Namespace
+import pandas as pd
+
+import dfplmodule as dfpl
+import importlib
+importlib.reload(dfpl)
+
+# ------------------------------------------------------------------------------------- #
+## The function defining what happens in the main training procedure 
+
+def train(args):
+
+    # for testing
+    # args = Namespace(i='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv',
+    #                  o='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/test/',
+    #                  t='smiles',
+    #                  k='topological',
+    #                  e=1000,
+    #                  s=2048,
+    #                  d=256,
+    #                  a=True,
+    #                  m=False,
+    #                  l=0.2,
+    #                  K=5,
+    #                  v=2)
+
+    # generate X matrix
+    xmatrix = dfpl.XfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True, size=args.s, verbose=args.v)
+    # generate y matrix
+    ymatrix = dfpl.YfromInput(csvfilename=args.i)
+
+    if args.v > 0:
+        print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
+        print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
+
+    # if params file provided use it
+    if args.p:
+        modelstats = dfpl.trainNNmodels(modelfilepathprefix=args.o, x=xmatrix, y=ymatrix, split=0.8,
+                                         params=args.p)
+    else:
+        (modelfilepathprefix, x, y, split, enc_dim, epochs, autoenc, params, kfold, verbose) = (args.o, xmatrix, ymatrix, args.l, args.d, args.e, args.a, None, 5, 2)
+        dfpl.trainNNmodels(modelfilepathprefix=args.o, x=xmatrix, y=ymatrix, split=args.l,
+                           enc_dim=args.d, epochs=args.e, autoenc=args.a, kfold=args.K, verbose=args.v)
+        # multi-label classification
+        if args.m:
+            dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o, x=xmatrix, y=ymatrix,
+                                    split=args.l, epochs=args.e, params=None,
+                                    enc_dim=args.d, autoenc=args.a, verbose=args.v, kfold=args.K)
+
+# ------------------------------------------------------------------------------------- #
+## The function defining what happens in the main predict procedure 
+
+def predict(args):
+    # generate X matrix
+    xpd = dfpl.XfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True)
+    # predict values for provided data and model
+    # ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
+    ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
+
+    # write predictions to usr provided .csv file
+    pd.DataFrame.to_csv(ypredictions, args.o)
+
+
+# ===================================================================================== #
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(prog='deepFPlearn')
+    subparsers = parser.add_subparsers(help="Sub programs of deepFPlearn")
+
+    parser_train = subparsers.add_parser('train', help="Train new models with your data")
+    parser_train.set_defaults(func=train)
+    dfpl.parseInputTrain(parser_train)
+
+    parser_predict = subparsers.add_parser('predict', help="Predict your data with existing models")
+    parser_predict.set_defaults(func=predict)
+    dfpl.parseInputPredict(parser_predict)
+
+    args = parser.parse_args()
+    print(args)

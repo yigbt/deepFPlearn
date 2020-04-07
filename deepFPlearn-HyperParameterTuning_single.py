@@ -143,7 +143,7 @@ if __name__ == '__main__':
     ## here we need a for loop
 
     for target in args.t:
-        #target = 'ER'
+        target = 'ER'
         print(target)
         #outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(filepath))
         outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(args.i[0]))
@@ -192,31 +192,30 @@ if __name__ == '__main__':
 
             # Start optimizing epochs and batchsizes (if more than one provided)
 
-            batchSizes = args.batchSizes  # batchSizes = [32, 128]
+            #batchSizes = args.batchSizes
+            batchSizes = [64, 128, 256]
             epochs = args.epochs  # epochs = [5, 10]
 
-            if (batchSizes.__len__() > 1) | (epochs.__len__() > 1):
+            if (batchSizes.__len__() > 1):
 
                 #model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel)
 
-                parameters = {'batch_size': batchSizes,
-                              'epochs': epochs}
+                parameters = {'batch_size': batchSizes}
 
                 clf = GridSearchCV(model, parameters, verbose=0)
                 clf.fit(X_train, y_train)
 
                 # save best estimator for epoochs/batchSize tuning per target
-                modelfilepathW = args.p[0] + '/model.tuning-BS-E.' + target + '.weights.h5'
-                modelfilepathM = args.p[0] + '/model.tuning-BS-E.' + target + '.json'
-                outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.01-EpochsBatchSize' + target + '.csv',
+                modelfilepathW = args.p[0] + '/model.tuning-BatchSize.' + target + '.weights.h5'
+                modelfilepathM = args.p[0] + '/model.tuning-BatchSize.' + target + '.json'
+                outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.01-BatchSize' + target + '.csv',
                                                  os.path.basename(args.i[0]))
                 # outfilepath = '/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/Sun_etal_dataset.fingerprints.hpTuningResults.ER.txt'
                 clf.best_estimator_.model.save(filepath=modelfilepathM)
                 clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
-                df = pd.concat([pd.DataFrame(clf.cv_results_['param_epochs']),
-                                pd.DataFrame(clf.cv_results_['param_batch_size']),
+                df = pd.concat([pd.DataFrame(clf.cv_results_['param_batch_size']),
                                 pd.DataFrame(clf.cv_results_['mean_test_score']),
                                 pd.DataFrame(clf.cv_results_['std_test_score']),
                                 pd.DataFrame(clf.cv_results_['rank_test_score'])],
@@ -232,8 +231,8 @@ if __name__ == '__main__':
                 selected_epochs = epochs[0]
 
             # Hypertune optimizers
-            #optimizers = ['SGD', 'Adam']
-            optimizers = args.optimizers
+            optimizers = ['SGD', 'Adam']
+            #optimizers = args.optimizers
 
             if optimizers.__len__() > 1:
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel, epochs=selected_epochs, batch_size=selected_bs)
@@ -264,12 +263,12 @@ if __name__ == '__main__':
                 selected_optimizer = optimizers[0]
 
             # Hypertune activation functions
-            activations = args.activations
+            activations = args.activations #'sigmoid', 'tanh', 'relu'
 
             if activations.__len__() > 1:
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel, epochs=selected_epochs, batch_size=selected_bs)
                 parameters = {'optimizer': [selected_optimizer],
-                              'activation': ['sigmoid', 'tanh', 'relu']}
+                              'activation': args.activations}
                 clf = GridSearchCV(model, parameters, verbose=0)
                 clf.fit(X_train, y_train)
 
