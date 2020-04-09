@@ -11,6 +11,9 @@ importlib.reload(dfpl)
 
 def train(args):
 
+    print(args)
+    exit(0)
+
     # for testing
     # args = Namespace(i='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv',
     #                  o='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/test/',
