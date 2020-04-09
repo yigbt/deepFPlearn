@@ -878,7 +878,7 @@ def parseInputTrain(parser):
     parser.add_argument('-k', metavar='STR', type=str,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
                         help='The type of fingerprint to be generated/used in input file.',
-                        default=['topological'])
+                        default='topological')
     parser.add_argument('-s', type=int,
                         help = 'Size of fingerprint that should be generated.',
                         default=2048)
