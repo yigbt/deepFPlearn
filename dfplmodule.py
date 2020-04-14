@@ -874,11 +874,11 @@ def parseInputTrain(parser):
                              'with this prefix. Default: prefix of input file name.')
     parser.add_argument('-t', metavar='STR', type=str, choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-                        required=True)
+                        default='smiles')
     parser.add_argument('-k', metavar='STR', type=str,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
                         help='The type of fingerprint to be generated/used in input file.',
-                        default=['topological'])
+                        default='topological')
     parser.add_argument('-s', type=int,
                         help = 'Size of fingerprint that should be generated.',
                         default=2048)
