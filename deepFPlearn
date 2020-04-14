@@ -11,7 +11,7 @@ importlib.reload(dfpl)
 
 def train(args):
 
-    # for testing
+        # for testing
     # args = Namespace(i='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv',
     #                  o='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/test/',
     #                  t='smiles',
@@ -78,4 +78,7 @@ if __name__ == '__main__':
     dfpl.parseInputPredict(parser_predict)
 
     args = parser.parse_args()
-    print(args)
+    print(f'[INFO] The following arguments are received or filled with default values:\n{args}')
+
+    args.func(args)
+#    print(args)
