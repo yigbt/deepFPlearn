@@ -112,7 +112,15 @@ def smi2fp(smile, fptype, size=2048):
     (Respective error message is provided in STDERR).
     """
     # generate a mol object from smiles string
-    mol = Chem.MolFromSmiles(smile)
+
+    print(smile)
+    try:
+        mol = Chem.MolFromSmiles(smile)
+    except:
+        print(f'[WARNING]: Not able to extract molecule form SMILES: {smile}')
+
+    if not mol:
+        return None
 
     # init fp, any better idea? e.g. calling a constructor?
     fp = Chem.Mol #FingerprintMols.FingerprintMol(mol)
@@ -239,7 +247,10 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
                 i = i + 1
             else:
                 # smiles, need to be converted to fp first
-                fp=smi2fp(smile=row[feature], fptype=fptype, size=size).ToBitString()
+                fptmp = smi2fp(smile=row[feature], fptype=fptype, size=size)
+                if fptmp:
+                    fp=fptmp.ToBitString()
+
                 if fp:
                     # add rowname or number
                     if rnameIDX is None:
@@ -1571,7 +1582,7 @@ def parseInputPredict(parser):
                              "in the input file.")
     parser.add_argument('-t', metavar='STR', type=str, choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-                        required=True)
+                        default='smiles')
     parser.add_argument('-k', metavar='STR', type=str,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
                         help='The type of fingerprint to be generated/used in input file.',

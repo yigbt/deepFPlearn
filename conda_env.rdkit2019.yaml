@@ -29,7 +29,7 @@ dependencies:
   - fontconfig=2.13.1=h86ecdb6_1001
   - freetype=2.10.0=he983fc9_1
   - gast=0.2.2=py_0
-  - gcc_impl_linux-64=7.3.0=habb00fd_2
+  - gcc_impl_linux-64
   - gcc_linux-64=7.3.0=h553295d_15
   - gettext=0.19.8.1=hc5be6a0_1002
   - glib=2.58.3=py37h6f030ca_1002
@@ -38,7 +38,7 @@ dependencies:
   - grpcio=1.23.0=py37he9ae1f9_0
   - gst-plugins-base=1.14.5=h0935bb2_0
   - gstreamer=1.14.5=h36ae1b5_0
-  - gxx_impl_linux-64=7.3.0=hdf63c60_2
+  - gxx_impl_linux-64
   - gxx_linux-64=7.3.0=h553295d_15
   - h5py=2.10.0=nompi_py37h513d04c_100
   - hdf5=1.10.5=nompi_h3c11f04_1104

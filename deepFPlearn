@@ -54,6 +54,7 @@ def train(args):
 def predict(args):
     # generate X matrix
     xpd = dfpl.XfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True)
+
     # predict values for provided data and model
     # ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
     ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
