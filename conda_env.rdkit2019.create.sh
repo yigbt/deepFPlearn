@@ -16,4 +16,4 @@ source activate rdkit2019
 
 # .. and start the deepFPlearn tool(s)
 
-# .. or start pycharm and set this conda environment in the interpreter settings!
+# .. or start (e.g.) pycharm and set this conda environment in the interpreter settings!
