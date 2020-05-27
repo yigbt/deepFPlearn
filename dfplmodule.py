@@ -114,11 +114,19 @@ def smi2fp(smile, fptype, size=2048):
     # generate a mol object from smiles string
 
     print(smile)
+    # first transform to canoncial smiles
     try:
-        mol = Chem.MolFromSmiles(smile)
+        cs = Chem.CanonSmiles(smile)
     except:
-        print(f'[WARNING]: Not able to extract molecule form SMILES: {smile}')
+        print(f'[WARNING]: Not able to transform your smile to a canonical version of it: {smile}')
+    if not cs:
+        return None
 
+    try:
+        mol = Chem.MolFromSmiles(cs)
+    except:
+        print(
+            f'[WARNING]: Not able to extract molecule from (canonically transformed) SMILES: {cs}\n          Original SMILE: {smile}')
     if not mol:
         return None
 
