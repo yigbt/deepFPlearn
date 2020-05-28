@@ -257,6 +257,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
                 i = i + 1
             else:
                 # smiles, need to be converted to fp first
+                fp = None
                 fptmp = smi2fp(smile=row[feature], fptype=fptype, size=size)
                 if fptmp:
                     fp=fptmp.ToBitString()
