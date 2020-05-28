@@ -114,6 +114,7 @@ def smi2fp(smile, fptype, size=2048):
     # generate a mol object from smiles string
 
     print(smile)
+    cs = None
     # first transform to canoncial smiles
     try:
         cs = Chem.CanonSmiles(smile)
@@ -122,6 +123,7 @@ def smi2fp(smile, fptype, size=2048):
     if not cs:
         return None
 
+    mol = None
     try:
         mol = Chem.MolFromSmiles(cs)
     except:
@@ -277,7 +279,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
     #Ncols = len(DataStructs.BitVectToText(fps[0]))
     if verbose > 0:
         print(f'[INFO] Returned # of fingerprints: {Nrows}')
-
+    exit(0)
     # Store all fingerprints in numpy array
     x = np.empty((Nrows, Ncols), int)
 
