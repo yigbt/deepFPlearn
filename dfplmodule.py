@@ -279,7 +279,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
     #Ncols = len(DataStructs.BitVectToText(fps[0]))
     if verbose > 0:
         print(f'[INFO] Returned # of fingerprints: {Nrows}')
-    exit(0)
+
     # Store all fingerprints in numpy array
     x = np.empty((Nrows, Ncols), int)
 
