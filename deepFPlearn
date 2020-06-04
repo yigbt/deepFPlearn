@@ -26,9 +26,12 @@ def train(args):
     #                  v=2)
 
     # generate X matrix
-    xmatrix = dfpl.XfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True, size=args.s, verbose=args.v)
+    #xmatrix = dfpl.XfromInput(csvfilenamex=args.i, rtype=args.t, fptype=args.k, printfp=True, size=args.s, verbose=args.v)
     # generate y matrix
-    ymatrix = dfpl.YfromInput(csvfilename=args.i)
+    #ymatrix = dfpl.YfromInput(csvfilename=args.i, x=xmatrix)
+
+    # generate X and Y matrices
+    (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True, size=args.s, verbose=args.v)
 
     if args.v > 0:
         print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')

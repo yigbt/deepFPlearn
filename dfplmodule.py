@@ -201,6 +201,78 @@ def smi2fp(smile, fptype, size=2048):
 
 # ------------------------------------------------------------------------------------- #
 
+def XandYfromInput(csvfilename, rtype, fptype, printfp=False, size=2048, verbose=2):
+    """
+        Return the matrix of features for training and testing NN models (X) as numpy array.
+        Provided SMILES are transformed to fingerprints, fingerprint strings are then split
+        into vectors and added as row to the array which is returned.
+
+        :param csvfilename: Filename of CSV files containing the training data. The
+        SMILES/Fingerprints are stored 1st column
+        :param rtype: Type of structure representation. Valid values are: 'fp' and 'smile'
+        :param fptype: Type of fingerprint to be generated out
+        :param printfp: Print generated fingerprints to file, namely the input file with the
+        file ending '.fingerprints.csv'. Default:False
+        :return: Two pandas dataframe containing the X and Y matrix for training and/or prediction. If
+        no outcome data is provided, the Y matrix is a None object.
+        """
+
+    df = pd.read_csv(csvfilename)
+    cnames = df.columns
+
+    if not rtype in cnames:
+        print(f'[ERROR:] There is no column named {rtype} in your input training set file')
+        exit(0)
+
+    namesX = []
+    if 'id' in cnames:
+        namesX = ['id']
+    namesX.extend(list(range(size)))
+
+    # names in Y contain 'id' if present, and all other columns (=target columns)
+    namesY = [c for c in cnames if c != rtype]
+
+    myFEATURES = df[rtype]
+    dfX = pd.DataFrame(columns=namesX)
+    # only generate a Y matrix, if data is available (which is not the case for predictions!)
+    dfY = None
+    if len(namesY) != 0:
+        dfY = pd.DataFrame(columns=namesY)
+
+    # if rtype==smiles, we need to generate fingerprints first
+    if rtype == 'smiles':
+        for i in range(int(len(myFEATURES))):
+            fp = None
+            fptmp = smi2fp(smile=myFEATURES[i], fptype=fptype, size=size)
+            if fptmp:
+                fp = fptmp.ToBitString()
+            if fp:
+                # write a row to X
+                newrow = pd.DataFrame.from_records([char for char in fp]).T
+                dfX = dfX.append(newrow, ignore_index=True)
+                # and write a row to Y
+                if dfY is not None:
+                    newrowY = pd.DataFrame(df.loc[i,namesY]).T
+                    dfY = dfY.append(newrowY, ignore_index=True)
+            else:
+                print(f'[INFO:] For the following SMILES no {fptype} fingerprint could be retreived: {myFEATURES[i]}')
+    else: # rtype=='fp'
+        for i in range(int(len(myFEATURES))):
+            f = myFEATURES[i]
+            if f:
+                # write a row to X
+                newrow = pd.DataFrame.from_records([char for char in f]).T
+                dfX = dfX.append(newrow, ignore_index=True)
+                # and write a row to Y
+                if dfY is not None:
+                    newrowY = pd.DataFrame(df.loc[i, namesY]).T
+                    dfY = dfY.append(newrowY, ignore_index=True)
+            else: # in case there is not valid entry for FP here
+                print(f'[INFO:] The following fingerptint is not valid: {f}')
+
+    return dfX, dfY
+
+# ------------------------------------------------------------------------------------- #
 def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2048, verbose=2):
     """
     Return the matrix of features for training and testing NN models (X) as numpy array.
@@ -233,7 +305,8 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
         else:
             rnameIDX = None
 
-        i = 0
+        i = 0 # counts all compounds
+        j = 0 # counts compounds for which no FP could be generated
 
         for row in reader:
             #if i==5:
@@ -263,6 +336,10 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
                 if fptmp:
                     fp=fptmp.ToBitString()
 
+                if not fp:
+                    j = j + 1
+
+                # Note that if fp==None, it is not stored in dictionary
                 if fp:
                     # add rowname or number
                     if rnameIDX is None:
@@ -273,6 +350,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
                     # add fingerprint to dictionay
                     fps.update({i: fp})
                     i = i + 1
+
             #print(f' .. Row done.\n')
 
     # split all fingerprints into vectors
@@ -280,6 +358,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
     Ncols = len(fps[0])
     #Ncols = len(DataStructs.BitVectToText(fps[0]))
     if verbose > 0:
+        print(f'[INFO] Number of read compounds: {Nrows+j}')
         print(f'[INFO] Returned # of fingerprints: {Nrows}')
 
     # Store all fingerprints in numpy array
@@ -317,13 +396,15 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
 
 # ------------------------------------------------------------------------------------- #
 
-def YfromInput(csvfilename):
+def YfromInput(csvfilename, x):
     """
     Extract the matrix of outcomes for training/testing NN models that belongs to the
     feature matrix.
 
     :param csvfilename: Filename of comma separated CSV files containing the training data.
     Target associations start in column 2nd column
+    :param x: The X-matrix that has been generated before. It may not contain all entries of the csvfilename, since
+    there might have been smiles that could not be transformed to a fingerprint.
     :return: A pandas dataframe containing the Y matrix for training a NN model including
     the names of the targets (each column is a different target)
     """
@@ -1146,6 +1227,12 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
     else:
         modeltype = str(size) + '.noAC'
 
+    # remove 'id' column if present
+    if 'id' in x.columns:
+        x = x.drop('id', axis=1)
+    if 'id' in y.columns:
+        y = y.drop('id', axis=1)
+
     # drop compounds that are not measured for all target columns, transform to numpy
     (xmulti, ymulti) = shuffleDataPriorToTraining(x, y)
 
@@ -1315,6 +1402,12 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
     :return: A list with loss and accuracy values for each individual model.
     """
 
+    # remove 'id' column if present
+    if 'id' in x.columns:
+        x = x.drop('id', axis=1)
+    if 'id' in y.columns:
+        y = y.drop('id', axis=1)
+
     size = x.shape[1]
 
     stats = []
@@ -1328,8 +1421,8 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
     y['summarized'] = [0 if s == 0 else 1 for s in mysum]
 
     ### For each individual target (+ summarized target)
-    for target in y.columns:
-        # target=y.columns[1] # --> only for testing the code
+    for target in y.columns:#[:1]:
+        # target=y.columns[0] # --> only for testing the code
 
         if autoenc:
             modeltype = str(size) + '.' + str(enc_dim)
@@ -1368,8 +1461,8 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
              modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix, mtype=modeltype,
                                                                 target=target, fold=fold_no)
 
-            if verbose>0:
-               eval01Distributions(Xt=Xt, Yt=Yt, y_train=Yt[train], y_test=Yt[test], verbosity=verbose)
+            # if verbose>0:
+            #    eval01Distributions(Xt=Xt, Yt=Yt, y_train=Yt[train], y_test=Yt[test], verbosity=verbose)
 
             # Plot a heatmap of the 0-1 values of the feature matrix used for training
             # This should contain mainly zeros for this problem
