@@ -1233,6 +1233,7 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
     if 'id' in y.columns:
         y = y.drop('id', axis=1)
 
+
     # drop compounds that are not measured for all target columns, transform to numpy
     (xmulti, ymulti) = shuffleDataPriorToTraining(x, y)
 
@@ -1537,6 +1538,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
             print(row_df)
             allscores = allscores.append(row_df, ignore_index=True)
             fold_no = fold_no + 1
+            del model
             # now next fold
 
         print(allscores)
