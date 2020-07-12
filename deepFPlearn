@@ -11,45 +11,65 @@ importlib.reload(dfpl)
 
 def train(args):
 
-        # for testing
-    # args = Namespace(i='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.csv',
-    #                  o='/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/test/',
+    # for testing
+    # args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
+    #                  o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/',
     #                  t='smiles',
     #                  k='topological',
-    #                  e=1000,
+    #                  e=2000,
     #                  s=2048,
     #                  d=256,
-    #                  a=True,
+    #                  a='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
     #                  m=False,
     #                  l=0.2,
     #                  K=5,
     #                  v=2)
 
-    # generate X matrix
-    #xmatrix = dfpl.XfromInput(csvfilenamex=args.i, rtype=args.t, fptype=args.k, printfp=True, size=args.s, verbose=args.v)
-    # generate y matrix
-    #ymatrix = dfpl.YfromInput(csvfilename=args.i, x=xmatrix)
-
     # generate X and Y matrices
-    (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True, size=args.s, verbose=args.v)
+    (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
+                                             printfp=True, size=args.s, verbose=args.v)
 
     if args.v > 0:
         print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
         print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
 
-    # if params file provided use it
-    if args.p:
-        modelstats = dfpl.trainNNmodels(modelfilepathprefix=args.o, x=xmatrix, y=ymatrix, split=0.8,
-                                         params=args.p)
+
+    if args.a:
+        # load trained model for autoencoder
+        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+                                   useweights=args.a, verbose=args.v)
     else:
-        (modelfilepathprefix, x, y, split, enc_dim, epochs, autoenc, params, kfold, verbose) = (args.o, xmatrix, ymatrix, args.l, args.d, args.e, args.a, None, 5, 2)
-        dfpl.trainNNmodels(modelfilepathprefix=args.o, x=xmatrix, y=ymatrix, split=args.l,
-                           enc_dim=args.d, epochs=args.e, autoenc=args.a, kfold=args.K, verbose=args.v)
-        # multi-label classification
-        if args.m:
-            dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o, x=xmatrix, y=ymatrix,
-                                    split=args.l, epochs=args.e, params=None,
-                                    enc_dim=args.d, autoenc=args.a, verbose=args.v, kfold=args.K)
+        # train an autoencoder on the full feature matrix
+        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+                                   checkpointpath=args.o + "/ACmodel.hdf5",
+                                   verbose=args.v)
+
+    xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
+
+    # train FNNs with compressed features
+    dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelACincl",
+                       x=xcompressed, y=ymatrix,
+                       split=args.l,
+                       epochs=args.e, kfold=args.K, verbose=args.v)
+
+    # train FNNs with uncompressed features
+    dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelNoACincl",
+                       x=xmatrix, y=ymatrix,
+                       split=args.l,
+                       epochs=args.e, kfold=args.K, verbose=args.v)
+
+    ### train multi-label models
+    # with comrpessed features
+    dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelACincl",
+                            x=xcompressed, y=ymatrix,
+                            split=args.l, epochs=args.e,
+                            autoenc=args.a, verbose=args.v, kfold=args.K)
+
+    # with uncompressed features
+    dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelNoACincl",
+                            x=xmatrix, y=ymatrix,
+                            split=args.l, epochs=args.e,
+                            autoenc=args.a, verbose=args.v, kfold=args.K)
 
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main predict procedure 

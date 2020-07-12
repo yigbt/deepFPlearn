@@ -113,7 +113,7 @@ def smi2fp(smile, fptype, size=2048):
     """
     # generate a mol object from smiles string
 
-    print(smile)
+    #print(smile)
     cs = None
     # first transform to canoncial smiles
     try:
@@ -702,6 +702,66 @@ def predictValues(acmodelfilepath, modelfilepath, pdx):
     return(df)
 
 # ------------------------------------------------------------------------------------- #
+def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None, verbose=0):
+    """
+    Train an autoencoder on the given feature matrix X. Response matrix is only used to
+    split meaningfully in test and train data set.
+
+    :param X: Feature matrix.
+    :param y: Matrix containing the response variables.
+    :param epochs: Number of epochs to train the autoencoder
+    :param encdim: Dimension of latent space. This and the column dimension of X control
+                   the number and size of the hidden layers.
+    :param checkpointpath: path to prefix the model files during callbacks
+    :param verbose: Verbosity level. Is forwarded to the Keras fit function that prints
+                    training states in different verbosity levels
+    :return: The encoder model of the trained autoencoder
+    """
+
+    # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
+    (autoencoder, encoder) = autoencoderModel(input_size=X.shape[1], encoding_dim=encdim)
+
+    if useweights: # don't train, use existing weights file and load it into AC model
+        autoencoder.load_weights(useweights)
+        encoder.load_weights(useweights)
+    else:
+        # collect the callbacks for training
+        callback_list = defineCallbacks(checkpointpath=checkpointpath,
+                                        patience=20, rlrop=False)
+
+        # split data into test and training data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Fit the AC
+        autohist = autoencoder.fit(X_train, X_train,
+                                   callbacks=callback_list,
+                                   epochs=epochs,
+                                   batch_size=256,
+                                   shuffle=True,
+                                   verbose=verbose,
+                                   validation_data=(X_test, X_test))
+        # history
+        ac_loss = autohist.history['loss']
+        ac_val_loss = autohist.history['val_loss']
+        ac_epochs = range(ac_loss.__len__())
+        # generate a figure of the losses for this fold
+        plt.figure()
+        plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
+        plt.plot(ac_epochs, ac_val_loss, 'b', label='Validation loss')
+        plt.title('Training and validation loss of AC')
+        plt.legend()
+        plt.savefig(fname=checkpointpath.replace(".hdf5",
+                                                 "_trainValLoss_AC.svg"),
+                    format='svg')
+        plt.close()
+        # write the losses to .csv file for later data visualization
+        df = pd.DataFrame(data={'loss': ac_loss, 'val_loss': ac_val_loss, 'epoch': ac_epochs})
+        df.to_csv(checkpointpath.replace(".hdf5",
+                                         "_trainValLoss_AC.csv"))
+
+    # model needs to be saved and restored when predicting new input!
+    # use encode() of train data as input for DL model to associate to chemical
+    return encoder
+
 
 #def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs, enc_dim, split, verbose, kfold):
 def trainAutoencoder(checkpointpath, Xtrain, Xtest, epochs, enc_dim, verbose, fold):
@@ -986,8 +1046,13 @@ def parseInputTrain(parser):
     parser.add_argument('-s', type=int,
                         help = 'Size of fingerprint that should be generated.',
                         default=2048)
-    parser.add_argument('-a', action='store_true',
-                        help='Use autoencoder to reduce dimensionality of fingerprint. Default: not set.')
+    parser.add_argument('-a', type=str, metavar='FILE', default=None,
+                        help='The .hdf5 file of a trained autoencoder (e.g. from a previous'
+                        'training run. This avoids a retraining of the autoencoder on the'
+                        'training data set (provided with -i). NOTE that the input and encoding'
+                        'dimensions must fit your data and settings. Default: train new autoencoder.')
+    #parser.add_argument('-a', action='store_true',
+    #                    help='Use autoencoder to reduce dimensionality of fingerprint. Default: not set.')
     parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
                         default=256)
@@ -1017,7 +1082,7 @@ def parseInputTrain(parser):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineOutfileNames(pathprefix, mtype, target, fold):
+def defineOutfileNames(pathprefix, target, fold):
     """
     This function returns the required paths for output files or directories.
 
@@ -1029,26 +1094,25 @@ def defineOutfileNames(pathprefix, mtype, target, fold):
     :return: A tuple of 14 output file names.
     """
     
-    modelname = mtype + '.' + target + '.Fold-' + str(fold)
+    modelname = target + '.Fold-' + str(fold)
 
-    modelfilepathW = str(pathprefix) + '/model.' + modelname + '.weights.h5'
-    modelfilepathM = str(pathprefix) + '/model.' + modelname + '.json'
-    modelhistplotpathL = str(pathprefix) + '/model.' + modelname + '.loss.svg'
-    modelhistplotpathA = str(pathprefix) + '/model.' + modelname + '.acc.svg'
-    modelhistplotpath = str(pathprefix) + '/model.' + modelname + '.history.svg'
-    modelhistcsvpath = str(pathprefix) + '/model.' + modelname + '.history.csv'
-    modelvalidation = str(pathprefix) + '/model.' + modelname + '.validation.csv'
-    modelAUCfile = str(pathprefix) + '/model.' + modelname + '.auc.svg'
-    modelAUCfiledata = str(pathprefix) + '/model.' + modelname + '.auc.data.csv'
-    outfilepath = str(pathprefix) + '/model.' + modelname + '.trainingResults.txt'
-    checkpointpath = str(pathprefix) + '/model.' + modelname + '.checkpoint.model.hdf5'
-    checkpointpathAC = str(pathprefix) + '/model.' + modelname + '.checkpoint.AC-model.hdf5'
-    modelheatmapX = str(pathprefix) + '/model.' + modelname + '.heatmap.X.svg'
-    modelheatmapZ = str(pathprefix) + '/model.' + modelname + '.AC.heatmap.Z.svg'
+    modelfilepathW = str(pathprefix) + '.' + modelname + '.weights.h5'
+    modelfilepathM = str(pathprefix) + '.' + modelname + '.json'
+    modelhistplotpathL = str(pathprefix) + '.' + modelname + '.loss.svg'
+    modelhistplotpathA = str(pathprefix) + '.' + modelname + '.acc.svg'
+    modelhistplotpath = str(pathprefix) + '.' + modelname + '.history.svg'
+    modelhistcsvpath = str(pathprefix) + '.' + modelname + '.history.csv'
+    modelvalidation = str(pathprefix) + '.' + modelname + '.validation.csv'
+    modelAUCfile = str(pathprefix) + '.' + modelname + '.auc.svg'
+    modelAUCfiledata = str(pathprefix) + '.' + modelname + '.auc.data.csv'
+    outfilepath = str(pathprefix) + '.' + modelname + '.trainingResults.txt'
+    checkpointpath = str(pathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+    modelheatmapX = str(pathprefix) + '.' + modelname + '.heatmap.X.svg'
+    modelheatmapZ = str(pathprefix) + '.' + modelname + '.AC.heatmap.Z.svg'
 
     return (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
             modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-            modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
+            modelAUCfiledata, outfilepath, checkpointpath,
             modelheatmapX, modelheatmapZ)
 
 # ------------------------------------------------------------------------------------- #
@@ -1089,8 +1153,9 @@ def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
 
 def prepareDataSet(y, x, t):
     """
-    A function to remove NA values from the output column, duplicates from input and output and to transform the
-    data into numpy arrays for keras functions.
+    A function to remove NA values from the output column, duplicates from input and output
+    and to transform the data into numpy arrays for keras functions.
+
     :param y: The target vector that may contain NAs.
     :param x: The input matrix that may contain duplicates (including resp. target value!)
     :param t: The target string
@@ -1120,13 +1185,16 @@ def prepareDataSet(y, x, t):
 
 # ------------------------------------------------------------------------------------- #
 
-def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath, modelhistplotpathA, modelhistplotpathL, target):
+def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
+                   modelhistplotpathA, modelhistplotpathL, target):
     plot_history(history=hist, file=modelhistplotpath)
     histDF = pd.DataFrame(hist.history)
     histDF.to_csv(modelhistcsvpath)
 
     # plot accuracy and loss for the training and validation during training
-    plotTrainHistory(hist=hist, target=target, fileAccuracy=modelhistplotpathA, fileLoss=modelhistplotpathL)
+    plotTrainHistory(hist=hist, target=target,
+                     fileAccuracy=modelhistplotpathA,
+                     fileLoss=modelhistplotpathL)
 
 # ------------------------------------------------------------------------------------- #
 
@@ -1220,19 +1288,14 @@ def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvali
     return (scores[0], scores[1], MCC, cfm[0][0], cfm[0][1], cfm[1][0], cfm[1][1])
 
 # ------------------------------------------------------------------------------------- #
-def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=None, enc_dim=256, autoenc=False, verbose=2, kfold=5):
-
-    if autoenc:
-        modeltype = str(size) + '.' + str(enc_dim)
-    else:
-        modeltype = str(size) + '.noAC'
+def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
+                       verbose=2, kfold=5):
 
     # remove 'id' column if present
     if 'id' in x.columns:
         x = x.drop('id', axis=1)
     if 'id' in y.columns:
         y = y.drop('id', axis=1)
-
 
     # drop compounds that are not measured for all target columns, transform to numpy
     (xmulti, ymulti) = shuffleDataPriorToTraining(x, y)
@@ -1242,7 +1305,6 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
 
     # store acc and loss for each fold
     allscores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
-                                      "loss_AC", "val_loss_AC",  # AC
                                       "loss", "val_loss", "acc", "val_acc",  # FNN training
                                       "loss_test", "acc_test", "mcc_test"])  # FNN test data
 
@@ -1255,25 +1317,11 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
         (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
          modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
          modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
-         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix, mtype=modeltype, target="multi")
-
-        # generate train and test sets
-#        (X_train, X_test, y_train, y_test) = train_test_split(xmulti.to_numpy(), ymulti.to_numpy(),
-#                                                              test_size=(1 - split), random_state=0)
-
-       # use autoencoder for dimensionality reduction of the X matrix
-        if autoenc:
-            (Z_train, Z_test, ac_loss, ac_val_loss) = trainAutoencoder(checkpointpath=checkpointpathAC,
-                                                                       Xtrain=xmulti[train], Xtest=xmulti[test],
-                                                                       epochs=epochs,
-                                                                       enc_dim=enc_dim,
-                                                                       verbose=verbose,
-                                                                       fold=fold_no)
-        else:
-            (Z_train, Z_test, ac_loss, ac_val_loss) = (xmulti[train], xmulti[test], -1, -1)
+         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
+                                                            target="multi")
 
         # use a dnn for multi-class prediction
-        model = defineNNmodelMulti(inputSize=Z_train.shape[1], outputSize=ymulti.shape[1])  # X_train.shape[1])
+        model = defineNNmodelMulti(inputSize=xmulti[train].shape[1], outputSize=ymulti.shape[1])
 
         callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20,
                                         rlrop=True, rlropfactor=0.1, rlroppatience=100)
@@ -1281,40 +1329,37 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
         start = time()
 
         # train and validate
-        hist = model.fit(Z_train, ymulti[train],
+        hist = model.fit(xmulti[train], ymulti[train],
                          callbacks=callback_list,
-                         epochs=epochs, batch_size=128, verbose=2, validation_split=split)
+                         epochs=epochs, batch_size=256, verbose=2, validation_split=split)
 
         trainTime = str(round((time() - start) / 60, ndigits=2))
 
         if verbose > 0:
-            print(f"[INFO:] Computation time for training the classification DNN: {trainTime} min")
+            print(f"[INFO:] Computation time for training the multi-label FNN: {trainTime} min")
 
         # validate model on test data set (x_test, y_test)
-        scores = validateMultiModelOnTestData(Z_test=Z_test, checkpointpath=checkpointpath, y_test=ymulti[test],
+        scores = validateMultiModelOnTestData(Z_test=xmulti[test],
+                                              checkpointpath=checkpointpath,
+                                              y_test=ymulti[test],
                                               colnames=y.columns,
                                               resultfile=outfilepath.replace("trainingResults.txt",
                                                                              "predictionResults.csv"))
 
         idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
         row_df = pd.DataFrame([[fold_no,
-                                ac_loss, ac_val_loss,
                                 hist.history['loss'][idx], hist.history['val_loss'][idx],
                                 hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
                                 scores[0], scores[1], scores[2]]],
                               columns=["fold_no",  # fold number of k-fold CV
-                                       "loss_AC", "val_loss_AC",  # AC
                                        "loss", "val_loss", "acc", "val_acc",  # FNN training
                                        "loss_test", "acc_test", "mcc_test"]
                               )
         print(row_df)
         allscores = allscores.append(row_df, ignore_index=True)
 
-        # validate on test data set
-        scores = validateMultiModelOnTestData(Z_test=Z_test, checkpointpath=checkpointpath, y_test=ymulti[test],
-                                              colnames=y.columns, resultfile=outfilepath.replace("trainingResults.txt",
-                                                                                                 "predictionResults.csv"))
         fold_no = fold_no + 1
+        del model
 
     print(allscores)
 
@@ -1327,7 +1372,7 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
     (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
      modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
      modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
-     modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix, mtype=modeltype,
+     modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
                                                         target="multi", fold=fold_no)
 
     file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
@@ -1339,42 +1384,30 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
     shutil.copyfile(checkpointpathAC, bestModelfileAC)
     # copy best DNN model
     shutil.copyfile(checkpointpath, bestModelfile)
-    print(f'[INFO]: Best models for AC and DNN are saved:\n        - {bestModelfileAC}\n        - {bestModelfile}')
+    print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
 
     # AND retrain with full data set
-    fullModelfileAC = checkpointpathAC.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
     fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
     # measure the training time
     start = time()
-    if autoenc:
-        (Z_train, Z_test, ac_loss, ac_val_loss) = trainAutoencoder(checkpointpath=fullModelfileAC,
-                                                                   Xtrain=xmulti, Xtest=xmulti,
-                                                                   epochs=epochs,
-                                                                   enc_dim=enc_dim,
-                                                                   verbose=verbose,
-                                                                   fold=0)  # 0 stands for full retrained model!
-        # plotHeatmap(Z_train, filename=modelheatmapZ,title=("Z representation "+target))
-    else:
-        (Z_train, Z_test, ac_loss, ac_val_loss) = (xmulti, xmulti, -1, -1)
-
-    model = defineNNmodel(inputSize=Z_train.shape[1])  # X_train.shape[1])
+    model = defineNNmodel(inputSize=xmulti[train].shape[1])
     callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
                                     rlrop=True, rlropfactor=0.1, rlroppatience=100)
     # train and validate
-    hist = model.fit(Z_train, ymulti,
+    hist = model.fit(xmulti, ymulti,
                      callbacks=callback_list,
-                     epochs=epochs, batch_size=128, verbose=2, validation_split=split)
+                     epochs=epochs, batch_size=256, verbose=2, validation_split=split)
     #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
     trainTime = str(round((time() - start) / 60, ndigits=2))
 
     if verbose > 0:
-        print(f"[INFO:] Computation time for training the classification DNN: {trainTime} min")
+        print(f"[INFO:] Computation time for training the full classification DNN: {trainTime} min")
     plotHistoryVis(hist,
                    modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
                    modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
                    modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
                    modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
-    print(f'[INFO]: Full models for AC and DNN are saved:\n        - {fullModelfileAC}\n        - {fullModelfile}')
+    print(f'[INFO]: Full models for DNN is saved:\n        - {fullModelfile}')
 
     pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
     # stats.append([target, [x.__round__(2) for x in scores]])
@@ -1382,7 +1415,8 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500, params=
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, enc_dim=256, autoenc=False, verbose=2, kfold=5):
+def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
+                  verbose=2, kfold=5):
     """
     Train individual models for all targets (columns) present in the provided target data (y) and a multi-label
     model that classifies all targets at once. For each individual target the data is first subsetted to exclude NA
@@ -1396,8 +1430,6 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
     :param epochs: The number of epochs for training the autoencoder and the DNN for classification.
     Note: Early stopping and fallback is enabled.
     :param params: A .csv files containing paramters that should be evaluated. See file tunedParams.csv.
-    :param enc_dim: The dimension of latent space vector (z) of the autoencoder.
-    :param autoenc: Use the autoencoder.
     :param verbose: Verbosity level.
 
     :return: A list with loss and accuracy values for each individual model.
@@ -1408,10 +1440,6 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         x = x.drop('id', axis=1)
     if 'id' in y.columns:
         y = y.drop('id', axis=1)
-
-    size = x.shape[1]
-
-    stats = []
 
     if params:
         parameters = pd.read_csv(params)
@@ -1425,12 +1453,6 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
     for target in y.columns:#[:1]:
         # target=y.columns[0] # --> only for testing the code
 
-        if autoenc:
-            modeltype = str(size) + '.' + str(enc_dim)
-        else:
-            modeltype = str(size) + '.noAC'
-
-
         # rm NAs and duplicates, shuffle, and transform to numpy arrays
         (Xt, Yt) = prepareDataSet(y, x, target)
 
@@ -1439,7 +1461,6 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
 
         # store acc and loss for each fold
         allscores = pd.DataFrame(columns=["fold_no",                             # fold number of k-fold CV
-                                          "loss_AC", "val_loss_AC",              # AC
                                           "loss", "val_loss", "acc", "val_acc",  # FNN training
                                           "loss_test", "acc_test", "mcc_test"]) # FNN test data
 
@@ -1448,90 +1469,44 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         # split the data
         for train, test in kfoldCValidator.split(Xt, Yt):
 
-        #    print(Xt[train].shape)
-        #    print(Xt[test].shape)
-        #    continue
-
             if verbose>0:
                 print(f'[INFO]: Training of fold number: {fold_no} ------------------------------------\n')
 
             # define all the output file/path names
             (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
              modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-             modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
-             modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix, mtype=modeltype,
+             modelAUCfiledata, outfilepath, checkpointpath,
+             modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
                                                                 target=target, fold=fold_no)
 
-            # if verbose>0:
-            #    eval01Distributions(Xt=Xt, Yt=Yt, y_train=Yt[train], y_test=Yt[test], verbosity=verbose)
-
-            # Plot a heatmap of the 0-1 values of the feature matrix used for training
-            # This should contain mainly zeros for this problem
-            #plotHeatmap(Xt[train], filename=modelheatmapX, title=("X representation " + target + "_fold-" + fold_no))
-
-            # Train the autoencoder (AC) to reduce the feature vector for the input layer of the DNN classificator
-            if autoenc:
-                (Z_train, Z_test, ac_loss, ac_val_loss) = trainAutoencoder(checkpointpath=checkpointpathAC,
-                                                                           Xtrain=Xt[train], Xtest=Xt[test],
-                                                                           epochs=epochs,
-                                                                           enc_dim=enc_dim,
-                                                                           verbose=verbose,
-                                                                           fold=fold_no)
-                #plotHeatmap(Z_train, filename=modelheatmapZ,title=("Z representation "+target))
-            else:
-                (Z_train, Z_test, ac_loss, ac_val_loss) = (Xt[train], Xt[test], -1, -1)
-
-            # standard parameters are the tuning results
-            # if params:
-            #     ps = parameters.loc[parameters['target'] == target]
-            #     model = defineNNmodel(inputSize=X_train.shape[1], activation=ps['activation'][0], optimizer=ps['optimizer'][0])
-            #
-            #     start = time()
-            #
-            #     callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=50,
-            #                                          rlrop=True, rlropfactor=0.1, rlroppatience=100)
-            #
-            #     # train and validate
-            #     hist = model.fit(X_train, y_train,
-            #                      callbacks=callback_list,
-            #                      epochs=ps['epochs'][0],
-            #                      batch_size=ps['batch_size'][0], verbose=2,#,
-            #                      #validation_split=0.2,
-            #                      validation_data=(X_test, y_test)) # this overwrites val_split!
-            #     trainTime = str(round((time() - start) / 60, ndigits=2))
-            #else:
-            model = defineNNmodel(inputSize=Z_train.shape[1])  # X_train.shape[1])
+            model = defineNNmodel(inputSize=Xt[train].shape[1])
 
             callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20,
                                             rlrop=True, rlropfactor=0.1, rlroppatience=100)
             # measure the training time
             start = time()
             # train and validate
-            hist = model.fit(Z_train, Yt[train],
+            hist = model.fit(Xt[train], Yt[train],
                              callbacks=callback_list,
-                             epochs=epochs, batch_size=128, verbose=2, validation_split=split)
+                             epochs=epochs, batch_size=256, verbose=2, validation_split=split)
 #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
             trainTime = str(round((time() - start) / 60, ndigits=2))
 
             if verbose > 0:
-                print(f"[INFO:] Computation time for training the classification DNN: {trainTime} min")
-
-                # generate history plots
-            #plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath, modelhistplotpathA, modelhistplotpathL, target)
+                print(f"[INFO:] Computation time for training the single-label FNN: {trainTime} min")
 
             # validate model on test data set (x_test, y_test)
-            scores = validateModelOnTestData(Z_test, checkpointpath, Yt[test], modeltype, modelvalidation, target,
+            scores = validateModelOnTestData(Xt[test], checkpointpath, Yt[test],
+                                             "FNN", modelvalidation, target,
                                              modelAUCfiledata, modelAUCfile)
 
             idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
 
             row_df = pd.DataFrame([[fold_no,
-                                    ac_loss, ac_val_loss,
                                     hist.history['loss'][idx], hist.history['val_loss'][idx],
                                     hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
                                     scores[0], scores[1], scores[2]]],
                                   columns=["fold_no",  # fold number of k-fold CV
-                                           "loss_AC", "val_loss_AC",  # AC
                                            "loss", "val_loss", "acc", "val_acc",  # FNN training
                                            "loss_test", "acc_test", "mcc_test"]
                                   )
@@ -1551,58 +1526,44 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None, 
         # get all the filenames
         (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
          modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-         modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
-         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix, mtype=modeltype,
+         modelAUCfiledata, outfilepath, checkpointpath,
+         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
                                                             target=target, fold=fold_no)
 
         file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
         allscores.to_csv(file)
 
-        bestModelfileAC = checkpointpathAC.replace("Fold-" + str(fold_no) + ".checkpoint", "best")
         bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.DNN-")
-        # copy best AC model
-        shutil.copyfile(checkpointpathAC, bestModelfileAC)
         # copy best DNN model
         shutil.copyfile(checkpointpath, bestModelfile)
-        print(f'[INFO]: Best models for AC and DNN are saved:\n        - {bestModelfileAC}\n        - {bestModelfile}')
+        print(f'[INFO]: Best model for FNN is saved:\n        - {bestModelfile}')
         # AND retrain with full data set
-        fullModelfileAC = checkpointpathAC.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
         fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
         # measure the training time
         start = time()
-        if autoenc:
-            (Z_train, Z_test, ac_loss, ac_val_loss) = trainAutoencoder(checkpointpath=fullModelfileAC,
-                                                                       Xtrain=Xt, Xtest=Xt,
-                                                                       epochs=epochs,
-                                                                       enc_dim=enc_dim,
-                                                                       verbose=verbose,
-                                                                       fold=0) # 0 stands for full retrained model!
-            # plotHeatmap(Z_train, filename=modelheatmapZ,title=("Z representation "+target))
-        else:
-            (Z_train, Z_test, ac_loss, ac_val_loss) = (Xt, Xt, -1, -1)
 
-        model = defineNNmodel(inputSize=Z_train.shape[1])  # X_train.shape[1])
+        model = defineNNmodel(inputSize=Xt.shape[1])  # X_train.shape[1])
         callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
                                         rlrop=True, rlropfactor=0.1, rlroppatience=100)
         # train and validate
-        hist = model.fit(Z_train, Yt,
+        hist = model.fit(Xt, Yt,
                          callbacks=callback_list,
-                         epochs=epochs, batch_size=128, verbose=2, validation_split=split)
+                         epochs=epochs, batch_size=256, verbose=2, validation_split=split)
         #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
         trainTime = str(round((time() - start) / 60, ndigits=2))
 
         if verbose > 0:
-            print(f"[INFO:] Computation time for training the classification DNN: {trainTime} min")
+            print(f"[INFO:] Computation time for training the full classification DNN: {trainTime} min")
         plotHistoryVis(hist,
                        modelhistplotpath.replace("Fold-"+str(fold_no), "full.DNN-model"),
                        modelhistcsvpath.replace("Fold-"+str(fold_no), "full.DNN-model"),
                        modelhistplotpathA.replace("Fold-"+str(fold_no), "full.DNN-model"),
                        modelhistplotpathL.replace("Fold-"+str(fold_no), "full.DNN-model"), target)
-        print(f'[INFO]: Full models for AC and DNN are saved:\n        - {fullModelfileAC}\n        - {fullModelfile}')
+        print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
 
         pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
-        #stats.append([target, [x.__round__(2) for x in scores]])
 
+        del model
         # now next target
 
 # ------------------------------------------------------------------------------------- #
