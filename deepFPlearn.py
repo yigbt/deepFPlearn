@@ -4,13 +4,14 @@ import pandas as pd
 
 import dfplmodule as dfpl
 import importlib
+
 importlib.reload(dfpl)
+
 
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main training procedure 
 
 def train(args: Namespace) -> None:
-
     # for testing
     # args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
     #                  o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
@@ -33,7 +34,6 @@ def train(args: Namespace) -> None:
         print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
         print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
 
-
     encoder = None
     if args.a:
         # load trained model for autoencoder
@@ -41,9 +41,13 @@ def train(args: Namespace) -> None:
                                    useweights=args.a, verbose=args.v)
     else:
         # train an autoencoder on the full feature matrix
+        weightfile = args.o + "/ACmodel.hdf5"
         encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   checkpointpath=args.o + "/ACmodel.hdf5",
+                                   checkpointpath=weightfile,
                                    verbose=args.v)
+        if args.ACtrainOnly:
+            print(f'[INFO] Model weights of trained autencoder are stored in: {weightfile}')
+            exit(1)
 
     xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
 
@@ -72,6 +76,7 @@ def train(args: Namespace) -> None:
                             split=args.l, epochs=args.e,
                             verbose=args.v, kfold=args.K)
 
+
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main predict procedure 
 
@@ -90,7 +95,6 @@ def predict(args: Namespace) -> None:
 # ===================================================================================== #
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(prog='deepFPlearn')
     subparsers = parser.add_subparsers(help="Sub programs of deepFPlearn")
 

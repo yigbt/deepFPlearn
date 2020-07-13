@@ -854,8 +854,8 @@ def parseInputTrain(parser):
                              'training run. This avoids a retraining of the autoencoder on the'
                              'training data set (provided with -i). NOTE that the input and encoding'
                              'dimensions must fit your data and settings. Default: train new autoencoder.')
-    parser.add_argument('-ACtrainOnly', action='store_true',
-                        help='Only train the autoencoder on the features matrix.')
+    parser.add_argument('--ACtrainOnly', action='store_true',
+                        help='Only train the autoencoder on the features matrix an exit.')
     parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
                         default=256)
@@ -1097,8 +1097,9 @@ def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvali
 
 
 # ------------------------------------------------------------------------------------- #
-def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
-                       verbose=2, kfold=5):
+def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
+                       split: float = 0.2, epochs: int = 500,
+                       verbose: int= 2, kfold: int = 5) -> None:
     # remove 'id' column if present
     if 'id' in x.columns:
         x = x.drop('id', axis=1)
@@ -1124,7 +1125,7 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
         # define all the output file/path names
         (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
          modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-         modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
+         modelAUCfiledata, outfilepath, checkpointpath,
          modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
                                                             target="multi")
 
@@ -1220,8 +1221,9 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
-                  verbose=2, kfold=5):
+def trainNNmodels(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
+                  split: float = 0.2, epochs: int = 50, params: str = None,
+                  verbose: int = 2, kfold: int = 5) -> None:
     """
     Train individual models for all targets (columns) present in the provided target data (y) and a multi-label
     model that classifies all targets at once. For each individual target the data is first subsetted to exclude NA
@@ -1370,27 +1372,6 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
 
         del model
         # now next target
-
-
-# ------------------------------------------------------------------------------------- #
-
-def trainMultiNNmodel(model, x, y, split=0.8):
-    """
-    Train one multi-class model of the provided structure for all targets (columns) provided in y
-    using the features x and the outcomes y and a train/validation data set split of
-    split.
-    :param model: a compiled neural network model
-    :param x: a numpy array of training features, one row per data set, features in cols.
-    :param y: a pandas data frame of training outcomes, one column per outcome.
-    Cell value (0,1). Name of column used as name of target.
-    :param split: the percentage data sets used for training. Remaining percentage is
-    used in cross-validation steps.
-    :return: matrix of statistics per target
-    """
-
-    stats = {}
-
-    return stats
 
 
 # ------------------------------------------------------------------------------------- #
