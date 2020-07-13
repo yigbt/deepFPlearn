@@ -9,10 +9,10 @@ import pandas as pd
 import shutil
 import matplotlib.pyplot as plt
 import matplotlib
-#matplotlib.use('Agg')
+# matplotlib.use('Agg')
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
-#%matplotlib inline
+# %matplotlib inline
 # for drawing the heatmaps
 import seaborn as sns
 
@@ -45,7 +45,6 @@ from sklearn.model_selection import KFold
 from time import time
 
 
-
 ###############################################################################
 # GENERAL FUNCTIONS --------------------------------------------------------- #
 
@@ -65,6 +64,7 @@ def gather(df, key, value, cols):
     value_name = value
     return pd.melt(df, id_vars, id_values, var_name, value_name)
 
+
 # ------------------------------------------------------------------------------------- #
 
 def shuffleDataPriorToTraining(x, y):
@@ -80,10 +80,11 @@ def shuffleDataPriorToTraining(x, y):
     # shuffle rows, drop NAs, reset index
     df1 = df0.sample(frac=1).dropna(axis=0).reset_index()
 
-    return (df1.iloc[:, 0:x.shape[1]], df1.iloc[:,x.shape[1]:])
+    return (df1.iloc[:, 0:x.shape[1]], df1.iloc[:, x.shape[1]:])
 
-    #return gather(df0, key="target", value="association",
+    # return gather(df0, key="target", value="association",
     #             cols=y.columns)
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -113,7 +114,7 @@ def smi2fp(smile, fptype, size=2048):
     """
     # generate a mol object from smiles string
 
-    #print(smile)
+    # print(smile)
     cs = None
     # first transform to canoncial smiles
     try:
@@ -133,7 +134,7 @@ def smi2fp(smile, fptype, size=2048):
         return None
 
     # init fp, any better idea? e.g. calling a constructor?
-    fp = Chem.Mol #FingerprintMols.FingerprintMol(mol)
+    fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
 
     if fptype == 'topological':  # 2048 bits
         # Topological Fingerprints:
@@ -143,13 +144,13 @@ def smi2fp(smile, fptype, size=2048):
         # lengths. After all paths have been identified, the fingerprint is typically
         # folded down until a particular density of set bits is obtained.
         try:
-            #fp = Chem.RDKFingerprint(mol, fpSize=size)
-            return(Chem.RDKFingerprint(mol, fpSize=size))
+            # fp = Chem.RDKFingerprint(mol, fpSize=size)
+            return (Chem.RDKFingerprint(mol, fpSize=size))
         except:
             print('SMILES not convertable to topological fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
-            return(None)
+            return (None)
 
     elif fptype == 'MACCS':
         # MACCS Keys:
@@ -159,13 +160,13 @@ def smi2fp(smile, fptype, size=2048):
         # things looked pretty good.
 
         try:
-            #fp = MACCSkeys.GenMACCSKeys(mol)
-            return(MACCSkeys.GenMACCSKeys(mol))
+            # fp = MACCSkeys.GenMACCSKeys(mol)
+            return (MACCSkeys.GenMACCSKeys(mol))
         except:
             print('SMILES not convertable to MACSS fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
-            return(None)
+            return (None)
 
     elif fptype == 'atompairs':
         # Atom Pairs:
@@ -174,15 +175,15 @@ def smi2fp(smile, fptype, size=2048):
         # of just zeros and ones. Nevertheless we use the BitVect variant here.
 
         try:
-            #fp = Pairs.GetAtomPairFingerprintAsBitVect(mol)
-            return(Pairs.GetAtomPairFingerprintAsBitVect(mol))
+            # fp = Pairs.GetAtomPairFingerprintAsBitVect(mol)
+            return (Pairs.GetAtomPairFingerprintAsBitVect(mol))
             # counts if features also possible here! needs to be parsed differently
             # fps.update({i:Pairs.GetAtomPairFingerprintAsIntVect(mols[i])})
         except:
             print('SMILES not convertable to atompairs fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
-            return(None)
+            return (None)
 
     else:
         # Topological Torsions:
@@ -191,31 +192,39 @@ def smi2fp(smile, fptype, size=2048):
         # GetTopologicalTorsionFingerprintAsBitVect function.
 
         try:
-            #fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
-            return(Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol))
+            # fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
+            return (Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol))
         except:
             print('SMILES not convertable to torsions fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
-            return(None)
+            return (None)
+
 
 # ------------------------------------------------------------------------------------- #
 
-def XandYfromInput(csvfilename, rtype, fptype, printfp=False, size=2048, verbose=2):
+def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = False,
+                   size: int = 2048, verbose: int = 2) -> tuple:
     """
-        Return the matrix of features for training and testing NN models (X) as numpy array.
-        Provided SMILES are transformed to fingerprints, fingerprint strings are then split
-        into vectors and added as row to the array which is returned.
-
-        :param csvfilename: Filename of CSV files containing the training data. The
+    Return the matrix of features for training and testing NN models (X) as numpy array.
+    Provided SMILES are transformed to fingerprints, fingerprint strings are then split
+    into vectors and added as row to the array which is returned.
+    :param csvfilename: Filename of CSV files containing the training data. The
         SMILES/Fingerprints are stored 1st column
+
         :param rtype: Type of structure representation. Valid values are: 'fp' and 'smile'
+
         :param fptype: Type of fingerprint to be generated out
+
         :param printfp: Print generated fingerprints to file, namely the input file with the
         file ending '.fingerprints.csv'. Default:False
+
         :return: Two pandas dataframe containing the X and Y matrix for training and/or prediction. If
         no outcome data is provided, the Y matrix is a None object.
-        """
+    """
+
+
+    # TODOs: implement other types of fingerprint!
 
     df = pd.read_csv(csvfilename)
     cnames = df.columns
@@ -224,53 +233,27 @@ def XandYfromInput(csvfilename, rtype, fptype, printfp=False, size=2048, verbose
         print(f'[ERROR:] There is no column named {rtype} in your input training set file')
         exit(0)
 
-    namesX = []
+    dfX = None
+    if rtype == 'smiles':  # transform to canonical smiles, and then to fp
+        dfX = pd.DataFrame(df['smiles'].transform(
+            lambda x: np.array(Chem.RDKFingerprint(Chem.MolFromSmiles(Chem.CanonSmiles(x)),
+                                                   fpSize=size))).to_list())
+    else:  # split fingerprint into matrix
+        dfX = pd.DataFrame(df['fp'].transform(
+            lambda x: list(x)).to_list())
+
+    # add 'id' as rownames of dataframe
     if 'id' in cnames:
-        namesX = ['id']
-    namesX.extend(list(range(size)))
+        dfX.index = df['id']
 
     # names in Y contain 'id' if present, and all other columns (=target columns)
-    namesY = [c for c in cnames if c != rtype]
+    namesY = [c for c in cnames if c not in ['id', 'smiles', 'fp']]
+    dfY = df[namesY]
+    # add 'id' as rownames of dataframe
+    if 'id' in cnames:
+        dfY.index = df['id']
 
-    myFEATURES = df[rtype]
-    dfX = pd.DataFrame(columns=namesX)
-    # only generate a Y matrix, if data is available (which is not the case for predictions!)
-    dfY = None
-    if len(namesY) != 0:
-        dfY = pd.DataFrame(columns=namesY)
-
-    # if rtype==smiles, we need to generate fingerprints first
-    if rtype == 'smiles':
-        for i in range(int(len(myFEATURES))):
-            fp = None
-            fptmp = smi2fp(smile=myFEATURES[i], fptype=fptype, size=size)
-            if fptmp:
-                fp = fptmp.ToBitString()
-            if fp:
-                # write a row to X
-                newrow = pd.DataFrame.from_records([char for char in fp]).T
-                dfX = dfX.append(newrow, ignore_index=True)
-                # and write a row to Y
-                if dfY is not None:
-                    newrowY = pd.DataFrame(df.loc[i,namesY]).T
-                    dfY = dfY.append(newrowY, ignore_index=True)
-            else:
-                print(f'[INFO:] For the following SMILES no {fptype} fingerprint could be retreived: {myFEATURES[i]}')
-    else: # rtype=='fp'
-        for i in range(int(len(myFEATURES))):
-            f = myFEATURES[i]
-            if f:
-                # write a row to X
-                newrow = pd.DataFrame.from_records([char for char in f]).T
-                dfX = dfX.append(newrow, ignore_index=True)
-                # and write a row to Y
-                if dfY is not None:
-                    newrowY = pd.DataFrame(df.loc[i, namesY]).T
-                    dfY = dfY.append(newrowY, ignore_index=True)
-            else: # in case there is not valid entry for FP here
-                print(f'[INFO:] The following fingerptint is not valid: {f}')
-
-    return dfX, dfY
+    return (dfX, dfY)
 
 # ------------------------------------------------------------------------------------- #
 def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2048, verbose=2):
@@ -291,31 +274,31 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
 
     # dict to store the fingerprints
     fps = {}
-    rows = {} # remove this from memory!
+    rows = {}  # remove this from memory!
     rnames = []
 
     # read csv and generate/add fingerprints to dict
     with open(csvfilename, 'r') as f:
         reader = csv.DictReader(f, delimiter=',')
         names = reader.fieldnames
-        #print(names)
+        # print(names)
         feature = names[names.index(rtype)]  # rtype column ('smiles' or 'fp')
         if 'id' in names:
             rnameIDX = names[names.index('id')]
         else:
             rnameIDX = None
 
-        i = 0 # counts all compounds
-        j = 0 # counts compounds for which no FP could be generated
+        i = 0  # counts all compounds
+        j = 0  # counts compounds for which no FP could be generated
 
         for row in reader:
-            #if i==5:
+            # if i==5:
             #    break
 
-            #print(f'i={i}: {row}')
+            # print(f'i={i}: {row}')
             if printfp:
-                rows.update({i:row})
-            #print(rnames[i] + ' ' + row[feature])
+                rows.update({i: row})
+            # print(rnames[i] + ' ' + row[feature])
 
             # add fp or smile
             if rtype == 'fp':
@@ -334,7 +317,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
                 fptmp = smi2fp(smile=row[feature], fptype=fptype, size=size)
 
                 if fptmp:
-                    fp=fptmp.ToBitString()
+                    fp = fptmp.ToBitString()
 
                 if not fp:
                     j = j + 1
@@ -351,31 +334,31 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
                     fps.update({i: fp})
                     i = i + 1
 
-            #print(f' .. Row done.\n')
+            # print(f' .. Row done.\n')
 
     # split all fingerprints into vectors
     Nrows = len(fps)
     Ncols = len(fps[0])
-    #Ncols = len(DataStructs.BitVectToText(fps[0]))
+    # Ncols = len(DataStructs.BitVectToText(fps[0]))
     if verbose > 0:
-        print(f'[INFO] Number of read compounds: {Nrows+j}')
+        print(f'[INFO] Number of read compounds: {Nrows + j}')
         print(f'[INFO] Returned # of fingerprints: {Nrows}')
 
     # Store all fingerprints in numpy array
     x = np.empty((Nrows, Ncols), int)
 
     if printfp:
-        csvoutfilename=csvfilename.replace(".csv", "." + str(size) + ".fingerprints.csv")
-        fnames=names.copy()
+        csvoutfilename = csvfilename.replace(".csv", "." + str(size) + ".fingerprints.csv")
+        fnames = names.copy()
         fnames.append('fp')
-        f=open(csvoutfilename, 'w')
-        writer=csv.DictWriter(f, fieldnames=fnames)
+        f = open(csvoutfilename, 'w')
+        writer = csv.DictWriter(f, fieldnames=fnames)
         writer.writeheader()
 
         for i in fps:
-            #fp=DataStructs.BitVectToText(fps[i])
+            # fp=DataStructs.BitVectToText(fps[i])
             fp = fps[i]
-            rows[i]['fp']=fp
+            rows[i]['fp'] = fp
             writer.writerow(rows[i])
             x[i] = list(map(int, [char for char in fp]))
 
@@ -384,7 +367,7 @@ def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2
     else:
         for i in fps:
             # get fingerprint as string
-            #fp=DataStructs.BitVectToText(fps[i])
+            # fp=DataStructs.BitVectToText(fps[i])
             fp = fps[i]
             # split fp into list of integers
             x[i] = list(map(int, [char for char in fp]))
@@ -414,17 +397,17 @@ def YfromInput(csvfilename, x):
 
     return y
 
+
 # ------------------------------------------------------------------------------------- #
 
 def TrainingDataHeatmap(x, y):
-
     x['ID'] = x.index
     y['ID'] = y.index
 
-    #xy = pd.merge(x,y,on="ID")
+    # xy = pd.merge(x,y,on="ID")
 
     # clustermap dies because of too many iterations..
-    #sns.clustermap(x, metric="correlation", method="single", cmap="Blues", standard_scale=1) #, row_colors=row_colors)
+    # sns.clustermap(x, metric="correlation", method="single", cmap="Blues", standard_scale=1) #, row_colors=row_colors)
 
     # try to cluster prior to viz
     # check this out
@@ -433,6 +416,7 @@ def TrainingDataHeatmap(x, y):
     # viz using matplotlib heatmap https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/image_annotated_heatmap.html
 
     return 1
+
 
 # ------------------------------------------------------------------------------------- #
 def removeDuplicates(x, y):
@@ -456,6 +440,7 @@ def removeDuplicates(x, y):
     fpstrings_unique = np.unique(fpstrings, return_index=True)
 
     return (x[fpstrings_unique[1]], y[fpstrings_unique[1]])
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -489,16 +474,16 @@ def defineCallbacks(checkpointpath, patience, rlrop=False, rlropfactor=0.1, rlro
         callbacks = [checkpoint, earlystop]
 
     # Return list of callbacks - collect the callbacks for training
-    return(callbacks)
+    return (callbacks)
+
 
 # ------------------------------------------------------------------------------------- #
 
 def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2,
                        activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
-
-    if optimizer=='Adam':
-        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)#, beta_1=0.9, beta_2=0.999, amsgrad=False)
-    elif optimizer=='SGD':
+    if optimizer == 'Adam':
+        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+    elif optimizer == 'SGD':
         myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
     else:
         myoptimizer = optimizer
@@ -532,6 +517,7 @@ def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2
 
     return model
 
+
 # ------------------------------------------------------------------------------------- #
 
 def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
@@ -547,36 +533,36 @@ def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', o
     :return:
     """
 
-    if optimizer=='Adam':
-        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)#, beta_1=0.9, beta_2=0.999, amsgrad=False)
-    elif optimizer=='SGD':
+    if optimizer == 'Adam':
+        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+    elif optimizer == 'SGD':
         myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
     else:
         myoptimizer = optimizer
 
-    myhiddenlayers = {"2048":6, "1024":5, "999":5, "512":4, "256":3}
+    myhiddenlayers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
 
     if not str(inputSize) in myhiddenlayers.keys():
         print("Wrong inputsize. Must be in {2048, 1024, 999, 512, 256}.")
         return None
 
-    nhl = int(math.log2(inputSize)/2 - 1)
+    nhl = int(math.log2(inputSize) / 2 - 1)
 
     model = Sequential()
     # From input to 1st hidden layer
-    model.add(Dense(units=int(inputSize/2), input_dim=inputSize,
+    model.add(Dense(units=int(inputSize / 2), input_dim=inputSize,
                     activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
     # next hidden layers
-    for i in range(1,nhl):
-        factorunits = 2**(i+1)
-        factordropout = 2*i
-        model.add(Dense(units=int(inputSize/factorunits),
-                    activation=activation,
-                    kernel_regularizer=regularizers.l2(l2reg)))
-        model.add(Dropout(dropout/factordropout))
-    #output layer
+    for i in range(1, nhl):
+        factorunits = 2 ** (i + 1)
+        factordropout = 2 * i
+        model.add(Dense(units=int(inputSize / factorunits),
+                        activation=activation,
+                        kernel_regularizer=regularizers.l2(l2reg)))
+        model.add(Dropout(dropout / factordropout))
+    # output layer
     model.add(Dense(units=1, activation='sigmoid'))
 
     model.summary()
@@ -586,9 +572,11 @@ def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', o
 
     return model
 
+
 # ------------------------------------------------------------------------------------- #
 
-def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myloss='binary_crossentropy', myregularization=10-3, mylr=0.001, mydecay=0.01):
+def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myloss='binary_crossentropy',
+                     myregularization=10 - 3, mylr=0.001, mydecay=0.01):
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -603,33 +591,33 @@ def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myl
     myoptimizer = optimizers.Adam(learning_rate=mylr, decay=mydecay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
 
     # get the number of meaningful hidden layers (latent space included)
-    nhl = round(math.log2(input_size/encoding_dim))
+    nhl = round(math.log2(input_size / encoding_dim))
 
     # the input placeholder
     input_vec = Input(shape=(input_size,))
 
     # 1st hidden layer, that receives weights from input layer
     # equals bottle neck layer, if nhl==1!
-    encoded = Dense(units=int(input_size/2), activation='relu')(input_vec)
+    encoded = Dense(units=int(input_size / 2), activation='relu')(input_vec)
 
     if nhl > 1:
         # encoding layers, incl. bottle neck
         for i in range(1, nhl):
             factorunits = 2 ** (i + 1)
-            #print(f'{factorunits}: {int(input_size / factorunits)}')
+            # print(f'{factorunits}: {int(input_size / factorunits)}')
             encoded = Dense(units=int(input_size / factorunits), activation='relu')(encoded)
 
-#        encoding_dim = int(input_size/factorunits)
+        #        encoding_dim = int(input_size/factorunits)
 
         # 1st decoding layer
         factorunits = 2 ** (nhl - 1)
-        decoded = Dense(units=int(input_size/factorunits), activation='relu')(encoded)
+        decoded = Dense(units=int(input_size / factorunits), activation='relu')(encoded)
 
         # decoding layers
-        for i in range(nhl-2, 0, -1):
+        for i in range(nhl - 2, 0, -1):
             factorunits = 2 ** i
-            #print(f'{factorunits}: {int(input_size/factorunits)}')
-            decoded = Dense(units=int(input_size/factorunits), activation='relu')(decoded)
+            # print(f'{factorunits}: {int(input_size/factorunits)}')
+            decoded = Dense(units=int(input_size / factorunits), activation='relu')(decoded)
 
         # output layer
         # The output layer needs to predict the probability of an output which needs to either 0 or 1 and hence we use sigmoid activation function.
@@ -651,6 +639,7 @@ def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myl
 
     return (autoencoder, encoder)
 
+
 # ------------------------------------------------------------------------------------- #
 
 def predictValues(acmodelfilepath, modelfilepath, pdx):
@@ -664,8 +653,8 @@ def predictValues(acmodelfilepath, modelfilepath, pdx):
     the values of the id column
     """
 
-    #acmodelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.AC-model.hdf5"
-    #modelfilepath  ="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.model.hdf5"
+    # acmodelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.AC-model.hdf5"
+    # modelfilepath  ="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.model.hdf5"
 
     print(f"[INFO:] Loaded model weights for autoencoder: '{modelfilepath}'")
     print(f"[INFO:] Loaded model weights for prediction DNN: '{modelfilepath}'")
@@ -694,12 +683,13 @@ def predictValues(acmodelfilepath, modelfilepath, pdx):
     trainTime = str(round((time() - start) / 60, ndigits=2))
     print(f"[INFO:] Computation time used for the predictions: {trainTime} min")
 
-    df = pd.DataFrame(data={'random':predictions_random.flatten(),
-                            'trained':predictions.flatten()},
-                      columns=['random','trained'],
+    df = pd.DataFrame(data={'random': predictions_random.flatten(),
+                            'trained': predictions.flatten()},
+                      columns=['random', 'trained'],
                       index=pdx.index)
     print(df)
-    return(df)
+    return (df)
+
 
 # ------------------------------------------------------------------------------------- #
 def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None, verbose=0):
@@ -721,7 +711,7 @@ def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = autoencoderModel(input_size=X.shape[1], encoding_dim=encdim)
 
-    if useweights: # don't train, use existing weights file and load it into AC model
+    if useweights:  # don't train, use existing weights file and load it into AC model
         autoencoder.load_weights(useweights)
         encoder.load_weights(useweights)
     else:
@@ -763,7 +753,7 @@ def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None
     return encoder
 
 
-#def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs, enc_dim, split, verbose, kfold):
+# def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs, enc_dim, split, verbose, kfold):
 def trainAutoencoder(checkpointpath, Xtrain, Xtest, epochs, enc_dim, verbose, fold):
     """
 
@@ -776,7 +766,7 @@ def trainAutoencoder(checkpointpath, Xtrain, Xtest, epochs, enc_dim, verbose, fo
     :return:
     """
 
-    #checkpointpath = checkpointpath.replace(".hdf5", "_Fold-" + str(fold) + ".hdf5")
+    # checkpointpath = checkpointpath.replace(".hdf5", "_Fold-" + str(fold) + ".hdf5")
 
     # collect the callbacks for training
     callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20, rlrop=False)
@@ -810,6 +800,7 @@ def trainAutoencoder(checkpointpath, Xtrain, Xtest, epochs, enc_dim, verbose, fo
     # model needs to be saved and restored when predicting new input!
     # use encode() of train data as input for DL model to associate to chemical
     return (encoder.predict(Xtrain), encoder.predict(Xtest), ac_loss.pop(), ac_val_loss.pop())
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -849,10 +840,10 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     plt.savefig(fname=fileLoss, format='svg')
     plt.close()
 
+
 # ------------------------------------------------------------------------------------- #
 
 def plotAUC(fpr, tpr, auc, target, filename, title=""):
-
     plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
     plt.plot(fpr, tpr, label='Keras (area = {:.3f})'.format(auc))
@@ -863,15 +854,16 @@ def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.savefig(fname=filename, format='svg')
     plt.close()
 
+
 # ------------------------------------------------------------------------------------- #
 
 def plotHeatmap(matrix, filename, title=""):
-
     plt.figure()
     plt.imshow(matrix, cmap='Greys', interpolation='nearest')
     plt.title(title)
     plt.savefig(fname=filename, format='svg')
     plt.close()
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -891,10 +883,10 @@ def smooth_curve(points, factor=0.75):
             smoothed_points.append(point)
     return smoothed_points
 
+
 # 02 ---------------------------------------------------------------------------------- #
 
 def set_plot_history_data(ax, history, which_graph):
-
     if which_graph == 'acc':
         train = smooth_curve(history.history['accuracy'])
         valid = smooth_curve(history.history['val_accuracy'])
@@ -903,11 +895,11 @@ def set_plot_history_data(ax, history, which_graph):
         train = smooth_curve(history.history['loss'])
         valid = smooth_curve(history.history['val_loss'])
 
-    #plt.xkcd() # make plots look like xkcd
+    # plt.xkcd() # make plots look like xkcd
 
     epochs = range(1, len(train) + 1)
 
-    trim = 0 # remove first 5 epochs
+    trim = 0  # remove first 5 epochs
     # when graphing loss the first few epochs may skew the (loss) graph
 
     ax.plot(epochs[trim:], train[trim:], 'dodgerblue', linewidth=15, alpha=0.1)
@@ -916,17 +908,20 @@ def set_plot_history_data(ax, history, which_graph):
     ax.plot(epochs[trim:], valid[trim:], 'g', linewidth=15, alpha=0.1)
     ax.plot(epochs[trim:], valid[trim:], 'g', label=('Validation'))
 
+
 # 03 ---------------------------------------------------------------------------------- #
 
 def get_max_validation_accuracy(history):
     validation = smooth_curve(history.history['val_accuracy'])
     ymax = max(validation)
-    return 'Max validation accuracy ≈ ' + str(round(ymax, 3)*100) + '%'
+    return 'Max validation accuracy ≈ ' + str(round(ymax, 3) * 100) + '%'
+
 
 def get_max_training_accuracy(history):
     training = smooth_curve(history.history['accuracy'])
     ymax = max(training)
-    return 'Max training accuracy ≈ ' + str(round(ymax, 3)*100) + '%'
+    return 'Max training accuracy ≈ ' + str(round(ymax, 3) * 100) + '%'
+
 
 # 04---------------------------------------------------------------------------------- #
 
@@ -979,17 +974,14 @@ def plot_history(history, file):
     plt.close()
 
 
-
 # ------------------------------------------------------------------------------------- #
 
 def drawHeatmap(data, anno):
-
-    #(data=pd.DataFrame(Xt), anno = pd.DataFrame(Yt.astype(int)))
+    # (data=pd.DataFrame(Xt), anno = pd.DataFrame(Yt.astype(int)))
 
     # annotation bar colors
     my_ann_colors = dict(zip(anno[0].unique(), ["blue", "red"]))
     row_colors = anno[0].map(my_ann_colors)
-
 
     cl = sns.clustermap(data, metric="euclidean", method="single", z_score=None, standard_scale=None,
                         col_cluster=False, cmap="Greys", row_colors=row_colors, yticklabels=False)
@@ -1006,7 +998,7 @@ def drawHeatmap(data, anno):
     row_colors = df.cyl.map(my_palette)
 
     # Default plot
-    #sns.clustermap(df)
+    # sns.clustermap(df)
 
     # Clustermethods
     my_palette = dict()
@@ -1022,9 +1014,9 @@ def parseInputTrain(parser):
 
     :return: A namespace object built up from attributes parsed out of the cmd line.
     """
-#    parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
-#                                     'target(s). Trained models are saved to disk including fitted weights and '
-#                                     'can be used in the deepFPlearn-Predict.py tool to make predictions.')
+    #    parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
+    #                                     'target(s). Trained models are saved to disk including fitted weights and '
+    #                                     'can be used in the deepFPlearn-Predict.py tool to make predictions.')
     parser.add_argument('-i', metavar='FILE', type=str,
                         help="The file containin the data for training in (unquoted) "
                              "comma separated CSV format. First column contain the feature string in "
@@ -1044,14 +1036,14 @@ def parseInputTrain(parser):
                         help='The type of fingerprint to be generated/used in input file.',
                         default='topological')
     parser.add_argument('-s', type=int,
-                        help = 'Size of fingerprint that should be generated.',
+                        help='Size of fingerprint that should be generated.',
                         default=2048)
     parser.add_argument('-a', type=str, metavar='FILE', default=None,
                         help='The .hdf5 file of a trained autoencoder (e.g. from a previous'
-                        'training run. This avoids a retraining of the autoencoder on the'
-                        'training data set (provided with -i). NOTE that the input and encoding'
-                        'dimensions must fit your data and settings. Default: train new autoencoder.')
-    #parser.add_argument('-a', action='store_true',
+                             'training run. This avoids a retraining of the autoencoder on the'
+                             'training data set (provided with -i). NOTE that the input and encoding'
+                             'dimensions must fit your data and settings. Default: train new autoencoder.')
+    # parser.add_argument('-a', action='store_true',
     #                    help='Use autoencoder to reduce dimensionality of fingerprint. Default: not set.')
     parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
@@ -1072,13 +1064,14 @@ def parseInputTrain(parser):
     parser.add_argument('-K', metavar='INT', type=int,
                         help='K that is used for K-fold cross validation in the training procedure.',
                         default=5)
-    parser.add_argument('-v', metavar='INT', type=int, choices=[0,1, 2],
+    parser.add_argument('-v', metavar='INT', type=int, choices=[0, 1, 2],
                         help='Verbosity level. O: No additional output, 1: Some additional output, 2: full additional output',
                         default=2
                         )
 
+
 #    return parser.parse_args()
-#return parser
+# return parser
 
 # ------------------------------------------------------------------------------------- #
 
@@ -1093,7 +1086,7 @@ def defineOutfileNames(pathprefix, target, fold):
 
     :return: A tuple of 14 output file names.
     """
-    
+
     modelname = target + '.Fold-' + str(fold)
 
     modelfilepathW = str(pathprefix) + '.' + modelname + '.weights.h5'
@@ -1114,6 +1107,7 @@ def defineOutfileNames(pathprefix, target, fold):
             modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
             modelAUCfiledata, outfilepath, checkpointpath,
             modelheatmapX, modelheatmapZ)
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -1149,6 +1143,7 @@ def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
             f"[INFO:] Average percentage of '0' positions in fingerprints: {round(np.sum(Xt == 0) / (np.sum(Xt == 0) + np.sum(Xt == 1)), ndigits=4)}")
     return
 
+
 # ------------------------------------------------------------------------------------- #
 
 def prepareDataSet(y, x, t):
@@ -1180,8 +1175,9 @@ def prepareDataSet(y, x, t):
 
     (XtU, YtU) = removeDuplicates(x=Xtall, y=Ytall)
 
-    #return(shuffleDataPriorToTraining(x=XtU, y=YtU))
-    return(XtU, YtU)
+    # return(shuffleDataPriorToTraining(x=XtU, y=YtU))
+    return (XtU, YtU)
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -1196,28 +1192,29 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
                      fileAccuracy=modelhistplotpathA,
                      fileLoss=modelhistplotpathL)
 
+
 # ------------------------------------------------------------------------------------- #
 
 def validateMultiModelOnTestData(Z_test, checkpointpath, y_test, colnames, resultfile):
-
     # load checkpoint model with min(val_loss)
     trainedmodel = defineNNmodelMulti(inputSize=Z_test.shape[1], outputSize=y_test.shape[1])
 
     # predict values with random model
-    predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=colnames+'-predRandom')
+    predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=colnames + '-predRandom')
 
     # load weights into random model
     trainedmodel.load_weights(checkpointpath)
 
     # predict with trained model
     predictions = pd.DataFrame(trainedmodel.predict(Z_test),
-                                      columns=colnames+'-pred')
+                               columns=colnames + '-pred')
     scores = pd.DataFrame((predictions.round() == y_test).sum() / y_test.shape[0], columns=['correctPredictions'])
 
     results = pd.concat([predictions_random, predictions, pd.DataFrame(y_test, columns=colnames + '-true')], axis=1)
     results.to_csv(resultfile)
 
     return scores
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -1259,7 +1256,7 @@ def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvali
     # compute MCC
     predictionsInt = [int(round(x)) for x in predictions[0].ravel()]
     ytrueInt = [int(y) for y in y_test]
-    MCC = matthews_corrcoef(ytrueInt,predictionsInt)
+    MCC = matthews_corrcoef(ytrueInt, predictionsInt)
 
     # generate the AUC-ROC curve data from the validation data
     fpr_keras, tpr_keras, thresholds_keras = roc_curve(y_test, predictions, drop_intermediate=False)
@@ -1287,10 +1284,10 @@ def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvali
 
     return (scores[0], scores[1], MCC, cfm[0][0], cfm[0][1], cfm[1][0], cfm[1][1])
 
+
 # ------------------------------------------------------------------------------------- #
 def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
                        verbose=2, kfold=5):
-
     # remove 'id' column if present
     if 'id' in x.columns:
         x = x.drop('id', axis=1)
@@ -1450,7 +1447,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
     y['summarized'] = [0 if s == 0 else 1 for s in mysum]
 
     ### For each individual target (+ summarized target)
-    for target in y.columns:#[:1]:
+    for target in y.columns:  # [:1]:
         # target=y.columns[0] # --> only for testing the code
 
         # rm NAs and duplicates, shuffle, and transform to numpy arrays
@@ -1460,16 +1457,16 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
         kfoldCValidator = KFold(n_splits=kfold, shuffle=True, random_state=42)
 
         # store acc and loss for each fold
-        allscores = pd.DataFrame(columns=["fold_no",                             # fold number of k-fold CV
+        allscores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
                                           "loss", "val_loss", "acc", "val_acc",  # FNN training
-                                          "loss_test", "acc_test", "mcc_test"]) # FNN test data
+                                          "loss_test", "acc_test", "mcc_test"])  # FNN test data
 
         fold_no = 1
 
         # split the data
         for train, test in kfoldCValidator.split(Xt, Yt):
 
-            if verbose>0:
+            if verbose > 0:
                 print(f'[INFO]: Training of fold number: {fold_no} ------------------------------------\n')
 
             # define all the output file/path names
@@ -1489,7 +1486,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
             hist = model.fit(Xt[train], Yt[train],
                              callbacks=callback_list,
                              epochs=epochs, batch_size=256, verbose=2, validation_split=split)
-#                             validation_data=(Z_test, y_test))  # this overwrites val_split!
+            #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
             trainTime = str(round((time() - start) / 60, ndigits=2))
 
             if verbose > 0:
@@ -1555,16 +1552,17 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
         if verbose > 0:
             print(f"[INFO:] Computation time for training the full classification DNN: {trainTime} min")
         plotHistoryVis(hist,
-                       modelhistplotpath.replace("Fold-"+str(fold_no), "full.DNN-model"),
-                       modelhistcsvpath.replace("Fold-"+str(fold_no), "full.DNN-model"),
-                       modelhistplotpathA.replace("Fold-"+str(fold_no), "full.DNN-model"),
-                       modelhistplotpathL.replace("Fold-"+str(fold_no), "full.DNN-model"), target)
+                       modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+                       modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+                       modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
+                       modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
         print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
 
         pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
 
         del model
         # now next target
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -1585,6 +1583,7 @@ def trainMultiNNmodel(model, x, y, split=0.8):
     stats = {}
 
     return stats
+
 
 # ------------------------------------------------------------------------------------- #
 
@@ -1610,9 +1609,10 @@ def smilesSet2fpSet(csvfilename, outfilename, fptype):
             for row in reader:
                 # smiles, need to be converted to fp first
                 fp = smi2fp(smile=row[feature], fptype=fptype)
-                writer.writerow({'fp':DataStructs.BitVectToText(fp)})
+                writer.writerow({'fp': DataStructs.BitVectToText(fp)})
 
     return
+
 
 ###############################################################################
 # PREDICT FUNCTIONS --------------------------------------------------------- #
@@ -1623,9 +1623,9 @@ def parseInputPredict(parser):
 
     :return: A namespace object built up from attributes parsed out of the cmd line.
     """
-#    parser = argparse.ArgumentParser(description='Use models that have been generated by deepFPlearn-Train.py '
-#                                                 'tool to make predictions on chemicals (provide SMILES or '
-#                                                 'topological fingerprints).')
+    #    parser = argparse.ArgumentParser(description='Use models that have been generated by deepFPlearn-Train.py '
+    #                                                 'tool to make predictions on chemicals (provide SMILES or '
+    #                                                 'topological fingerprints).')
     parser.add_argument('-i', metavar='FILE', type=str,
                         help="The file containin the data for the prediction. It is in"
                              "comma separated CSV format. The column named 'smiles' or 'fp'"
