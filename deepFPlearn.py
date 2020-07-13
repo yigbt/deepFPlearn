@@ -16,7 +16,7 @@ def train(args):
                      o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
                      t='smiles',
                      k='topological',
-                     e=10,
+                     e=2000,
                      s=2048,
                      d=256,
                      a=None,#'/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
@@ -34,6 +34,7 @@ def train(args):
         print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
 
 
+    encoder = None
     if args.a:
         # load trained model for autoencoder
         encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
@@ -76,8 +77,8 @@ def train(args):
 
 def predict(args):
     # generate X matrix
-    xpd = dfpl.XfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True)
-
+    (xpd, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
+                                         printfp=True, size=args.s, verbose=args.v, returnY=False)
     # predict values for provided data and model
     # ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
     ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
