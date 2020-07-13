@@ -204,25 +204,20 @@ def smi2fp(smile, fptype, size=2048):
 # ------------------------------------------------------------------------------------- #
 
 def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = False,
-                   size: int = 2048, verbose: int = 2) -> tuple:
+                   size: int = 2048, verbose: int = 2, returnY: bool = True) -> tuple:
     """
     Return the matrix of features for training and testing NN models (X) as numpy array.
     Provided SMILES are transformed to fingerprints, fingerprint strings are then split
     into vectors and added as row to the array which is returned.
     :param csvfilename: Filename of CSV files containing the training data. The
         SMILES/Fingerprints are stored 1st column
-
-        :param rtype: Type of structure representation. Valid values are: 'fp' and 'smile'
-
-        :param fptype: Type of fingerprint to be generated out
-
-        :param printfp: Print generated fingerprints to file, namely the input file with the
+    :param rtype: Type of structure representation. Valid values are: 'fp' and 'smile'
+    :param fptype: Type of fingerprint to be generated out
+    :param printfp: Print generated fingerprints to file, namely the input file with the
         file ending '.fingerprints.csv'. Default:False
-
-        :return: Two pandas dataframe containing the X and Y matrix for training and/or prediction. If
+    :return: Two pandas dataframe containing the X and Y matrix for training and/or prediction. If
         no outcome data is provided, the Y matrix is a None object.
     """
-
 
     # TODOs: implement other types of fingerprint!
 
@@ -246,156 +241,16 @@ def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = Fa
     if 'id' in cnames:
         dfX.index = df['id']
 
-    # names in Y contain 'id' if present, and all other columns (=target columns)
-    namesY = [c for c in cnames if c not in ['id', 'smiles', 'fp']]
-    dfY = df[namesY]
-    # add 'id' as rownames of dataframe
-    if 'id' in cnames:
-        dfY.index = df['id']
+    dfY = None
+    if returnY:
+        # names in Y contain 'id' if present, and all other columns (=target columns)
+        namesY = [c for c in cnames if c not in ['id', 'smiles', 'fp']]
+        dfY = df[namesY]
+        # add 'id' as rownames of dataframe
+        if 'id' in cnames:
+            dfY.index = df['id']
 
     return (dfX, dfY)
-
-# ------------------------------------------------------------------------------------- #
-def XfromInput(csvfilename, rtype, fptype, printfp=False, retNames=False, size=2048, verbose=2):
-    """
-    Return the matrix of features for training and testing NN models (X) as numpy array.
-    Provided SMILES are transformed to fingerprints, fingerprint strings are then split
-    into vectors and added as row to the array which is returned.
-
-    :param csvfilename: Filename of CSV files containing the training data. The
-    SMILES/Fingerprints are stored 1st column
-    :param rtype: Type of structure represetation. Valid values are: 'fp' and 'smile'
-    :param fptype: Type of fingerprint to be generated out
-    :param printfp: Print generated fingerprints to file, namely the input file with the
-    file ending '.fingerprints.csv'. Default:False
-    :return: A pandas dataframe containing the X matrix for training a NN model,
-    rownames/numbers of rows, colnames are the positions of the fp vector.
-    """
-
-    # dict to store the fingerprints
-    fps = {}
-    rows = {}  # remove this from memory!
-    rnames = []
-
-    # read csv and generate/add fingerprints to dict
-    with open(csvfilename, 'r') as f:
-        reader = csv.DictReader(f, delimiter=',')
-        names = reader.fieldnames
-        # print(names)
-        feature = names[names.index(rtype)]  # rtype column ('smiles' or 'fp')
-        if 'id' in names:
-            rnameIDX = names[names.index('id')]
-        else:
-            rnameIDX = None
-
-        i = 0  # counts all compounds
-        j = 0  # counts compounds for which no FP could be generated
-
-        for row in reader:
-            # if i==5:
-            #    break
-
-            # print(f'i={i}: {row}')
-            if printfp:
-                rows.update({i: row})
-            # print(rnames[i] + ' ' + row[feature])
-
-            # add fp or smile
-            if rtype == 'fp':
-                # type == fp, fine - add it
-                # add rowname or number
-                if rnameIDX is None:
-                    rnames.append(str(i))
-                else:
-                    rnames.append(row['id'])
-                # add fingerprint to dictionay
-                fps.update({i: row[feature]})
-                i = i + 1
-            else:
-                # smiles, need to be converted to fp first
-                fp = None
-                fptmp = smi2fp(smile=row[feature], fptype=fptype, size=size)
-
-                if fptmp:
-                    fp = fptmp.ToBitString()
-
-                if not fp:
-                    j = j + 1
-
-                # Note that if fp==None, it is not stored in dictionary
-                if fp:
-                    # add rowname or number
-                    if rnameIDX is None:
-                        rnames.append(str(i))
-                    else:
-                        rnames.append(row['id'])
-
-                    # add fingerprint to dictionay
-                    fps.update({i: fp})
-                    i = i + 1
-
-            # print(f' .. Row done.\n')
-
-    # split all fingerprints into vectors
-    Nrows = len(fps)
-    Ncols = len(fps[0])
-    # Ncols = len(DataStructs.BitVectToText(fps[0]))
-    if verbose > 0:
-        print(f'[INFO] Number of read compounds: {Nrows + j}')
-        print(f'[INFO] Returned # of fingerprints: {Nrows}')
-
-    # Store all fingerprints in numpy array
-    x = np.empty((Nrows, Ncols), int)
-
-    if printfp:
-        csvoutfilename = csvfilename.replace(".csv", "." + str(size) + ".fingerprints.csv")
-        fnames = names.copy()
-        fnames.append('fp')
-        f = open(csvoutfilename, 'w')
-        writer = csv.DictWriter(f, fieldnames=fnames)
-        writer.writeheader()
-
-        for i in fps:
-            # fp=DataStructs.BitVectToText(fps[i])
-            fp = fps[i]
-            rows[i]['fp'] = fp
-            writer.writerow(rows[i])
-            x[i] = list(map(int, [char for char in fp]))
-
-        f.close()
-        del rows
-    else:
-        for i in fps:
-            # get fingerprint as string
-            # fp=DataStructs.BitVectToText(fps[i])
-            fp = fps[i]
-            # split fp into list of integers
-            x[i] = list(map(int, [char for char in fp]))
-
-    pdx = pd.DataFrame(data=x, index=rnames)
-
-    return pdx
-
-
-# ------------------------------------------------------------------------------------- #
-
-def YfromInput(csvfilename, x):
-    """
-    Extract the matrix of outcomes for training/testing NN models that belongs to the
-    feature matrix.
-
-    :param csvfilename: Filename of comma separated CSV files containing the training data.
-    Target associations start in column 2nd column
-    :param x: The X-matrix that has been generated before. It may not contain all entries of the csvfilename, since
-    there might have been smiles that could not be transformed to a fingerprint.
-    :return: A pandas dataframe containing the Y matrix for training a NN model including
-    the names of the targets (each column is a different target)
-    """
-
-    df = pd.read_csv(csvfilename)
-    y = df[df.columns[1:]]
-
-    return y
 
 
 # ------------------------------------------------------------------------------------- #
@@ -444,7 +299,8 @@ def removeDuplicates(x, y):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineCallbacks(checkpointpath, patience, rlrop=False, rlropfactor=0.1, rlroppatience=50):
+def defineCallbacks(checkpointpath: str, patience: int, rlrop: bool = False,
+                    rlropfactor: float = 0.1, rlroppatience: int = 50) -> list:
     """
 
     :param checkpointpath:
@@ -456,7 +312,7 @@ def defineCallbacks(checkpointpath, patience, rlrop=False, rlropfactor=0.1, rlro
     """
 
     # enable this checkpoint to restore the weights of the best performing model
-    checkpoint = ModelCheckpoint(checkpointpath, monitor='val_loss', verbose=1,
+    checkpoint = ModelCheckpoint(checkpointpath, monitor='val_loss', verbose=1, period=10,
                                  save_best_only=True, mode='min', save_weights_only=True)
 
     # enable early stopping if val_loss is not improving anymore
@@ -575,8 +431,8 @@ def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', o
 
 # ------------------------------------------------------------------------------------- #
 
-def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myloss='binary_crossentropy',
-                     myregularization=10 - 3, mylr=0.001, mydecay=0.01):
+def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: object = 'binary_crossentropy',
+                     mylr: float = 0.001, mydecay: float = 0.01) -> tuple:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -585,7 +441,7 @@ def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myl
     :param myactivation: Activation function, see Keras activation functions for potential values. Default: relu
     :param myoptimizer: Optimizer, see Keras optmizers for potential values. Default: adadelta
     :param myloss: Loss function, see Keras Loss functions for potential values. Default: binary_crossentropy
-    :return: a tuple of autoencoder, encoder and decoder models
+    :return: a tuple of autoencoder and encoder models
     """
 
     myoptimizer = optimizers.Adam(learning_rate=mylr, decay=mydecay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
@@ -692,7 +548,9 @@ def predictValues(acmodelfilepath, modelfilepath, pdx):
 
 
 # ------------------------------------------------------------------------------------- #
-def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None, verbose=0):
+
+def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs: int = 0,
+                encdim: int = 256, checkpointpath: str = None, verbose: int = 0) -> Model:
     """
     Train an autoencoder on the given feature matrix X. Response matrix is only used to
     split meaningfully in test and train data set.
@@ -733,6 +591,10 @@ def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None
         ac_loss = autohist.history['loss']
         ac_val_loss = autohist.history['val_loss']
         ac_epochs = range(ac_loss.__len__())
+        pd.DataFrame(data={'loss': ac_loss,
+                           'val_loss': ac_val_loss,
+                           'epoch': ac_epochs}).to_csv(checkpointpath.replace(".hdf5",
+                                                                              "_trainValLoss_AC.csv"), index=False)
         # generate a figure of the losses for this fold
         plt.figure()
         plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
@@ -744,63 +606,10 @@ def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None
                     format='svg')
         plt.close()
         # write the losses to .csv file for later data visualization
-        df = pd.DataFrame(data={'loss': ac_loss, 'val_loss': ac_val_loss, 'epoch': ac_epochs})
-        df.to_csv(checkpointpath.replace(".hdf5",
-                                         "_trainValLoss_AC.csv"))
 
     # model needs to be saved and restored when predicting new input!
     # use encode() of train data as input for DL model to associate to chemical
     return encoder
-
-
-# def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs, enc_dim, split, verbose, kfold):
-def trainAutoencoder(checkpointpath, Xtrain, Xtest, epochs, enc_dim, verbose, fold):
-    """
-
-    :param checkpointpath:
-    :param X_train:
-    :param X_test:
-    :param y_train:
-    :param y_test:
-    :param epochs:
-    :return:
-    """
-
-    # checkpointpath = checkpointpath.replace(".hdf5", "_Fold-" + str(fold) + ".hdf5")
-
-    # collect the callbacks for training
-    callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20, rlrop=False)
-    # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    (autoencoder, encoder) = autoencoderModel(input_size=Xtrain.shape[1], encoding_dim=enc_dim)
-
-    # Fit the AC
-    autohist = autoencoder.fit(Xtrain, Xtrain,
-                               callbacks=callback_list,
-                               epochs=epochs, batch_size=128, shuffle=True, verbose=verbose,
-                               validation_data=(Xtest, Xtest))
-    # history
-    ac_loss = autohist.history['loss']
-    ac_val_loss = autohist.history['val_loss']
-    ac_epochs = range(ac_loss.__len__())
-    # generate a figure of the losses for this fold
-    plt.figure()
-    plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
-    plt.plot(ac_epochs, ac_val_loss, 'b', label='Validation loss')
-    plt.title(f'Training and validation loss of AC (Fold = {fold}')
-    plt.legend()
-    plt.savefig(fname=checkpointpath.replace(".hdf5",
-                                             "_trainValLoss_AC_Fold-" + str(fold) + ".svg"),
-                format='svg')
-    plt.close()
-    # write the losses to .csv file for later data visualization
-    df = pd.DataFrame(data={'loss': ac_loss, 'val_loss': ac_val_loss, 'epoch': ac_epochs})
-    df.to_csv(checkpointpath.replace(".hdf5",
-                                     "_trainValLoss_AC_Fold-" + str(fold) + ".csv"))
-
-    # model needs to be saved and restored when predicting new input!
-    # use encode() of train data as input for DL model to associate to chemical
-    return (encoder.predict(Xtrain), encoder.predict(Xtest), ac_loss.pop(), ac_val_loss.pop())
-
 
 # ------------------------------------------------------------------------------------- #
 
