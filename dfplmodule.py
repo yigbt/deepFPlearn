@@ -376,7 +376,9 @@ def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2
 
 # ------------------------------------------------------------------------------------- #
 
-def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
+def defineNNmodel(inputSize: int = 2048, l2reg: float = 0.001, dropout: float = 0.2,
+                  activation: str = 'relu', optimizer: str = 'Adam', lr: float = 0.001,
+                  decay: float = 0.01) -> Model:
     """
 
     :param inputSize:
@@ -884,7 +886,7 @@ def parseInputTrain(parser):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineOutfileNames(pathprefix, target, fold):
+def defineOutfileNames(pathprefix: str, target: str, fold: int) -> tuple:
     """
     This function returns the required paths for output files or directories.
 
@@ -955,7 +957,7 @@ def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
 
 # ------------------------------------------------------------------------------------- #
 
-def prepareDataSet(y, x, t):
+def prepareDataSet(y: pd.DataFrame, x: pd.DataFrame, t: str) -> tuple:
     """
     A function to remove NA values from the output column, duplicates from input and output
     and to transform the data into numpy arrays for keras functions.
@@ -1262,7 +1264,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
         # rm NAs and duplicates, shuffle, and transform to numpy arrays
         (Xt, Yt) = prepareDataSet(y, x, target)
 
-        # do a kfold cross validation for the autoencoder training
+        # do a kfold cross validation for the FNN training
         kfoldCValidator = KFold(n_splits=kfold, shuffle=True, random_state=42)
 
         # store acc and loss for each fold

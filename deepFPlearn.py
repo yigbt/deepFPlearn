@@ -64,13 +64,13 @@ def train(args: Namespace) -> None:
     dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelACincl",
                             x=xcompressed, y=ymatrix,
                             split=args.l, epochs=args.e,
-                            autoenc=args.a, verbose=args.v, kfold=args.K)
+                            verbose=args.v, kfold=args.K)
 
     # with uncompressed features
     dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelNoACincl",
                             x=xmatrix, y=ymatrix,
                             split=args.l, epochs=args.e,
-                            autoenc=args.a, verbose=args.v, kfold=args.K)
+                            verbose=args.v, kfold=args.K)
 
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main predict procedure 
