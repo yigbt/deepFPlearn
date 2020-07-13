@@ -854,8 +854,8 @@ def parseInputTrain(parser):
                              'training run. This avoids a retraining of the autoencoder on the'
                              'training data set (provided with -i). NOTE that the input and encoding'
                              'dimensions must fit your data and settings. Default: train new autoencoder.')
-    # parser.add_argument('-a', action='store_true',
-    #                    help='Use autoencoder to reduce dimensionality of fingerprint. Default: not set.')
+    parser.add_argument('-ACtrainOnly', action='store_true',
+                        help='Only train the autoencoder on the features matrix.')
     parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
                         default=256)
@@ -1179,17 +1179,14 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
     # get all the filenames
     (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
      modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-     modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
+     modelAUCfiledata, outfilepath, checkpointpath,
      modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
                                                         target="multi", fold=fold_no)
 
     file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
     allscores.to_csv(file)
 
-    bestModelfileAC = checkpointpathAC.replace("Fold-" + str(fold_no) + ".checkpoint", "best")
     bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.DNN-")
-    # copy best AC model
-    shutil.copyfile(checkpointpathAC, bestModelfileAC)
     # copy best DNN model
     shutil.copyfile(checkpointpath, bestModelfile)
     print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
