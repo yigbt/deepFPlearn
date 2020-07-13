@@ -252,6 +252,7 @@ def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = Fa
 
     return (dfX, dfY)
 
+
 # ------------------------------------------------------------------------------------- #
 
 def TrainingDataHeatmap(x, y):
@@ -298,7 +299,8 @@ def removeDuplicates(x, y):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineCallbacks(checkpointpath, patience, rlrop=False, rlropfactor=0.1, rlroppatience=50):
+def defineCallbacks(checkpointpath: str, patience: int, rlrop: bool = False,
+                    rlropfactor: float = 0.1, rlroppatience: int = 50) -> list:
     """
 
     :param checkpointpath:
@@ -429,8 +431,8 @@ def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', o
 
 # ------------------------------------------------------------------------------------- #
 
-def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myloss='binary_crossentropy',
-                     myregularization=10 - 3, mylr=0.001, mydecay=0.01):
+def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: object = 'binary_crossentropy',
+                     mylr: float = 0.001, mydecay: float = 0.01) -> tuple:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -439,7 +441,7 @@ def autoencoderModel(input_size=2048, encoding_dim=256, myactivation='relu', myl
     :param myactivation: Activation function, see Keras activation functions for potential values. Default: relu
     :param myoptimizer: Optimizer, see Keras optmizers for potential values. Default: adadelta
     :param myloss: Loss function, see Keras Loss functions for potential values. Default: binary_crossentropy
-    :return: a tuple of autoencoder, encoder and decoder models
+    :return: a tuple of autoencoder and encoder models
     """
 
     myoptimizer = optimizers.Adam(learning_rate=mylr, decay=mydecay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
@@ -546,7 +548,9 @@ def predictValues(acmodelfilepath, modelfilepath, pdx):
 
 
 # ------------------------------------------------------------------------------------- #
-def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None, verbose=0):
+
+def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs: int = 0,
+                encdim: int = 256, checkpointpath: str = None, verbose: int = 0) -> Model:
     """
     Train an autoencoder on the given feature matrix X. Response matrix is only used to
     split meaningfully in test and train data set.
@@ -587,6 +591,10 @@ def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None
         ac_loss = autohist.history['loss']
         ac_val_loss = autohist.history['val_loss']
         ac_epochs = range(ac_loss.__len__())
+        pd.DataFrame(data={'loss': ac_loss,
+                           'val_loss': ac_val_loss,
+                           'epoch': ac_epochs}).to_csv(checkpointpath.replace(".hdf5",
+                                                                              "_trainValLoss_AC.csv"), index=False)
         # generate a figure of the losses for this fold
         plt.figure()
         plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
@@ -598,63 +606,10 @@ def trainfullac(X, y, useweights=None, epochs=0, encdim=256, checkpointpath=None
                     format='svg')
         plt.close()
         # write the losses to .csv file for later data visualization
-        df = pd.DataFrame(data={'loss': ac_loss, 'val_loss': ac_val_loss, 'epoch': ac_epochs})
-        df.to_csv(checkpointpath.replace(".hdf5",
-                                         "_trainValLoss_AC.csv"))
 
     # model needs to be saved and restored when predicting new input!
     # use encode() of train data as input for DL model to associate to chemical
     return encoder
-
-
-# def trainAutoencoder(checkpointpath, X_train, X_test, y_train, y_test, epochs, enc_dim, split, verbose, kfold):
-def trainAutoencoder(checkpointpath, Xtrain, Xtest, epochs, enc_dim, verbose, fold):
-    """
-
-    :param checkpointpath:
-    :param X_train:
-    :param X_test:
-    :param y_train:
-    :param y_test:
-    :param epochs:
-    :return:
-    """
-
-    # checkpointpath = checkpointpath.replace(".hdf5", "_Fold-" + str(fold) + ".hdf5")
-
-    # collect the callbacks for training
-    callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20, rlrop=False)
-    # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    (autoencoder, encoder) = autoencoderModel(input_size=Xtrain.shape[1], encoding_dim=enc_dim)
-
-    # Fit the AC
-    autohist = autoencoder.fit(Xtrain, Xtrain,
-                               callbacks=callback_list,
-                               epochs=epochs, batch_size=128, shuffle=True, verbose=verbose,
-                               validation_data=(Xtest, Xtest))
-    # history
-    ac_loss = autohist.history['loss']
-    ac_val_loss = autohist.history['val_loss']
-    ac_epochs = range(ac_loss.__len__())
-    # generate a figure of the losses for this fold
-    plt.figure()
-    plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
-    plt.plot(ac_epochs, ac_val_loss, 'b', label='Validation loss')
-    plt.title(f'Training and validation loss of AC (Fold = {fold}')
-    plt.legend()
-    plt.savefig(fname=checkpointpath.replace(".hdf5",
-                                             "_trainValLoss_AC_Fold-" + str(fold) + ".svg"),
-                format='svg')
-    plt.close()
-    # write the losses to .csv file for later data visualization
-    df = pd.DataFrame(data={'loss': ac_loss, 'val_loss': ac_val_loss, 'epoch': ac_epochs})
-    df.to_csv(checkpointpath.replace(".hdf5",
-                                     "_trainValLoss_AC_Fold-" + str(fold) + ".csv"))
-
-    # model needs to be saved and restored when predicting new input!
-    # use encode() of train data as input for DL model to associate to chemical
-    return (encoder.predict(Xtrain), encoder.predict(Xtest), ac_loss.pop(), ac_val_loss.pop())
-
 
 # ------------------------------------------------------------------------------------- #
 

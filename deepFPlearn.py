@@ -9,21 +9,21 @@ importlib.reload(dfpl)
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main training procedure 
 
-def train(args):
+def train(args: Namespace) -> None:
 
     # for testing
-    args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
-                     o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
-                     t='smiles',
-                     k='topological',
-                     e=2000,
-                     s=2048,
-                     d=256,
-                     a=None,#'/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
-                     m=False,
-                     l=0.2,
-                     K=5,
-                     v=2)
+    # args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
+    #                  o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
+    #                  t='smiles',
+    #                  k='topological',
+    #                  e=2000,
+    #                  s=2048,
+    #                  d=256,
+    #                  a=None,#'/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
+    #                  m=False,
+    #                  l=0.2,
+    #                  K=5,
+    #                  v=2)
 
     # generate X and Y matrices
     (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
@@ -75,7 +75,7 @@ def train(args):
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main predict procedure 
 
-def predict(args):
+def predict(args: Namespace) -> None:
     # generate X matrix
     (xpd, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
                                          printfp=True, size=args.s, verbose=args.v, returnY=False)
@@ -106,4 +106,3 @@ if __name__ == '__main__':
     print(f'[INFO] The following arguments are received or filled with default values:\n{args}')
 
     args.func(args)
-#    print(args)
