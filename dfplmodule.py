@@ -572,7 +572,7 @@ def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs
     (autoencoder, encoder) = autoencoderModel(input_size=X.shape[1], encoding_dim=encdim)
 
     if useweights:  # don't train, use existing weights file and load it into AC model
-        autoencoder.load_weights(useweights)
+        #autoencoder.load_weights(useweights)
         encoder.load_weights(useweights)
     else:
         # collect the callbacks for training
@@ -1127,7 +1127,7 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
          modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
          modelAUCfiledata, outfilepath, checkpointpath,
          modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
-                                                            target="multi")
+                                                            target="multi", fold=fold_no)
 
         # use a dnn for multi-class prediction
         model = defineNNmodelMulti(inputSize=xmulti[train].shape[1], outputSize=ymulti.shape[1])
@@ -1177,25 +1177,23 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
     # select best model based on MCC
     idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
     fold_no = allscores._get_value(idx2, 'fold_no')
-    # get all the filenames
-    (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-     modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-     modelAUCfiledata, outfilepath, checkpointpath,
-     modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
-                                                        target="multi", fold=fold_no)
+
+    modelname = 'multi.Fold-' + str(fold_no)
+    checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+    bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
 
     file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
     allscores.to_csv(file)
 
-    bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.DNN-")
     # copy best DNN model
     shutil.copyfile(checkpointpath, bestModelfile)
     print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
 
     # AND retrain with full data set
-    fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
+    fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
     # measure the training time
     start = time()
+
     model = defineNNmodel(inputSize=xmulti[train].shape[1])
     callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
                                     rlrop=True, rlropfactor=0.1, rlroppatience=100)
@@ -1207,7 +1205,7 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
     trainTime = str(round((time() - start) / 60, ndigits=2))
 
     if verbose > 0:
-        print(f"[INFO:] Computation time for training the full classification DNN: {trainTime} min")
+        print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
     plotHistoryVis(hist,
                    modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
                    modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
@@ -1330,22 +1328,21 @@ def trainNNmodels(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
         # select best model based on MCC
         idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
         fold_no = allscores._get_value(idx2, 'fold_no')
-        # get all the filenames
-        (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-         modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-         modelAUCfiledata, outfilepath, checkpointpath,
-         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
-                                                            target=target, fold=fold_no)
 
+        modelname = target + '.Fold-' + str(fold_no)
+        checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+        bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+
+        # store all scores
         file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
         allscores.to_csv(file)
 
-        bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.DNN-")
         # copy best DNN model
         shutil.copyfile(checkpointpath, bestModelfile)
         print(f'[INFO]: Best model for FNN is saved:\n        - {bestModelfile}')
+
         # AND retrain with full data set
-        fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
+        fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
         # measure the training time
         start = time()
 
@@ -1360,13 +1357,13 @@ def trainNNmodels(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
         trainTime = str(round((time() - start) / 60, ndigits=2))
 
         if verbose > 0:
-            print(f"[INFO:] Computation time for training the full classification DNN: {trainTime} min")
-        plotHistoryVis(hist,
-                       modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                       modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                       modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                       modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
-        print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
+            print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
+        # plotHistoryVis(hist,
+        #                modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+        #                modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+        #                modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
+        #                modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
+        # print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
 
         pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
 

@@ -17,7 +17,7 @@ def train(args: Namespace) -> None:
     #                  o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
     #                  t='smiles',
     #                  k='topological',
-    #                  e=2000,
+    #                  e=11,#2000,
     #                  s=2048,
     #                  d=256,
     #                  a=None,#'/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
@@ -37,14 +37,19 @@ def train(args: Namespace) -> None:
     encoder = None
     if args.a:
         # load trained model for autoencoder
+        # this is not working yet.. I cannot load the AC weights into the encoder model (of course not!)
+        # But i don't have a solution for that at the moment
         encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
                                    useweights=args.a, verbose=args.v)
     else:
         # train an autoencoder on the full feature matrix
-        weightfile = args.o + "/ACmodel.hdf5"
+        weightfileAC = args.o + "/ACmodel.autoencoder.hdf5"
         encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   checkpointpath=weightfile,
+                                   checkpointpath=weightfileAC,
                                    verbose=args.v)
+        weightfile = args.o + "/ACmodel.encoder.hdf5"
+        encoder.save_weights(weightfile)
+
         if args.ACtrainOnly:
             print(f'[INFO] Model weights of trained autencoder are stored in: {weightfile}')
             exit(1)
@@ -58,10 +63,6 @@ def train(args: Namespace) -> None:
                        epochs=args.e, kfold=args.K, verbose=args.v)
 
     # train FNNs with uncompressed features
-    dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelNoACincl",
-                       x=xmatrix, y=ymatrix,
-                       split=args.l,
-                       epochs=args.e, kfold=args.K, verbose=args.v)
 
     ### train multi-label models
     # with comrpessed features
