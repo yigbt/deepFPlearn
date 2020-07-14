@@ -75,7 +75,7 @@ def train(args: Namespace) -> None:
     dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelNoACincl",
                             x=xmatrix, y=ymatrix,
                             split=args.l, epochs=args.e,
-                            verbose=args.v, kfold=2)#args.K)
+                            verbose=args.v, kfold=args.K)
 
 
 # ------------------------------------------------------------------------------------- #
