@@ -78,7 +78,7 @@ def shuffleDataPriorToTraining(x, y):
     # merge x and y
     df0 = pd.concat([x.reset_index(drop=True), y.reset_index(drop=True)], axis=1)
     # shuffle rows, drop NAs, reset index
-    df1 = df0.sample(frac=1).dropna(axis=0).reset_index()
+    df1 = df0.sample(frac=1).dropna(axis=0).reset_index(drop=True)
 
     return (df1.iloc[:, 0:x.shape[1]], df1.iloc[:, x.shape[1]:])
 
@@ -1006,22 +1006,35 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 
 # ------------------------------------------------------------------------------------- #
 
-def validateMultiModelOnTestData(Z_test, checkpointpath, y_test, colnames, resultfile):
+def validateMultiModelOnTestData(Z_test, checkpointpath, y_test, resultfile):
+
+    colnames = y_test.columns
+
     # load checkpoint model with min(val_loss)
-    trainedmodel = defineNNmodelMulti(inputSize=Z_test.shape[1], outputSize=y_test.shape[1])
+    trainedmodel = defineNNmodelMulti(inputSize=Z_test.shape[1],
+                                      outputSize=y_test.shape[1])
 
     # predict values with random model
-    predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=colnames + '-predRandom')
+    predictions_random = pd.DataFrame(trainedmodel.predict(Z_test),
+                                      columns=colnames + '-random',
+                                      index=Z_test.index)
 
     # load weights into random model
     trainedmodel.load_weights(checkpointpath)
 
     # predict with trained model
     predictions = pd.DataFrame(trainedmodel.predict(Z_test),
-                               columns=colnames + '-pred')
-    scores = pd.DataFrame((predictions.round() == y_test).sum() / y_test.shape[0], columns=['correctPredictions'])
+                               columns=colnames,
+                               index=Z_test.index)
 
-    results = pd.concat([predictions_random, predictions, pd.DataFrame(y_test, columns=colnames + '-true')], axis=1)
+    scores = pd.DataFrame((predictions.round() == y_test).sum() / y_test.shape[0],
+                          columns=['correctPredictions'])
+
+    predictions.columns = predictions.columns + '-trained'
+
+    results = pd.concat([predictions_random,
+                         predictions, y_test],
+                        axis=1)
     results.to_csv(resultfile)
 
     return scores
@@ -1112,6 +1125,13 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
     # do a kfold cross validation for the autoencoder training
     kfoldCValidator = KFold(n_splits=kfold, shuffle=True, random_state=42)
 
+    # for train_index, test_index in kfoldCValidator.split(xmulti):
+    #     #print("TRAIN:", train_index, "TEST:", test_index)
+    #     X_train, X_test = xmulti.loc[train_index], xmulti.loc[test_index]
+    #     #y_train, y_test = ymulti[train_index], ymulti[test_index]
+    #     print(f'xtrain.shape={X_train.shape}')
+    #     print(f'xtest.shape={X_test.shape}')
+
     # store acc and loss for each fold
     allscores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
                                       "loss", "val_loss", "acc", "val_acc",  # FNN training
@@ -1120,7 +1140,12 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
     fold_no = 1
 
     # split the data
-    for train, test in kfoldCValidator.split(xmulti, ymulti):
+    for train_idx, test_idx in kfoldCValidator.split(xmulti):
+
+        # for testing
+        # train_idx, test_idx = kfoldCValidator.split(xmulti)
+        # X_train, X_test = xmulti.loc[train_idx[0]], xmulti.loc[test_idx[0]]
+        # y_train, y_test = ymulti.loc[train_idx[0]], ymulti.loc[test_idx[0]]
 
         # define all the output file/path names
         (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
@@ -1129,8 +1154,12 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
          modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
                                                             target="multi", fold=fold_no)
 
+        X_train, X_test = xmulti.loc[train_idx], xmulti.loc[test_idx]
+        y_train, y_test = ymulti.loc[train_idx], ymulti.loc[test_idx]
+
         # use a dnn for multi-class prediction
-        model = defineNNmodelMulti(inputSize=xmulti[train].shape[1], outputSize=ymulti.shape[1])
+        model = defineNNmodelMulti(inputSize=X_train.shape[1],
+                                   outputSize=y_train.shape[1])
 
         callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20,
                                         rlrop=True, rlropfactor=0.1, rlroppatience=100)
@@ -1138,7 +1167,7 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
         start = time()
 
         # train and validate
-        hist = model.fit(xmulti[train], ymulti[train],
+        hist = model.fit(X_train, y_train,
                          callbacks=callback_list,
                          epochs=epochs, batch_size=256, verbose=2, validation_split=split)
 
@@ -1148,22 +1177,30 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
             print(f"[INFO:] Computation time for training the multi-label FNN: {trainTime} min")
 
         # validate model on test data set (x_test, y_test)
-        scores = validateMultiModelOnTestData(Z_test=xmulti[test],
+        scores = validateMultiModelOnTestData(Z_test=X_test,
                                               checkpointpath=checkpointpath,
-                                              y_test=ymulti[test],
-                                              colnames=y.columns,
+                                              y_test=y_test,
                                               resultfile=outfilepath.replace("trainingResults.txt",
                                                                              "predictionResults.csv"))
 
+        # get epoch with minimal validation loss
         idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
+        # pd.concat([pd.DataFrame([[fold_no,
+        #              hist.history['loss'][idx], hist.history['val_loss'][idx],
+        #              hist.history['accuracy'][idx], hist.history['val_accuracy'][idx]]],
+        #                        columns=["fold_no",  # fold number of k-fold CV
+        #                                 "loss", "val_loss", "acc", "val_acc"]  # FNN training]
+        #                        ),
+        #           scores.T], axis=1)
+
+
         row_df = pd.DataFrame([[fold_no,
                                 hist.history['loss'][idx], hist.history['val_loss'][idx],
-                                hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
-                                scores[0], scores[1], scores[2]]],
+                                hist.history['accuracy'][idx], hist.history['val_accuracy'][idx]]],
                               columns=["fold_no",  # fold number of k-fold CV
-                                       "loss", "val_loss", "acc", "val_acc",  # FNN training
-                                       "loss_test", "acc_test", "mcc_test"]
+                                       "loss", "val_loss", "acc", "val_acc"]
                               )
+
         print(row_df)
         allscores = allscores.append(row_df, ignore_index=True)
 
@@ -1175,7 +1212,7 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
     # finalize model
     # 1. provide best performing fold variant
     # select best model based on MCC
-    idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
+    idx2 = allscores[['val_loss']].idxmin().ravel()[0]
     fold_no = allscores._get_value(idx2, 'fold_no')
 
     modelname = 'multi.Fold-' + str(fold_no)
@@ -1194,7 +1231,9 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
     # measure the training time
     start = time()
 
-    model = defineNNmodel(inputSize=xmulti[train].shape[1])
+    model = defineNNmodelMulti(inputSize=xmulti.shape[1],
+                               outputSize=ymulti.shape[1])
+
     callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
                                     rlrop=True, rlropfactor=0.1, rlroppatience=100)
     # train and validate
@@ -1210,7 +1249,7 @@ def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFram
                    modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
                    modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
                    modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                   modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
+                   modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), "multi")
     print(f'[INFO]: Full models for DNN is saved:\n        - {fullModelfile}')
 
     pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))

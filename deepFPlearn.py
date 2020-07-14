@@ -7,24 +7,24 @@ import importlib
 
 importlib.reload(dfpl)
 
+# args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
+#                        o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
+#                        t='smiles',
+#                        k='topological',
+#                        e=11,  # 2000,
+#                        s=2048,
+#                        d=256,
+#                        a=None,  # '/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
+#                        m=False,
+#                        l=0.2,
+#                        K=5,
+#                        v=2)
+
 
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main training procedure 
 
 def train(args: Namespace) -> None:
-    # for testing
-    # args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
-    #                  o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
-    #                  t='smiles',
-    #                  k='topological',
-    #                  e=11,#2000,
-    #                  s=2048,
-    #                  d=256,
-    #                  a=None,#'/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
-    #                  m=False,
-    #                  l=0.2,
-    #                  K=5,
-    #                  v=2)
 
     # generate X and Y matrices
     (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
@@ -75,7 +75,7 @@ def train(args: Namespace) -> None:
     dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelNoACincl",
                             x=xmatrix, y=ymatrix,
                             split=args.l, epochs=args.e,
-                            verbose=args.v, kfold=args.K)
+                            verbose=args.v, kfold=2)#args.K)
 
 
 # ------------------------------------------------------------------------------------- #
