@@ -34,54 +34,56 @@ def train(args):
     (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
                                              printfp=True, size=args.s, verbose=args.v)
 
-    if args.v > 0:
-        print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
-        print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
+    # if args.v > 0:
+    #     print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
+    #     print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
+    #
+    #
+    # encoder = None
+    # if args.a:
+    #     # load trained model for autoencoder
+    #     encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+    #                                useweights=args.a, verbose=args.v)
+    # else:
+    #     # train an autoencoder on the full feature matrix
+    #     encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+    #                                checkpointpath=args.o + "/ACmodel.hdf5",
+    #                                verbose=args.v)
+    #
+    # xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
 
-    if args.a:
-        # load trained model for autoencoder
-        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   useweights=args.a, verbose=args.v)
-    else:
-        # train an autoencoder on the full feature matrix
-        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   checkpointpath=args.o + "/ACmodel.hdf5",
-                                   verbose=args.v)
-    xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
-
-    # train FNNs with compressed features
+    # # train FNNs with compressed features
     # dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelACincl",
     #                    x=xcompressed, y=ymatrix,
     #                    split=args.l,
     #                    epochs=args.e, kfold=args.K, verbose=args.v)
-
-    # train FNNs with uncompressed features
-    dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelNoACincl",
-                       x=xmatrix, y=ymatrix,
-                       split=args.l,
-                       epochs=args.e, kfold=args.K, verbose=args.v)
+    #
+    # # train FNNs with uncompressed features
+    # dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelNoACincl",
+    #                    x=xmatrix, y=ymatrix,
+    #                    split=args.l,
+    #                    epochs=args.e, kfold=args.K, verbose=args.v)
 
     ### train multi-label models
     # with comrpessed features
-    dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelACincl",
-                            x=xcompressed, y=ymatrix,
-                            split=args.l, epochs=args.e,
-                            autoenc=args.a, verbose=args.v, kfold=args.K)
+    # dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelACincl",
+    #                         x=xcompressed, y=ymatrix,
+    #                         split=args.l, epochs=args.e,
+    #                         verbose=args.v, kfold=args.K)
 
     # with uncompressed features
     dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelNoACincl",
                             x=xmatrix, y=ymatrix,
                             split=args.l, epochs=args.e,
-                            autoenc=args.a, verbose=args.v, kfold=args.K)
-
+                            verbose=args.v, kfold=args.K)
 
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main predict procedure 
 
-def predict(args):
+def predict(args: Namespace) -> None:
     # generate X matrix
-    xpd = dfpl.XfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k, printfp=True)
-
+    (xpd, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
+                                         printfp=True, size=args.s, verbose=args.v, returnY=False)
     # predict values for provided data and model
     # ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
     ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
@@ -93,7 +95,8 @@ def predict(args):
 # ===================================================================================== #
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog="deepFPlearn")
+
+    parser = argparse.ArgumentParser(prog='deepFPlearn')
     subparsers = parser.add_subparsers(help="Sub programs of deepFPlearn")
 
     parser_train = subparsers.add_parser("train", help="Train new models with your data")

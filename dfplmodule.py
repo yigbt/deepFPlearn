@@ -376,7 +376,9 @@ def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2
 
 # ------------------------------------------------------------------------------------- #
 
-def defineNNmodel(inputSize=2048, l2reg=0.001, dropout=0.2, activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
+def defineNNmodel(inputSize: int = 2048, l2reg: float = 0.001, dropout: float = 0.2,
+                  activation: str = 'relu', optimizer: str = 'Adam', lr: float = 0.001,
+                  decay: float = 0.01) -> Model:
     """
 
     :param inputSize:
@@ -570,7 +572,7 @@ def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs
     (autoencoder, encoder) = autoencoderModel(input_size=X.shape[1], encoding_dim=encdim)
 
     if useweights:  # don't train, use existing weights file and load it into AC model
-        autoencoder.load_weights(useweights)
+        #autoencoder.load_weights(useweights)
         encoder.load_weights(useweights)
     else:
         # collect the callbacks for training
@@ -852,8 +854,8 @@ def parseInputTrain(parser):
                              'training run. This avoids a retraining of the autoencoder on the'
                              'training data set (provided with -i). NOTE that the input and encoding'
                              'dimensions must fit your data and settings. Default: train new autoencoder.')
-    # parser.add_argument('-a', action='store_true',
-    #                    help='Use autoencoder to reduce dimensionality of fingerprint. Default: not set.')
+    parser.add_argument('--ACtrainOnly', action='store_true',
+                        help='Only train the autoencoder on the features matrix an exit.')
     parser.add_argument('-d', metavar='INT', type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
                         default=256)
@@ -884,7 +886,7 @@ def parseInputTrain(parser):
 
 # ------------------------------------------------------------------------------------- #
 
-def defineOutfileNames(pathprefix, target, fold):
+def defineOutfileNames(pathprefix: str, target: str, fold: int) -> tuple:
     """
     This function returns the required paths for output files or directories.
 
@@ -955,7 +957,7 @@ def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
 
 # ------------------------------------------------------------------------------------- #
 
-def prepareDataSet(y, x, t):
+def prepareDataSet(y: pd.DataFrame, x: pd.DataFrame, t: str) -> tuple:
     """
     A function to remove NA values from the output column, duplicates from input and output
     and to transform the data into numpy arrays for keras functions.
@@ -1095,8 +1097,9 @@ def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvali
 
 
 # ------------------------------------------------------------------------------------- #
-def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
-                       verbose=2, kfold=5):
+def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
+                       split: float = 0.2, epochs: int = 500,
+                       verbose: int= 2, kfold: int = 5) -> None:
     # remove 'id' column if present
     if 'id' in x.columns:
         x = x.drop('id', axis=1)
@@ -1122,9 +1125,9 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
         # define all the output file/path names
         (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
          modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-         modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
+         modelAUCfiledata, outfilepath, checkpointpath,
          modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
-                                                            target="multi")
+                                                            target="multi", fold=fold_no)
 
         # use a dnn for multi-class prediction
         model = defineNNmodelMulti(inputSize=xmulti[train].shape[1], outputSize=ymulti.shape[1])
@@ -1174,28 +1177,23 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
     # select best model based on MCC
     idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
     fold_no = allscores._get_value(idx2, 'fold_no')
-    # get all the filenames
-    (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-     modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-     modelAUCfiledata, outfilepath, checkpointpath, checkpointpathAC,
-     modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
-                                                        target="multi", fold=fold_no)
+
+    modelname = 'multi.Fold-' + str(fold_no)
+    checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+    bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
 
     file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
     allscores.to_csv(file)
 
-    bestModelfileAC = checkpointpathAC.replace("Fold-" + str(fold_no) + ".checkpoint", "best")
-    bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.DNN-")
-    # copy best AC model
-    shutil.copyfile(checkpointpathAC, bestModelfileAC)
     # copy best DNN model
     shutil.copyfile(checkpointpath, bestModelfile)
     print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
 
     # AND retrain with full data set
-    fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
+    fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
     # measure the training time
     start = time()
+
     model = defineNNmodel(inputSize=xmulti[train].shape[1])
     callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
                                     rlrop=True, rlropfactor=0.1, rlroppatience=100)
@@ -1207,7 +1205,7 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
     trainTime = str(round((time() - start) / 60, ndigits=2))
 
     if verbose > 0:
-        print(f"[INFO:] Computation time for training the full classification DNN: {trainTime} min")
+        print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
     plotHistoryVis(hist,
                    modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
                    modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
@@ -1221,8 +1219,9 @@ def trainNNmodelsMulti(modelfilepathprefix, x, y, split=0.2, epochs=500,
 
 # ------------------------------------------------------------------------------------- #
 
-def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
-                  verbose=2, kfold=5):
+def trainNNmodels(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
+                  split: float = 0.2, epochs: int = 50, params: str = None,
+                  verbose: int = 2, kfold: int = 5) -> None:
     """
     Train individual models for all targets (columns) present in the provided target data (y) and a multi-label
     model that classifies all targets at once. For each individual target the data is first subsetted to exclude NA
@@ -1262,7 +1261,7 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
         # rm NAs and duplicates, shuffle, and transform to numpy arrays
         (Xt, Yt) = prepareDataSet(y, x, target)
 
-        # do a kfold cross validation for the autoencoder training
+        # do a kfold cross validation for the FNN training
         kfoldCValidator = KFold(n_splits=kfold, shuffle=True, random_state=42)
 
         # store acc and loss for each fold
@@ -1329,22 +1328,21 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
         # select best model based on MCC
         idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
         fold_no = allscores._get_value(idx2, 'fold_no')
-        # get all the filenames
-        (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-         modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-         modelAUCfiledata, outfilepath, checkpointpath,
-         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
-                                                            target=target, fold=fold_no)
 
+        modelname = target + '.Fold-' + str(fold_no)
+        checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+        bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+
+        # store all scores
         file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
         allscores.to_csv(file)
 
-        bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.DNN-")
         # copy best DNN model
         shutil.copyfile(checkpointpath, bestModelfile)
         print(f'[INFO]: Best model for FNN is saved:\n        - {bestModelfile}')
+
         # AND retrain with full data set
-        fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full")
+        fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
         # measure the training time
         start = time()
 
@@ -1359,39 +1357,18 @@ def trainNNmodels(modelfilepathprefix, x, y, split=0.2, epochs=50, params=None,
         trainTime = str(round((time() - start) / 60, ndigits=2))
 
         if verbose > 0:
-            print(f"[INFO:] Computation time for training the full classification DNN: {trainTime} min")
-        plotHistoryVis(hist,
-                       modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                       modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                       modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                       modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
-        print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
+            print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
+        # plotHistoryVis(hist,
+        #                modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+        #                modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+        #                modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
+        #                modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
+        # print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
 
         pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
 
         del model
         # now next target
-
-
-# ------------------------------------------------------------------------------------- #
-
-def trainMultiNNmodel(model, x, y, split=0.8):
-    """
-    Train one multi-class model of the provided structure for all targets (columns) provided in y
-    using the features x and the outcomes y and a train/validation data set split of
-    split.
-    :param model: a compiled neural network model
-    :param x: a numpy array of training features, one row per data set, features in cols.
-    :param y: a pandas data frame of training outcomes, one column per outcome.
-    Cell value (0,1). Name of column used as name of target.
-    :param split: the percentage data sets used for training. Remaining percentage is
-    used in cross-validation steps.
-    :return: matrix of statistics per target
-    """
-
-    stats = {}
-
-    return stats
 
 
 # ------------------------------------------------------------------------------------- #
