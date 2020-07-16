@@ -24,6 +24,7 @@ from rdkit.Chem.AtomPairs import Pairs
 from rdkit.Chem.AtomPairs import Torsions
 
 # for NN model functions
+import keras
 from keras.models import Sequential
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model
@@ -42,8 +43,34 @@ from sklearn.metrics import auc
 from sklearn.metrics import matthews_corrcoef
 from sklearn.model_selection import KFold
 
+from tensorflow import matmul
+
 from time import time
 
+default_ac_input_size = 2048
+default_ac_encoding_size = 256
+default_ac_learning_rate = 0.001
+
+# ------------------------------------------------------------------------------------- #
+
+class DenseTranspose(keras.layers.Layer):
+    """
+    A custom layer to tie the weights of encoder and decoder
+    """
+
+    def __init__(self, dense, activation=None, **kwargs):
+        self.dense = dense
+        self.activation = keras.activations.get(activation)
+        super().__init__(**kwargs)
+
+    def build(self, batch_input_shape):
+        self.biases = self.add_weight(name="bias", initializer="zeros", shape=[self.dense.input_shape[-1]])
+        super().build(batch_input_shape)
+
+    def call(self, inputs):
+        # z = tf.matmul(inputs, self.dense.weights[0], transpose_b=True)
+        z = matmul(inputs, self.dense.weights[0], transpose_b=True)
+        return self.activation(z + self.biases)
 
 ###############################################################################
 # GENERAL FUNCTIONS --------------------------------------------------------- #
@@ -335,6 +362,122 @@ def defineCallbacks(checkpointpath: str, patience: int, rlrop: bool = False,
 
 # ------------------------------------------------------------------------------------- #
 
+def defineACmodel(input_size: int = default_ac_input_size,
+                  encoding_dim: int = default_ac_encoding_size,
+                  learning_rate: float = default_ac_learning_rate) -> tuple:
+    """
+    Implements the model architecture of a symmetric autoencoder, using 'relu' as activation
+    function for input and hidden layers, and 'sigmoid' activation function towards output
+    layer. The loss function is 'binary crossentropy' since the input is a binary fingerprint.
+    Weights are tyed to reduce the number of weights of the model to half of the original, thus
+    reducing the risk of over-fitting and speeding up the training process.
+
+    :param input_size: The dimension of (1-dimensional) in- and output size.
+    :param encoding_dim: The dimension of the (1-dimensional) latent space = encoding dimension.
+    :param learning_rate: Learning rate of the autoencoder.
+    :return:
+    """
+
+    # get the number of meaningful hidden layers (latent space included)
+    nhl = round(math.log2(input_size / encoding_dim))
+
+    # try the tying weights thing
+    dense_layers = list()
+    for i in range(nhl):
+        factorunits = 2 ** (i + 1)
+        print(f'{i} {factorunits}: {int(input_size / factorunits)}')
+        dense_layers.append(keras.layers.Dense(int(input_size / factorunits), activation='relu'))
+
+    # tied_encoder
+    inputs = keras.Input(shape=(input_size,))
+    encoded = dense_layers[0](inputs)
+    for i in range(1, nhl):
+        encoded = dense_layers[i](encoded)
+
+    # decoding layers
+    # tied_decoder --> NOTE: for some reason, the transposition of the weights of the decoding layers does not work
+    # the loose their shape info at some point.. needs detailed inspection..
+    factorunits = 2 ** (nhl - 1)
+    decoded = Dense(units=int(input_size / factorunits))(encoded)
+    # decoded = DenseTranspose(dense_layers[nhl-1], activation='relu')(encoded)
+    for i in range(nhl-2, 0, -1):
+        print(f'i={i}')
+        factorunits = 2 ** i
+        decoded = Dense(units=int(input_size / factorunits), activation='relu')(decoded)
+        # decoded = DenseTranspose(dense_layers[i], activation='relu')(decoded)
+
+    outputs = Dense(units=input_size, activation='sigmoid')(decoded)
+    # outputs = DenseTranspose(dense_layers[0], activation='sigmoid')(decoded)
+
+    tied_ec = keras.models.Model(inputs, encoded)
+    tied_ec.compile(loss="binary_crossentropy",
+                    optimizer=keras.optimizers.Adam(learning_rate=learning_rate))
+    tied_ec.summary()
+
+    tied_ae = keras.models.Model(inputs, outputs)
+    tied_ae.compile(loss="binary_crossentropy",
+                    optimizer=keras.optimizers.Adam(learning_rate=learning_rate))
+    tied_ae.summary()
+
+    return (tied_ae, tied_ec)
+
+# ------------------------------------------------------------------------------------- #
+
+def useOrTrainAutoencoder(data: pd.DataFrame, outpath: str = None, epochs: int = 10,
+                          encdim: int = 256, verbosity : int = 2,
+                          ecweightsfile: str = None, log: str = None) -> keras.models.Model:
+    """
+    Returns the encoder of either an already trained autoencoder - if respective weights
+    are provided, or trains the autoencoder to provide the encoder.
+
+    :param data: A pandas DataFrame that contains a columns 'fp' which holds arrays of all
+    fingerprints that should be used for training.
+    :param outpath: The path pointing to the output directory, where to store the model
+    weight files.
+    :param epochs: The number of epochs for training.
+    :param encdim: The size of the latent space in the autoencoder.
+    :param verbosity: The verbosity level of the training procedurs.
+    :param ecweightsfile: A file containing weights of a trained encoder of the same structure.
+    :return: A keras model containing the trained encoder.
+    """
+
+    logging.basicConfig(filename=log, filemode='w', level=logging.DEBUG)
+
+    (autoencoder, encoder) = defineACmodel(input_size=data['fp'][0].__len__(),
+                                           encoding_dim=encdim)
+
+    if ecweightsfile: # use existing weight file for encoder
+        encoder.load_weights(ecweightsfile)
+    else: # train the autoencoder and save weights of encoder
+        # file for storing autoencoder weights
+        acweightsfile = outpath + "/ACmodel.weights.autoencoder.hdf5"
+        # file for storing encoder weights
+        ecweightsfile = outpath + "/ACmodel.weights.encoder.hdf5"
+        # collect the callbacks for training
+        callback_list = defineCallbacks(checkpointpath=acweightsfile,
+                                        patience=20,
+                                        rlrop=False)
+        # split (valid) fingerprints into test and training data
+        train, test = train_test_split(np.array(data[data['fp'].notnull()]['fp'].to_list()),
+                                       test_size=0.2, random_state=42)
+        # Fit the AC
+        history = autoencoder.fit(train, train,
+                                  callbacks=callback_list,
+                                  epochs=epochs,
+                                  batch_size=256,
+                                  shuffle=False,
+                                  verbose=verbosity,
+                                  validation_data=(test, test))
+        # save encoder weights, too
+        encoder.save_weights(ecweightsfile)
+
+        logging.info(f'Weights of trained autoencoder saved to: {acweightsfile}')
+        logging.info(f'Weights of trained encoder saved to: {ecweightsfile}')
+
+    return encoder
+
+# ------------------------------------------------------------------------------------- #
+
 def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2,
                        activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
     if optimizer == 'Adam':
@@ -551,7 +694,7 @@ def predictValues(acmodelfilepath, modelfilepath, pdx):
 
 # ------------------------------------------------------------------------------------- #
 
-def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs: int = 0,
+def trainfullac(data:pd.DataFrame, X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs: int = 10,
                 encdim: int = 256, checkpointpath: str = None, verbose: int = 0) -> Model:
     """
     Train an autoencoder on the given feature matrix X. Response matrix is only used to
@@ -568,30 +711,44 @@ def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs
     :return: The encoder model of the trained autoencoder
     """
 
-    # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    (autoencoder, encoder) = autoencoderModel(input_size=X.shape[1], encoding_dim=encdim)
+    # Set up the model of the AC w.r.t. the input size and the dimension of the latent space (z!)
+    (autoencoder, encoder) = autoencoderModel(input_size=data['fp'][0].__len__(),
+                                              encoding_dim=encdim)
 
     if useweights:  # don't train, use existing weights file and load it into AC model
         #autoencoder.load_weights(useweights)
         encoder.load_weights(useweights)
     else:
-        # collect the callbacks for training
-        callback_list = defineCallbacks(checkpointpath=checkpointpath,
-                                        patience=20, rlrop=False)
+        # file for storing autoencoder weights
+        acweightsfile = checkpointpath + "autoencoder.hdf5"
+        # file for storing encoder weights
+        ecweightsfile = checkpointpath + "encoder.hdf5"
+        # file for storing decoder weights
+        dcweightsfile = checkpointpath + "decoder.hdf5"
 
-        # split data into test and training data
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # collect the callbacks for training
+        callback_list = defineCallbacks(checkpointpath=acweightsfile,
+                                        patience=20,
+                                        rlrop=False)
+
+        # split (valid) fingerprints into test and training data
+        train, test = train_test_split(np.array(data[data['fp'].notnull()]['fp'].to_list()),
+                                       test_size=0.2, random_state=42)
+
+        # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         # Fit the AC
-        autohist = autoencoder.fit(X_train, X_train,
+        history = autoencoder.fit(train, train,
                                    callbacks=callback_list,
                                    epochs=epochs,
                                    batch_size=256,
                                    shuffle=True,
                                    verbose=verbose,
-                                   validation_data=(X_test, X_test))
+                                   validation_data=(test, test))
+        # save weights of en/decoder
+
         # history
-        ac_loss = autohist.history['loss']
-        ac_val_loss = autohist.history['val_loss']
+        ac_loss = history.history['loss']
+        ac_val_loss = history.history['val_loss']
         ac_epochs = range(ac_loss.__len__())
         pd.DataFrame(data={'loss': ac_loss,
                            'val_loss': ac_val_loss,

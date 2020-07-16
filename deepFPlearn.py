@@ -1,24 +1,29 @@
 import argparse
 from argparse import Namespace
 import pandas as pd
+import numpy as np
 
+import logging
+
+import fingerprint as fp
 import dfplmodule as dfpl
-import importlib
 
+import importlib
+importlib.reload(fp)
 importlib.reload(dfpl)
 
-# args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
-#                        o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
-#                        t='smiles',
-#                        k='topological',
-#                        e=11,  # 2000,
-#                        s=2048,
-#                        d=256,
-#                        a=None,  # '/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
-#                        m=False,
-#                        l=0.2,
-#                        K=5,
-#                        v=2)
+args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
+                 o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
+                 t='smiles',
+                 k='topological',
+                 e=2, # 2000,
+                 s=2048,
+                 d=256,
+                 a=None,  # '/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
+                 m=False,
+                 l=0.2,
+                 K=5,
+                 v=2)
 
 
 # ------------------------------------------------------------------------------------- #
@@ -26,41 +31,25 @@ importlib.reload(dfpl)
 
 def train(args: Namespace) -> None:
 
+    logfile = args.o + 'training.log'
+    logging.basicConfig(filename=logfile, filemode='w', level=logging.DEBUG)
+
     # generate X and Y matrices
-    (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
-                                             printfp=True, size=args.s, verbose=args.v)
+    dfInput = fp.prepareInputData(csvfilename=args.i, fp_size=args.s)
 
-    if args.v > 0:
-        print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
-        print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
+    encoder = dfpl.useOrTrainAutoencoder(data=dfInput, outpath=args.o, epochs=args.e,
+                          encdim=args.d, verbosity=args.v, log=logfile)
 
-    encoder = None
-    if args.a:
-        # load trained model for autoencoder
-        # this is not working yet.. I cannot load the AC weights into the encoder model (of course not!)
-        # But i don't have a solution for that at the moment
-        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   useweights=args.a, verbose=args.v)
-    else:
-        # train an autoencoder on the full feature matrix
-        weightfileAC = args.o + "/ACmodel.autoencoder.hdf5"
-        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   checkpointpath=weightfileAC,
-                                   verbose=args.v)
-        weightfile = args.o + "/ACmodel.encoder.hdf5"
-        encoder.save_weights(weightfile)
-
-        if args.ACtrainOnly:
-            print(f'[INFO] Model weights of trained autencoder are stored in: {weightfile}')
-            exit(1)
-
-    xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
+    xcompressed = pd.DataFrame(encoder.predict(np.array(dfInput[dfInput['fp'].notnull()]['fp'].to_list())))
+    # how can I add this to the dfInput?
+    # I would like to provide dfInput to the following training procedures instead of x and y matrices
+    ymatrix = dfInput[[col for col in dfInput.columns if col not in ['smiles', 'fp']]]
 
     # train FNNs with compressed features
     dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelACincl",
-                       x=xcompressed, y=ymatrix,
-                       split=args.l,
-                       epochs=args.e, kfold=args.K, verbose=args.v)
+                      x=xcompressed, y=ymatrix,
+                      split=args.l,
+                      epochs=args.e, kfold=args.K, verbose=args.v)
 
     # train FNNs with uncompressed features
 
