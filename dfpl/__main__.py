@@ -1,55 +1,61 @@
-import argparse
 from argparse import Namespace
 import pandas as pd
-
-import dfplmodule as dfpl
 import importlib
 import pathlib
 
+from dfpl import dfpl
+from dfpl import options
+
 importlib.reload(dfpl)
 
-project_directory = pathlib.Path(__file__).parent.absolute()
-test_train_args = Namespace(
-    i=f"{project_directory}/testdata/TrainingDataset.csv",
-    o=f"{project_directory}/modeltraining",
-    t='smiles',
-    k='topological',
-    e=512,
-    s=2048,
-    d=256,
-    a=None,
-    m=False,
-    l=0.2,
-    K=5,
-    v=0
+project_directory = pathlib.Path(__file__).parent.parent.absolute()
+test_train_args = options.TrainOptions(
+    inputFile=f"{project_directory}/data/Sun_etal_dataset.csv",
+    outputDir=f"{project_directory}/modeltraining",
+    acFile="",
+    type='smiles',
+    fpType='topological',
+    epochs=512,
+    fpSize=2048,
+    encFPSize=256,
+    enableMultiLabel=False,
+    testingFraction=0.2,
+    kFolds=5,
+    verbose=1
 )
 
 
-def train(args):
+def train(opts: options.TrainOptions):
     """
     The function defining what happens in the main training procedure
-    :param args:
+    :param opts:
     """
     # generate X and Y matrices
-    (xmatrix, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
-                                             printfp=True, size=args.s, verbose=args.v)
+    (xmatrix, ymatrix) = dfpl.XandYfromInput(
+        csvfilename=opts.inputFile,
+        rtype=opts.type,
+        fptype=opts.fpType,
+        printfp=True,
+        size=opts.fpSize,
+        verbose=opts.verbose
+    )
 
-    # if args.v > 0:
-    #     print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
-    #     print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
-    #
-    #
-    # encoder = None
-    # if args.a:
-    #     # load trained model for autoencoder
-    #     encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-    #                                useweights=args.a, verbose=args.v)
-    # else:
-    #     # train an autoencoder on the full feature matrix
-    #     encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-    #                                checkpointpath=args.o + "/ACmodel.hdf5",
-    #                                verbose=args.v)
-    #
+    if opts.verbose > 0:
+        print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
+        print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
+
+
+    encoder = None
+    if opts.acFile == "":
+        # load trained model for autoencoder
+        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+                                   useweights=args.a, verbose=args.v)
+    else:
+        # train an autoencoder on the full feature matrix
+        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+                                   checkpointpath=args.o + "/ACmodel.hdf5",
+                                   verbose=args.v)
+
     # xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
 
     # # train FNNs with compressed features
@@ -72,10 +78,11 @@ def train(args):
     #                         verbose=args.v, kfold=args.K)
 
     # with uncompressed features
-    dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelNoACincl",
-                            x=xmatrix, y=ymatrix,
-                            split=args.l, epochs=args.e,
-                            verbose=args.v, kfold=args.K)
+    # dfpl.trainNNmodelsMulti(modelfilepathprefix=opts.o + "/FNNmultiLabelmodelNoACincl",
+    #                         x=xmatrix, y=ymatrix,
+    #                         split=opts.l, epochs=opts.e,
+    #                         verbose=opts.v, kfold=opts.K)
+
 
 # ------------------------------------------------------------------------------------- #
 ## The function defining what happens in the main predict procedure 
@@ -95,20 +102,15 @@ def predict(args: Namespace) -> None:
 # ===================================================================================== #
 
 if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(prog='deepFPlearn')
-    subparsers = parser.add_subparsers(help="Sub programs of deepFPlearn")
-
-    parser_train = subparsers.add_parser("train", help="Train new models with your data")
-    parser_train.set_defaults(func=train)
-    dfpl.parseInputTrain(parser_train)
-
-    parser_predict = subparsers.add_parser("predict", help="Predict your data with existing models")
-    parser_predict.set_defaults(func=predict)
-    dfpl.parseInputPredict(parser_predict)
-
+    parser = options.createCommandlineParser()
     prog_args = parser.parse_args()
     print(f"[INFO] The following arguments are received or filled with default values:\n{prog_args}")
 
-    prog_args.func(prog_args)
-#    print(args)
+    if prog_args.method == "train":
+        train(options.TrainOptions.fromCmdArgs(prog_args))
+        exit(0)
+    if prog_args.method == "predict":
+        predict(prog_args)
+        exit(0)
+    # Fallthrough
+    print("uhh, what happened here?")
