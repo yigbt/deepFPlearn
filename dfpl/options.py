@@ -7,8 +7,8 @@ from pathlib import Path
 @dataclass
 class TrainOptions:
     inputFile: str = ""
-    outputDir: str = ""
-    acFile: str = ""
+    outputDir: str = "modeltraining/"
+    acFile: str = "modeltraining/Sun_etal_dataset.AC.encoder.weights.hdf5"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
     epochs: int = 512
@@ -18,6 +18,8 @@ class TrainOptions:
     testingFraction: float = 0.2
     enableMultiLabel: bool = False
     verbose: int = 0
+    trainAC: bool = True    # if set to False, an AC weight file must be provided!
+    trainFNN: bool = True
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> TrainOptions:
@@ -34,7 +36,9 @@ class TrainOptions:
             kFolds=args.K,
             testingFraction=args.l,
             enableMultiLabel=args.m,
-            verbose=args.v
+            verbose=args.v,
+            trainAC=args.trainAC,
+            trainFNN=args.trainFNN
         )
         # While we're at it, check if the output dir exists and if not, create it
         out = Path(inst.outputDir)
@@ -67,7 +71,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     #                                     'target(s). Trained models are saved to disk including fitted weights and '
     #                                     'can be used in the deepFPlearn-Predict.py tool to make predictions.')
     parser.add_argument('-i', metavar='FILE', type=str,
-                        help="The file containin the data for training in (unquoted) "
+                        help="The file containing the data for training in (unquoted) "
                              "comma separated CSV format. First column contain the feature string in "
                              "form of a fingerprint or a SMILES (see -t option). "
                              "The remaining columns contain the outcome(s) (Y matrix). "
@@ -118,6 +122,18 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                              "1: Some additional output, 2: full additional output",
                         default=2
                         )
+    parser.add_argument('--trainAC', metavar='BOOL', type=bool,
+                        help='Train the autoencoder based on the input file and store the respective weights to the '
+                             'file provided with -a option. Set this to False, if the file provided'
+                             'with -a option already contains the weights of the autoencoder you would like to use.',
+                        default=True)
+    parser.add_argument('--trainFNN', metavar='BOOL', type=bool,
+                        help='Train the feed forward network either with provided weights of a trained autoencoder'
+                             '(see option -a and --trainAC=False), or train the autoencoder prior to the training'
+                             'of the feed forward network(s).',
+                        default=True)
+
+
 
 
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:

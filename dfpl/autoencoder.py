@@ -9,7 +9,8 @@ from keras.layers import Input, Dense
 from keras import optimizers
 
 from sklearn.model_selection import train_test_split
-from tensorflow.python.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+# from tensorflow.python.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 import dfpl.options
 
@@ -115,37 +116,52 @@ def trainfullac(df: pd.DataFrame, opts: dfpl.options.TrainOptions) -> Model:
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
 
-    if opts.acFile != "":  # don't train, use existing weights file and load it into AC model
-        encoder.load_weights(opts.acFile)
-    else:
-        # collect the callbacks for training
-        callback_list = autoencoderCallback(checkpointpath=opts.outputDir + "/ACmodel.hdf5", patience=20)
+    # if opts.acFile != "":  # don't train, use existing weights file and load it into AC model
+    #     encoder.load_weights(opts.acFile)
+    # else:
+    # collect the callbacks for training
+    callback_list = autoencoderCallback(checkpointpath=opts.outputDir + "/autoencoder.checkpointpath.hdf5", patience=20)
 
-        # Select all fp's that are valid and turn them into a numpy array
-        # This step is crucial for speed!!!
-        fpMatrix = np.array(df[df["fp"].notnull()]["fp"].to_list())
+    # Select all fp's that are valid and turn them into a numpy array
+    # This step is crucial for speed!!!
+    fpMatrix = np.array(df[df["fp"].notnull()]["fp"].to_list())
 
-        # split data into test and training data
-        xTrain, xTest = train_test_split(fpMatrix, test_size=0.2, random_state=42)
-        autohist = autoencoder.fit(xTrain, xTrain, callbacks=callback_list, epochs=opts.epochs, batch_size=256,
-                                   verbose=opts.verbose, validation_data=(xTest, xTest))
-        # history
-        ac_loss = autohist.history['loss']
-        ac_val_loss = autohist.history['val_loss']
-        ac_epochs = range(ac_loss.__len__())
-        pd.DataFrame(data={'loss': ac_loss,
-                           'val_loss': ac_val_loss,
-                           'epoch': ac_epochs}).to_csv(opts.outputDir + "/ACmodel_trainValLoss_AC.csv", index=False)
-        # generate a figure of the losses for this fold
-        plt.figure()
-        plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
-        plt.plot(ac_epochs, ac_val_loss, 'b', label='Validation loss')
-        plt.title('Training and validation loss of AC')
-        plt.legend()
-        plt.savefig(fname=opts.outputDir + "/ACmodel_trainValLoss_AC.svg", format='svg')
-        plt.close()
-        # write the losses to .csv file for later data visualization
+    # split data into test and training data
+    xTrain, xTest = train_test_split(fpMatrix, test_size=0.2, random_state=42)
+    autohist = autoencoder.fit(xTrain, xTrain, callbacks=callback_list, epochs=opts.epochs, batch_size=256,
+                               verbose=opts.verbose, validation_data=(xTest, xTest))
+    # history
+    ac_loss = autohist.history['loss']
+    ac_val_loss = autohist.history['val_loss']
+    ac_epochs = range(ac_loss.__len__())
+    pd.DataFrame(data={'loss': ac_loss,
+                       'val_loss': ac_val_loss,
+                       'epoch': ac_epochs}).to_csv(opts.outputDir + "/ACmodel_trainValLoss_AC.csv", index=False)
+    # generate a figure of the losses for this fold
+    plt.figure()
+    plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
+    plt.plot(ac_epochs, ac_val_loss, 'b', label='Validation loss')
+    plt.title('Training and validation loss of AC')
+    plt.legend()
+    plt.savefig(fname=opts.outputDir + "/ACmodel_trainValLoss_AC.svg", format='svg')
+    plt.close()
+    # write the losses to .csv file for later data visualization
 
     # model needs to be saved and restored when predicting new input!
     # use encode() of train data as input for DL model to associate to chemical
     return encoder
+
+def compressfingerprints(dataframe: pd.DataFrame,
+                         encoder: Model) -> pd.DataFrame:
+    """
+    Adds a column of the compressed version of the fingerprints to the original dataframe.
+
+    :param dataframe: Dataframe containing a column named 'fp' with the fingerprints
+    :param encoder: The trained autoencoder that is used for compressing the fingerprints
+    :return: The input dataframe extended by a column containing the compressed version of the fingerprints
+    """
+
+    fpMatrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list())
+    dataframe['fpcompressed'] = pd.Series([pd.Series(s) for s in encoder.predict(fpMatrix)])
+
+    return dataframe
