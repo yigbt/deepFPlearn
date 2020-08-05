@@ -5,6 +5,8 @@ import pathlib
 
 from dfpl import dfpl
 from dfpl import options
+from dfpl import fingerprint as fp
+from dfpl import autoencoder as ac
 
 importlib.reload(dfpl)
 
@@ -30,31 +32,37 @@ def train(opts: options.TrainOptions):
     The function defining what happens in the main training procedure
     :param opts:
     """
-    # generate X and Y matrices
-    (xmatrix, ymatrix) = dfpl.XandYfromInput(
-        csvfilename=opts.inputFile,
-        rtype=opts.type,
-        fptype=opts.fpType,
-        printfp=True,
-        size=opts.fpSize,
-        verbose=opts.verbose
-    )
+    # read input and generate fingerprints from smiles
+    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
-    if opts.verbose > 0:
-        print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
-        print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
+    # (xmatrix, ymatrix) = dfpl.XandYfromInput(
+    #     csvfilename=opts.inputFile,
+    #     rtype=opts.type,
+    #     fptype=opts.fpType,
+    #     printfp=True,
+    #     size=opts.fpSize,
+    #     verbose=opts.verbose
+    # )
+
+    # if opts.verbose > 0:
+    #     print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
+    #     print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
 
 
     encoder = None
-    if opts.acFile == "":
-        # load trained model for autoencoder
-        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   useweights=args.a, verbose=args.v)
-    else:
+    if opts.trainAC:
         # train an autoencoder on the full feature matrix
-        encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-                                   checkpointpath=args.o + "/ACmodel.hdf5",
-                                   verbose=args.v)
+        encoder = ac.trainfullac(df, opts)
+        encoder.save_weights(opts.acFile)
+        # encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+        #                            useweights=args.a, verbose=args.v)
+    else:
+        # load trained model for autoencoder
+        (autoencoder, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+        encoder.load_weights(opts.acFile)
+        # encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
+        #                            checkpointpath=args.o + "/ACmodel.hdf5",
+        #                            verbose=args.v)
 
     # xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
 
