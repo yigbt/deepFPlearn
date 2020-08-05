@@ -8,7 +8,7 @@ from pathlib import Path
 class TrainOptions:
     inputFile: str = ""
     outputDir: str = "modeltraining/"
-    acFile: str = "modeltraining/Sun_etal_dataset.AC.encoder.weights.hdf5
+    acFile: str = "modeltraining/Sun_etal_dataset.AC.encoder.weights.hdf5"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
     epochs: int = 512

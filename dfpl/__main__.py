@@ -7,6 +7,7 @@ from dfpl import dfpl
 from dfpl import options
 from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
+from dfpl import feedforwardNN as fnn
 
 importlib.reload(dfpl)
 
@@ -64,15 +65,22 @@ def train(opts: options.TrainOptions):
         #                            checkpointpath=args.o + "/ACmodel.hdf5",
         #                            verbose=args.v)
 
+    # compress the fingerprints using the autoencoder
+    df = ac.compressfingerprints(df, encoder)
+
     # xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
+    # fpMatrix = np.array(df[df["fp"].notnull()]["fp"].to_list())
+    # xcompressed = encoder.predict(fpMatrix)
 
     # # train FNNs with compressed features
+    fnn.trainNNmodels(df=df, opts=opts, usecompressed=True)
     # dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelACincl",
     #                    x=xcompressed, y=ymatrix,
     #                    split=args.l,
     #                    epochs=args.e, kfold=args.K, verbose=args.v)
     #
     # # train FNNs with uncompressed features
+    fnn.trainNNmodels(df=df, opts=opts, usecompressed=False)
     # dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelNoACincl",
     #                    x=xmatrix, y=ymatrix,
     #                    split=args.l,

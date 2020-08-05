@@ -150,3 +150,18 @@ def trainfullac(df: pd.DataFrame, opts: dfpl.options.TrainOptions) -> Model:
     # model needs to be saved and restored when predicting new input!
     # use encode() of train data as input for DL model to associate to chemical
     return encoder
+
+def compressfingerprints(dataframe: pd.DataFrame,
+                         encoder: Model) -> pd.DataFrame:
+    """
+    Adds a column of the compressed version of the fingerprints to the original dataframe.
+
+    :param dataframe: Dataframe containing a column named 'fp' with the fingerprints
+    :param encoder: The trained autoencoder that is used for compressing the fingerprints
+    :return: The input dataframe extended by a column containing the compressed version of the fingerprints
+    """
+
+    fpMatrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list())
+    dataframe['fpcompressed'] = pd.Series([pd.Series(s) for s in encoder.predict(fpMatrix)])
+
+    return dataframe
