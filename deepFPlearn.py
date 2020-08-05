@@ -12,18 +12,18 @@ import importlib
 importlib.reload(fp)
 importlib.reload(dfpl)
 
-# args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
-#                  o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
-#                  t='smiles',
-#                  k='topological',
-#                  e=2, # 2000,
-#                  s=2048,
-#                  d=256,
-#                  a=None,  # '/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
-#                  m=False,
-#                  l=0.2,
-#                  K=5,
-#                  v=2)
+args = Namespace(i='/data/bioinf/projects/data/2020_deepFPlearn/dataSources/Sun_et_al/Sun_etal_dataset.csv',
+                 o='/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside2/',
+                 t='smiles',
+                 k='topological',
+                 e=2, # 2000,
+                 s=2048,
+                 d=256,
+                 a=None,  # '/data/bioinf/projects/data/2020_deepFPlearn/modeltraining/ACoutside/ACmodel.hdf5',
+                 m=False,
+                 l=0.2,
+                 K=5,
+                 v=2)
 
 
 # ------------------------------------------------------------------------------------- #
@@ -38,7 +38,7 @@ def train(args: Namespace) -> None:
     dfInput = fp.prepareInputData(csvfilename=args.i, fp_size=args.s)
 
     encoder = dfpl.useOrTrainAutoencoder(data=dfInput, outpath=args.o, epochs=args.e,
-                          encdim=args.d, verbosity=args.v, log=logfile)
+                                         encdim=args.d, verbosity=args.v, log=logfile)
 
     xcompressed = pd.DataFrame(encoder.predict(np.array(dfInput[dfInput['fp'].notnull()]['fp'].to_list())))
     # how can I add this to the dfInput?

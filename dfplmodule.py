@@ -382,6 +382,7 @@ def defineACmodel(input_size: int = default_ac_input_size,
     nhl = round(math.log2(input_size / encoding_dim))
 
     # try the tying weights thing
+
     dense_layers = list()
     for i in range(nhl):
         factorunits = 2 ** (i + 1)
