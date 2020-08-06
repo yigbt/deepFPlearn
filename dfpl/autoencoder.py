@@ -9,7 +9,6 @@ from keras.layers import Input, Dense
 from keras import optimizers
 
 from sklearn.model_selection import train_test_split
-# from tensorflow.python.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 import dfpl.options
@@ -150,6 +149,7 @@ def trainfullac(df: pd.DataFrame, opts: dfpl.options.TrainOptions) -> Model:
     # model needs to be saved and restored when predicting new input!
     # use encode() of train data as input for DL model to associate to chemical
     return encoder
+
 
 def compressfingerprints(dataframe: pd.DataFrame,
                          encoder: Model) -> pd.DataFrame:

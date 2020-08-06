@@ -4,7 +4,7 @@ import logging
 import dfpl.options as opt
 import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
-import dfpl.feedforwardNN as fnn
+import dfpl.feedforwardNN as fNN
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = opt.TrainOptions(
@@ -24,29 +24,28 @@ test_train_args = opt.TrainOptions(
     trainFNN=True
 )
 
+
 def runFNNtraining(opts: opt.TrainOptions) -> None:
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
-    encoder = None
     if opts.trainAC:
         logging.info("Training autoencoder")
         encoder = ac.trainfullac(df, opts)
         encoder.save_weights(opts.acFile)
     else:
         logging.info("Using trained autoencoder")
-        (autoencoder, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+        (_, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
 
     df = ac.compressfingerprints(df, encoder)
 
     # train FNNs with compressed features
     logging.info("Training the FNN using compressed input data.")
-    fnn.trainNNmodels(df=df, opts=opts, usecompressed=True)
+    fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
 
     # train FNNs with uncompressed features
     logging.info("Training the FNN using UNcompressed input data.")
-    fnn.trainNNmodels(df=df, opts=opts, usecompressed=False)
+    fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
 
     logging.info("Done")
-

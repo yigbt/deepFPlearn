@@ -30,7 +30,7 @@ from time import time
 
 
 def defineNNmodel(
-        inputSize: int = 2048,
+        input_size: int = 2048,
         l2reg: float = 0.001,
         dropout: float = 0.2,
         activation: str = 'relu',
@@ -39,7 +39,7 @@ def defineNNmodel(
         decay: float = 0.01) -> Model:
     """
 
-    :param inputSize:
+    :param input_size:
     :param l2reg:
     :param dropout:
     :param activation:
@@ -58,15 +58,14 @@ def defineNNmodel(
 
     myhiddenlayers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
 
-    if not str(inputSize) in myhiddenlayers.keys():
-        print("Wrong inputsize. Must be in {2048, 1024, 999, 512, 256}.")
-        return None
+    if not str(input_size) in myhiddenlayers.keys():
+        raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
 
-    nhl = int(math.log2(inputSize) / 2 - 1)
+    nhl = int(math.log2(input_size) / 2 - 1)
 
     model = Sequential()
     # From input to 1st hidden layer
-    model.add(Dense(units=int(inputSize / 2), input_dim=inputSize,
+    model.add(Dense(units=int(input_size / 2), input_dim=input_size,
                     activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
@@ -74,7 +73,7 @@ def defineNNmodel(
     for i in range(1, nhl):
         factorunits = 2 ** (i + 1)
         factordropout = 2 * i
-        model.add(Dense(units=int(inputSize / factorunits),
+        model.add(Dense(units=int(input_size / factorunits),
                         activation=activation,
                         kernel_regularizer=regularizers.l2(l2reg)))
         model.add(Dropout(dropout / factordropout))
@@ -88,14 +87,14 @@ def defineNNmodel(
 
     return model
 
+
 def defineOutfileNames(pathprefix: str, target: str, fold: int) -> tuple:
     """
     This function returns the required paths for output files or directories.
 
     :param pathprefix: A file path prefix for all files.
-    :param mtype: The model type. Its set by the trainNNmodels function with information on autoencoder or not,
-    and if AC is used, then with its parameters.
     :param target: The name of the target.
+    :param fold:
 
     :return: A tuple of 14 output file names.
     """
@@ -120,6 +119,7 @@ def defineOutfileNames(pathprefix: str, target: str, fold: int) -> tuple:
             modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
             modelAUCfiledata, outfilepath, checkpointpath,
             modelheatmapX, modelheatmapZ)
+
 
 def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     """
@@ -188,7 +188,7 @@ def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvali
     """
 
     # load checkpoint model with min(val_loss)
-    trainedmodel = defineNNmodel(inputSize=Z_test.shape[1])
+    trainedmodel = defineNNmodel(input_size=Z_test.shape[1])
 
     # predict values with random model
     predictions_random = pd.DataFrame(trainedmodel.predict(Z_test))
@@ -321,7 +321,7 @@ def trainNNmodels(df: pd.DataFrame,
                                                                 target=target + "compressed-" + str(usecompressed),
                                                                 fold=fold_no)
 
-            model = defineNNmodel(inputSize=x[train].shape[1])
+            model = defineNNmodel(input_size=x[train].shape[1])
 
             callback_list = ac.autoencoderCallback(checkpointpath=checkpointpath, patience=20)
             # callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20,
@@ -355,7 +355,7 @@ def trainNNmodels(df: pd.DataFrame,
                                   )
             print(row_df)
             allscores = allscores.append(row_df, ignore_index=True)
-            fold_no = fold_no + 1
+            fold_no += 1
             del model
             # now next fold
 
@@ -384,7 +384,7 @@ def trainNNmodels(df: pd.DataFrame,
         # measure the training time
         start = time()
 
-        model = defineNNmodel(inputSize=x.shape[1])  # X_train.shape[1])
+        model = defineNNmodel(input_size=x.shape[1])  # X_train.shape[1])
         callback_list = ac.autoencoderCallback(checkpointpath=fullModelfile, patience=20)
 
         # train and validate
