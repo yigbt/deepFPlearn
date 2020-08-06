@@ -1,15 +1,13 @@
 from argparse import Namespace
+import logging
 import pandas as pd
-import importlib
 import pathlib
 
-from dfpl import dfpl
-from dfpl import options
-from dfpl import fingerprint as fp
-from dfpl import autoencoder as ac
-from dfpl import feedforwardNN as fnn
-
-importlib.reload(dfpl)
+# from dfpl import dfpl
+import options
+import fingerprint as fp
+import autoencoder as ac
+import feedforwardNN as fNN
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = options.TrainOptions(
@@ -35,22 +33,6 @@ def train(opts: options.TrainOptions):
     """
     # read input and generate fingerprints from smiles
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
-
-    # (xmatrix, ymatrix) = dfpl.XandYfromInput(
-    #     csvfilename=opts.inputFile,
-    #     rtype=opts.type,
-    #     fptype=opts.fpType,
-    #     printfp=True,
-    #     size=opts.fpSize,
-    #     verbose=opts.verbose
-    # )
-
-    # if opts.verbose > 0:
-    #     print(f'[INFO] Shape of X matrix (input of AC/FNN): {xmatrix.shape}')
-    #     print(f'[INFO] Shape of Y matrix (output of AC/FNN): {ymatrix.shape}')
-
-
-    encoder = None
     if opts.trainAC:
         # train an autoencoder on the full feature matrix
         encoder = ac.trainfullac(df, opts)
@@ -59,34 +41,19 @@ def train(opts: options.TrainOptions):
         #                            useweights=args.a, verbose=args.v)
     else:
         # load trained model for autoencoder
-        (autoencoder, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+        (_, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
         encoder.load_weights(opts.acFile)
-        # encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-        #                            checkpointpath=args.o + "/ACmodel.hdf5",
-        #                            verbose=args.v)
 
     # compress the fingerprints using the autoencoder
     df = ac.compressfingerprints(df, encoder)
 
-    # xcompressed = pd.DataFrame(data=encoder.predict(xmatrix))
-    # fpMatrix = np.array(df[df["fp"].notnull()]["fp"].to_list())
-    # xcompressed = encoder.predict(fpMatrix)
+    # train FNNs with compressed features
+    fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
 
-    # # train FNNs with compressed features
-    fnn.trainNNmodels(df=df, opts=opts, usecompressed=True)
-    # dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelACincl",
-    #                    x=xcompressed, y=ymatrix,
-    #                    split=args.l,
-    #                    epochs=args.e, kfold=args.K, verbose=args.v)
-    #
-    # # train FNNs with uncompressed features
-    fnn.trainNNmodels(df=df, opts=opts, usecompressed=False)
-    # dfpl.trainNNmodels(modelfilepathprefix=args.o + "/FFNmodelNoACincl",
-    #                    x=xmatrix, y=ymatrix,
-    #                    split=args.l,
-    #                    epochs=args.e, kfold=args.K, verbose=args.v)
+    # train FNNs with uncompressed features
+    fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
 
-    ### train multi-label models
+    # train multi-label models
     # with comrpessed features
     # dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelACincl",
     #                         x=xcompressed, y=ymatrix,
@@ -100,33 +67,33 @@ def train(opts: options.TrainOptions):
     #                         verbose=opts.v, kfold=opts.K)
 
 
-# ------------------------------------------------------------------------------------- #
-## The function defining what happens in the main predict procedure 
-
 def predict(args: Namespace) -> None:
     # generate X matrix
-    (xpd, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
-                                         printfp=True, size=args.s, verbose=args.v, returnY=False)
-    # predict values for provided data and model
-    # ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
-    ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
+    # (xpd, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
+    #                                      printfp=True, size=args.s, verbose=args.v, returnY=False)
+    # # predict values for provided data and model
+    # # ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
+    # ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
+    #
+    # # write predictions to usr provided .csv file
+    # pd.DataFrame.to_csv(ypredictions, args.o)
+    return None
 
-    # write predictions to usr provided .csv file
-    pd.DataFrame.to_csv(ypredictions, args.o)
-
-
-# ===================================================================================== #
 
 if __name__ == '__main__':
+    FORMAT = '[%(levelname)] %(asctime)-15s %(message)s'
+    logging.basicConfig(format=FORMAT)
     parser = options.createCommandlineParser()
-    prog_args = parser.parse_args()
-    print(f"[INFO] The following arguments are received or filled with default values:\n{prog_args}")
+    prog_args: Namespace = parser.parse_args()
+    logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
 
-    if prog_args.method == "train":
-        train(options.TrainOptions.fromCmdArgs(prog_args))
-        exit(0)
-    if prog_args.method == "predict":
-        predict(prog_args)
-        exit(0)
-    # Fallthrough
-    print("uhh, what happened here?")
+    try:
+        if prog_args.method == "train":
+            train(options.TrainOptions.fromCmdArgs(prog_args))
+            exit(0)
+        elif prog_args.method == "predict":
+            predict(prog_args)
+            exit(0)
+    except AttributeError:
+        parser.print_usage()
+

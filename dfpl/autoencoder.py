@@ -11,7 +11,7 @@ from keras import optimizers
 from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
-import dfpl.options
+from dfpl import options
 
 
 def autoencoderModel(
@@ -102,7 +102,7 @@ def autoencoderCallback(checkpointpath: str, patience: int) -> list:
     return [checkpoint, earlystop]
 
 
-def trainfullac(df: pd.DataFrame, opts: dfpl.options.TrainOptions) -> Model:
+def trainfullac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
     """
     Train an autoencoder on the given feature matrix X. Response matrix is only used to
     split meaningfully in test and train data set.

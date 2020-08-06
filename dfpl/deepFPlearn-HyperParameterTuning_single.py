@@ -14,7 +14,7 @@ from keras.wrappers.scikit_learn import KerasClassifier
 
 from time import time
 
-from dfpl import dfpl as dfpl
+from dfpl import dfplmodule as dfpl
 
 
 # ------------------------------------------------------------------------------------- #
