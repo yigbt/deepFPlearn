@@ -1,0 +1,28 @@
+name: rdkit2019
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+  - r
+  - anaconda
+dependencies:
+  - tensorflow
+  - ncurses
+  - numpy
+  - pcre
+  - matplotlib
+  - pytest
+  - pyyaml
+  - python
+  - rdkit
+  - seaborn
+  - tensorboard
+  - yaml
+  - markdown
+  - scipy
+  - pip
+  - scikit-learn
+  - pandas
+  - keras
+
+
