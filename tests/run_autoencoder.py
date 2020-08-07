@@ -22,11 +22,4 @@ test_train_args = opt.TrainOptions(
 )
 
 
-def runAutoencoder(opts: opt.TrainOptions) -> None:
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
-    logging.info("Adding fingerprint to dataset")
-    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
-    logging.info("Training autoencoder")
-    ac.trainfullac(df, opts)
-    logging.info("Done")
-
+p

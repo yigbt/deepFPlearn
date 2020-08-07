@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import dfpl.fingerprint as fp
-
+p
 correct_smiles = [
     "CC1(C)OC2CC3C4CC(F)C5=CC(=O)CCC5(C)C4C(O)CC3(C)C2(O1)C(=O)CO",
     "CC1(C)OC2CC3C4CCC5=CC(=O)C=CC5(C)C4(F)C(O)CC3(C)C2(O1)C(=O)CO",

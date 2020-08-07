@@ -393,133 +393,207 @@ def trainNNmodels(df: pd.DataFrame,
         # now next target
 
 
-# def trainNNmodelsMulti(df: pd.DataFrame,
-#                        opts: dfpl.options.TrainOptions,
-#                        usecompressed: bool) -> None:
-#     # modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
-#     # split: float = 0.2, epochs: int = 500,
-#     # verbose: int= 2, kfold: int = 5) -> None:
-#
-#     if usecompressed:
-#         # get compressed fingerprints as numpy array
-#         fpMatrix = np.array(df[df['fpcompressed'].notnull()]['fpcompressed'].to_list())
-#     else:
-#         # get fingerprints as numpy array
-#         fpMatrix = np.array(df[df["fp"].notnull()]["fp"].to_list())
-#
-#     # find target columns
-#     namesY = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi']]
-#
-#     y = np.array(df[namesY].dropna())
-#
-#     # do a kfold cross validation for the autoencoder training
-#     kfoldCValidator = KFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
-#
-#     # store acc and loss for each fold
-#     allscores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
-#                                       "loss", "val_loss", "acc", "val_acc",  # FNN training
-#                                       "loss_test", "acc_test", "mcc_test"])  # FNN test data
-#
-#     fold_no = 1
-#
-#     # split the data
-#     for train, test in kfoldCValidator.split(fpMatrix, y):
-#         # define all the output file/path names
-#         (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-#          modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-#          modelAUCfiledata, outfilepath, checkpointpath,
-#          modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=opts.outputDir,
-#                                                             target="multi" + "_compressed-" + str(usecompressed),
-#                                                             fold=fold_no)
-#
-#         # use a dnn for multi-class prediction
-#         model = defineNNmodelMulti(inputSize=fpMatrix[train].shape[1],
-#                                    outputSize=y.shape[1])
-#
-#         callback_list = defineCallbacks(checkpointpath=checkpointpath,
-#                                         patience=20)
-#         # measure the training time
-#         start = time()
-#
-#         # train and validate
-#         hist = model.fit(fpMatrix[train], y[train],
-#                          callbacks=callback_list,
-#                          epochs=opts.epochs,
-#                          batch_size=256,
-#                          verbose=opts.verbose,
-#                          validation_split=opts.testingFraction)
-#
-#         trainTime = str(round((time() - start) / 60, ndigits=2))
-#
-#         if opts.verbose > 0:
-#             logging.info("Computation time for training the multi-label FNN: "+ trainTime  +" min")
-#
-#         # validate model on test data set (x_test, y_test)
-#         scores = validateMultiModelOnTestData(Z_test=fpMatrix[test],
-#                                               checkpointpath=checkpointpath,
-#                                               y_test=y[test],
-#                                               colnames=namesY,
-#                                               resultfile=outfilepath.replace("trainingResults.txt",
-#                                                                              "predictionResults.csv"))
-#
-#     idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
-#     row_df = pd.DataFrame([[fold_no,
-#                             hist.history['loss'][idx], hist.history['val_loss'][idx],
-#                             hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
-#                             scores[0], scores[1], scores[2]]],
-#                           columns=["fold_no",  # fold number of k-fold CV
-#                                    "loss", "val_loss", "acc", "val_acc",  # FNN training
-#                                    "loss_test", "acc_test", "mcc_test"]
-#                           )
-#     print(row_df)
-#     allscores = allscores.append(row_df, ignore_index=True)
-#
-#     fold_no = fold_no + 1
-#     del model
-#
-#
-# print(allscores)
-#
-# # finalize model
-# # 1. provide best performing fold variant
-# # select best model based on MCC
-# idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
-# fold_no = allscores._get_value(idx2, 'fold_no')
-#
-# modelname = 'multi.Fold-' + str(fold_no)
-# checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
-# bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
-#
-# file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
-# allscores.to_csv(file)
-#
-# # copy best DNN model
-# shutil.copyfile(checkpointpath, bestModelfile)
-# print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
-#
-# # AND retrain with full data set
-# fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
-# # measure the training time
-# start = time()
-#
-# model = defineNNmodel(inputSize=xmulti[train].shape[1])
-# callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
-#                                 rlrop=True, rlropfactor=0.1, rlroppatience=100)
-# # train and validate
-# hist = model.fit(xmulti, ymulti,
-#                  callbacks=callback_list,
-#                  epochs=epochs, batch_size=256, verbose=2, validation_split=split)
-# #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
-# trainTime = str(round((time() - start) / 60, ndigits=2))
-#
-# if verbose > 0:
-#     print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
-# plotHistoryVis(hist,
-#                modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
-# print(f'[INFO]: Full models for DNN is saved:\n        - {fullModelfile}')
-#
-# pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
-# stats.append([target, [x.__round__(2) for x in scores]])
+def defineNNmodelMulti(inputSize=2048,
+                       outputSize=None,
+                       l2reg=0.001,
+                       dropout=0.2,
+                       activation='relu',
+                       optimizer='Adam',
+                       lr=0.001,
+                       decay=0.01):
+    if optimizer == 'Adam':
+        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+    elif optimizer == 'SGD':
+        myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
+    else:
+        myoptimizer = optimizer
+
+    nhl = int(math.log2(inputSize) / 2 - 1)
+
+    model = Sequential()
+    # From input to 1st hidden layer
+    model.add(Dense(units=int(inputSize / 2), input_dim=inputSize,
+                    activation=activation,
+                    kernel_regularizer=regularizers.l2(l2reg)))
+    model.add(Dropout(dropout))
+    # next hidden layers
+    for i in range(1, nhl):
+        factorunits = 2 ** (i + 1)
+        factordropout = 2 * i
+        model.add(Dense(units=int(inputSize / factorunits),
+                        activation=activation,
+                        kernel_regularizer=regularizers.l2(l2reg)))
+        model.add(Dropout(dropout / factordropout))
+    # multi-class output layer
+    # use sigmoid to get independent probabilities for each output node
+    # (need not add up to one, as they would using softmax)
+    # https://www.depends-on-the-definition.com/guide-to-multi-label-classification-with-neural-networks/
+    model.add(Dense(units=outputSize, activation='sigmoid'))
+
+    model.summary()
+
+    # compile model
+    model.compile(loss="binary_crossentropy", optimizer=myoptimizer, metrics=['accuracy'])
+
+    return model
+
+
+def validateMultiModelOnTestData(Z_test, checkpointpath, y_test, colnames, resultfile):
+    # load checkpoint model with min(val_loss)
+    trainedmodel = defineNNmodelMulti(inputSize=Z_test.shape[1], outputSize=y_test.shape[1])
+
+    # predict values with random model
+    predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=[n + '-predRandom' for n in colnames])
+    # predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=colnames + '-predRandom')
+
+    # load weights into random model
+    trainedmodel.load_weights(checkpointpath)
+
+    # predict with trained model
+    predictions = pd.DataFrame(trainedmodel.predict(Z_test),
+                               columns=[n + '-pred' for n in colnames])
+    scores = pd.DataFrame((predictions.round() == y_test).sum() / y_test.shape[0], columns=['correctPredictions'])
+
+    results = pd.concat([predictions_random, predictions, pd.DataFrame(y_test,
+                                                                       columns=[n + '-true' for n in colnames])],
+                        axis=1)
+    results.to_csv(resultfile)
+
+    return scores
+
+
+def trainNNmodelsMulti(df: pd.DataFrame,
+                       opts: dfpl.options.TrainOptions,
+                       usecompressed: bool) -> None:
+    # modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
+    # split: float = 0.2, epochs: int = 500,
+    # verbose: int= 2, kfold: int = 5) -> None:
+
+    # find target columns
+    namesY = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi']]
+    idxnotNA = df[namesY].dropna().index
+
+    if usecompressed:
+        # get compressed fingerprints as numpy array
+        fpMatrix = np.array(df.iloc[idxnotNA][df['fpcompressed'].notnull()]['fpcompressed'].to_list())
+        y = np.array(df.iloc[idxnotNA][df['fpcompressed'].notnull()][namesY])
+    else:
+        # get fingerprints as numpy array
+        fpMatrix = np.array(df.iloc[idxnotNA][df['fp'].notnull()]['fp'].to_list())
+        y = np.array(df.iloc[idxnotNA][df['fp'].notnull()][namesY])
+
+    # do a kfold cross validation for the autoencoder training
+    kfoldCValidator = KFold(n_splits=opts.kFolds,
+                            shuffle=True,
+                            random_state=42)
+
+    # store acc and loss for each fold
+    allscores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
+                                      "loss", "val_loss", "acc", "val_acc"]) #,  # FNN training
+                                      # "loss_test", "acc_test", "mcc_test"])  # FNN test data
+
+    fold_no = 1
+
+    # split the data
+    for train, test in kfoldCValidator.split(fpMatrix, y):
+        kf = kfoldCValidator.split(fpMatrix, y)
+        train, test = next(kf)
+        # define all the output file/path names
+        (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
+         modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
+         modelAUCfiledata, outfilepath, checkpointpath,
+         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=opts.outputDir,
+                                                            target="multi" + "_compressed-" + str(usecompressed),
+                                                            fold=fold_no)
+
+        # use a dnn for multi-class prediction
+        model = defineNNmodelMulti(inputSize=fpMatrix[train].shape[1],
+                                   outputSize=y.shape[1])
+
+        callback_list = ac.autoencoderCallback(checkpointpath=checkpointpath,
+                                               patience=20)
+        # measure the training time
+        start = time()
+
+        # train and validate
+        hist = model.fit(fpMatrix[train], y[train],
+                         callbacks=callback_list,
+                         epochs=opts.epochs,
+                         batch_size=256,
+                         verbose=opts.verbose,
+                         validation_split=opts.testingFraction)
+
+        trainTime = str(round((time() - start) / 60, ndigits=2))
+
+        if opts.verbose > 0:
+            logging.info("Computation time for training the multi-label FNN: " + trainTime + " min")
+
+        # validate model on test data set (x_test, y_test)
+        scores = validateMultiModelOnTestData(Z_test=fpMatrix[test],
+                                              checkpointpath=checkpointpath,
+                                              y_test=y[test],
+                                              colnames=namesY,
+                                              resultfile=outfilepath.replace("trainingResults.txt",
+                                                                             "predictionResults.csv"))
+
+
+        idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
+        row_df = pd.DataFrame([[fold_no,
+                                hist.history['loss'][idx], hist.history['val_loss'][idx],
+                                hist.history['accuracy'][idx], hist.history['val_accuracy'][idx]]],
+                              columns=["fold_no",  # fold number of k-fold CV
+                                       "loss", "val_loss", "acc", "val_acc"]
+                              )#.join(scores.T)
+
+
+        print(row_df)
+        allscores = allscores.append(row_df, ignore_index=True)
+
+        fold_no = fold_no + 1
+        del model
+
+    print(allscores)
+
+# finalize model
+# 1. provide best performing fold variant
+# select best model based on MCC
+idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
+fold_no = allscores._get_value(idx2, 'fold_no')
+
+modelname = 'multi.Fold-' + str(fold_no)
+checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+
+file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
+allscores.to_csv(file)
+
+# copy best DNN model
+shutil.copyfile(checkpointpath, bestModelfile)
+print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
+
+# AND retrain with full data set
+fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
+# measure the training time
+start = time()
+
+model = defineNNmodel(inputSize=xmulti[train].shape[1])
+callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
+                                rlrop=True, rlropfactor=0.1, rlroppatience=100)
+# train and validate
+hist = model.fit(xmulti, ymulti,
+                 callbacks=callback_list,
+                 epochs=epochs, batch_size=256, verbose=2, validation_split=split)
+#                             validation_data=(Z_test, y_test))  # this overwrites val_split!
+trainTime = str(round((time() - start) / 60, ndigits=2))
+
+if verbose > 0:
+    print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
+plotHistoryVis(hist,
+               modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+               modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
+               modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
+               modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
+print(f'[INFO]: Full models for DNN is saved:\n        - {fullModelfile}')
+
+pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
+stats.append([target, [x.__round__(2) for x in scores]])

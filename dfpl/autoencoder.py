@@ -158,7 +158,7 @@ def compressfingerprints(dataframe: pd.DataFrame,
 
     :param dataframe: Dataframe containing a column named 'fp' with the fingerprints
     :param encoder: The trained autoencoder that is used for compressing the fingerprints
-    :return: The input dataframe extended by a column containing the compressed version of the fingerprints
+    :return: The input dataframe extended by a column containing the compressed version of the fingerprintsp
     """
 
     fpMatrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list())
