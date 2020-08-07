@@ -19,7 +19,8 @@ conda create -n rdkit2019 -c conda-forge -c bioconda -c r -c anaconda \
   pcre \
   yaml \
   pyyaml \
-  pytest
+  pytest \
+  jsonpickle
 
 # Export environment requirements
 # The --from-history ensures that only packages go into the yaml file that we *initially* specified.

@@ -84,6 +84,7 @@ def processInParallel(
     """
     df = import_function(csvfilename)
 
+    # disable the rdkit logger. We know that some inchis will fail and we took care of it. No use to spam the console
     RDLogger.DisableLog("rdApp.*")
     n_cores = multiprocessing.cpu_count()
     df_split = np.array_split(df, n_cores)

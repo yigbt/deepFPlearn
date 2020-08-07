@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+import jsonpickle
 import argparse
 from pathlib import Path
 
@@ -22,29 +23,39 @@ class TrainOptions:
     trainFNN: bool = True
 
     @classmethod
+    def fromJson(cls, file: str) -> TrainOptions:
+        jsonFile = Path(file)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = f.read()
+                return jsonpickle.decode(content)
+        raise ValueError("JSON file doesn not exist or is not readable")
+
+    @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> TrainOptions:
         """Creates TrainOptions instance from cmdline arguments"""
-        inst = cls(
-            inputFile=args.i,
-            outputDir=args.o,
-            acFile=args.a,
-            type=args.t,
-            fpType=args.k,
-            fpSize=args.s,
-            encFPSize=args.d,
-            epochs=args.e,
-            kFolds=args.K,
-            testingFraction=args.l,
-            enableMultiLabel=args.m,
-            verbose=args.v,
-            trainAC=args.trainAC,
-            trainFNN=args.trainFNN
-        )
-        # While we're at it, check if the output dir exists and if not, create it
-        out = Path(inst.outputDir)
-        if not out.is_dir() and not out.is_file():
-            out.mkdir(out)
-        return inst
+        jsonFile = Path(args.f)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = f.read()
+                return jsonpickle.decode(content)
+        else:
+            return cls(
+                inputFile=args.i,
+                outputDir=args.o,
+                acFile=args.a,
+                type=args.t,
+                fpType=args.k,
+                fpSize=args.s,
+                encFPSize=args.d,
+                epochs=args.e,
+                kFolds=args.K,
+                testingFraction=args.l,
+                enableMultiLabel=args.m,
+                verbose=args.v,
+                trainAC=args.trainAC,
+                trainFNN=args.trainFNN
+            )
 
 
 def createCommandlineParser() -> argparse.ArgumentParser:
@@ -70,6 +81,9 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     #    parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
     #                                     'target(s). Trained models are saved to disk including fitted weights and '
     #                                     'can be used in the deepFPlearn-Predict.py tool to make predictions.')
+    parser.add_argument('-f', metavar='FILE', type=str,
+                        help="Input JSON file that contains all information for training.",
+                        required=False, default="missing")
     parser.add_argument('-i', metavar='FILE', type=str,
                         help="The file containing the data for training in (unquoted) "
                              "comma separated CSV format. First column contain the feature string in "
