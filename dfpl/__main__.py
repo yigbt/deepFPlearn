@@ -2,8 +2,8 @@ from argparse import Namespace
 import logging
 import pandas as pd
 import pathlib
+import dataclasses
 
-# from dfpl import dfpl
 import options
 import fingerprint as fp
 import autoencoder as ac
@@ -80,6 +80,14 @@ def predict(args: Namespace) -> None:
     return None
 
 
+def makePathAbsolute(p: str) -> str:
+    path = pathlib.Path(p)
+    if path.is_absolute():
+        return p
+    else:
+        return str(path.absolute())
+
+
 if __name__ == '__main__':
     FORMAT = '[%(levelname)] %(asctime)-15s %(message)s'
     logging.basicConfig(format=FORMAT)
@@ -89,11 +97,16 @@ if __name__ == '__main__':
 
     try:
         if prog_args.method == "train":
-            train(options.TrainOptions.fromCmdArgs(prog_args))
+            train_opts = options.TrainOptions.fromCmdArgs(prog_args)
+            fixed_opts = dataclasses.replace(
+                train_opts,
+                inputFile=makePathAbsolute(train_opts.inputFile),
+                outputDir=makePathAbsolute(train_opts.outputDir)
+            )
+            train(fixed_opts)
             exit(0)
         elif prog_args.method == "predict":
             predict(prog_args)
             exit(0)
     except AttributeError:
         parser.print_usage()
-

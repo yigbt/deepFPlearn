@@ -1,0 +1,9 @@
+{
+  "py/object": "dfpl.options.PredictOptions",
+  "inputFile": "",
+  "outputDir": "",
+  "acFile": "",
+  "model": "",
+  "type": "smiles",
+  "fpType": "topological"
+}
