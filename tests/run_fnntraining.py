@@ -13,14 +13,14 @@ test_train_args = opt.TrainOptions(
     acFile="Sun_etal_encoder.weights.hdf5",
     type='smiles',
     fpType='topological',
-    epochs=10,
+    epochs=11,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
     testingFraction=0.2,
     kFolds=2,
     verbose=1,
-    trainAC=True,
+    trainAC=False,
     trainFNN=True
 )
 
@@ -29,6 +29,9 @@ def runFNNtraining(opts: opt.TrainOptions) -> None:
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+
+    t = opts.acFile
+    opts.acFile = opts.outputDir + t
 
     if opts.trainAC:
         logging.info("Training autoencoder")

@@ -8,7 +8,7 @@ import options
 from utils import makePathAbsolute
 import fingerprint as fp
 import autoencoder as ac
-# import feedforwardNN as fNN
+import feedforwardNN as fNN
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = options.TrainOptions(
@@ -23,7 +23,9 @@ test_train_args = options.TrainOptions(
     enableMultiLabel=False,
     testingFraction=0.2,
     kFolds=5,
-    verbose=1
+    verbose=1,
+    trainAC=False,
+    trainFNN=True
 )
 
 
@@ -48,10 +50,10 @@ def train(opts: options.TrainOptions):
     # compress the fingerprints using the autoencoder
     df = ac.compressfingerprints(df, encoder)
     # train FNNs with compressed features
-    # fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
+    fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
 
     # train FNNs with uncompressed features
-    # fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
+    fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
 
     # train multi-label models
     # with comrpessed features
