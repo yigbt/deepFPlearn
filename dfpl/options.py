@@ -4,6 +4,8 @@ import jsonpickle
 import argparse
 from pathlib import Path
 
+from utils import makePathAbsolute
+
 
 @dataclass
 class TrainOptions:
@@ -39,11 +41,14 @@ class TrainOptions:
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> TrainOptions:
         """Creates TrainOptions instance from cmdline arguments"""
-        jsonFile = Path(args.f)
-        if jsonFile.exists() and jsonFile.is_file():
-            with jsonFile.open() as f:
-                content = f.read()
-                return jsonpickle.decode(content)
+        if args.f is not "":
+            jsonFile = Path(makePathAbsolute(args.f))
+            if jsonFile.exists() and jsonFile.is_file():
+                with jsonFile.open() as f:
+                    content = f.read()
+                    return jsonpickle.decode(content)
+            else:
+                raise ValueError("Could not find JSON input file")
         else:
             return cls(
                 inputFile=args.i,
@@ -95,7 +100,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                              "form of a fingerprint or a SMILES (see -t option). "
                              "The remaining columns contain the outcome(s) (Y matrix). "
                              "A header is expected and respective column names are used "
-                             "to refer to outcome(s) (target(s)).", required=True)
+                             "to refer to outcome(s) (target(s)).", required=False)
     parser.add_argument('-o', metavar='FILE', type=str,
                         help='Prefix of output file name. Trained model(s) and '
                              'respective stats will be returned in 2 output files '
@@ -179,11 +184,14 @@ class PredictOptions:
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> PredictOptions:
         """Creates TrainOptions instance from cmdline arguments"""
-        jsonFile = Path(args.f)
-        if jsonFile.exists() and jsonFile.is_file():
-            with jsonFile.open() as f:
-                content = f.read()
-                return jsonpickle.decode(content)
+        if args.f is not "":
+            jsonFile = Path(makePathAbsolute(args.f))
+            if jsonFile.exists() and jsonFile.is_file():
+                with jsonFile.open() as f:
+                    content = f.read()
+                    return jsonpickle.decode(content)
+            else:
+                raise ValueError("Could not find JSON input file")
         else:
             return cls(
                 inputFile=args.i,

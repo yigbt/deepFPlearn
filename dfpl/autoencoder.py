@@ -11,7 +11,7 @@ from keras import optimizers
 from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
-from dfpl import options
+import options
 
 
 def autoencoderModel(

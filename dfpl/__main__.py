@@ -1,13 +1,14 @@
 from argparse import Namespace
 import logging
-import pandas as pd
 import pathlib
 import dataclasses
+from os import path
 
 import options
+from utils import makePathAbsolute
 import fingerprint as fp
 import autoencoder as ac
-import feedforwardNN as fNN
+# import feedforwardNN as fNN
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = options.TrainOptions(
@@ -36,22 +37,21 @@ def train(opts: options.TrainOptions):
     if opts.trainAC:
         # train an autoencoder on the full feature matrix
         encoder = ac.trainfullac(df, opts)
-        encoder.save_weights(opts.acFile)
+        encoder.save_weights(path.join(opts.outputDir, opts.acFile))
         # encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
         #                            useweights=args.a, verbose=args.v)
     else:
         # load trained model for autoencoder
         (_, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-        encoder.load_weights(opts.acFile)
+        encoder.load_weights(path.join(opts.outputDir, opts.acFile))
 
     # compress the fingerprints using the autoencoder
     df = ac.compressfingerprints(df, encoder)
-
     # train FNNs with compressed features
-    fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
+    # fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
 
     # train FNNs with uncompressed features
-    fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
+    # fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
 
     # train multi-label models
     # with comrpessed features
@@ -80,20 +80,29 @@ def predict(args: Namespace) -> None:
     return None
 
 
-def makePathAbsolute(p: str) -> str:
-    path = pathlib.Path(p)
-    if path.is_absolute():
-        return p
-    else:
-        return str(path.absolute())
+def createLogger(filename: str) -> None:
+    # get root logger and set its level
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    # create file handler which logs info messages
+    fh = logging.FileHandler(filename)
+    fh.setLevel(logging.INFO)
+    # create console handler
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    # create formatter and add it to the handlers
+    formatterFile = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatterConsole = logging.Formatter('%(levelname)-8s %(message)s')
+    fh.setFormatter(formatterFile)
+    ch.setFormatter(formatterConsole)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
 
 
 if __name__ == '__main__':
-    FORMAT = '[%(levelname)] %(asctime)-15s %(message)s'
-    logging.basicConfig(format=FORMAT)
     parser = options.createCommandlineParser()
     prog_args: Namespace = parser.parse_args()
-    logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
 
     try:
         if prog_args.method == "train":
@@ -103,6 +112,8 @@ if __name__ == '__main__':
                 inputFile=makePathAbsolute(train_opts.inputFile),
                 outputDir=makePathAbsolute(train_opts.outputDir)
             )
+            createLogger(path.join(fixed_opts.outputDir, "train.log"))
+            logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
             train(fixed_opts)
             exit(0)
         elif prog_args.method == "predict":

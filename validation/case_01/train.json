@@ -1,11 +1,11 @@
 {
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/Sun_etal_dataset.csv",
-  "outputDir": "modeltraining",
+  "outputDir": "validation/case_01/results",
   "acFile": "Sun_etal_dataset.AC.encoder.weights.hdf5",
   "type": "smiles",
   "fpType": "topological",
-  "epochs": 512,
+  "epochs": 10,
   "fpSize": 2048,
   "encFPSize": 256,
   "kFolds": 5,
