@@ -27,6 +27,5 @@ def runAutoencoder(opts: opt.TrainOptions) -> None:
     logging.info("Adding fingerprint to dataset")
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
     logging.info("Training autoencoder")
-    ac.trainfullac(df, opts)
+    ac.train_full_ac(df, opts)
     logging.info("Done")
-

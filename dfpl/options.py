@@ -36,7 +36,7 @@ class TrainOptions:
             with jsonFile.open() as f:
                 content = f.read()
                 return jsonpickle.decode(content)
-        raise ValueError("JSON file doesn not exist or is not readable")
+        raise ValueError("JSON file does not exist or is not readable")
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> TrainOptions:
@@ -179,7 +179,7 @@ class PredictOptions:
             with jsonFile.open() as f:
                 content = f.read()
                 return jsonpickle.decode(content)
-        raise ValueError("JSON file doesn not exist or is not readable")
+        raise ValueError("JSON file does not exist or is not readable")
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> PredictOptions:
@@ -216,12 +216,12 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                         help="Input JSON file that contains all information for predictions.",
                         required=False, default="")
     parser.add_argument('-i', metavar='FILE', type=str,
-                        help="The file containin the data for the prediction. It is in"
+                        help="The file containing the data for the prediction. It is in"
                              "comma separated CSV format. The column named 'smiles' or 'fp'"
                              "contains the field to be predicted. Please adjust the type "
                              "that should be predicted (fp or smile) with -t option appropriately."
                              "An optional column 'id' is used to assign the outcomes to the"
-                             "original identifieres. If this column is missing, the results are"
+                             "original identifiers. If this column is missing, the results are"
                              "numbered in the order of their appearance in the input file."
                              "A header is expected and respective column names are used.",
                         required=True)
@@ -232,10 +232,10 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                         help='The predictor model weights',
                         required=True)
     parser.add_argument('-o', metavar='FILE', type=str,
-                        help='Output file name. It containes a comma separated list of '
+                        help='Output file name. It contains a comma separated list of '
                              "predictions for each input row, for all targets. If the file 'id'"
                              "was given in the input, respective IDs are used, otherwise the"
-                             "rows of output are numbered and provided in the order of occurence"
+                             "rows of output are numbered and provided in the order of occurrence"
                              "in the input file.")
     parser.add_argument('-t', metavar='STR', type=str, choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",

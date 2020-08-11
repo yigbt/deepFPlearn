@@ -19,13 +19,13 @@ test_train_args = opt.TrainOptions(
     enableMultiLabel=False,
     testingFraction=0.2,
     kFolds=2,
-    verbose=1,
+    verbose=2,
     trainAC=False,
     trainFNN=True
 )
 
 
-def runFNNtraining(opts: opt.TrainOptions) -> None:
+def run_fnn_training(opts: opt.TrainOptions) -> None:
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
@@ -35,20 +35,52 @@ def runFNNtraining(opts: opt.TrainOptions) -> None:
 
     if opts.trainAC:
         logging.info("Training autoencoder")
-        encoder = ac.trainfullac(df, opts)
+        encoder = ac.train_full_ac(df, opts)
         encoder.save_weights(opts.acFile)
     else:
         logging.info("Using trained autoencoder")
-        (_, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
 
-    df = ac.compressfingerprints(df, encoder)
+    df = ac.compress_fingerprints(df, encoder)
 
     # train FNNs with compressed features
     logging.info("Training the FNN using compressed input data.")
-    fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
+    fNN.train_nn_models(df=df, opts=opts, use_compressed=True)
 
     # train FNNs with uncompressed features
-    logging.info("Training the FNN using UNcompressed input data.")
-    fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
+    logging.info("Training the FNN using un-compressed input data.")
+    fNN.train_nn_models(df=df, opts=opts, use_compressed=False)
+
+    logging.info("Done")
+
+
+def run_fnn_training_multi(opts: opt.TrainOptions) -> None:
+
+    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.info("Adding fingerprint to dataset")
+
+    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+
+    t = opts.acFile
+    opts.acFile = opts.outputDir + t
+
+    if opts.trainAC:
+        logging.info("Training autoencoder")
+        encoder = ac.train_full_ac(df, opts)
+        encoder.save_weights(opts.acFile)
+    else:
+        logging.info("Using trained autoencoder")
+        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize,
+                                          encoding_dim=opts.encFPSize)
+
+    df = ac.compress_fingerprints(df, encoder)
+
+    # train FNNs with compressed features
+    logging.info("Training the FNN using compressed input data.")
+    fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=True)
+
+    # train FNNs with uncompressed features
+    logging.info("Training the FNN using un-compressed input data.")
+    fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=False)
 
     logging.info("Done")

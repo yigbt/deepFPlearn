@@ -1,27 +1,28 @@
+import array
 import re
 import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 import logging
 import shutil
 
 # for NN model functions
 from keras.models import Sequential
-from keras.layers import Input, Dense, Dropout
+from keras.layers import Dense, Dropout
 from keras.models import Model
 from keras import regularizers
 from keras import optimizers
 from keras.optimizers import SGD
+from keras.callbacks import History
 
 from sklearn.model_selection import KFold
 from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import auc
-
-# from tensorflow.python.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
-from keras.callbacks import ModelCheckpoint, EarlyStopping
+from sklearn.metrics import f1_score
 
 import dfpl.options
 import dfpl.autoencoder as ac
@@ -29,7 +30,7 @@ import dfpl.autoencoder as ac
 from time import time
 
 
-def defineNNmodel(
+def define_nn_model(
         input_size: int = 2048,
         l2reg: float = 0.001,
         dropout: float = 0.2,
@@ -38,96 +39,205 @@ def defineNNmodel(
         lr: float = 0.001,
         decay: float = 0.01) -> Model:
     """
+    Sets up the structure of the feed forward neural network. The number and size of the hidden layers are based on
+    the dimensions of the input vector.
 
-    :param input_size:
-    :param l2reg:
-    :param dropout:
-    :param activation:
-    :param optimizer:
-    :param lr:
-    :param decay:
-    :return:
+    :param input_size: Length of the input vector. Default: 2048
+    :param l2reg: Log2 regularization value. Default: 0.001
+    :param dropout: Value of dropout for hidden layers. Default: 0.2
+    :param activation: Activation function for inner layers. Default: 'relu'
+    :param optimizer: Optimizer for loss function. Default: 'Adam'
+    :param lr: Learning rate. Default: 0.001
+    :param decay: Decay of the optimizer. Default: 0.01
+    :return: A keras model.
     """
 
     if optimizer == 'Adam':
-        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+        my_optimizer = optimizers.Adam(learning_rate=lr,
+                                       decay=decay)
     elif optimizer == 'SGD':
-        myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
+        my_optimizer = SGD(lr=lr,
+                           momentum=0.9,
+                           decay=decay)
     else:
-        myoptimizer = optimizer
+        my_optimizer = optimizer
 
-    myhiddenlayers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
+    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
 
-    if not str(input_size) in myhiddenlayers.keys():
+    if not str(input_size) in my_hidden_layers.keys():
         raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
 
     nhl = int(math.log2(input_size) / 2 - 1)
 
     model = Sequential()
     # From input to 1st hidden layer
-    model.add(Dense(units=int(input_size / 2), input_dim=input_size,
+    model.add(Dense(units=int(input_size / 2),
+                    input_dim=input_size,
                     activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
     # next hidden layers
     for i in range(1, nhl):
-        factorunits = 2 ** (i + 1)
-        factordropout = 2 * i
-        model.add(Dense(units=int(input_size / factorunits),
+        factor_units = 2 ** (i + 1)
+        factor_dropout = 2 * i
+        model.add(Dense(units=int(input_size / factor_units),
                         activation=activation,
                         kernel_regularizer=regularizers.l2(l2reg)))
-        model.add(Dropout(dropout / factordropout))
+        model.add(Dropout(dropout / factor_dropout))
     # output layer
-    model.add(Dense(units=1, activation='sigmoid'))
+    model.add(Dense(units=1,
+                    activation='sigmoid'))
 
     model.summary()
 
     # compile model
-    model.compile(loss="mse", optimizer=myoptimizer, metrics=['accuracy'])
+    model.compile(loss="mse",
+                  optimizer=my_optimizer,
+                  metrics=['accuracy'])
 
     return model
 
 
-def defineOutfileNames(pathprefix: str, target: str, fold: int) -> tuple:
+def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tuple:
     """
     This function returns the required paths for output files or directories.
 
-    :param pathprefix: A file path prefix for all files.
+    :param path_prefix: A file path prefix for all files.
     :param target: The name of the target.
     :param fold:
 
     :return: A tuple of 14 output file names.
     """
 
-    modelname = "/" + target + '.Fold-' + str(fold)
+    if fold == -1:
+        model_name = "/" + target + '.Full'
+    else:
+        model_name = "/" + target + '.Fold-' + str(fold)
 
-    modelfilepathW = str(pathprefix) + modelname + '.weights.h5'
-    modelfilepathM = str(pathprefix) + modelname + '.json'
-    modelhistplotpathL = str(pathprefix) + modelname + '.loss.svg'
-    modelhistplotpathA = str(pathprefix) + modelname + '.acc.svg'
-    modelhistplotpath = str(pathprefix) + modelname + '.history.svg'
-    modelhistcsvpath = str(pathprefix) + modelname + '.history.csv'
-    modelvalidation = str(pathprefix) + modelname + '.validation.csv'
-    modelAUCfile = str(pathprefix) + modelname + '.auc.svg'
-    modelAUCfiledata = str(pathprefix) + modelname + '.auc.data.csv'
-    outfilepath = str(pathprefix) + modelname + '.trainingResults.txt'
-    checkpointpath = str(pathprefix) + modelname + '.checkpoint.model.hdf5'
-    modelheatmapX = str(pathprefix) + modelname + '.heatmap.X.svg'
-    modelheatmapZ = str(pathprefix) + modelname + '.AC.heatmap.Z.svg'
+    model_file_path_weights = str(path_prefix) + model_name + '.weights.h5'
+    model_file_path_json = str(path_prefix) + model_name + '.json'
+    model_hist_plot_path_l = str(path_prefix) + model_name + '.loss.svg'
+    model_hist_plot_path_a = str(path_prefix) + model_name + '.acc.svg'
+    model_hist_plot_path = str(path_prefix) + model_name + '.history.svg'
+    model_hist_csv_path = str(path_prefix) + model_name + '.history.csv'
+    model_validation = str(path_prefix) + model_name + '.validation.csv'
+    model_auc_file = str(path_prefix) + model_name + '.auc_value.svg'
+    model_auc_file_data = str(path_prefix) + model_name + '.auc_value.data.csv'
+    out_file_path = str(path_prefix) + model_name + '.trainingResults.txt'
+    checkpoint_path = str(path_prefix) + model_name + '.checkpoint.model.hdf5'
+    model_heatmap_x = str(path_prefix) + model_name + '.heatmap.X.svg'
+    model_heatmap_z = str(path_prefix) + model_name + '.AC.heatmap.Z.svg'
 
-    return (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-            modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-            modelAUCfiledata, outfilepath, checkpointpath,
-            modelheatmapX, modelheatmapZ)
+    return (model_file_path_weights, model_file_path_json, model_hist_plot_path_l, model_hist_plot_path_a,
+            model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+            model_auc_file_data, out_file_path, checkpoint_path,
+            model_heatmap_x, model_heatmap_z)
 
 
-def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
+def get_max_validation_accuracy(history: History) -> str:
+    validation = smooth_curve(history.history['val_accuracy'])
+    y_max = max(validation)
+    return 'Max validation accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+
+
+def get_max_training_accuracy(history: History) -> str:
+    training = smooth_curve(history.history['accuracy'])
+    y_max = max(training)
+    return 'Max training accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+
+
+def smooth_curve(points: array, factor: float = 0.75) -> array:
+    smoothed_points = []
+    for point in points:
+        if smoothed_points:
+            previous = smoothed_points[-1]
+            smoothed_points.append(previous * factor + point * (1 - factor))
+        else:
+            smoothed_points.append(point)
+    return smoothed_points
+
+
+def set_plot_history_data(ax: Axes, history: History, which_graph: str) -> None:
+    (train, valid) = (None, None)
+
+    if which_graph == 'acc':
+        train = smooth_curve(history.history['accuracy'])
+        valid = smooth_curve(history.history['val_accuracy'])
+
+    if which_graph == 'loss':
+        train = smooth_curve(history.history['loss'])
+        valid = smooth_curve(history.history['val_loss'])
+
+    # plt.xkcd() # make plots look like xkcd
+
+    epochs = range(1, len(train) + 1)
+
+    trim = 0  # remove first 5 epochs
+    # when graphing loss the first few epochs may skew the (loss) graph
+
+    ax.plot(epochs[trim:], train[trim:], 'dodgerblue', linewidth=15, alpha=0.1)
+    ax.plot(epochs[trim:], train[trim:], 'dodgerblue', label='Training')
+
+    ax.plot(epochs[trim:], valid[trim:], 'g', linewidth=15, alpha=0.1)
+    ax.plot(epochs[trim:], valid[trim:], 'g', label='Validation')
+
+
+def plot_history(history: History, file: str) -> None:
+    fig, (ax1, ax2) = plt.subplots(nrows=2,
+                                   ncols=1,
+                                   figsize=(10, 6),
+                                   sharex='all',
+                                   gridspec_kw={'height_ratios': [5, 2]})
+
+    set_plot_history_data(ax1, history, 'acc')
+
+    set_plot_history_data(ax2, history, 'loss')
+
+    # Accuracy graph
+    ax1.set_ylabel('Accuracy')
+    ax1.set_ylim(bottom=0.5, top=1)
+    ax1.legend(loc="lower right")
+    ax1.spines['top'].set_visible(False)
+    ax1.spines['right'].set_visible(False)
+    ax1.xaxis.set_ticks_position('none')
+    ax1.spines['bottom'].set_visible(False)
+
+    # max accuracy text
+    plt.text(0.5,
+             0.6,
+             get_max_validation_accuracy(history),
+             horizontalalignment='right',
+             verticalalignment='top',
+             transform=ax1.transAxes,
+             fontsize=12)
+    plt.text(0.5,
+             0.8,
+             get_max_training_accuracy(history),
+             horizontalalignment='right',
+             verticalalignment='top',
+             transform=ax1.transAxes,
+             fontsize=12)
+
+    # Loss graph
+    ax2.set_ylabel('Loss')
+    ax2.set_yticks([])
+    ax2.plot(legend=False)
+    ax2.set_xlabel('Epochs')
+    ax2.spines['top'].set_visible(False)
+    ax2.spines['right'].set_visible(False)
+
+    plt.tight_layout()
+    plt.savefig(fname=file, format='svg')
+    plt.close()
+
+
+def plotTrainHistory(hist, target, file_accuracy, file_loss):
     """
     Plot the training performance in terms of accuracy and loss values for each epoch.
     :param hist: The history returned by model.fit function
     :param target: The name of the target of the model
-    :param fileAccuracy: The filename for plotting accuracy values
-    :param fileLoss: The filename for plotting loss values
+    :param file_accuracy: The filename for plotting accuracy values
+    :param file_loss: The filename for plotting loss values
     :return: none
     """
 
@@ -143,7 +253,7 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
         plt.legend(['Train', 'Test'], loc='upper left')
     else:
         plt.legend(['Train'], loc='upper_left')
-    plt.savefig(fname=fileAccuracy, format='svg')
+    plt.savefig(fname=file_accuracy, format='svg')
 
     # Plot training & validation loss values
     plt.figure()
@@ -154,124 +264,145 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Test'], loc='upper left')
     #        plt.show()
-    plt.savefig(fname=fileLoss, format='svg')
+    plt.savefig(fname=file_loss, format='svg')
     plt.close()
 
 
-def plotAUC(fpr, tpr, auc, target, filename, title=""):
+def plot_history_vis(hist: History, model_hist_plot_path: str, model_hist_csv_path: str,
+                     model_hist_plot_path_a: str, model_hist_plot_path_l: str, target: str) -> None:
+    plot_history(history=hist, file=model_hist_plot_path)
+    histDF = pd.DataFrame(hist.history)
+    histDF.to_csv(model_hist_csv_path)
+
+    # plot accuracy and loss for the training and validation during training
+    plotTrainHistory(hist=hist, target=target,
+                     file_accuracy=model_hist_plot_path_a,
+                     file_loss=model_hist_plot_path_l)
+
+
+def plot_auc(fpr: array, tpr: array, auc_value: float, target: str, filename: str) -> None:
+    """
+    Plot the area under the curve to the provided file
+
+    :param fpr: An array containing the false positives
+    :param tpr: An array containing the true positives
+    :param auc_value: The value of the area under the curve
+    :param target: The name of the training target
+    :param filename: The filename to which the plot should be stored
+    :rtype: None
+    """
     plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
-    plt.plot(fpr, tpr, label='Keras (area = {:.3f})'.format(auc))
+    plt.plot(fpr, tpr, label='Keras (area = {:.3f})'.format(auc_value))
     plt.xlabel('False positive rate')
     plt.ylabel('True positive rate')
-    plt.title(f'ROC curve {target}')
+    plt.title('ROC curve ' + target)
     plt.legend(loc='best')
     plt.savefig(fname=filename, format='svg')
     plt.close()
 
 
-def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvalidation, target,
-                            modelAUCfiledata, modelAUCfile):
+def validate_model_on_test_data(x_test: array, checkpoint_path: str, y_test: array, model_type: str,
+                                model_validation: str, target: str, model_auc_file_data: str,
+                                model_auc_file: str) -> tuple:
     """
     Function that validates trained model with test data set. History and AUC plots are generated.
     Accuracy and Loss of model on test data, as well as MCC and confusion matrix is calculated and returned.
 
-    :param Z_test:
-    :param checkpointpath:
+    :param x_test:
+    :param checkpoint_path:
     :param y_test:
-    :param modeltype:
-    :param modelvalidation:
+    :param model_type:
+    :param model_validation:
     :param target:
-    :param modelAUCfiledata:
-    :param modelAUCfile:
-    :return: Tupel containing Loss, Accuracy, MCC, tn, fp, fn, tp of trained model on test data.
+    :param model_auc_file_data:
+    :param model_auc_file:
+    :return: Tuple containing Loss, Accuracy, MCC, tn, fp, fn, tp of trained model on test data.
     """
 
     # load checkpoint model with min(val_loss)
-    trainedmodel = defineNNmodel(input_size=Z_test.shape[1])
+    trained_model = define_nn_model(input_size=x_test.shape[1])
 
     # predict values with random model
-    predictions_random = pd.DataFrame(trainedmodel.predict(Z_test))
+    predictions_random = pd.DataFrame(trained_model.predict(x_test))
 
     # load weights into random model
-    trainedmodel.load_weights(checkpointpath)
+    trained_model.load_weights(checkpoint_path)
     # predict with trained model
-    predictions = pd.DataFrame(trainedmodel.predict(Z_test))
+    predictions = pd.DataFrame(trained_model.predict(x_test))
 
     # save validation data to .csv file
     validation = pd.DataFrame({'predicted': predictions[0].ravel(),
                                'true': list(y_test),
                                'predicted_random': predictions_random[0].ravel(),
-                               'modeltype': modeltype})
-    validation.to_csv(modelvalidation)
+                               'model_type': model_type})
+    validation.to_csv(model_validation)
 
     # compute MCC
-    predictionsInt = [int(round(x)) for x in predictions[0].ravel()]
-    ytrueInt = [int(y) for y in y_test]
-    MCC = matthews_corrcoef(ytrueInt, predictionsInt)
+    predictions_int = [int(round(x)) for x in predictions[0].ravel()]
+    y_true_int = [int(y) for y in y_test]
+    MCC = matthews_corrcoef(y_true_int, predictions_int)
 
     # generate the AUC-ROC curve data from the validation data
-    fpr_keras, tpr_keras, thresholds_keras = roc_curve(y_test, predictions, drop_intermediate=False)
+    fpr_keras, tpr_keras, thresholds_keras = roc_curve(y_true=y_test,
+                                                       y_score=predictions,
+                                                       drop_intermediate=False)
 
     auc_keras = auc(fpr_keras, tpr_keras)
 
-    aucdata = pd.DataFrame(list(zip(fpr_keras,
-                                    tpr_keras,
-                                    [auc_keras for x in range(1, len(fpr_keras))],
-                                    [target for x in range(1, len(fpr_keras))])),
-                           columns=['fpr', 'tpr', 'auc', 'target'])
-    aucdata.to_csv(modelAUCfiledata)
+    auc_data = pd.DataFrame(list(zip(fpr_keras,
+                                     tpr_keras,
+                                     [auc_keras] * len(fpr_keras),
+                                     [target] * len(fpr_keras),
+                                     )),
+                            columns=['fpr', 'tpr', 'auc_value', 'target'])
+    auc_data.to_csv(model_auc_file_data)
 
-    plotAUC(fpr=fpr_keras, tpr=tpr_keras, target=target, auc=auc_keras, filename=modelAUCfile)
+    plot_auc(fpr=fpr_keras,
+             tpr=tpr_keras,
+             target=target,
+             auc_value=auc_keras,
+             filename=model_auc_file)
 
     # [[tn, fp]
     #  [fn, tp]]
-    cfm = confusion_matrix(y_true=ytrueInt, y_pred=predictionsInt)
+    cfm = confusion_matrix(y_true=y_true_int,
+                           y_pred=predictions_int)
 
-    scores = trainedmodel.evaluate(Z_test, y_test, verbose=0)
+    scores = trained_model.evaluate(x=x_test,
+                                    y=y_test,
+                                    verbose=0)
 
-    print(f'TARGET: {target} Loss: {scores[0].__round__(2)} Acc: {scores[1].__round__(2)}')
-    print(f'MCC: {MCC.__round__(2)}')
-    print(f'CFM: \n\tTN={cfm[0][0]}\tFP={cfm[0][1]}\n\tFN={cfm[1][0]}\tTP={cfm[1][1]}')
+    logging.info('TARGET: ' + target + 'Loss: ' + scores[0].__round__(2) + 'Acc: ' + scores[1].__round__(2))
+    logging.info('MCC: ' + str(MCC.__round__(2)))
+    logging.info('CFM: \n\tTN=' + str(cfm[0][0]) + '\tFP=' + str(cfm[0][1]) + '\n\tFN=' + str(cfm[1][0]) +
+                 '\tTP=' + str(cfm[1][1]))
 
-    return (scores[0], scores[1], MCC, cfm[0][0], cfm[0][1], cfm[1][0], cfm[1][1])
+    return scores[0], scores[1], MCC, cfm[0][0], cfm[0][1], cfm[1][0], cfm[1][1]
 
 
-def trainNNmodels(df: pd.DataFrame,
-                  opts: dfpl.options.TrainOptions,
-                  usecompressed: bool) -> None:
-    #
-    # modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
-    # split: float = 0.2, epochs: int = 50, params: str = None,
-    # verbose: int = 2, kfold: int = 5) -> None:
+def train_nn_models(df: pd.DataFrame,
+                    opts: dfpl.options.TrainOptions,
+                    use_compressed: bool) -> None:
     """
     Train individual models for all targets (columns) present in the provided target data (y) and a multi-label
-    model that classifies all targets at once. For each individual target the data is first subsetted to exclude NA
+    model that classifies all targets at once. For each individual target the data is first subset to exclude NA
     values (for target associations). A random sample of the remaining data (size is the split fraction) is used for
     training and the remaining data for validation.
 
-    :param modelfilepathprefix: A path prefix for all output files
-    :param x: The feature matrix.
-    :param y: The outcome matrix.
-    :param split: The percentage of data used for validation.
-    :param epochs: The number of epochs for training the autoencoder and the DNN for classification.
-    Note: Early stopping and fallback is enabled.
-    :param params: A .csv files containing paramters that should be evaluated. See file tunedParams.csv.
-    :param verbose: Verbosity level.
-
-    :return: A list with loss and accuracy values for each individual model.
+    :param use_compressed: Use the compressed fingerprint or not
+    :param opts: The command line arguments in the options class
+    :param df: The dataframe containing x matrix and at least one column for a y target.
     """
 
     # find target columns
-    namesY = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
+    # For each individual target train a model
+    for target in names_y:  # [:2]:
+        # target=names_y[0] # --> only for testing the code
 
-    ### For each individual target (+ summarized target)
-    # for target in y.columns:  # [:1]:
-    for target in namesY:#[:2]:
-        # target=namesY[0] # --> only for testing the code
-
-        if usecompressed:
+        if use_compressed:
             x = np.array(df[df[target].notna() & df['fpcompressed'].notnull()]["fpcompressed"].to_list())
         else:
             x = np.array(df[df[target].notna() & df['fp'].notnull()]["fp"].to_list())
@@ -279,56 +410,60 @@ def trainNNmodels(df: pd.DataFrame,
         y = np.array(df[df[target].notna() & df['fp'].notnull()][target].to_list())
 
         # do a kfold cross validation for the FNN training
-        kfoldCValidator = KFold(n_splits=opts.kFolds,
-                                shuffle=True,
-                                random_state=42)
+        kfold_c_validator = KFold(n_splits=opts.kFolds,
+                                  shuffle=True,
+                                  random_state=42)
 
         # store acc and loss for each fold
-        allscores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
-                                          "loss", "val_loss", "acc", "val_acc",  # FNN training
-                                          "loss_test", "acc_test", "mcc_test"])  # FNN test data
+        all_scores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
+                                           "loss", "val_loss", "acc", "val_acc",  # FNN training
+                                           "loss_test", "acc_test"])  # FNN test data
 
         fold_no = 1
 
         # split the data
-        for train, test in kfoldCValidator.split(x, y):  # kfoldCValidator.split(Xt, Yt):
+        for train, test in kfold_c_validator.split(x, y):  # kfold_c_validator.split(Xt, Yt):
             # for testing use one of the splits:
-            # kf = kfoldCValidator.split(x, y)
+            # kf = kfold_c_validator.split(x, y)
             # train, test = next(kf)
 
             if opts.verbose > 0:
                 logging.info("Training of fold number:" + str(fold_no))
 
             # define all the output file/path names
-            (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-             modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-             modelAUCfiledata, outfilepath, checkpointpath,
-             modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=opts.outputDir,
-                                                                target=target + "_compressed-" + str(usecompressed),
-                                                                fold=fold_no)
+            (model_file_path_weights, model_file_path_json, model_hist_plot_path_loss, model_hist_plot_path_acc,
+             model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+             model_auc_file_data, outfile_path, checkpoint_path,
+             model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
+                                                                       target=target + "_compressed-" + str(
+                                                                           use_compressed),
+                                                                       fold=fold_no)
 
-            model = defineNNmodel(input_size=x[train].shape[1])
+            model = define_nn_model(input_size=x[train].shape[1])
 
-            callback_list = ac.autoencoderCallback(checkpointpath=checkpointpath, patience=20)
-            # callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20,
-            #                                 rlrop=True, rlropfactor=0.1, rlroppatience=100)
+            callback_list = ac.autoencoder_callback(checkpoint_path=checkpoint_path,
+                                                    patience=20)
+
             # measure the training time
             start = time()
             # train and validate
             hist = model.fit(x[train], y[train],
                              callbacks=callback_list,
-                             epochs=opts.epochs, batch_size=256, verbose=opts.verbose,
+                             epochs=opts.epochs,
+                             batch_size=256,
+                             verbose=opts.verbose,
                              validation_split=opts.testingFraction)
-            #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
-            trainTime = str(round((time() - start) / 60, ndigits=2))
+            #                             validation_data=(x_test, y_test))  # this overwrites val_split!
+            trainTime = str(round((time() - start) / 60,
+                                  ndigits=2))
 
             if opts.verbose > 0:
                 logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
 
             # validate model on test data set (x_test, y_test)
-            scores = validateModelOnTestData(x[test], checkpointpath, y[test],
-                                             "FNN", modelvalidation, target,
-                                             modelAUCfiledata, modelAUCfile)
+            scores = validate_model_on_test_data(x[test], checkpoint_path, y[test],
+                                                 "FNN", model_validation, target,
+                                                 model_auc_file_data, model_auc_file)
 
             idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
 
@@ -341,182 +476,204 @@ def trainNNmodels(df: pd.DataFrame,
                                            "loss_test", "acc_test", "mcc_test"]
                                   )
             print(row_df)
-            allscores = allscores.append(row_df, ignore_index=True)
+            all_scores = all_scores.append(row_df, ignore_index=True)
             fold_no += 1
             del model
             # now next fold
 
-        print(allscores)
+        print(all_scores)
 
         # finalize model
         # 1. provide best performing fold variant
         # select best model based on MCC
-        idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
-        fold_no = allscores._get_value(idx2, 'fold_no')
+        idx2 = all_scores[['mcc_test']].idxmax().ravel()[0]
+        fold_no = all_scores.iloc[idx2]['fold_no']
 
-        modelname = target + "_compressed-" + str(usecompressed) + '.Fold-' + str(fold_no)
-        checkpointpath = str(opts.outputDir) + "/" + modelname + '.checkpoint.model.hdf5'
+        model_name = target + "_compressed-" + str(use_compressed) + '.Fold-' + str(fold_no)
+        checkpoint_path = str(opts.outputDir) + "/" + model_name + '.checkpoint.model.hdf5'
 
-        bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+        best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
 
         # store all scores
-        file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
-        allscores.to_csv(file)
+        file = re.sub(".hdf5", "scores.csv", re.sub("Fold-..checkpoint", "Fold-All", checkpoint_path))
+        all_scores.to_csv(file)
 
         # copy best DNN model
-        shutil.copyfile(checkpointpath, bestModelfile)
-        logging.info("Best model for FNN is saved: " + bestModelfile)
+        shutil.copyfile(checkpoint_path, best_model_file)
+        logging.info("Best model for FNN is saved: " + best_model_file)
 
         # AND retrain with full data set
-        fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
+        full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
         # measure the training time
         start = time()
 
-        model = defineNNmodel(input_size=x.shape[1])  # X_train.shape[1])
-        callback_list = ac.autoencoderCallback(checkpointpath=fullModelfile, patience=20)
+        model = define_nn_model(input_size=x.shape[1])
+        callback_list = ac.autoencoder_callback(checkpoint_path=full_model_file,
+                                                patience=20)
 
         # train and validate
         hist = model.fit(x, y,
                          callbacks=callback_list,
-                         epochs=opts.epochs, batch_size=256, verbose=opts.verbose,
+                         epochs=opts.epochs,
+                         batch_size=256,
+                         verbose=opts.verbose,
                          validation_split=opts.testingFraction)
-        #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
-        trainTime = str(round((time() - start) / 60, ndigits=2))
+
+        trainTime = str(round((time() - start) / 60,
+                              ndigits=2))
 
         if opts.verbose > 0:
             logging.info("Computation time for training the full classification FNN: " + trainTime + "min")
-        # plotHistoryVis(hist,
-        #                modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-        #                modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-        #                modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-        #                modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
-        # print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
 
-        pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
+        pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))
 
         del model
         # now next target
 
 
-def defineNNmodelMulti(inputSize=2048,
-                       outputSize=None,
-                       l2reg=0.001,
-                       dropout=0.2,
-                       activation='relu',
-                       optimizer='Adam',
-                       lr=0.001,
-                       decay=0.01):
+def define_nn_model_multi(input_size: int = 2048,
+                          output_size: int = None,
+                          l2reg: float = 0.001,
+                          dropout: float = 0.2,
+                          activation: str = 'relu',
+                          optimizer: str = 'Adam',
+                          lr: float = 0.001,
+                          decay: float = 0.01) -> Model:
     if optimizer == 'Adam':
-        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+        my_optimizer = optimizers.Adam(learning_rate=lr, decay=decay)
     elif optimizer == 'SGD':
-        myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
+        my_optimizer = SGD(lr=lr, momentum=0.9, decay=decay)
     else:
-        myoptimizer = optimizer
+        my_optimizer = optimizer
 
-    nhl = int(math.log2(inputSize) / 2 - 1)
+    nhl = int(math.log2(input_size) / 2 - 1)
 
     model = Sequential()
     # From input to 1st hidden layer
-    model.add(Dense(units=int(inputSize / 2), input_dim=inputSize,
+    model.add(Dense(units=int(input_size / 2),
+                    input_dim=input_size,
                     activation=activation,
                     kernel_regularizer=regularizers.l2(l2reg)))
     model.add(Dropout(dropout))
     # next hidden layers
     for i in range(1, nhl):
-        factorunits = 2 ** (i + 1)
-        factordropout = 2 * i
-        model.add(Dense(units=int(inputSize / factorunits),
+        factor_units = 2 ** (i + 1)
+        factor_dropout = 2 * i
+        model.add(Dense(units=int(input_size / factor_units),
                         activation=activation,
                         kernel_regularizer=regularizers.l2(l2reg)))
-        model.add(Dropout(dropout / factordropout))
+        model.add(Dropout(dropout / factor_dropout))
     # multi-class output layer
     # use sigmoid to get independent probabilities for each output node
     # (need not add up to one, as they would using softmax)
     # https://www.depends-on-the-definition.com/guide-to-multi-label-classification-with-neural-networks/
-    model.add(Dense(units=outputSize, activation='sigmoid'))
+    model.add(Dense(units=output_size,
+                    activation='sigmoid'))
 
     model.summary()
 
     # compile model
-    model.compile(loss="binary_crossentropy", optimizer=myoptimizer, metrics=['accuracy'])
+    model.compile(loss="binary_crossentropy",
+                  optimizer=my_optimizer,
+                  metrics=['accuracy'])
 
     return model
 
 
-def validateMultiModelOnTestData(Z_test, checkpointpath, y_test, colnames, resultfile):
+def validate_multi_model_on_test_data(x_test: array, checkpoint_path: str, y_test: array,
+                                      col_names: list, result_file: str) -> list:
+    """
+    Validate the multi label model on a test data set.
+
+    :param x_test: The feature matrix of the test data set
+    :param checkpoint_path: The path containing the weights of the FNN model
+    :param y_test: The outcome matrix of the test data set
+    :param col_names: The names of the columns that are targets
+    :param result_file: The filename of the output file
+    :return: A pandas Dataframe containing the percentage of correct predictions for each target
+    """
     # load checkpoint model with min(val_loss)
-    trainedmodel = defineNNmodelMulti(inputSize=Z_test.shape[1], outputSize=y_test.shape[1])
+    trained_model = define_nn_model_multi(input_size=x_test.shape[1],
+                                          output_size=y_test.shape[1])
 
     # predict values with random model
-    predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=[n + '-predRandom' for n in colnames])
-    # predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=colnames + '-predRandom')
+    predictions_random = pd.DataFrame(trained_model.predict(x_test),
+                                      columns=[n for n in col_names])
 
     # load weights into random model
-    trainedmodel.load_weights(checkpointpath)
+    trained_model.load_weights(checkpoint_path)
 
     # predict with trained model
-    predictions = pd.DataFrame(trainedmodel.predict(Z_test),
-                               columns=[n + '-pred' for n in colnames])
-    scores = pd.DataFrame((predictions.round() == y_test).sum() / y_test.shape[0], columns=['correctPredictions'])
+    predictions = pd.DataFrame(trained_model.predict(x_test),
+                               columns=[n for n in col_names])
 
-    results = pd.concat([predictions_random, predictions, pd.DataFrame(y_test,
-                                                                       columns=[n + '-true' for n in colnames])],
+    y_true = pd.DataFrame(y_test, columns=col_names)
+
+    f1_random = f1_score(y_true=y_true,
+                         y_pred=predictions_random.round(),
+                         average='weighted')
+
+    f1_trained = f1_score(y_true=y_true,
+                          y_pred=predictions.round(),
+                          average='weighted')
+
+    predictions_random.columns = [n + '-random' for n in col_names]
+    predictions.columns = [n + '-trained' for n in col_names]
+
+    results = pd.concat([predictions_random, predictions, y_true],
                         axis=1)
-    results.to_csv(resultfile)
+    results.to_csv(result_file)
 
-    return scores
+    return [f1_random, f1_trained]
 
 
-def trainNNmodelsMulti(df: pd.DataFrame,
-                       opts: dfpl.options.TrainOptions,
-                       usecompressed: bool) -> None:
-    # modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
-    # split: float = 0.2, epochs: int = 500,
-    # verbose: int= 2, kfold: int = 5) -> None:
-
+def train_nn_models_multi(df: pd.DataFrame,
+                          opts: dfpl.options.TrainOptions,
+                          use_compressed: bool) -> None:
     # find target columns
-    namesY = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi']]
-    idxnotNA = df[namesY].dropna().index
+    names_y = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
+    idx_not_na = df[names_y].dropna().index
 
-    if usecompressed:
+    if use_compressed:
         # get compressed fingerprints as numpy array
-        fpMatrix = np.array(df.iloc[idxnotNA][df['fpcompressed'].notnull()]['fpcompressed'].to_list())
-        y = np.array(df.iloc[idxnotNA][df['fpcompressed'].notnull()][namesY])
+        fpMatrix = np.array(df.iloc[idx_not_na][df['fpcompressed'].notnull()]['fpcompressed'].to_list())
+        y = np.array(df.iloc[idx_not_na][df['fpcompressed'].notnull()][names_y])
     else:
         # get fingerprints as numpy array
-        fpMatrix = np.array(df.iloc[idxnotNA][df['fp'].notnull()]['fp'].to_list())
-        y = np.array(df.iloc[idxnotNA][df['fp'].notnull()][namesY])
+        fpMatrix = np.array(df.iloc[idx_not_na][df['fp'].notnull()]['fp'].to_list())
+        y = np.array(df.iloc[idx_not_na][df['fp'].notnull()][names_y])
 
     # do a kfold cross validation for the autoencoder training
-    kfoldCValidator = KFold(n_splits=opts.kFolds,
-                            shuffle=True,
-                            random_state=42)
+    kfold_c_validator = KFold(n_splits=opts.kFolds,
+                              shuffle=True,
+                              random_state=42)
 
     # store acc and loss for each fold
-    allscores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
-                                      "loss", "val_loss", "acc", "val_acc"]) #,  # FNN training
-                                      # "loss_test", "acc_test", "mcc_test"])  # FNN test data
+    all_scores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
+                                       "loss", "val_loss", "acc", "val_acc",  # FNN training
+                                       "f1_random", "f1_trained"])  # F1 scores of predictions
 
     fold_no = 1
 
     # split the data
-    for train, test in kfoldCValidator.split(fpMatrix, y):
-        #kf = kfoldCValidator.split(fpMatrix, y)
-        #train, test = next(kf)
-        # define all the output file/path names
-        (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-         modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-         modelAUCfiledata, outfilepath, checkpointpath,
-         modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=opts.outputDir,
-                                                            target="multi" + "_compressed-" + str(usecompressed),
-                                                            fold=fold_no)
+    for train, test in kfold_c_validator.split(fpMatrix, y):
+        # kf = kfold_c_validator.split(fpMatrix, y)
+        # train, test = next(kf)
+
+        (model_file_path_weights, model_file_path_json, model_hist_plot_path_loss, model_hist_plot_path_acc,
+         model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+         model_auc_file_data, out_file_path, checkpoint_path,
+         model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
+                                                                   target="multi" + "_compressed-" + str(
+                                                                       use_compressed),
+                                                                   fold=fold_no)
 
         # use a dnn for multi-class prediction
-        model = defineNNmodelMulti(inputSize=fpMatrix[train].shape[1],
-                                   outputSize=y.shape[1])
+        model = define_nn_model_multi(input_size=fpMatrix[train].shape[1],
+                                      output_size=y.shape[1])
 
-        callback_list = ac.autoencoderCallback(checkpointpath=checkpointpath,
-                                               patience=20)
+        callback_list = ac.autoencoder_callback(checkpoint_path=checkpoint_path,
+                                                patience=20)
         # measure the training time
         start = time()
 
@@ -533,72 +690,87 @@ def trainNNmodelsMulti(df: pd.DataFrame,
         if opts.verbose > 0:
             logging.info("Computation time for training the multi-label FNN: " + trainTime + " min")
 
-        # validate model on test data set (x_test, y_test)
-        scores = validateMultiModelOnTestData(Z_test=fpMatrix[test],
-                                              checkpointpath=checkpointpath,
-                                              y_test=y[test],
-                                              colnames=namesY,
-                                              resultfile=outfilepath.replace("trainingResults.txt",
-                                                                             "predictionResults.csv"))
-
+        # validate model on test data set (fpMatrix_test, y_test)
+        scores = validate_multi_model_on_test_data(x_test=fpMatrix[test],
+                                                   checkpoint_path=checkpoint_path,
+                                                   y_test=y[test],
+                                                   col_names=names_y,
+                                                   result_file=out_file_path.replace("trainingResults.txt",
+                                                                                     "predictionResults.csv"))
 
         idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
         row_df = pd.DataFrame([[fold_no,
                                 hist.history['loss'][idx], hist.history['val_loss'][idx],
-                                hist.history['accuracy'][idx], hist.history['val_accuracy'][idx]]],
+                                hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
+                                scores[0], scores[1]]],
                               columns=["fold_no",  # fold number of k-fold CV
-                                       "loss", "val_loss", "acc", "val_acc"]
-                              )#.join(scores.T)
-
+                                       "loss", "val_loss", "acc", "val_acc", "f1_random", "f1_trained"]
+                              )
 
         print(row_df)
-        allscores = allscores.append(row_df, ignore_index=True)
+        all_scores = all_scores.append(row_df, ignore_index=True)
 
         fold_no = fold_no + 1
         del model
 
-    print(allscores)
-#
-# # finalize model
-# # 1. provide best performing fold variant
-# # select best model based on MCC
-# idx2 = allscores[['mcc_test']].idxmax().ravel()[0]
-# fold_no = allscores._get_value(idx2, 'fold_no')
-#
-# modelname = 'multi.Fold-' + str(fold_no)
-# checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
-# bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
-#
-# file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
-# allscores.to_csv(file)
-#
-# # copy best DNN model
-# shutil.copyfile(checkpointpath, bestModelfile)
-# print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
-#
-# # AND retrain with full data set
-# fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
-# # measure the training time
-# start = time()
-#
-# model = defineNNmodel(inputSize=xmulti[train].shape[1])
-# callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
-#                                 rlrop=True, rlropfactor=0.1, rlroppatience=100)
-# # train and validate
-# hist = model.fit(xmulti, ymulti,
-#                  callbacks=callback_list,
-#                  epochs=epochs, batch_size=256, verbose=2, validation_split=split)
-# #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
-# trainTime = str(round((time() - start) / 60, ndigits=2))
-#
-# if verbose > 0:
-#     print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
-# plotHistoryVis(hist,
-#                modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
-# print(f'[INFO]: Full models for DNN is saved:\n        - {fullModelfile}')
-#
-# pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
-# stats.append([target, [x.__round__(2) for x in scores]])
+    print(all_scores)
+
+    # finalize model
+    # 1. provide best performing fold variant
+    # select best model based on MCC
+    idx2 = all_scores[['f1_trained']].idxmax().ravel()[0]
+    fold_no = all_scores.iloc[idx2]['fold_no']
+
+    model_name = "multi" + "_compressed-" + str(use_compressed) + '.Fold-' + str(fold_no)
+    checkpoint_path = opts.outputDir + '/' + model_name + '.checkpoint.model.hdf5'
+    best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+
+    file = re.sub(".hdf5", "scores.csv", re.sub("Fold-..checkpoint", "Fold-All", checkpoint_path))
+    all_scores.to_csv(file)
+
+    # copy best DNN model
+    shutil.copyfile(checkpoint_path, best_model_file)
+    logging.info("Best models for FNN is saved:\n" + best_model_file)
+
+    # AND retrain with full data set
+    full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
+
+    (model_file_path_weights, model_file_path_json, model_hist_plot_path_loss, model_hist_plot_path_acc,
+     model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+     model_auc_file_data, out_file_path, checkpoint_path,
+     model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
+                                                               target="multi" + "_compressed-" + str(
+                                                                   use_compressed))
+
+    # measure the training time
+    start = time()
+
+    model = define_nn_model_multi(input_size=fpMatrix.shape[1],
+                                  output_size=y.shape[1])
+    callback_list = ac.autoencoder_callback(checkpoint_path=full_model_file,
+                                            patience=20)
+    # train and validate
+    hist = model.fit(fpMatrix, y,
+                     callbacks=callback_list,
+                     epochs=opts.epochs,
+                     batch_size=256,
+                     verbose=opts.verbose,
+                     validation_split=opts.testingFraction)
+
+    trainTime = str(round((time() - start) / 60,
+                          ndigits=2))
+
+    if opts.verbose > 0:
+        logging.info("Computation time for training the full multi-label FNN: " + trainTime + " min")
+
+    model_name = "multi" + "_compressed-" + str(use_compressed) + '.Full'
+
+    plot_history_vis(hist,
+                     model_hist_plot_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+                     model_hist_csv_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+                     model_hist_plot_path_acc.replace("Fold-" + str(fold_no), "full.DNN-model"),
+                     model_hist_plot_path_loss.replace("Fold-" + str(fold_no), "full.DNN-model"),
+                     target=model_name)
+    logging.info("Full models for DNN is saved:\n" + full_model_file)
+
+    pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))

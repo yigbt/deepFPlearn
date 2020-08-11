@@ -684,106 +684,106 @@ def plotHeatmap(matrix, filename, title=""):
 
 # 01 --------------------------------------------------------------------------------- #
 
-def smooth_curve(points, factor=0.75):
-    smoothed_points = []
-    for point in points:
-        if smoothed_points:
-            previous = smoothed_points[-1]
-            smoothed_points.append(previous * factor + point * (1 - factor))
-        else:
-            smoothed_points.append(point)
-    return smoothed_points
-
-
-# 02 ---------------------------------------------------------------------------------- #
-
-def set_plot_history_data(ax, history, which_graph):
-    if which_graph == 'acc':
-        train = smooth_curve(history.history['accuracy'])
-        valid = smooth_curve(history.history['val_accuracy'])
-
-    if which_graph == 'loss':
-        train = smooth_curve(history.history['loss'])
-        valid = smooth_curve(history.history['val_loss'])
-
-    # plt.xkcd() # make plots look like xkcd
-
-    epochs = range(1, len(train) + 1)
-
-    trim = 0  # remove first 5 epochs
-    # when graphing loss the first few epochs may skew the (loss) graph
-
-    ax.plot(epochs[trim:], train[trim:], 'dodgerblue', linewidth=15, alpha=0.1)
-    ax.plot(epochs[trim:], train[trim:], 'dodgerblue', label=('Training'))
-
-    ax.plot(epochs[trim:], valid[trim:], 'g', linewidth=15, alpha=0.1)
-    ax.plot(epochs[trim:], valid[trim:], 'g', label=('Validation'))
-
+# def smooth_curve(points, factor=0.75):
+#     smoothed_points = []
+#     for point in points:
+#         if smoothed_points:
+#             previous = smoothed_points[-1]
+#             smoothed_points.append(previous * factor + point * (1 - factor))
+#         else:
+#             smoothed_points.append(point)
+#     return smoothed_points
+#
+#
+# # 02 ---------------------------------------------------------------------------------- #
+#
+# def set_plot_history_data(ax, history, which_graph):
+#     if which_graph == 'acc':
+#         train = smooth_curve(history.history['accuracy'])
+#         valid = smooth_curve(history.history['val_accuracy'])
+#
+#     if which_graph == 'loss':
+#         train = smooth_curve(history.history['loss'])
+#         valid = smooth_curve(history.history['val_loss'])
+#
+#     # plt.xkcd() # make plots look like xkcd
+#
+#     epochs = range(1, len(train) + 1)
+#
+#     trim = 0  # remove first 5 epochs
+#     # when graphing loss the first few epochs may skew the (loss) graph
+#
+#     ax.plot(epochs[trim:], train[trim:], 'dodgerblue', linewidth=15, alpha=0.1)
+#     ax.plot(epochs[trim:], train[trim:], 'dodgerblue', label=('Training'))
+#
+#     ax.plot(epochs[trim:], valid[trim:], 'g', linewidth=15, alpha=0.1)
+#     ax.plot(epochs[trim:], valid[trim:], 'g', label=('Validation'))
+#
 
 # 03 ---------------------------------------------------------------------------------- #
-
-def get_max_validation_accuracy(history):
-    validation = smooth_curve(history.history['val_accuracy'])
-    ymax = max(validation)
-    return 'Max validation accuracy ≈ ' + str(round(ymax, 3) * 100) + '%'
-
-
-def get_max_training_accuracy(history):
-    training = smooth_curve(history.history['accuracy'])
-    ymax = max(training)
-    return 'Max training accuracy ≈ ' + str(round(ymax, 3) * 100) + '%'
-
+#
+# def get_max_validation_accuracy(history):
+#     validation = smooth_curve(history.history['val_accuracy'])
+#     ymax = max(validation)
+#     return 'Max validation accuracy ≈ ' + str(round(ymax, 3) * 100) + '%'
+#
+#
+# def get_max_training_accuracy(history):
+#     training = smooth_curve(history.history['accuracy'])
+#     ymax = max(training)
+#     return 'Max training accuracy ≈ ' + str(round(ymax, 3) * 100) + '%'
+#
 
 # 04---------------------------------------------------------------------------------- #
 
-def plot_history(history, file):
-    fig, (ax1, ax2) = plt.subplots(nrows=2,
-                                   ncols=1,
-                                   figsize=(10, 6),
-                                   sharex=True,
-                                   gridspec_kw={'height_ratios': [5, 2]})
-
-    set_plot_history_data(ax1, history, 'acc')
-
-    set_plot_history_data(ax2, history, 'loss')
-
-    # Accuracy graph
-    ax1.set_ylabel('Accuracy')
-    ax1.set_ylim(bottom=0.5, top=1)
-    ax1.legend(loc="lower right")
-    ax1.spines['top'].set_visible(False)
-    ax1.spines['right'].set_visible(False)
-    ax1.xaxis.set_ticks_position('none')
-    ax1.spines['bottom'].set_visible(False)
-
-    # max accuracy text
-    plt.text(0.5,
-             0.6,
-             get_max_validation_accuracy(history),
-             horizontalalignment='right',
-             verticalalignment='top',
-             transform=ax1.transAxes,
-             fontsize=12)
-    plt.text(0.5,
-             0.8,
-             get_max_training_accuracy(history),
-             horizontalalignment='right',
-             verticalalignment='top',
-             transform=ax1.transAxes,
-             fontsize=12)
-
-    # Loss graph
-    ax2.set_ylabel('Loss')
-    ax2.set_yticks([])
-    ax2.plot(legend=False)
-    ax2.set_xlabel('Epochs')
-    ax2.spines['top'].set_visible(False)
-    ax2.spines['right'].set_visible(False)
-
-    plt.tight_layout()
-    plt.savefig(fname=file, format='svg')
-    plt.close()
-
+# def plot_history(history, file):
+#     fig, (ax1, ax2) = plt.subplots(nrows=2,
+#                                    ncols=1,
+#                                    figsize=(10, 6),
+#                                    sharex=True,
+#                                    gridspec_kw={'height_ratios': [5, 2]})
+#
+#     set_plot_history_data(ax1, history, 'acc')
+#
+#     set_plot_history_data(ax2, history, 'loss')
+#
+#     # Accuracy graph
+#     ax1.set_ylabel('Accuracy')
+#     ax1.set_ylim(bottom=0.5, top=1)
+#     ax1.legend(loc="lower right")
+#     ax1.spines['top'].set_visible(False)
+#     ax1.spines['right'].set_visible(False)
+#     ax1.xaxis.set_ticks_position('none')
+#     ax1.spines['bottom'].set_visible(False)
+#
+#     # max accuracy text
+#     plt.text(0.5,
+#              0.6,
+#              get_max_validation_accuracy(history),
+#              horizontalalignment='right',
+#              verticalalignment='top',
+#              transform=ax1.transAxes,
+#              fontsize=12)
+#     plt.text(0.5,
+#              0.8,
+#              get_max_training_accuracy(history),
+#              horizontalalignment='right',
+#              verticalalignment='top',
+#              transform=ax1.transAxes,
+#              fontsize=12)
+#
+#     # Loss graph
+#     ax2.set_ylabel('Loss')
+#     ax2.set_yticks([])
+#     ax2.plot(legend=False)
+#     ax2.set_xlabel('Epochs')
+#     ax2.spines['top'].set_visible(False)
+#     ax2.spines['right'].set_visible(False)
+#
+#     plt.tight_layout()
+#     plt.savefig(fname=file, format='svg')
+#     plt.close()
+#
 
 # ------------------------------------------------------------------------------------- #
 
@@ -841,8 +841,8 @@ def defineOutfileNames(pathprefix: str, target: str, fold: int) -> tuple:
     modelhistplotpath = str(pathprefix) + '.' + modelname + '.history.svg'
     modelhistcsvpath = str(pathprefix) + '.' + modelname + '.history.csv'
     modelvalidation = str(pathprefix) + '.' + modelname + '.validation.csv'
-    modelAUCfile = str(pathprefix) + '.' + modelname + '.auc.svg'
-    modelAUCfiledata = str(pathprefix) + '.' + modelname + '.auc.data.csv'
+    modelAUCfile = str(pathprefix) + '.' + modelname + '.auc_value.svg'
+    modelAUCfiledata = str(pathprefix) + '.' + modelname + '.auc_value.data.csv'
     outfilepath = str(pathprefix) + '.' + modelname + '.trainingResults.txt'
     checkpointpath = str(pathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
     modelheatmapX = str(pathprefix) + '.' + modelname + '.heatmap.X.svg'
@@ -926,77 +926,77 @@ def prepareDataSet(y: pd.DataFrame, x: pd.DataFrame, t: str) -> tuple:
 
 # ------------------------------------------------------------------------------------- #
 
-def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
-                   modelhistplotpathA, modelhistplotpathL, target):
-    plot_history(history=hist, file=modelhistplotpath)
-    histDF = pd.DataFrame(hist.history)
-    histDF.to_csv(modelhistcsvpath)
-
-    # plot accuracy and loss for the training and validation during training
-    plotTrainHistory(hist=hist, target=target,
-                     fileAccuracy=modelhistplotpathA,
-                     fileLoss=modelhistplotpathL)
-
+# def plot_history_vis(hist, model_hist_plot_path, model_hist_csv_path,
+#                    model_hist_plot_path_a, model_hist_plot_path_l, target):
+#     plot_history(history=hist, file=model_hist_plot_path)
+#     histDF = pd.DataFrame(hist.history)
+#     histDF.to_csv(model_hist_csv_path)
+#
+#     # plot accuracy and loss for the training and validation during training
+#     plotTrainHistory(hist=hist, target=target,
+#                      file_accuracy=model_hist_plot_path_a,
+#                      file_loss=model_hist_plot_path_l)
+#
 
 # ------------------------------------------------------------------------------------- #
 #
-# def validateMultiModelOnTestData(Z_test, checkpointpath, y_test, colnames, resultfile):
+# def validate_multi_model_on_test_data(x_test, checkpoint_path, y_test, col_names, result_file):
 #     # load checkpoint model with min(val_loss)
-#     trainedmodel = defineNNmodelMulti(inputSize=Z_test.shape[1], outputSize=y_test.shape[1])
+#     trainedmodel = define_nn_model_multi(input_size=x_test.shape[1], output_size=y_test.shape[1])
 #
 #     # predict values with random model
-#     predictions_random = pd.DataFrame(trainedmodel.predict(Z_test), columns=colnames + '-predRandom')
+#     predictions_random = pd.DataFrame(trainedmodel.predict(x_test), columns=col_names + '-predRandom')
 #
 #     # load weights into random model
-#     trainedmodel.load_weights(checkpointpath)
+#     trainedmodel.load_weights(checkpoint_path)
 #
 #     # predict with trained model
-#     predictions = pd.DataFrame(trainedmodel.predict(Z_test),
-#                                columns=colnames + '-pred')
+#     predictions = pd.DataFrame(trainedmodel.predict(x_test),
+#                                columns=col_names + '-pred')
 #     scores = pd.DataFrame((predictions.round() == y_test).sum() / y_test.shape[0], columns=['correctPredictions'])
 #
-#     results = pd.concat([predictions_random, predictions, pd.DataFrame(y_test, columns=colnames + '-true')], axis=1)
-#     results.to_csv(resultfile)
+#     results = pd.concat([predictions_random, predictions, pd.DataFrame(y_test, columns=col_names + '-true')], axis=1)
+#     results.to_csv(result_file)
 #
 #     return scores
 
 
 # ------------------------------------------------------------------------------------- #
 
-# def validateModelOnTestData(Z_test, checkpointpath, y_test, modeltype, modelvalidation, target,
-#                             modelAUCfiledata, modelAUCfile):
+# def validate_model_on_test_data(x_test, checkpoint_path, y_test, model_type, model_validation, target,
+#                             model_auc_file_data, model_auc_file):
 #     """
 #     Function that validates trained model with test data set. History and AUC plots are generated.
 #     Accuracy and Loss of model on test data, as well as MCC and confusion matrix is calculated and returned.
 #
-#     :param Z_test:
-#     :param checkpointpath:
+#     :param x_test:
+#     :param checkpoint_path:
 #     :param y_test:
-#     :param modeltype:
-#     :param modelvalidation:
+#     :param model_type:
+#     :param model_validation:
 #     :param target:
-#     :param modelAUCfiledata:
-#     :param modelAUCfile:
+#     :param model_auc_file_data:
+#     :param model_auc_file:
 #     :return: Tupel containing Loss, Accuracy, MCC, tn, fp, fn, tp of trained model on test data.
 #     """
 #
 #     # load checkpoint model with min(val_loss)
-#     trainedmodel = defineNNmodel(inputSize=Z_test.shape[1])
+#     trainedmodel = define_nn_model(input_size=x_test.shape[1])
 #
 #     # predict values with random model
-#     predictions_random = pd.DataFrame(trainedmodel.predict(Z_test))
+#     predictions_random = pd.DataFrame(trainedmodel.predict(x_test))
 #
 #     # load weights into random model
-#     trainedmodel.load_weights(checkpointpath)
+#     trainedmodel.load_weights(checkpoint_path)
 #     # predict with trained model
-#     predictions = pd.DataFrame(trainedmodel.predict(Z_test))
+#     predictions = pd.DataFrame(trainedmodel.predict(x_test))
 #
 #     # save validation data to .csv file
 #     validation = pd.DataFrame({'predicted': predictions[0].ravel(),
 #                                'true': list(y_test),
 #                                'predicted_random': predictions_random[0].ravel(),
-#                                'modeltype': modeltype})
-#     validation.to_csv(modelvalidation)
+#                                'model_type': model_type})
+#     validation.to_csv(model_validation)
 #
 #     # compute MCC
 #     predictionsInt = [int(round(x)) for x in predictions[0].ravel()]
@@ -1006,22 +1006,22 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 #     # generate the AUC-ROC curve data from the validation data
 #     fpr_keras, tpr_keras, thresholds_keras = roc_curve(y_test, predictions, drop_intermediate=False)
 #
-#     auc_keras = auc(fpr_keras, tpr_keras)
+#     auc_keras = auc_value(fpr_keras, tpr_keras)
 #
 #     aucdata = pd.DataFrame(list(zip(fpr_keras,
 #                                     tpr_keras,
 #                                     [auc_keras for x in range(1, len(fpr_keras))],
 #                                     [target for x in range(1, len(fpr_keras))])),
-#                            columns=['fpr', 'tpr', 'auc', 'target'])
-#     aucdata.to_csv(modelAUCfiledata)
+#                            columns=['fpr', 'tpr', 'auc_value', 'target'])
+#     aucdata.to_csv(model_auc_file_data)
 #
-#     plotAUC(fpr=fpr_keras, tpr=tpr_keras, target=target, auc=auc_keras, filename=modelAUCfile)
+#     plotAUC(fpr=fpr_keras, tpr=tpr_keras, target=target, auc_value=auc_keras, filename=model_auc_file)
 #
 #     # [[tn, fp]
 #     #  [fn, tp]]
 #     cfm = confusion_matrix(y_true=ytrueInt, y_pred=predictionsInt)
 #
-#     scores = trainedmodel.evaluate(Z_test, y_test, verbose=0)
+#     scores = trainedmodel.evaluate(x_test, y_test, verbose=0)
 #
 #     print(f'TARGET: {target} Loss: {scores[0].__round__(2)} Acc: {scores[1].__round__(2)}')
 #     print(f'MCC: {MCC.__round__(2)}')
@@ -1031,7 +1031,7 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 
 
 # ------------------------------------------------------------------------------------- #
-# def trainNNmodelsMulti(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
+# def train_nn_models_multi(modelfilepathprefix: str, x: pd.DataFrame, y: pd.DataFrame,
 #                        split: float = 0.2, epochs: int = 500,
 #                        verbose: int= 2, kfold: int = 5) -> None:
 #     # remove 'id' column if present
@@ -1057,16 +1057,16 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 #     for train, test in kfoldCValidator.split(xmulti, ymulti):
 #
 #         # define all the output file/path names
-#         (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-#          modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-#          modelAUCfiledata, outfilepath, checkpointpath,
-#          modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
+#         (modelfilepathW, modelfilepathM, model_hist_plot_path_l, model_hist_plot_path_a,
+#          model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+#          model_auc_file_data, outfilepath, checkpoint_path,
+#          modelheatmapX, modelheatmapZ) = define_out_file_names(path_prefix=modelfilepathprefix,
 #                                                             target="multi", fold=fold_no)
 #
 #         # use a dnn for multi-class prediction
-#         model = defineNNmodelMulti(inputSize=xmulti[train].shape[1], outputSize=ymulti.shape[1])
+#         model = define_nn_model_multi(input_size=xmulti[train].shape[1], output_size=ymulti.shape[1])
 #
-#         callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20,
+#         callback_list = defineCallbacks(checkpoint_path=checkpoint_path, patience=20,
 #                                         rlrop=True, rlropfactor=0.1, rlroppatience=100)
 #         # measure the training time
 #         start = time()
@@ -1082,11 +1082,11 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 #             print(f"[INFO:] Computation time for training the multi-label FNN: {trainTime} min")
 #
 #         # validate model on test data set (x_test, y_test)
-#         scores = validateMultiModelOnTestData(Z_test=xmulti[test],
-#                                               checkpointpath=checkpointpath,
+#         scores = validate_multi_model_on_test_data(x_test=xmulti[test],
+#                                               checkpoint_path=checkpoint_path,
 #                                               y_test=ymulti[test],
-#                                               colnames=y.columns,
-#                                               resultfile=outfilepath.replace("trainingResults.txt",
+#                                               col_names=y.columns,
+#                                               result_file=outfilepath.replace("trainingResults.txt",
 #                                                                              "predictionResults.csv"))
 #
 #         idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
@@ -1113,38 +1113,38 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 #     fold_no = allscores._get_value(idx2, 'fold_no')
 #
 #     modelname = 'multi.Fold-' + str(fold_no)
-#     checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
-#     bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+#     checkpoint_path = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+#     bestModelfile = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
 #
-#     file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
+#     file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpoint_path))
 #     allscores.to_csv(file)
 #
 #     # copy best DNN model
-#     shutil.copyfile(checkpointpath, bestModelfile)
+#     shutil.copyfile(checkpoint_path, bestModelfile)
 #     print(f'[INFO]: Best models for FNN is saved:\n        - {bestModelfile}')
 #
 #     # AND retrain with full data set
-#     fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
+#     fullModelfile = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
 #     # measure the training time
 #     start = time()
 #
-#     model = defineNNmodel(inputSize=xmulti[train].shape[1])
-#     callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
+#     model = define_nn_model(input_size=xmulti[train].shape[1])
+#     callback_list = defineCallbacks(checkpoint_path=fullModelfile, patience=20,
 #                                     rlrop=True, rlropfactor=0.1, rlroppatience=100)
 #     # train and validate
 #     hist = model.fit(xmulti, ymulti,
 #                      callbacks=callback_list,
 #                      epochs=epochs, batch_size=256, verbose=2, validation_split=split)
-#     #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
+#     #                             validation_data=(x_test, y_test))  # this overwrites val_split!
 #     trainTime = str(round((time() - start) / 60, ndigits=2))
 #
 #     if verbose > 0:
 #         print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
-#     plotHistoryVis(hist,
-#                    modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                    modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                    modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#                    modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
+#     plot_history_vis(hist,
+#                    model_hist_plot_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+#                    model_hist_csv_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+#                    model_hist_plot_path_a.replace("Fold-" + str(fold_no), "full.DNN-model"),
+#                    model_hist_plot_path_l.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
 #     print(f'[INFO]: Full models for DNN is saved:\n        - {fullModelfile}')
 #
 #     pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))
@@ -1212,15 +1212,15 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 #                 print(f'[INFO]: Training of fold number: {fold_no} ------------------------------------\n')
 #
 #             # define all the output file/path names
-#             (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-#              modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-#              modelAUCfiledata, outfilepath, checkpointpath,
-#              modelheatmapX, modelheatmapZ) = defineOutfileNames(pathprefix=modelfilepathprefix,
+#             (modelfilepathW, modelfilepathM, model_hist_plot_path_l, model_hist_plot_path_a,
+#              model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+#              model_auc_file_data, outfilepath, checkpoint_path,
+#              modelheatmapX, modelheatmapZ) = define_out_file_names(path_prefix=modelfilepathprefix,
 #                                                                 target=target, fold=fold_no)
 #
-#             model = defineNNmodel(inputSize=Xt[train].shape[1])
+#             model = define_nn_model(input_size=Xt[train].shape[1])
 #
-#             callback_list = defineCallbacks(checkpointpath=checkpointpath, patience=20,
+#             callback_list = defineCallbacks(checkpoint_path=checkpoint_path, patience=20,
 #                                             rlrop=True, rlropfactor=0.1, rlroppatience=100)
 #             # measure the training time
 #             start = time()
@@ -1228,16 +1228,16 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 #             hist = model.fit(Xt[train], Yt[train],
 #                              callbacks=callback_list,
 #                              epochs=epochs, batch_size=256, verbose=2, validation_split=split)
-#             #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
+#             #                             validation_data=(x_test, y_test))  # this overwrites val_split!
 #             trainTime = str(round((time() - start) / 60, ndigits=2))
 #
 #             if verbose > 0:
 #                 print(f"[INFO:] Computation time for training the single-label FNN: {trainTime} min")
 #
 #             # validate model on test data set (x_test, y_test)
-#             scores = validateModelOnTestData(Xt[test], checkpointpath, Yt[test],
-#                                              "FNN", modelvalidation, target,
-#                                              modelAUCfiledata, modelAUCfile)
+#             scores = validate_model_on_test_data(Xt[test], checkpoint_path, Yt[test],
+#                                              "FNN", model_validation, target,
+#                                              model_auc_file_data, model_auc_file)
 #
 #             idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
 #
@@ -1264,39 +1264,39 @@ def plotHistoryVis(hist, modelhistplotpath, modelhistcsvpath,
 #         fold_no = allscores._get_value(idx2, 'fold_no')
 #
 #         modelname = target + '.Fold-' + str(fold_no)
-#         checkpointpath = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
-#         bestModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+#         checkpoint_path = str(modelfilepathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
+#         bestModelfile = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
 #
 #         # store all scores
-#         file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpointpath))
+#         file = re.sub("\.hdf5", "scores.csv", re.sub("Fold-.\.checkpoint", "Fold-All", checkpoint_path))
 #         allscores.to_csv(file)
 #
 #         # copy best DNN model
-#         shutil.copyfile(checkpointpath, bestModelfile)
+#         shutil.copyfile(checkpoint_path, bestModelfile)
 #         print(f'[INFO]: Best model for FNN is saved:\n        - {bestModelfile}')
 #
 #         # AND retrain with full data set
-#         fullModelfile = checkpointpath.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
+#         fullModelfile = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
 #         # measure the training time
 #         start = time()
 #
-#         model = defineNNmodel(inputSize=Xt.shape[1])  # X_train.shape[1])
-#         callback_list = defineCallbacks(checkpointpath=fullModelfile, patience=20,
+#         model = define_nn_model(input_size=Xt.shape[1])  # X_train.shape[1])
+#         callback_list = defineCallbacks(checkpoint_path=fullModelfile, patience=20,
 #                                         rlrop=True, rlropfactor=0.1, rlroppatience=100)
 #         # train and validate
 #         hist = model.fit(Xt, Yt,
 #                          callbacks=callback_list,
 #                          epochs=epochs, batch_size=256, verbose=2, validation_split=split)
-#         #                             validation_data=(Z_test, y_test))  # this overwrites val_split!
+#         #                             validation_data=(x_test, y_test))  # this overwrites val_split!
 #         trainTime = str(round((time() - start) / 60, ndigits=2))
 #
 #         if verbose > 0:
 #             print(f"[INFO:] Computation time for training the full classification FNN: {trainTime} min")
-#         # plotHistoryVis(hist,
-#         #                modelhistplotpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#         #                modelhistcsvpath.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#         #                modelhistplotpathA.replace("Fold-" + str(fold_no), "full.DNN-model"),
-#         #                modelhistplotpathL.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
+#         # plot_history_vis(hist,
+#         #                model_hist_plot_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+#         #                model_hist_csv_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+#         #                model_hist_plot_path_a.replace("Fold-" + str(fold_no), "full.DNN-model"),
+#         #                model_hist_plot_path_l.replace("Fold-" + str(fold_no), "full.DNN-model"), target)
 #         # print(f'[INFO]: Full model for DNN is saved:\n        - {fullModelfile}')
 #
 #         pd.DataFrame(hist.history).to_csv(fullModelfile.replace(".hdf5", ".history.csv"))

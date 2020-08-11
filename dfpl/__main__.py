@@ -38,43 +38,39 @@ def train(opts: options.TrainOptions):
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
     if opts.trainAC:
         # train an autoencoder on the full feature matrix
-        encoder = ac.trainfullac(df, opts)
+        encoder = ac.train_full_ac(df, opts)
         encoder.save_weights(path.join(opts.outputDir, opts.acFile))
-        # encoder = dfpl.trainfullac(X=xmatrix, y=ymatrix, epochs=args.e, encdim=args.d,
-        #                            useweights=args.a, verbose=args.v)
     else:
         # load trained model for autoencoder
-        (_, encoder) = ac.autoencoderModel(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
         encoder.load_weights(path.join(opts.outputDir, opts.acFile))
 
     # compress the fingerprints using the autoencoder
-    df = ac.compressfingerprints(df, encoder)
+    df = ac.compress_fingerprints(df, encoder)
     # train FNNs with compressed features
-    fNN.trainNNmodels(df=df, opts=opts, usecompressed=True)
+    fNN.train_nn_models(df=df, opts=opts, use_compressed=True)
 
     # train FNNs with uncompressed features
-    fNN.trainNNmodels(df=df, opts=opts, usecompressed=False)
+    fNN.train_nn_models(df=df, opts=opts, use_compressed=False)
 
     # train multi-label models
-    # with comrpessed features
-    # dfpl.trainNNmodelsMulti(modelfilepathprefix=args.o + "/FNNmultiLabelmodelACincl",
-    #                         x=xcompressed, y=ymatrix,
-    #                         split=args.l, epochs=args.e,
-    #                         verbose=args.v, kfold=args.K)
+    # with compressed features
+    fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=True)
 
     # with uncompressed features
-    # dfpl.trainNNmodelsMulti(modelfilepathprefix=opts.o + "/FNNmultiLabelmodelNoACincl",
-    #                         x=xmatrix, y=ymatrix,
-    #                         split=opts.l, epochs=opts.e,
-    #                         verbose=opts.v, kfold=opts.K)
+    fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=False)
 
 
-def predict(args: Namespace) -> None:
+def predict(opts: options.TrainOptions) -> None:
+
+    print(opts)
     # generate X matrix
     # (xpd, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
     #                                      printfp=True, size=args.s, verbose=args.v, returnY=False)
     # # predict values for provided data and model
-    # # ypredictions = dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
+    # # ypredictions =
+    # dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/
+    # 2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
     # ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
     #
     # # write predictions to usr provided .csv file
@@ -119,7 +115,15 @@ if __name__ == '__main__':
             train(fixed_opts)
             exit(0)
         elif prog_args.method == "predict":
-            predict(prog_args)
+            predict_opts = options.TrainOptions.fromCmdArgs(prog_args)
+            fixed_opts = dataclasses.replace(
+                predict_opts,
+                inputFile=makePathAbsolute(predict_opts.inputFile),
+                outputDir=makePathAbsolute(predict_opts.outputDir)
+            )
+            createLogger(path.join(fixed_opts.outputDir, "predict.log"))
+            logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
+            predict(fixed_opts)
             exit(0)
     except AttributeError:
         parser.print_usage()
