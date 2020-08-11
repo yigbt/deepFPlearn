@@ -373,7 +373,7 @@ def validate_model_on_test_data(x_test: array, checkpoint_path: str, y_test: arr
                                     y=y_test,
                                     verbose=0)
 
-    logging.info('TARGET: ' + target + 'Loss: ' + scores[0].__round__(2) + 'Acc: ' + scores[1].__round__(2))
+    logging.info('TARGET: ' + target + 'Loss: ' + str(scores[0].__round__(2)) + 'Acc: ' + str(scores[1].__round__(2)))
     logging.info('MCC: ' + str(MCC.__round__(2)))
     logging.info('CFM: \n\tTN=' + str(cfm[0][0]) + '\tFP=' + str(cfm[0][1]) + '\n\tFN=' + str(cfm[1][0]) +
                  '\tTP=' + str(cfm[1][1]))
