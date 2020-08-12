@@ -492,7 +492,7 @@ def train_nn_models(df: pd.DataFrame,
         model_name = target + "_compressed-" + str(use_compressed) + '.Fold-' + str(fold_no)
         checkpoint_path = str(opts.outputDir) + "/" + model_name + '.checkpoint.model.hdf5'
 
-        best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-")
+        best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "best.FNN.")
 
         # store all scores
         file = re.sub(".hdf5", "scores.csv", re.sub("Fold-..checkpoint", "Fold-All", checkpoint_path))
@@ -503,7 +503,7 @@ def train_nn_models(df: pd.DataFrame,
         logging.info("Best model for FNN is saved: " + best_model_file)
 
         # AND retrain with full data set
-        full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
+        full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN")
         # measure the training time
         start = time()
 
