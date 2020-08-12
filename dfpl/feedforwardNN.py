@@ -88,7 +88,7 @@ def define_nn_model(
     model.add(Dense(units=1,
                     activation='sigmoid'))
 
-    model.summary()
+    model.summary(print_fn=logging.info)
 
     # compile model
     model.compile(loss="mse",
@@ -570,7 +570,7 @@ def define_nn_model_multi(input_size: int = 2048,
     model.add(Dense(units=output_size,
                     activation='sigmoid'))
 
-    model.summary()
+    model.summary(print_fn=logging.info)
 
     # compile model
     model.compile(loss="binary_crossentropy",

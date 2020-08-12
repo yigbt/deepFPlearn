@@ -1,0 +1,17 @@
+{
+  "py/object": "dfpl.options.TrainOptions",
+  "inputFile": "data/combinedSUN-BDB.dataset.4training.csv",
+  "outputDir": "validation/case_01/results",
+  "acFile": "combinedSUN-BDB.AC.encoder.weights.hdf5",
+  "type": "smiles",
+  "fpType": "topological",
+  "epochs": 3000,
+  "fpSize": 2048,
+  "encFPSize": 256,
+  "kFolds": 5,
+  "testingFraction": 0.2,
+  "enableMultiLabel": false,
+  "verbose": 2,
+  "trainAC": true,
+  "trainFNN": true
+}

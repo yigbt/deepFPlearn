@@ -9,6 +9,7 @@ from utils import makePathAbsolute
 import fingerprint as fp
 import autoencoder as ac
 import feedforwardNN as fNN
+import predictions
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = options.TrainOptions(
@@ -26,6 +27,17 @@ test_train_args = options.TrainOptions(
     verbose=1,
     trainAC=False,
     trainFNN=True
+)
+
+test_predict_args = options.PredictOptions(
+    inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
+    outputDir=f"{project_directory}/validation/case_01/results/",
+    acFile=f"{project_directory}/validation/case_01/results/Sun_etal_dataset.AC.encoder.weights.hdf5",
+    model=f"{project_directory}/validation/case_01/results/AR_compressed-True.full.FNN-.model.hdf5",
+    target="AR",
+    fpSize=2048,
+    type="smiles",
+    fpType="topological"
 )
 
 
@@ -61,21 +73,29 @@ def train(opts: options.TrainOptions):
     fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=False)
 
 
-def predict(opts: options.TrainOptions) -> None:
+def predict(opts: options.PredictOptions) -> None:
 
-    print(opts)
-    # generate X matrix
-    # (xpd, ymatrix) = dfpl.XandYfromInput(csvfilename=args.i, rtype=args.t, fptype=args.k,
-    #                                      printfp=True, size=args.s, verbose=args.v, returnY=False)
-    # # predict values for provided data and model
-    # # ypredictions =
-    # dfpl.predictValues(modelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/
-    # 2019-10-16_311681247_1000/model.Aromatase.h5", pdx=xpd)
-    # ypredictions = dfpl.predictValues(acmodelfilepath=args.ACmodel, modelfilepath=args.model, pdx=xpd)
-    #
-    # # write predictions to usr provided .csv file
-    # pd.DataFrame.to_csv(ypredictions, args.o)
-    return None
+    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+
+    use_compressed = False
+    if opts.acFile:
+        use_compressed = True
+        # load trained model for autoencoder
+        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+        encoder.load_weights(opts.acFile)
+        # compress the fingerprints using the autoencoder
+        df = ac.compress_fingerprints(df, encoder)
+
+    # predict
+    df2 = predictions.predict_values(df=df,
+                                     opts=opts,
+                                     use_compressed=use_compressed)
+
+    names_columns = [c for c in df2.columns if c not in ['fp', 'fpcompressed']]
+
+    output_file = path.join(opts.outputDir,
+                            path.basename(path.splitext(opts.inputFile)[0]) + ".predictions.csv")
+    df2[names_columns].to_csv(path_or_buf=output_file)
 
 
 def createLogger(filename: str) -> None:
@@ -115,7 +135,7 @@ if __name__ == '__main__':
             train(fixed_opts)
             exit(0)
         elif prog_args.method == "predict":
-            predict_opts = options.TrainOptions.fromCmdArgs(prog_args)
+            predict_opts = options.PredictOptions.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 predict_opts,
                 inputFile=makePathAbsolute(predict_opts.inputFile),

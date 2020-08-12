@@ -500,53 +500,53 @@ def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: ob
 
 # ------------------------------------------------------------------------------------- #
 
-def predictValues(acmodelfilepath, modelfilepath, pdx):
-    """
-    Predict a set of chemicals using a selected model.
-
-    :param modelfilepath: Path to the model weights of the prediction DNN
-    :param pdx: A matrix containing the fingerprints of the chemicals, generated via XfromInput function
-    :return: A dataframe of 2 columns: random - predicted values using random model, trained - predicted values
-    using trained model. Rownames are consecutive numbers of the input rows, or if provided in the input file
-    the values of the id column
-    """
-
-    # acmodelfilepath="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.AC-model.hdf5"
-    # modelfilepath  ="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.model.hdf5"
-
-    print(f"[INFO:] Loaded model weights for autoencoder: '{modelfilepath}'")
-    print(f"[INFO:] Loaded model weights for prediction DNN: '{modelfilepath}'")
-
-    start = time()
-    # create autoencoder
-    (autoencoder, encoder) = autoencoderModel(input_size=pdx.shape[1], encoding_dim=256)
-    # load AC weights
-    autoencoder.load_weights(acmodelfilepath)
-    # encode input
-    encodedX = encoder.predict(pdx)
-
-    trainTime = str(round((time() - start) / 60, ndigits=2))
-    print(f"[INFO:] Computation time used for encoding: {trainTime} min")
-
-    start = time()
-    # create DNN
-    predictor = defineNNmodel(inputSize=encodedX.shape[1])
-    # predict with random weights
-    predictions_random = predictor.predict(encodedX)
-    # load DNN weights
-    predictor.load_weights(modelfilepath)
-    # predict encoded input
-    predictions = predictor.predict(encodedX)
-
-    trainTime = str(round((time() - start) / 60, ndigits=2))
-    print(f"[INFO:] Computation time used for the predictions: {trainTime} min")
-
-    df = pd.DataFrame(data={'random': predictions_random.flatten(),
-                            'trained': predictions.flatten()},
-                      columns=['random', 'trained'],
-                      index=pdx.index)
-    print(df)
-    return (df)
+# def predict_values(ac_model_file_path, model_file_path, pdx):
+#     """
+#     Predict a set of chemicals using a selected model.
+#
+#     :param model_file_path: Path to the model weights of the prediction DNN
+#     :param pdx: A matrix containing the fingerprints of the chemicals, generated via XfromInput function
+#     :return: A dataframe of 2 columns: random - predicted values using random model, trained - predicted values
+#     using trained model. Rownames are consecutive numbers of the input rows, or if provided in the input file
+#     the values of the id column
+#     """
+#
+#     # ac_model_file_path="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.AC-model.hdf5"
+#     # model_file_path  ="/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/model.2048.256.ER.checkpoint.model.hdf5"
+#
+#     print(f"[INFO:] Loaded model weights for autoencoder: '{model_file_path}'")
+#     print(f"[INFO:] Loaded model weights for prediction DNN: '{model_file_path}'")
+#
+#     start = time()
+#     # create autoencoder
+#     (autoencoder, encoder) = autoencoderModel(input_size=pdx.shape[1], encoding_dim=256)
+#     # load AC weights
+#     autoencoder.load_weights(ac_model_file_path)
+#     # encode input
+#     encodedX = encoder.predict(pdx)
+#
+#     trainTime = str(round((time() - start) / 60, ndigits=2))
+#     print(f"[INFO:] Computation time used for encoding: {trainTime} min")
+#
+#     start = time()
+#     # create DNN
+#     predictor = defineNNmodel(inputSize=encodedX.shape[1])
+#     # predict with random weights
+#     predictions_random = predictor.predict(encodedX)
+#     # load DNN weights
+#     predictor.load_weights(model_file_path)
+#     # predict encoded input
+#     predictions = predictor.predict(encodedX)
+#
+#     trainTime = str(round((time() - start) / 60, ndigits=2))
+#     print(f"[INFO:] Computation time used for the predictions: {trainTime} min")
+#
+#     df = pd.DataFrame(data={'random': predictions_random.flatten(),
+#                             'trained': predictions.flatten()},
+#                       columns=['random', 'trained'],
+#                       index=pdx.index)
+#     print(df)
+#     return (df)
 
 
 # ------------------------------------------------------------------------------------- #

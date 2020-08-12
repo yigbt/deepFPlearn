@@ -164,6 +164,9 @@ class PredictOptions:
     outputDir: str = ""
     acFile: str = ""
     model: str = ""
+    target: str = ""
+    fpSize: int = 2048
+    encFPSize: int = 256
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
 
@@ -198,6 +201,9 @@ class PredictOptions:
                 outputDir=args.o,
                 acFile=args.ACmodel,
                 model=args.model,
+                target=args.target,
+                fpSize=args.s,
+                encFPSize=args.d,
                 type=args.t,
                 fpType=args.k,
             )
@@ -226,17 +232,25 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                              "A header is expected and respective column names are used.",
                         required=True)
     parser.add_argument('--ACmodel', metavar='FILE', type=str,
-                        help='The autoencoder model weights',
-                        required=True)
+                        help='The autoencoder model weights. If provided the fingerprints are compressed prior '
+                             'to prediction.',
+                        required=False)
     parser.add_argument('--model', metavar='FILE', type=str,
-                        help='The predictor model weights',
+                        help='The model weights of the feed forward network.',
                         required=True)
+    parser.add_argument('--target', metavar='STR', type=str,
+                        help='The name of the prediction target.',
+                        required=True)
+    parser.add_argument('-s', type=int,
+                        help='Size of fingerprint that should be generated.',
+                        default=2048)
+    parser.add_argument('-d', metavar='INT', type=int,
+                        help='Size of encoded fingerprint (z-layer of autoencoder).',
+                        default=256)
     parser.add_argument('-o', metavar='FILE', type=str,
-                        help='Output file name. It contains a comma separated list of '
-                             "predictions for each input row, for all targets. If the file 'id'"
-                             "was given in the input, respective IDs are used, otherwise the"
-                             "rows of output are numbered and provided in the order of occurrence"
-                             "in the input file.")
+                        help='Output directory. It will contain logging information and an extended version of the '
+                             'input file containing additional columns with the predictions of a random and the '
+                             'trained model.')
     parser.add_argument('-t', metavar='STR', type=str, choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
                         default='smiles')
