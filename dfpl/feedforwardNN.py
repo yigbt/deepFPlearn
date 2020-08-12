@@ -404,10 +404,10 @@ def train_nn_models(df: pd.DataFrame,
 
         if use_compressed:
             x = np.array(df[df[target].notna() & df['fpcompressed'].notnull()]["fpcompressed"].to_list())
+            y = np.array(df[df[target].notna() & df['fpcompressed'].notnull()][target].to_list())
         else:
             x = np.array(df[df[target].notna() & df['fp'].notnull()]["fp"].to_list())
-
-        y = np.array(df[df[target].notna() & df['fp'].notnull()][target].to_list())
+            y = np.array(df[df[target].notna() & df['fp'].notnull()][target].to_list())
 
         # do a kfold cross validation for the FNN training
         kfold_c_validator = KFold(n_splits=opts.kFolds,
