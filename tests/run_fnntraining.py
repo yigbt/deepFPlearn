@@ -28,7 +28,7 @@ test_train_args = opt.TrainOptions(
 def run_fnn_training(opts: opt.TrainOptions) -> None:
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
-    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     t = opts.acFile
     opts.acFile = opts.outputDir + t
@@ -59,7 +59,7 @@ def run_fnn_training_multi(opts: opt.TrainOptions) -> None:
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
 
-    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     t = opts.acFile
     opts.acFile = opts.outputDir + t

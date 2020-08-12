@@ -24,8 +24,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import auc
 from sklearn.metrics import f1_score
 
-import dfpl.options
-import dfpl.autoencoder as ac
+import options
+import autoencoder as ac
 
 from time import time
 
@@ -382,7 +382,7 @@ def validate_model_on_test_data(x_test: array, checkpoint_path: str, y_test: arr
 
 
 def train_nn_models(df: pd.DataFrame,
-                    opts: dfpl.options.TrainOptions,
+                    opts: options.TrainOptions,
                     use_compressed: bool) -> None:
     """
     Train individual models for all targets (columns) present in the provided target data (y) and a multi-label
@@ -628,7 +628,7 @@ def validate_multi_model_on_test_data(x_test: array, checkpoint_path: str, y_tes
 
 
 def train_nn_models_multi(df: pd.DataFrame,
-                          opts: dfpl.options.TrainOptions,
+                          opts: options.TrainOptions,
                           use_compressed: bool) -> None:
     # find target columns
     names_y = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi', 'fpcompressed']]

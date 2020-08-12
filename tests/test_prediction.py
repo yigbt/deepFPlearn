@@ -25,7 +25,7 @@ def test_predictions(opts: opt.PredictOptions) -> None:
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info(f"Predicting compounds in the input file {opts.inputFile} for association with target {opts.target}")
 
-    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     use_compressed = False
     if opts.acFile:

@@ -67,7 +67,7 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
     return data_frame
 
 
-def processInParallel(
+def importDataFile(
         csvfilename: str,
         import_function: Callable[[str], pd.DataFrame] = pd.read_csv,
         fp_size: int = default_fp_size) -> pd.DataFrame:

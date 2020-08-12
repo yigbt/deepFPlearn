@@ -1,13 +1,13 @@
 # deepFPlearn
 
 Link molecular structures of chemicals (in form of topological
-fingerprints) with multiple targets
+fingerprints) with multiple targets.
 
 ## Usage
 
 You can either generate your own singularity container from the
 provided configuration file or generate a single conda environment to
-use `deepFPlearn`.
+use the `dfpl` package.
 
 ### Singularity container
 
@@ -20,14 +20,34 @@ respective conda environment with one of these options:
 
 1. Create the conda env from scratch
 
-`conda create -n rdkit2019 -c conda-forge -c bioconda -c r -c anaconda python pip tensorflow keras numpy pandas rdkit scipy tensorboard matplotlib scikit-learn seaborn markdown ncurses pcre yaml pyyaml
-`
+    From within the `deepFPlearn` directory, you can create the conda environment with the provided
+    yaml file that contains all information and necessary packages
 
-2. Create the conda env from provided .yml configuration file
-`conda env create -f conda_env.rdkit2019.yml`
+    `conda create -n rdkit2019 -f scripts/conda_env.rdkit2019.yml`
 
-Then activate this environment:
-`conda activate rdkit2019`
+2. Activate the `rdkit2019` environment with
+
+    `conda activate rdkit2019`
+
+3. Install the local `dfpl` package by calling
+
+    `conda develop dfpl`
+    
+Now, you have several options to work with the `dfpl` package:
+
+- You can the package, providing commandline arguments for training or prediction.
+  An easy way is to specify all options in a JSON file and calling 
+  
+  `python -m dfpl -f path/to/file.json`
+  
+  See, e.g. the JSON files under `validation/case_XX`
+- You can load the `dfpl` package in your Python console start
+  the training/prediction functions yourself by providing instances
+  of `dfpl.options.TrainingOptions` or `dfpl.options.PredictOptions`.
+- You can create a run-configuration in PyCharm using the `dfpl/__main__.py`
+  script and providing the commandline arguments there.
+
+**TODO: Fix things below**
 
 To see how `deepFPlearn` is to be used call:
 `python deepFPlearn -h`

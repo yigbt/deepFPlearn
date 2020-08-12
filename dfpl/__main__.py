@@ -43,15 +43,15 @@ test_predict_args = options.PredictOptions(
 
 def train(opts: options.TrainOptions):
     """
-    The function defining what happens in the main training procedure
-    :param opts:
+    Run the main training procedure
+    :param opts: Options defining the details of the training
     """
 
     # read input and generate fingerprints from smiles
 
-    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
-    if opts.compressFeatures: # compress features
+    if opts.compressFeatures:  # compress features
 
         if opts.trainAC:
             # train an autoencoder on the full feature matrix
@@ -81,7 +81,11 @@ def train(opts: options.TrainOptions):
 
 
 def predict(opts: options.PredictOptions) -> None:
-    df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    """
+    Run prediction given specific options
+    :param opts: Options defining the details of the prediction
+    """
+    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     use_compressed = False
     if opts.acFile:
@@ -105,6 +109,9 @@ def predict(opts: options.PredictOptions) -> None:
 
 
 def createLogger(filename: str) -> None:
+    """
+    Set up a logger for the main function that also saves to a log file
+    """
     # get root logger and set its level
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -124,7 +131,10 @@ def createLogger(filename: str) -> None:
     logger.addHandler(ch)
 
 
-if __name__ == '__main__':
+def main():
+    """
+    Main function that runs training/prediction defined by command line arguments
+    """
     parser = options.createCommandlineParser()
     prog_args: Namespace = parser.parse_args()
 
@@ -151,5 +161,10 @@ if __name__ == '__main__':
             logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
             predict(fixed_opts)
             exit(0)
-    except AttributeError:
+    except AttributeError as e:
+        print(e)
         parser.print_usage()
+
+
+if __name__ == '__main__':
+    main()

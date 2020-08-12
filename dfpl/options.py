@@ -9,6 +9,9 @@ from utils import makePathAbsolute
 
 @dataclass
 class TrainOptions:
+    """
+    Dataclass for all options necessary for training the neural nets
+    """
     inputFile: str = "data/Sun_etal_dataset.csv"
     outputDir: str = "modeltraining"
     acFile: str = "Sun_etal_dataset.AC.encoder.weights.hdf5"
@@ -26,12 +29,18 @@ class TrainOptions:
     compressFeatures: bool = True
 
     def saveToFile(self, file: str) -> None:
+        """
+        Saves a instance to a JSON file
+        """
         jsonFile = Path(file)
         with jsonFile.open("w") as f:
             f.write(jsonpickle.encode(self))
 
     @classmethod
     def fromJson(cls, file: str) -> TrainOptions:
+        """
+        Create an instance from a JSON file
+        """
         jsonFile = Path(file)
         if jsonFile.exists() and jsonFile.is_file():
             with jsonFile.open() as f:
@@ -71,6 +80,9 @@ class TrainOptions:
 
 
 def createCommandlineParser() -> argparse.ArgumentParser:
+    """
+    Build the parser for arguments with its two subparsers
+    """
     parser = argparse.ArgumentParser(prog='deepFPlearn')
     subparsers = parser.add_subparsers(help="Sub programs of deepFPlearn")
 
@@ -167,6 +179,9 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
 
 @dataclass
 class PredictOptions:
+    """
+    Dataclass to hold all options used for prediction
+    """
     inputFile: str = ""
     outputDir: str = ""
     acFile: str = ""
@@ -178,12 +193,18 @@ class PredictOptions:
     fpType: str = "topological"  # also "MACCS", "atompairs"
 
     def saveToFile(self, file: str) -> None:
+        """
+        Export an instance to JSON. This file is useful for creating template JSON files
+        """
         jsonFile = Path(file)
         with jsonFile.open("w") as f:
             f.write(jsonpickle.encode(self))
 
     @classmethod
     def fromJson(cls, file: str) -> PredictOptions:
+        """
+        Create an instance from a JSON file
+        """
         jsonFile = Path(file)
         if jsonFile.exists() and jsonFile.is_file():
             with jsonFile.open() as f:

@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 
-import dfpl.options
+import options
 import feedforwardNN as fNN
 
 
 def predict_values(df: pd.DataFrame,
-                   opts: dfpl.options.PredictOptions,
+                   opts: options.PredictOptions,
                    use_compressed: bool) -> pd.DataFrame:
     """
     Predict a set of chemicals using a selected model.
