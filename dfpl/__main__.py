@@ -46,35 +46,41 @@ def train(opts: options.TrainOptions):
     The function defining what happens in the main training procedure
     :param opts:
     """
+
     # read input and generate fingerprints from smiles
+
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
-    if opts.trainAC:
-        # train an autoencoder on the full feature matrix
-        encoder = ac.train_full_ac(df, opts)
-        encoder.save_weights(path.join(opts.outputDir, opts.acFile))
-    else:
-        # load trained model for autoencoder
-        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-        encoder.load_weights(path.join(opts.outputDir, opts.acFile))
 
-    # compress the fingerprints using the autoencoder
-    df = ac.compress_fingerprints(df, encoder)
-    # train FNNs with compressed features
-    fNN.train_nn_models(df=df, opts=opts, use_compressed=True)
+    if opts.compressFeatures: # compress features
 
-    # train FNNs with uncompressed features
-    fNN.train_nn_models(df=df, opts=opts, use_compressed=False)
+        if opts.trainAC:
+            # train an autoencoder on the full feature matrix
+            encoder = ac.train_full_ac(df, opts)
+            encoder.save_weights(path.join(opts.outputDir, opts.acFile))
+        else:
+            # load trained model for autoencoder
+            (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+            encoder.load_weights(path.join(opts.outputDir, opts.acFile))
 
-    # train multi-label models
-    # with compressed features
-    fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=True)
+        # compress the fingerprints using the autoencoder
+        df = ac.compress_fingerprints(df, encoder)
+        # train single label models
+        fNN.train_nn_models(df=df, opts=opts, use_compressed=True)
 
-    # with uncompressed features
-    fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=False)
+        # train multi-label models
+        if opts.enableMultiLabel:
+            fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=True)
+
+    else:  # uncompressed features
+
+        # train single label models
+        fNN.train_nn_models(df=df, opts=opts, use_compressed=False)
+        # train multi-label models
+        if opts.enableMultiLabel:
+            fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=False)
 
 
 def predict(opts: options.PredictOptions) -> None:
-
     df = fp.processInParallel(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     use_compressed = False

@@ -23,6 +23,7 @@ class TrainOptions:
     verbose: int = 0
     trainAC: bool = True    # if set to False, an AC weight file must be provided!
     trainFNN: bool = True
+    compressFeatures: bool = True
 
     def saveToFile(self, file: str) -> None:
         jsonFile = Path(file)
@@ -64,7 +65,8 @@ class TrainOptions:
                 enableMultiLabel=args.m,
                 verbose=args.v,
                 trainAC=args.trainAC,
-                trainFNN=args.trainFNN
+                trainFNN=args.trainFNN,
+                compressFeatures=args.c
             )
 
 
@@ -115,6 +117,11 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-s', type=int,
                         help='Size of fingerprint that should be generated.',
                         default=2048)
+    parser.add_argument('-c', metavar='BOOL', type=bool,
+                        help='Compress the fingerprints. This is done either with an existing autoencoder or a new '
+                             'autoencoder model will be trained using the input compounds (see further options for '
+                             'details).',
+                        default=True)
     parser.add_argument('-a', type=str, metavar='FILE', default=None,
                         help='The .hdf5 file of a trained autoencoder (e.g. from a previous'
                              'training run. This avoids a retraining of the autoencoder on the'
