@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/Sun_etal_dataset.csv",
   "outputDir": "validation/case_06/results/",
-  "acFile": "",
+  "acFile": "ACmodel.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,
