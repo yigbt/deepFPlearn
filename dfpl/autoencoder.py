@@ -110,9 +110,11 @@ def autoencoder_callback(checkpoint_path: str, patience: int) -> list:
     # enable early stopping if val_loss is not improving anymore
     early_stop = EarlyStopping(patience=patience,
                                verbose=1,
+
                                restore_best_weights=True)
 
     return [checkpoint, early_stop]
+
 
 
 def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:

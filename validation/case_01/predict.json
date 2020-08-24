@@ -1,9 +1,0 @@
-{
-  "py/object": "dfpl.options.PredictOptions",
-  "inputFile": "data/07_BindingDB.trainingSet.csv",
-  "outputDir": "validation/case_01/results",
-  "acFile": "Sun_etal_dataset.AC.encoder.weights.hdf5",
-  "model": "AR_compressed-True.full.FNN-.model.hdf5",
-  "type": "smiles",
-  "fpType": "topological"
-}

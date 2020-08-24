@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/Sun_etal_dataset.csv",
+  "inputFile": "data/SunBDBTox21.merged4training.csv",
   "outputDir": "validation/case_06/results/",
-  "acFile": "ACmodel.hdf5",
+  "acFile": "encoder.checkpoint_path.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,
@@ -12,7 +12,7 @@
   "testingFraction": 0.2,
   "enableMultiLabel": true,
   "verbose": 2,
-  "trainAC": true,
+  "trainAC": false,
   "trainFNN": true,
   "compressFeatures": true
 }

@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/Sun_etal_dataset.csv",
   "outputDir": "validation/case_03/results/",
-  "acFile": "",
+  "acFile": "encoder.checkpoint_path.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,
@@ -14,5 +14,5 @@
   "verbose": 2,
   "trainAC": false,
   "trainFNN": true,
-  "compressFeatures": false
+  "compressFeatures": true
 }

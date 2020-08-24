@@ -11,6 +11,7 @@ import autoencoder as ac
 import feedforwardNN as fNN
 import predictions
 
+
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = options.TrainOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.csv",
