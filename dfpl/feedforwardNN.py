@@ -403,11 +403,28 @@ def train_nn_models(df: pd.DataFrame,
         # target=names_y[0] # --> only for testing the code
 
         if use_compressed:
-            x = np.array(df[df[target].notna() & df['fpcompressed'].notnull()]["fpcompressed"].to_list())
-            y = np.array(df[df[target].notna() & df['fpcompressed'].notnull()][target].to_list())
+            if opts.sampleFractionOnes:
+                # how many ones
+                n_ones = df[df[target] == 1 & df['fpcompressed'].notna()].shape[0]
+                # add sample of 0s to df of 1s
+                dfX = df[df[target] == 1 &
+                         df['fpcompressed'].notna()].append(df[df[target] == 0 &
+                                                               df['fpcompressed'].notna()].sample(int(n_ones / opts.sampleFractionOnes)))
+                x = np.array(dfX[dfX[target].notna() & dfX['fpcompressed'].notnull()]["fpcompressed"].to_list())
+                y = np.array(dfX[dfX[target].notna() & dfX['fpcompressed'].notnull()][target].to_list())
+            else:
+                x = np.array(df[df[target].notna() & df['fpcompressed'].notnull()]["fpcompressed"].to_list())
+                y = np.array(df[df[target].notna() & df['fpcompressed'].notnull()][target].to_list())
         else:
-            x = np.array(df[df[target].notna() & df['fp'].notnull()]["fp"].to_list())
-            y = np.array(df[df[target].notna() & df['fp'].notnull()][target].to_list())
+            if opts.sampleFractionOnes:
+                n_ones = df[df[target] == 1 & df['fp'].notna()].shape[0]
+                dfX = df[df[target] == 1 & df['fp'].notna()].append(
+                    df[df[target] == 0 & df['fp'].notna()].sample(int(n_ones / opts.sampleFractionOnes)))
+                x = np.array(dfX[dfX[target].notna() & dfX['fp'].notnull()]["fp"].to_list())
+                y = np.array(dfX[dfX[target].notna() & dfX['fp'].notnull()][target].to_list())
+            else:
+                x = np.array(df[df[target].notna() & df['fp'].notnull()]["fp"].to_list())
+                y = np.array(df[df[target].notna() & df['fp'].notnull()][target].to_list())
 
         # do a kfold cross validation for the FNN training
         kfold_c_validator = KFold(n_splits=opts.kFolds,
@@ -436,7 +453,8 @@ def train_nn_models(df: pd.DataFrame,
              model_auc_file_data, outfile_path, checkpoint_path,
              model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
                                                                        target=target + "_compressed-" + str(
-                                                                           use_compressed),
+                                                                           use_compressed) + "_sampled-" + str(
+                                                                           opts.sampleFractionOnes),
                                                                        fold=fold_no)
 
             model = define_nn_model(input_size=x[train].shape[1])
@@ -459,6 +477,8 @@ def train_nn_models(df: pd.DataFrame,
 
             if opts.verbose > 0:
                 logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
+
+            pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
             # validate model on test data set (x_test, y_test)
             scores = validate_model_on_test_data(x[test], checkpoint_path, y[test],
@@ -489,7 +509,7 @@ def train_nn_models(df: pd.DataFrame,
         idx2 = all_scores[['mcc_test']].idxmax().ravel()[0]
         fold_no = all_scores.iloc[idx2]['fold_no']
 
-        model_name = target + "_compressed-" + str(use_compressed) + '.Fold-' + str(fold_no)
+        model_name = target + "_compressed-" + str(use_compressed) + "_sampled-" + str(opts.sampleFractionOnes) + '.Fold-' + str(fold_no)
         checkpoint_path = str(opts.outputDir) + "/" + model_name + '.checkpoint.model.hdf5'
 
         best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "best.FNN")
@@ -690,6 +710,8 @@ def train_nn_models_multi(df: pd.DataFrame,
         if opts.verbose > 0:
             logging.info("Computation time for training the multi-label FNN: " + trainTime + " min")
 
+        pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
+
         # validate model on test data set (fpMatrix_test, y_test)
         scores = validate_multi_model_on_test_data(x_test=fpMatrix[test],
                                                    checkpoint_path=checkpoint_path,
@@ -762,6 +784,8 @@ def train_nn_models_multi(df: pd.DataFrame,
 
     if opts.verbose > 0:
         logging.info("Computation time for training the full multi-label FNN: " + trainTime + " min")
+
+    pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
     model_name = "multi" + "_compressed-" + str(use_compressed) + '.Full'
 
