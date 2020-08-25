@@ -403,11 +403,26 @@ def train_nn_models(df: pd.DataFrame,
         # target=names_y[0] # --> only for testing the code
 
         if use_compressed:
-            x = np.array(df[df[target].notna() & df['fpcompressed'].notnull()]["fpcompressed"].to_list())
-            y = np.array(df[df[target].notna() & df['fpcompressed'].notnull()][target].to_list())
+            x = np.array(
+                df[df[target].notna() & df['fpcompressed'].notnull()]["fpcompressed"].to_list(),
+                dtype=np.bool,
+                copy=False)
+
+            y = np.array(
+                df[df[target].notna() & df['fpcompressed'].notnull()][target].to_list(),
+                dtype=np.bool,
+                copy=False)
+
         else:
-            x = np.array(df[df[target].notna() & df['fp'].notnull()]["fp"].to_list())
-            y = np.array(df[df[target].notna() & df['fp'].notnull()][target].to_list())
+            x = np.array(
+                df[df[target].notna() & df['fp'].notnull()]["fp"].to_list(),
+                dtype=np.bool,
+                copy=False)
+
+            y = np.array(
+                df[df[target].notna() & df['fp'].notnull()][target].to_list(),
+                dtype=np.bool,
+                copy=False)
 
         # do a kfold cross validation for the FNN training
         kfold_c_validator = KFold(n_splits=opts.kFolds,
@@ -632,16 +647,29 @@ def train_nn_models_multi(df: pd.DataFrame,
                           use_compressed: bool) -> None:
     # find target columns
     names_y = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
-    idx_not_na = df[names_y].dropna().index
+    selector = df[names_y].notna().apply(np.logical_and.reduce, axis=1)
 
     if use_compressed:
         # get compressed fingerprints as numpy array
-        fpMatrix = np.array(df.iloc[idx_not_na][df['fpcompressed'].notnull()]['fpcompressed'].to_list())
-        y = np.array(df.iloc[idx_not_na][df['fpcompressed'].notnull()][names_y])
+        fpMatrix = np.array(
+            df[df['fpcompressed'].notnull() & selector]['fpcompressed'].to_list(),
+            dtype=np.bool,
+            copy=False)
+        y = np.array(
+            df[df['fpcompressed'].notnull() & selector][names_y],
+            dtype=np.bool,
+            copy=False)
     else:
         # get fingerprints as numpy array
-        fpMatrix = np.array(df.iloc[idx_not_na][df['fp'].notnull()]['fp'].to_list())
-        y = np.array(df.iloc[idx_not_na][df['fp'].notnull()][names_y])
+        fpMatrix = np.array(
+            df[df['fp'].notnull() & selector]['fp'].to_list(),
+            dtype=np.bool,
+            copy=False)
+
+        y = np.array(
+            df[df['fp'].notnull() & selector][names_y],
+            dtype=np.bool,
+            copy=False)
 
     # do a kfold cross validation for the autoencoder training
     kfold_c_validator = KFold(n_splits=opts.kFolds,

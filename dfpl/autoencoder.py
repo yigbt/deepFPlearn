@@ -109,12 +109,11 @@ def autoencoder_callback(checkpoint_path: str, patience: int) -> list:
 
     # enable early stopping if val_loss is not improving anymore
     early_stop = EarlyStopping(patience=patience,
+                               min_delta=0.001,
                                verbose=1,
-
                                restore_best_weights=True)
 
     return [checkpoint, early_stop]
-
 
 
 def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
@@ -140,7 +139,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
 
     # Select all fps that are valid and turn them into a numpy array
     # This step is crucial for speed!!!
-    fp_matrix = np.array(df[df["fp"].notnull()]["fp"].to_list())
+    fp_matrix = np.array(df[df["fp"].notnull()]["fp"].to_list(), dtype=np.bool, copy=False)
 
     # split data into test and training data
     x_train, x_test = train_test_split(fp_matrix,
@@ -189,7 +188,7 @@ def compress_fingerprints(dataframe: pd.DataFrame,
     :return: The input dataframe extended by a column containing the compressed version of the fingerprints
     """
 
-    fp_matrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list())
+    fp_matrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list(), dtype=np.bool, copy=False)
     dataframe['fpcompressed'] = pd.Series([pd.Series(s) for s in encoder.predict(fp_matrix)])
 
     return dataframe

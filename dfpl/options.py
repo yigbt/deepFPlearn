@@ -51,7 +51,7 @@ class TrainOptions:
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> TrainOptions:
         """Creates TrainOptions instance from cmdline arguments"""
-        if args.f is not "":
+        if args.f != "":
             jsonFile = Path(makePathAbsolute(args.f))
             if jsonFile.exists() and jsonFile.is_file():
                 with jsonFile.open() as f:
@@ -215,7 +215,7 @@ class PredictOptions:
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> PredictOptions:
         """Creates TrainOptions instance from cmdline arguments"""
-        if args.f is not "":
+        if args.f != "":
             jsonFile = Path(makePathAbsolute(args.f))
             if jsonFile.exists() and jsonFile.is_file():
                 with jsonFile.open() as f:

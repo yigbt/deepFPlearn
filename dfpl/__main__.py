@@ -5,7 +5,7 @@ import dataclasses
 from os import path
 
 import options
-from utils import makePathAbsolute
+from utils import makePathAbsolute, createDirectory
 import fingerprint as fp
 import autoencoder as ac
 import feedforwardNN as fNN
@@ -47,10 +47,10 @@ def train(opts: options.TrainOptions):
     Run the main training procedure
     :param opts: Options defining the details of the training
     """
-
-    # read input and generate fingerprints from smiles
-
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+
+    # Create output dir if it doesn't exist
+    createDirectory(opts.outputDir)
 
     if opts.compressFeatures:  # compress features
 
@@ -87,6 +87,9 @@ def predict(opts: options.PredictOptions) -> None:
     :param opts: Options defining the details of the prediction
     """
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+
+    # Create output dir if it doesn't exist
+    createDirectory(opts.outputDir)
 
     use_compressed = False
     if opts.acFile:

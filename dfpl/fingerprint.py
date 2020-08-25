@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """Calculates fingerprints"""
+import os
+from os.path import isfile, join
 
 import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit import RDLogger
-from typing import Any
+from typing import Any, List
 import multiprocessing
 from functools import partial
 from typing import Callable
@@ -33,7 +35,8 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         """
         try:
             return np.array(
-                Chem.RDKFingerprint(Chem.MolFromSmiles(smile), fpSize=fp_size))
+                Chem.RDKFingerprint(Chem.MolFromSmiles(smile), fpSize=fp_size),
+                dtype=np.bool, copy=False)
         except:
             # Note: We don't need to log here since rdkit already logs
             return None
@@ -47,8 +50,8 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         """
         try:
             return np.array(
-                Chem.RDKFingerprint(Chem.MolFromInchi(inchi),
-                                    fpSize=fp_size))
+                Chem.RDKFingerprint(Chem.MolFromInchi(inchi), fpSize=fp_size),
+                dtype=np.bool, copy=False)
         except:
             # Note: We don't need to log here since rdkit already logs
             return None
@@ -68,21 +71,24 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
 
 
 def importDataFile(
-        csvfilename: str,
+        file_name: str,
         import_function: Callable[[str], pd.DataFrame] = pd.read_csv,
         fp_size: int = default_fp_size) -> pd.DataFrame:
     """
-    Return the matrix of features for training and testing NN models (X) as numpy array.
-    Provided SMILES are transformed to fingerprints, fingerprint strings are then split
-    into vectors and added as row to the array which is returned.
+    Reads data as CSV or TSV and calculates fingerprints from the SMILES in the data.
     :param import_function:
-    :param csvfilename: Filename of CSV files containing the training data. The
+    :param file_name: Filename of CSV files containing the training data. The
         SMILES/Fingerprints are stored 1st column
     :param fp_size: Number of bits in the fingerprint
     :return: Two pandas dataframe containing the X and Y matrix for training and/or prediction. If
         no outcome data is provided, the Y matrix is a None object.
     """
-    df = import_function(csvfilename)
+    # Read the data as Pandas pickle which already contains the calculated fingerprints
+    name, ext = os.path.splitext(file_name)
+    if ext == ".pkl":
+        return pd.read_pickle(file_name)
+
+    df = import_function(file_name)
 
     # disable the rdkit logger. We know that some inchis will fail and we took care of it. No use to spam the console
     RDLogger.DisableLog("rdApp.*")
@@ -102,3 +108,22 @@ def importSmilesCSV(csvfilename: str) -> pd.DataFrame:
 
 def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
     return pd.read_table(tsvfilename, names=["toxid", "inchi", "key"])
+
+
+conversion_rules = {
+    "Sun_etal_dataset.csv": importSmilesCSV,
+    "SunBDBTox21.merged4training.csv": importSmilesCSV,
+    "dsstox_20160701.tsv": importDstoxTSV
+}
+
+
+def convert_all(directory: str) -> List[str]:
+    files = [f for f in os.listdir(directory) for key, value in conversion_rules.items()
+             if isfile(join(directory, f)) and f in key]
+    for f in files:
+        path = join(directory, f)
+        df = importDataFile(path, import_function=conversion_rules[f])
+        name, ext = os.path.splitext(f)
+        output_file = join(directory, name + ".pkl")
+        df.to_pickle(output_file)
+    return files

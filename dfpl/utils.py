@@ -1,4 +1,5 @@
 import pathlib
+import os
 
 
 def makePathAbsolute(p: str) -> str:
@@ -7,3 +8,10 @@ def makePathAbsolute(p: str) -> str:
         return p
     else:
         return str(path.absolute())
+
+
+def createDirectory(directory: str):
+    path = makePathAbsolute(pathlib.Path(directory))
+    if not os.path.exists(path):
+        os.mkdir(path)
+
