@@ -27,6 +27,7 @@ class TrainOptions:
     trainAC: bool = True    # if set to False, an AC weight file must be provided!
     trainFNN: bool = True
     compressFeatures: bool = True
+    sampleFractionOnes: float = None
 
     def saveToFile(self, file: str) -> None:
         """
@@ -75,7 +76,8 @@ class TrainOptions:
                 verbose=args.v,
                 trainAC=args.trainAC,
                 trainFNN=args.trainFNN,
-                compressFeatures=args.c
+                compressFeatures=args.c,
+                sampleFractionOnes=args.sampleFractionOnes
             )
 
 
@@ -175,6 +177,10 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                              '(see option -a and --trainAC=False), or train the autoencoder prior to the training'
                              'of the feed forward network(s).',
                         default=True)
+    parser.add_argument('--sampleFractionOnes', metavar='FLOAT', type=float,
+                        help='This is the fraction of positive target associations (1s) after sampling from the "'
+                             'negative target association (0s).',
+                        default=None)
 
 
 @dataclass

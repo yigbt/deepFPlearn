@@ -1,0 +1,19 @@
+{
+  "py/object": "dfpl.options.TrainOptions",
+  "inputFile": "data/Sun_etal_dataset.csv",
+  "outputDir": "validation/case_03/results/",
+  "acFile": "encoder.checkpoint_path.hdf5",
+  "type": "smiles",
+  "fpType": "topological",
+  "epochs": 3000,
+  "fpSize": 2048,
+  "encFPSize": 256,
+  "kFolds": 5,
+  "testingFraction": 0.2,
+  "enableMultiLabel": true,
+  "verbose": 2,
+  "trainAC": false,
+  "trainFNN": true,
+  "compressFeatures": true,
+  "sampleFractionOnes": 0.5
+}

@@ -25,10 +25,12 @@ test_train_args = options.TrainOptions(
     enableMultiLabel=False,
     testingFraction=0.2,
     kFolds=5,
-    verbose=1,
+    verbose=2,
     trainAC=False,
-    trainFNN=True
+    trainFNN=True,
+    sampleFractionOnes=0.5
 )
+
 
 test_predict_args = options.PredictOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
