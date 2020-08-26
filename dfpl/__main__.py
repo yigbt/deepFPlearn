@@ -67,20 +67,13 @@ def train(opts: options.TrainOptions):
 
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        # train single label models
-        fNN.train_nn_models(df=df, opts=opts, use_compressed=True)
 
-        # train multi-label models
-        if opts.enableMultiLabel:
-            fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=True)
+    # train single label models
+    fNN.train_nn_models(df=df, opts=opts)
 
-    else:  # uncompressed features
-
-        # train single label models
-        fNN.train_nn_models(df=df, opts=opts, use_compressed=False)
-        # train multi-label models
-        if opts.enableMultiLabel:
-            fNN.train_nn_models_multi(df=df, opts=opts, use_compressed=False)
+    # train multi-label models
+    if opts.enableMultiLabel:
+        fNN.train_nn_models_multi(df=df, opts=opts)
 
 
 def predict(opts: options.PredictOptions) -> None:
