@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/SunBDBTox21.merged4training.csv",
-  "outputDir": "validation/case_04/results/",
+  "outputDir": "validation/case_14/results/",
   "acFile": "",
   "type": "smiles",
   "fpType": "topological",
