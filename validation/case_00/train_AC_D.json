@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/dsstox_20160701.pkl",
   "outputDir": "validation/case_00/results_AC_D/",
-  "acFile": "ac_D.hdf5",
+  "ecWeightsFile": "ac_D.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,

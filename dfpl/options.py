@@ -14,7 +14,7 @@ class TrainOptions:
     """
     inputFile: str = "data/Sun_etal_dataset.csv"
     outputDir: str = "modeltraining"
-    acFile: str = "Sun_etal_dataset.AC.encoder.weights.hdf5"
+    ecWeightsFile: str = "Sun_etal_dataset.AC.encoder.weights.hdf5"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
     epochs: int = 512
@@ -64,7 +64,7 @@ class TrainOptions:
             return cls(
                 inputFile=args.i,
                 outputDir=args.o,
-                acFile=args.a,
+                ecWeightsFile=args.a,
                 type=args.t,
                 fpType=args.k,
                 fpSize=args.s,
@@ -137,7 +137,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                              'details).',
                         default=True)
     parser.add_argument('-a', type=str, metavar='FILE', default=None,
-                        help='The .hdf5 file of a trained autoencoder (e.g. from a previous'
+                        help='The .hdf5 file of a trained encoder (e.g. from a previous'
                              'training run. This avoids a retraining of the autoencoder on the'
                              'training data set (provided with -i). NOTE that the input and encoding'
                              'dimensions must fit your data and settings. Default: train new autoencoder.')
@@ -190,7 +190,7 @@ class PredictOptions:
     """
     inputFile: str = ""
     outputDir: str = ""
-    acFile: str = ""
+    ecWeightsFile: str = ""
     model: str = ""
     target: str = ""
     fpSize: int = 2048
@@ -233,7 +233,7 @@ class PredictOptions:
             return cls(
                 inputFile=args.i,
                 outputDir=args.o,
-                acFile=args.ACmodel,
+                ecWeightsFile=args.ECmodel,
                 model=args.model,
                 target=args.target,
                 fpSize=args.s,
@@ -265,8 +265,8 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                              "numbered in the order of their appearance in the input file."
                              "A header is expected and respective column names are used.",
                         required=True)
-    parser.add_argument('--ACmodel', metavar='FILE', type=str,
-                        help='The autoencoder model weights. If provided the fingerprints are compressed prior '
+    parser.add_argument('--ECmodel', metavar='FILE', type=str,
+                        help='The encoder model weights. If provided the fingerprints are compressed prior '
                              'to prediction.',
                         required=False)
     parser.add_argument('--model', metavar='FILE', type=str,

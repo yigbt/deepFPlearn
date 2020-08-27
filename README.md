@@ -87,7 +87,7 @@ You have several options to work with the DFPL package.
 The package can be started as a program on the commandline and you can provide all necessary
 information as commandline-parameters. Check
 
-```python
+```shell script
 python -m dfpl --help
 python -m dfpl train --help
 python -m dfpl predict --help
@@ -96,7 +96,7 @@ python -m dfpl predict --help
 However, using JSON files that contain all train/predict options an easy way to preserve what was
 run and you can use them instead of providing multiple commandline arguments.
 
-```python
+```shell script
 python -m dfpl train -f path/to/file.json
 ```
   

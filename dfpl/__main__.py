@@ -16,7 +16,7 @@ project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = options.TrainOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.csv",
     outputDir=f"{project_directory}/modeltraining",
-    acFile="",
+    ecWeightsFile="",
     type='smiles',
     fpType='topological',
     epochs=512,
@@ -35,7 +35,7 @@ test_train_args = options.TrainOptions(
 test_predict_args = options.PredictOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
     outputDir=f"{project_directory}/validation/case_01/results/",
-    acFile=f"{project_directory}/validation/case_01/results/Sun_etal_dataset.AC.encoder.weights.hdf5",
+    ecWeightsFile=f"{project_directory}/validation/case_01/results/Sun_etal_dataset.AC.encoder.weights.hdf5",
     model=f"{project_directory}/validation/case_01/results/AR_compressed-True.full.FNN-.model.hdf5",
     target="AR",
     fpSize=2048,
@@ -59,11 +59,11 @@ def train(opts: options.TrainOptions):
         if opts.trainAC:
             # train an autoencoder on the full feature matrix
             encoder = ac.train_full_ac(df, opts)
-            encoder.save_weights(path.join(opts.outputDir, opts.acFile))
+            encoder.save_weights(path.join(opts.outputDir, opts.ecWeightsFile))
         else:
             # load trained model for autoencoder
             (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-            encoder.load_weights(path.join(opts.outputDir, opts.acFile))
+            encoder.load_weights(path.join(opts.outputDir, opts.ecWeightsFile))
 
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
@@ -88,11 +88,11 @@ def predict(opts: options.PredictOptions) -> None:
     createDirectory(opts.outputDir)
 
     use_compressed = False
-    if opts.acFile:
+    if opts.ecWeightsFile:
         use_compressed = True
         # load trained model for autoencoder
         (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-        encoder.load_weights(opts.acFile)
+        encoder.load_weights(opts.ecWeightsFile)
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
