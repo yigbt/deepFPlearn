@@ -20,7 +20,8 @@ test_predict_args = opt.PredictOptions(
 )
 
 
-def test_predictions(opts: opt.PredictOptions) -> None:
+def test_predictions():
+    opts = test_predict_args
 
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info(f"Predicting compounds in the input file {opts.inputFile} for association with target {opts.target}")
