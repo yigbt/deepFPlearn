@@ -68,12 +68,13 @@ def train(opts: options.TrainOptions):
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
-    # train single label models
-    fNN.train_nn_models(df=df, opts=opts)
+    if opts.trainFNN:
+        # train single label models
+        fNN.train_nn_models(df=df, opts=opts)
 
-    # train multi-label models
-    if opts.enableMultiLabel:
-        fNN.train_nn_models_multi(df=df, opts=opts)
+        # train multi-label models
+        if opts.enableMultiLabel:
+            fNN.train_nn_models_multi(df=df, opts=opts)
 
 
 def predict(opts: options.PredictOptions) -> None:
@@ -145,6 +146,7 @@ def main():
                 inputFile=makePathAbsolute(train_opts.inputFile),
                 outputDir=makePathAbsolute(train_opts.outputDir)
             )
+            createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "train.log"))
             logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
             train(fixed_opts)
@@ -156,6 +158,7 @@ def main():
                 inputFile=makePathAbsolute(predict_opts.inputFile),
                 outputDir=makePathAbsolute(predict_opts.outputDir)
             )
+            createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "predict.log"))
             logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
             predict(fixed_opts)
