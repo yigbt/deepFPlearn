@@ -1,0 +1,9 @@
+{
+  "py/object": "dfpl.options.PredictOptions",
+  "inputFile": "/data/bioinf/projects/data/2020_deepFPlearn/dataSources/CompToxChemicalsDashboard/dsstox_20160701.tsv",
+  "outputDir": "validation/case_07/results/",
+  "acFile": "encoder.checkpoint_path.hdf5",
+  "model": "",
+  "type": "smiles",
+  "fpType": "topological"
+}
