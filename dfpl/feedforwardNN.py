@@ -26,6 +26,8 @@ from sklearn.metrics import f1_score
 
 import options
 import autoencoder as ac
+import history as ht
+
 
 from time import time
 
@@ -116,9 +118,7 @@ def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tupl
 
     model_file_path_weights = str(path_prefix) + model_name + '.weights.h5'
     model_file_path_json = str(path_prefix) + model_name + '.json'
-    model_hist_plot_path_l = str(path_prefix) + model_name + '.loss.svg'
-    model_hist_plot_path_a = str(path_prefix) + model_name + '.acc.svg'
-    model_hist_plot_path = str(path_prefix) + model_name + '.history.svg'
+    model_hist_path = str(path_prefix) + model_name
     model_hist_csv_path = str(path_prefix) + model_name + '.history.csv'
     model_validation = str(path_prefix) + model_name + '.validation.csv'
     model_auc_file = str(path_prefix) + model_name + '.auc_value.svg'
@@ -128,8 +128,8 @@ def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tupl
     model_heatmap_x = str(path_prefix) + model_name + '.heatmap.X.svg'
     model_heatmap_z = str(path_prefix) + model_name + '.AC.heatmap.Z.svg'
 
-    return (model_file_path_weights, model_file_path_json, model_hist_plot_path_l, model_hist_plot_path_a,
-            model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+    return (model_file_path_weights, model_file_path_json, model_hist_path,
+            model_validation, model_auc_file,
             model_auc_file_data, out_file_path, checkpoint_path,
             model_heatmap_x, model_heatmap_z)
 
@@ -448,8 +448,8 @@ def train_nn_models(df: pd.DataFrame,
                 logging.info("Training of fold number:" + str(fold_no))
 
             # define all the output file/path names
-            (model_file_path_weights, model_file_path_json, model_hist_plot_path_loss, model_hist_plot_path_acc,
-             model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+            (model_file_path_weights, model_file_path_json, model_hist_path,
+             model_validation, model_auc_file,
              model_auc_file_data, outfile_path, checkpoint_path,
              model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
                                                                        target=target + "_compressed-" + str(
@@ -478,7 +478,10 @@ def train_nn_models(df: pd.DataFrame,
             if opts.verbose > 0:
                 logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
 
-            pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
+            ht.store_and_plot_history(base_file_name=model_hist_path,
+                                      hist=hist)
+
+            # pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
             # validate model on test data set (x_test, y_test)
             scores = validate_model_on_test_data(x[test], checkpoint_path, y[test],
@@ -545,7 +548,10 @@ def train_nn_models(df: pd.DataFrame,
         if opts.verbose > 0:
             logging.info("Computation time for training the full classification FNN: " + trainTime + "min")
 
-        pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))
+        ht.store_and_plot_history(base_file_name=model_hist_path,
+                                  hist=hist)
+
+        # pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))
 
         del model
         # now next target
@@ -680,8 +686,8 @@ def train_nn_models_multi(df: pd.DataFrame,
         # kf = kfold_c_validator.split(fpMatrix, y)
         # train, test = next(kf)
 
-        (model_file_path_weights, model_file_path_json, model_hist_plot_path_loss, model_hist_plot_path_acc,
-         model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+        (model_file_path_weights, model_file_path_json, model_hist_path,
+         model_validation, model_auc_file,
          model_auc_file_data, out_file_path, checkpoint_path,
          model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
                                                                    target="multi" + "_compressed-" + str(
@@ -710,7 +716,9 @@ def train_nn_models_multi(df: pd.DataFrame,
         if opts.verbose > 0:
             logging.info("Computation time for training the multi-label FNN: " + trainTime + " min")
 
-        pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
+        ht.store_and_plot_history(base_file_name=model_hist_path,
+                                  hist=hist)
+        # pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
         # validate model on test data set (fpMatrix_test, y_test)
         scores = validate_multi_model_on_test_data(x_test=fpMatrix[test],
@@ -757,8 +765,8 @@ def train_nn_models_multi(df: pd.DataFrame,
     # AND retrain with full data set
     full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN-")
 
-    (model_file_path_weights, model_file_path_json, model_hist_plot_path_loss, model_hist_plot_path_acc,
-     model_hist_plot_path, model_hist_csv_path, model_validation, model_auc_file,
+    (model_file_path_weights, model_file_path_json, model_hist_path,
+     model_validation, model_auc_file,
      model_auc_file_data, out_file_path, checkpoint_path,
      model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
                                                                target="multi" + "_compressed-" + str(
@@ -785,16 +793,19 @@ def train_nn_models_multi(df: pd.DataFrame,
     if opts.verbose > 0:
         logging.info("Computation time for training the full multi-label FNN: " + trainTime + " min")
 
-    pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
+    ht.store_and_plot_history(base_file_name=model_hist_path,
+                              hist=hist)
 
-    model_name = "multi" + "_compressed-" + str(use_compressed) + '.Full'
+    # pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
-    plot_history_vis(hist,
-                     model_hist_plot_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                     model_hist_csv_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                     model_hist_plot_path_acc.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                     model_hist_plot_path_loss.replace("Fold-" + str(fold_no), "full.DNN-model"),
-                     target=model_name)
-    logging.info("Full models for DNN is saved:\n" + full_model_file)
+    # model_name = "multi" + "_compressed-" + str(use_compressed) + '.Full'
+    #
+    # plot_history_vis(hist,
+    #                  model_hist_plot_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+    #                  model_hist_csv_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
+    #                  model_hist_plot_path_acc.replace("Fold-" + str(fold_no), "full.DNN-model"),
+    #                  model_hist_plot_path_loss.replace("Fold-" + str(fold_no), "full.DNN-model"),
+    #                  target=model_name)
+    # logging.info("Full models for DNN is saved:\n" + full_model_file)
 
-    pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))
+    # pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))

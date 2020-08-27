@@ -10,7 +10,7 @@ project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = opt.TrainOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.csv",
     outputDir=f"{project_directory}/modeltraining/",
-    acFile="Sun_etal_encoder.weights.hdf5",
+    ecWeightsFile="",
     type='smiles',
     fpType='topological',
     epochs=11,
@@ -20,7 +20,7 @@ test_train_args = opt.TrainOptions(
     testingFraction=0.2,
     kFolds=2,
     verbose=2,
-    trainAC=False,
+    trainAC=True,
     trainFNN=True
 )
 
@@ -30,13 +30,13 @@ def run_fnn_training(opts: opt.TrainOptions) -> None:
     logging.info("Adding fingerprint to dataset")
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
-    t = opts.acFile
-    opts.acFile = opts.outputDir + t
+    # t = opts.ecWeightsFile
+    # opts.ecWeightsFile = opts.outputDir + t
 
     if opts.trainAC:
         logging.info("Training autoencoder")
         encoder = ac.train_full_ac(df, opts)
-        encoder.save_weights(opts.acFile)
+        # encoder.save_weights(opts.acFile)
     else:
         logging.info("Using trained autoencoder")
         (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
@@ -61,13 +61,13 @@ def run_fnn_training_multi(opts: opt.TrainOptions) -> None:
 
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
-    t = opts.acFile
-    opts.acFile = opts.outputDir + t
+    t = opts.ecWeightsFile
+    opts.ecWeightsFile = opts.outputDir + t
 
     if opts.trainAC:
         logging.info("Training autoencoder")
         encoder = ac.train_full_ac(df, opts)
-        encoder.save_weights(opts.acFile)
+        # encoder.save_weights(opts.acFile)
     else:
         logging.info("Using trained autoencoder")
         (_, encoder) = ac.define_ac_model(input_size=opts.fpSize,

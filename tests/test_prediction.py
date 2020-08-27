@@ -11,7 +11,7 @@ project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_predict_args = opt.PredictOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
     outputDir=f"{project_directory}/validation/case_01/results/",
-    acFile=f"{project_directory}/validation/case_01/results/Sun_etal_dataset.AC.encoder.weights.hdf5",
+    ecWeightsFile=f"{project_directory}/validation/case_01/results/Sun_etal_dataset.AC.encoder.weights.hdf5",
     model=f"{project_directory}/validation/case_01/results/AR_compressed-True.full.FNN-.model.hdf5",
     target="AR",
     fpSize=2048,
@@ -28,11 +28,11 @@ def test_predictions(opts: opt.PredictOptions) -> None:
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     use_compressed = False
-    if opts.acFile:
+    if opts.ecWeightsFile:
         use_compressed = True
         # load trained model for autoencoder
         (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-        encoder.load_weights(opts.acFile)
+        encoder.load_weights(opts.ecWeightsFile)
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 

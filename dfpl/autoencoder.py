@@ -1,7 +1,8 @@
+import os.path
+from os.path import basename
 import math
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import logging
 
 from keras.models import Model
@@ -12,6 +13,7 @@ from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 import options
+import history as ht
 
 
 def define_ac_model(
@@ -116,7 +118,6 @@ def autoencoder_callback(checkpoint_path: str, patience: int) -> list:
     return [checkpoint, early_stop]
 
 
-
 def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
     """
     Train an autoencoder on the given feature matrix X. Response matrix is only used to
@@ -131,11 +132,19 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
     (autoencoder, encoder) = define_ac_model(input_size=opts.fpSize,
                                              encoding_dim=opts.encFPSize)
 
-    # if opts.acFile != "":  # don't train, use existing weights file and load it into AC model
-    #     encoder.load_weights(opts.acFile)
-    # else:
+    # define output file for autoencoder and encoder weights
+    if opts.ecWeightsFile == "":
+        base_file_name = os.path.splitext(basename(opts.inputFile))[0]
+        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
+        ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.hdf5")
+    else:
+        base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
+        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
+        ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
+
     # collect the callbacks for training
-    callback_list = autoencoder_callback(checkpoint_path=opts.outputDir + "/autoencoder.checkpoint_path.hdf5",
+    callback_list = autoencoder_callback(checkpoint_path=ac_weights_file,
+                                         # opts.outputDir + "/autoencoder.checkpoint_path.hdf5",
                                          patience=20)
 
     # Select all fps that are valid and turn them into a numpy array
@@ -153,29 +162,14 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
                                 batch_size=256,
                                 verbose=opts.verbose,
                                 validation_data=(x_test, x_test))
-    # history
-    ac_loss = auto_hist.history['loss']
-    ac_val_loss = auto_hist.history['val_loss']
-    ac_epochs = range(ac_loss.__len__())
-    pd.DataFrame(data={'loss': ac_loss,
-                       'val_loss': ac_val_loss,
-                       'epoch': ac_epochs}).to_csv(opts.outputDir + "/ACmodel_trainValLoss_AC.csv",
-                                                   index=False)
-    # generate a figure of the losses for this fold
-    plt.figure()
-    plt.plot(ac_epochs, ac_loss, 'bo',
-             label='Training loss')
-    plt.plot(ac_epochs, ac_val_loss, 'b',
-             label='Validation loss')
-    plt.title('Training and validation loss of AC')
-    plt.legend()
-    plt.savefig(fname=opts.outputDir + "/ACmodel_trainValLoss_AC.svg",
-                format='svg')
-    plt.close()
-    # write the losses to .csv file for later data visualization
+    logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
-    # model needs to be saved and restored when predicting new input!
-    # use encode() of train data as input for DL model to associate to chemical
+    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name),
+                              hist=auto_hist)
+
+    encoder.save_weights(ec_weights_file)
+    logging.info(f"Encoder weights stored in file: {ec_weights_file}")
+
     return encoder
 
 
