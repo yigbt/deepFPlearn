@@ -670,7 +670,6 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
             copy=False)
         y = np.array(
             df[df['fpcompressed'].notnull() & selector][names_y],
-            dtype=np.bool,
             copy=False)
     else:
         # get fingerprints as numpy array
@@ -681,7 +680,6 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
         y = np.array(
             df[df['fp'].notnull() & selector][names_y],
-            dtype=np.bool,
             copy=False)
 
     # do a kfold cross validation for the autoencoder training
