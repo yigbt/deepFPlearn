@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/SunBDBTox21.merged4training.csv",
   "outputDir": "validation/case_16/results/",
-  "acFile": "encoder.checkpoint_path.hdf5",
+  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,

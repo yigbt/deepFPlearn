@@ -1,9 +1,9 @@
 {
   "py/object": "dfpl.options.PredictOptions",
-  "inputFile": "/data/bioinf/projects/data/2020_deepFPlearn/dataSources/CompToxChemicalsDashboard/dsstox_20160701.tsv",
+  "inputFile": "data/dsstox_20160701.pkl",
   "outputDir": "validation/case_07/results/",
-  "acFile": "encoder.checkpoint_path.hdf5",
-  "model": "",
+  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "model": "validation/case_03/results/ER_compressed-True_sampled-False.best.FNN.model.hdf5",
   "type": "smiles",
   "fpType": "topological"
 }
