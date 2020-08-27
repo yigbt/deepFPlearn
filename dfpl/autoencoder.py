@@ -109,7 +109,7 @@ def autoencoder_callback(checkpoint_path: str, patience: int) -> list:
 
     # enable early stopping if val_loss is not improving anymore
     early_stop = EarlyStopping(patience=patience,
-                               min_delta=0.001,
+                               min_delta=0.0001,
                                verbose=1,
                                restore_best_weights=True)
 
