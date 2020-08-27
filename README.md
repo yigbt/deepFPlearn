@@ -1,9 +1,9 @@
-# deepFPlearn
+# Deep Fingerprint Learn (DFPL)
 
 Link molecular structures of chemicals (in form of topological
 fingerprints) with multiple targets.
 
-## Usage
+## Setting up Python environment
 
 You can either generate your own singularity container from the
 provided configuration file or generate a single conda environment to
@@ -13,10 +13,10 @@ use the `dfpl` package.
 
 ..
 
-### Use conda environment outside the singularity container
+### Set up conda environment
 
 To use this tool outside of the Singularity container first create the
-respective conda environment with one of these options:
+respective conda environment:
 
 1. Create the conda env from scratch
 
@@ -32,108 +32,103 @@ respective conda environment with one of these options:
 3. Install the local `dfpl` package by calling
 
     `conda develop dfpl`
-    
-Now, you have several options to work with the `dfpl` package:
 
-- You can the package, providing commandline arguments for training or prediction.
-  An easy way is to specify all options in a JSON file and calling 
+### Prepare data
+
+DFPL can calculate fingerprints of chemical structures from SMILES or INCHI representation.
+Therefore, e.g. CSV input-files need to contain a `"smiles"` or `"inchi"` which is then
+used to calculate the fingerprints.
+There is an example CSV file in the `tests/directory` directory and when you're training
+using the DFPL package, it will load the input files and add fingerprints.
+You can test the conversion
+
+```python
+import dfpl.fingerprint as fp
+fp.importDataFile("tests/data/smiles.csv")
+```
+
+If you're data is in CSV format, has a header row, and contains a `"smiles"` or an `"inchi"` column,
+you can use it as input for training as it is.
+However, if you're data is in a different format, you can use function in the `fingerprint` module
+to import it correctly.
+
+The `tests/data/inchi.tsv` contains data in TSV format without a header row which makes it impossible
+to identify how to import it automatically.
+You can use the `import_function` argument to tell `importDataFile` how it can turn your data
+into a Pandas `DataFrame` that contains, e.g. an `"inchi"` column.
+After that DFPL can calculate and add the fingerprints to the `DataFrame`
+
+```python
+import pandas as pd
+import dfpl.fingerprint as fp
+
+data = fp.importDataFile(
+    "tests/data/inchi.tsv",
+    import_function=(lambda f: pd.read_table(f, names=["toxid", "inchi", "key"]))
+)
+```
+
+You can store the converted data as a "pickle" file which is a binary representation of the Pandas
+dataframe and can be used directly as input file for the DFPL program.
+The advantage is that the fingerprint calculation needs to be done only once and loading these
+files is fast.
+
+```python
+data.to_pickle("output/path/file.pkl")
+```
+
+Note that the file-extension needs to be `"pkl"` to be identified correctly by DFPL.
+Also, you might want to look at the `convert_all` function in the `fingerprint` module that
+we use to convert different data-files all at once.
+
+### Use training/prediction functions
+
+You have several options to work with the DFPL package.
+The package can be started as a program on the commandline and you can provide all necessary
+information as commandline-parameters. Check
+
+```python
+python -m dfpl --help
+python -m dfpl train --help
+python -m dfpl predict --help
+```
+
+However, using JSON files that contain all train/predict options an easy way to preserve what was
+run and you can use them instead of providing multiple commandline arguments.
+
+```python
+python -m dfpl train -f path/to/file.json
+```
   
-  `python -m dfpl -f path/to/file.json`
-  
-  See, e.g. the JSON files under `validation/case_XX`
-- You can load the `dfpl` package in your Python console start
-  the training/prediction functions yourself by providing instances
-  of `dfpl.options.TrainingOptions` or `dfpl.options.PredictOptions`.
-- You can create a run-configuration in PyCharm using the `dfpl/__main__.py`
-  script and providing the commandline arguments there.
+See, e.g. the JSON files under `validation/case_XX` for examples.
+Also, you can use the following to create template JSON files for training or prediction
 
-**TODO: Fix things below**
+```python
+import dfpl.options as opts
 
-To see how `deepFPlearn` is to be used call:
-`python deepFPlearn -h`
+train_opts = opts.TrainOptions()
+train_opts.saveToFile("train.json")
 
-```usage: deepFPlearn [-h] {train,predict} ...
-
-positional arguments:
-  {train,predict}  Sub programs of deepFPlearn
-    train          Train new models with your data
-    predict        Predict your data with existing models
-
-optional arguments:
-  -h, --help       show this help message and exit
+predict_opts = opts.PredictOptions()
+predict_opts.saveToFile("predict.json")
 ```
 
-For subcommand specific options, call:
-`python deepFPlearn predict -h`
+You can also work with the DFPL package from within an interactive Python session.
+Load the `dfpl` package in your Python console and start the training/prediction
+functions yourself by providing instances of `dfpl.options.TrainingOptions` or 
+`dfpl.options.PredictOptions`.
+You can also use load options from JSON files. Example
 
-```
-usage: deepFPlearn predict [-h] -i FILE --ACmodel FILE --model FILE [-o FILE]
-                           [-t STR] [-k STR]
+```python
+import dfpl.__main__ as main
+import dfpl.options as opts
 
-optional arguments:
-  -h, --help      show this help message and exit
-  -i FILE         The file containin the data for the prediction. It is
-                  incomma separated CSV format. The column named 'smiles' or
-                  'fp'contains the field to be predicted. Please adjust the
-                  type that should be predicted (fp or smile) with -t option
-                  appropriately.An optional column 'id' is used to assign the
-                  outcomes to theoriginal identifieres. If this column is
-                  missing, the results arenumbered in the order of their
-                  appearance in the input file.A header is expected and
-                  respective column names are used.
-  --ACmodel FILE  The autoencoder model weights
-  --model FILE    The predictor model weights
-  -o FILE         Output file name. It containes a comma separated list of
-                  predictions for each input row, for all targets. If the file
-                  'id'was given in the input, respective IDs are used,
-                  otherwise therows of output are numbered and provided in the
-                  order of occurencein the input file.
-  -t STR          Type of the chemical representation. Choices: 'fp',
-                  'smiles'.
-  -k STR          The type of fingerprint to be generated/used in input file.
+o = opts.TrainOptions.fromJson("/path/to/train.json")
+main.train(o)
 ```
 
-Or for training:
-
-`python deepFPlearn train -h`
-
-```
-usage: deepFPlearn train [-h] -i FILE [-o FILE] [-t STR] [-k STR] [-s S] [-a]
-                         [-d INT] [-e INT] [-p FILE] [-m] [-l INT] [-K INT]
-                         [-v INT]
-
-optional arguments:
-  -h, --help  show this help message and exit
-  -i FILE     The file containin the data for training in (unquoted) comma
-              separated CSV format. First column contain the feature string in
-              form of a fingerprint or a SMILES (see -t option). The remaining
-              columns contain the outcome(s) (Y matrix). A header is expected
-              and respective column names are used to refer to outcome(s)
-              (target(s)).
-  -o FILE     Prefix of output file name. Trained model(s) and respective
-              stats will be returned in 2 output files with this prefix.
-              Default: prefix of input file name.
-  -t STR      Type of the chemical representation. Choices: 'fp', 'smiles'.
-  -k STR      The type of fingerprint to be generated/used in input file.
-  -s S        Size of fingerprint that should be generated.
-  -a          Use autoencoder to reduce dimensionality of fingerprint.
-              Default: not set.
-  -d INT      Size of encoded fingerprint (z-layer of autoencoder).
-  -e INT      Number of epochs that should be trained
-  -p FILE     CSV file containing the parameters for the epochs per target
-              model.The target abbreviation should be the same as in the input
-              file andthe columns/parameters are:
-              target,batch_size,epochs,optimizer,activation.Note that values
-              in from file overwrite -e option!
-  -m          Train multi-label classification model in addition to the
-              individual models.
-  -l INT      Fraction of the dataset that should be used for testing. Value
-              in [0,1].
-  -K INT      K that is used for K-fold cross validation in the training
-              procedure.
-  -v INT      Verbosity level. O: No additional output, 1: Some additional
-              output, 2: full additional output
-```
+Finally, if you like to work in PyCharm, you can also create a run-configuration in 
+PyCharm using the `dfpl/__main__.py` script and providing the commandline arguments there.
 
 # Please note that:
 
