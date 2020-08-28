@@ -63,7 +63,7 @@ def train(opts: options.TrainOptions):
         else:
             # load trained model for autoencoder
             (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-            encoder.load_weights(path.join(opts.outputDir, opts.ecWeightsFile))
+            encoder.load_weights(makePathAbsolute(opts.ecWeightsFile))
 
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
