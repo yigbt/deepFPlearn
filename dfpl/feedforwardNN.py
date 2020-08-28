@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 import logging
 import shutil
+from os import path
 
 # for NN model functions
 from keras.models import Sequential
@@ -27,7 +28,6 @@ from sklearn.metrics import f1_score
 import options
 import autoencoder as ac
 import history as ht
-
 
 from time import time
 
@@ -391,7 +391,8 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
             # add sample of 0s to df of 1s
             dfX = df_fpc[df_fpc[target] == 1].append(
                 df_fpc[df_fpc[target] == 0].sample(
-                    round(min(counts[0], counts[1] / opts.sampleFractionOnes))
+                    # round(min(counts[0], counts[1] / opts.sampleFractionOnes))
+                    int(min(counts[0], counts[1] / opts.sampleFractionOnes))
                 )
             )
             x = np.array(dfX["fpcompressed"].to_list(), dtype=bool, copy=False)
@@ -456,14 +457,14 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
             if opts.verbose > 0:
                 logging.info("Training of fold number:" + str(fold_no))
 
+            model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + str(opts.sampleFractionOnes)
+
             # define all the output file/path names
             (model_file_path_weights, model_file_path_json, model_hist_path,
              model_validation, model_auc_file,
              model_auc_file_data, outfile_path, checkpoint_path,
              model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
-                                                                       target=target + "_compressed-" + str(
-                                                                           opts.compressFeatures) + "_sampled-" + str(
-                                                                           opts.sampleFractionOnes),
+                                                                       target=model_name,
                                                                        fold=fold_no)
 
             model = define_nn_model(input_size=x[train].shape[1])
@@ -537,6 +538,13 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
         # AND retrain with full data set
         full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN")
+        (model_file_path_weights, model_file_path_json, model_hist_path,
+         model_validation, model_auc_file,
+         model_auc_file_data, out_file_path, checkpoint_path,
+         model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
+                                                                   target=target + "_compressed-" + str(
+                                                                       opts.compressFeatures) + "_sampled-" + str(
+                                                                       opts.sampleFractionOnes))
         # measure the training time
         start = time()
 
@@ -558,6 +566,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         if opts.verbose > 0:
             logging.info("Computation time for training the full classification FNN: " + trainTime + "min")
 
+        model_hist_path = full_model_file.replace(".hdf5", "")
         ht.store_and_plot_history(base_file_name=model_hist_path,
                                   hist=hist)
 
