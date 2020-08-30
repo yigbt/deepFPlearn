@@ -72,9 +72,9 @@ def train(opts: options.TrainOptions):
         # train single label models
         fNN.train_nn_models(df=df, opts=opts)
 
-        # train multi-label models
-        if opts.enableMultiLabel:
-            fNN.train_nn_models_multi(df=df, opts=opts)
+    # train multi-label models
+    if opts.enableMultiLabel:
+        fNN.train_nn_models_multi(df=df, opts=opts)
 
 
 def predict(opts: options.PredictOptions) -> None:
