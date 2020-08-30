@@ -14,6 +14,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 import options
 import history as ht
+import settings
 
 
 def define_ac_model(
@@ -92,26 +93,25 @@ def define_ac_model(
     return autoencoder, encoder
 
 
-def autoencoder_callback(checkpoint_path: str, patience: int) -> list:
+def autoencoder_callback(checkpoint_path: str) -> list:
     """
     Callbacks for fitting the autoencoder
 
     :param checkpoint_path: The output directory to store the checkpoint weight files
-    :param patience: The number of epochs to wait until no improvement of the performance measures took place
     :return: List of ModelCheckpoint and EarlyStopping class.
     """
 
     # enable this checkpoint to restore the weights of the best performing model
     checkpoint = ModelCheckpoint(checkpoint_path,
                                  verbose=1,
-                                 period=10,
+                                 period=settings.ac_train_check_period,
                                  save_best_only=True,
                                  mode='min',
                                  save_weights_only=True)
 
     # enable early stopping if val_loss is not improving anymore
-    early_stop = EarlyStopping(patience=patience,
-                               min_delta=0.0001,
+    early_stop = EarlyStopping(patience=settings.ac_train_patience,
+                               min_delta=settings.ac_train_min_delta,
                                verbose=1,
                                restore_best_weights=True)
 
@@ -134,27 +134,32 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
 
     # define output file for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
+        logging.info("No AC encoder weights file specified")
         base_file_name = os.path.splitext(basename(opts.inputFile))[0]
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
         ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.hdf5")
     else:
+        logging.info(f"AC encoder will be saved")
         base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
         ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # collect the callbacks for training
-    callback_list = autoencoder_callback(checkpoint_path=ac_weights_file,
-                                         # opts.outputDir + "/autoencoder.checkpoint_path.hdf5",
-                                         patience=20)
+    callback_list = autoencoder_callback(checkpoint_path=ac_weights_file)
 
     # Select all fps that are valid and turn them into a numpy array
     # This step is crucial for speed!!!
-    fp_matrix = np.array(df[df["fp"].notnull()]["fp"].to_list(), dtype=np.bool, copy=False)
+    fp_matrix = np.array(df[df["fp"].notnull()]["fp"].to_list(),
+                         dtype=settings.ac_fp_numpy_type,
+                         copy=settings.numpy_copy_values)
+    logging.info(f"Training AC on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
 
     # split data into test and training data
     x_train, x_test = train_test_split(fp_matrix,
                                        test_size=0.2,
                                        random_state=42)
+    logging.info(f"AC train data shape {x_train.shape} with type {x_train.dtype}")
+    logging.info(f"AC test data shape {x_test.shape} with type {x_test.dtype}")
 
     auto_hist = autoencoder.fit(x_train, x_train,
                                 callbacks=callback_list,
@@ -182,8 +187,11 @@ def compress_fingerprints(dataframe: pd.DataFrame,
     :param encoder: The trained autoencoder that is used for compressing the fingerprints
     :return: The input dataframe extended by a column containing the compressed version of the fingerprints
     """
-
-    fp_matrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list(), dtype=np.bool, copy=False)
+    logging.info("Adding compressed fingerprints")
+    fp_matrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list(),
+                         dtype=settings.ac_fp_numpy_type,
+                         copy=settings.numpy_copy_values)
+    logging.info(f"Using input matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
     dataframe['fpcompressed'] = pd.Series([pd.Series(s) for s in encoder.predict(fp_matrix)])
 
     return dataframe

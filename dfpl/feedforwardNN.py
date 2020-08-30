@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 import logging
 import shutil
-from os import path
 
 # for NN model functions
 from keras.models import Sequential
@@ -16,7 +15,7 @@ from keras.models import Model
 from keras import regularizers
 from keras import optimizers
 from keras.optimizers import SGD
-from keras.callbacks import History
+from keras.callbacks import History, ModelCheckpoint, EarlyStopping
 
 from sklearn.model_selection import KFold
 from sklearn.metrics import matthews_corrcoef
@@ -28,6 +27,7 @@ from sklearn.metrics import f1_score
 import options
 import autoencoder as ac
 import history as ht
+import settings
 
 from time import time
 
@@ -382,38 +382,90 @@ def validate_model_on_test_data(x_test: array, checkpoint_path: str, y_test: arr
 
 
 def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainOptions) -> (np.ndarray, np.ndarray):
+    logging.info("Preparing training data matrices")
     if opts.compressFeatures:
+        logging.info("Using compressed fingerprints")
         df_fpc = df[df[target].notna() & df["fpcompressed"].notnull()]
+        logging.info(f"DataSet has {str(df_fpc.shape)} entries with not NA values in fpcompressed and {target}")
         if opts.sampleFractionOnes:
+            logging.info(f"Using fractional sampling {opts.sampleFractionOnes}")
             # how many ones
             counts = df_fpc[target].value_counts()
+            logging.info(f"Number of fraction sampling values: {str(counts)}")
 
             # add sample of 0s to df of 1s
             dfX = df_fpc[df_fpc[target] == 1].append(
                 df_fpc[df_fpc[target] == 0].sample(
-                    # round(min(counts[0], counts[1] / opts.sampleFractionOnes))
                     int(min(counts[0], counts[1] / opts.sampleFractionOnes))
                 )
             )
-            x = np.array(dfX["fpcompressed"].to_list(), dtype=bool, copy=False)
-            y = np.array(dfX[target].to_list(), copy=False)
+            x = np.array(
+                dfX["fpcompressed"].to_list(),
+                dtype=settings.nn_fp_compressed_numpy_type,
+                copy=settings.numpy_copy_values
+            )
+            y = np.array(
+                dfX[target].to_list(),
+                dtype=settings.nn_target_numpy_type,
+                copy=settings.numpy_copy_values
+            )
         else:
-            x = np.array(df_fpc["fpcompressed"].to_list(), dtype=bool, copy=False)
-            y = np.array(df_fpc[target].to_list(), copy=False)
+            logging.info("Fraction sampling is OFF")
+            x = np.array(
+                df_fpc["fpcompressed"].to_list(),
+                dtype=settings.nn_fp_compressed_numpy_type,
+                copy=settings.numpy_copy_values
+            )
+            y = np.array(
+                df_fpc[target].to_list(),
+                dtype=settings.nn_target_numpy_type,
+                copy=settings.numpy_copy_values
+            )
     else:
+        logging.info("Using uncompressed fingerprints")
         df_fp = df[df[target].notna() & df["fp"].notnull()]
+        logging.info(f"DataSet has {str(df_fp.shape)} entries with not NA values in fpcompressed and {target}")
         if opts.sampleFractionOnes:
+            logging.info(f"Using fractional sampling {opts.sampleFractionOnes}")
             counts = df_fp[target].value_counts()
+            logging.info(f"Number of fraction sampling values: {str(counts)}")
+
             dfX = df_fp[df_fp[target] == 1.0].append(
                 df_fp[df_fp[target] == 0.0].sample(
                     round(min(counts[0], counts[1] / opts.sampleFractionOnes)))
             )
-            x = np.array(dfX["fp"].to_list(), dtype=bool, copy=False)
-            y = np.array(dfX[target].to_list(), copy=False)
+            x = np.array(dfX["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
+            y = np.array(dfX[target].to_list(), copy=settings.numpy_copy_values)
         else:
-            x = np.array(df_fp["fp"].to_list())
-            y = np.array(df_fp[target].to_list())
+            logging.info("Fraction sampling is OFF")
+            x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
+            y = np.array(df_fp[target].to_list(), copy=settings.numpy_copy_values)
     return x, y
+
+
+def nn_callback(checkpoint_path: str) -> list:
+    """
+    Callbacks for fitting the autoencoder
+
+    :param checkpoint_path: The output directory to store the checkpoint weight files
+    :return: List of ModelCheckpoint and EarlyStopping class.
+    """
+
+    # enable this checkpoint to restore the weights of the best performing model
+    checkpoint = ModelCheckpoint(checkpoint_path,
+                                 verbose=1,
+                                 period=settings.nn_train_check_period,
+                                 save_best_only=True,
+                                 mode='min',
+                                 save_weights_only=True)
+
+    # enable early stopping if val_loss is not improving anymore
+    early_stop = EarlyStopping(patience=settings.nn_train_patience,
+                               min_delta=settings.nn_train_min_delta,
+                               verbose=1,
+                               restore_best_weights=True)
+
+    return [checkpoint, early_stop]
 
 
 def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
@@ -435,6 +487,8 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         # target=names_y[0] # --> only for testing the code
 
         x, y = prepare_nn_training_data(df, target, opts)
+        logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
+        logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
 
         # do a kfold cross validation for the FNN training
         kfold_c_validator = KFold(n_splits=opts.kFolds,
@@ -454,8 +508,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
             # kf = kfold_c_validator.split(x, y)
             # train, test = next(kf)
 
-            if opts.verbose > 0:
-                logging.info("Training of fold number:" + str(fold_no))
+            logging.info("Training of fold number:" + str(fold_no))
 
             model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + str(opts.sampleFractionOnes)
 
@@ -469,8 +522,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
             model = define_nn_model(input_size=x[train].shape[1])
 
-            callback_list = ac.autoencoder_callback(checkpoint_path=checkpoint_path,
-                                                    patience=20)
+            callback_list = nn_callback(checkpoint_path=checkpoint_path)
 
             # measure the training time
             start = time()
@@ -482,11 +534,9 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
                              verbose=opts.verbose,
                              validation_split=opts.testingFraction)
             #                             validation_data=(x_test, y_test))  # this overwrites val_split!
-            trainTime = str(round((time() - start) / 60,
-                                  ndigits=2))
+            trainTime = str(round((time() - start) / 60, ndigits=2))
 
-            if opts.verbose > 0:
-                logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
+            logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
 
             ht.store_and_plot_history(base_file_name=model_hist_path,
                                       hist=hist)
@@ -508,13 +558,13 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
                                            "loss", "val_loss", "acc", "val_acc",  # FNN training
                                            "loss_test", "acc_test", "mcc_test"]
                                   )
-            print(row_df)
+            logging.info(row_df)
             all_scores = all_scores.append(row_df, ignore_index=True)
             fold_no += 1
             del model
             # now next fold
 
-        print(all_scores)
+        logging.info(all_scores)
 
         # finalize model
         # 1. provide best performing fold variant
@@ -549,8 +599,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         start = time()
 
         model = define_nn_model(input_size=x.shape[1])
-        callback_list = ac.autoencoder_callback(checkpoint_path=full_model_file,
-                                                patience=20)
+        callback_list = nn_callback(checkpoint_path=full_model_file)
 
         # train and validate
         hist = model.fit(x, y,
@@ -563,8 +612,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         trainTime = str(round((time() - start) / 60,
                               ndigits=2))
 
-        if opts.verbose > 0:
-            logging.info("Computation time for training the full classification FNN: " + trainTime + "min")
+        logging.info("Computation time for training the full classification FNN: " + trainTime + "min")
 
         model_hist_path = full_model_file.replace(".hdf5", "")
         ht.store_and_plot_history(base_file_name=model_hist_path,
@@ -681,21 +729,23 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         # get compressed fingerprints as numpy array
         fpMatrix = np.array(
             df[df['fpcompressed'].notnull() & selector]['fpcompressed'].to_list(),
-            dtype=np.bool,
-            copy=False)
+            dtype=settings.nn_multi_fp_compressed_numpy_type,
+            copy=settings.numpy_copy_values)
         y = np.array(
             df[df['fpcompressed'].notnull() & selector][names_y],
-            copy=False)
+            dtype=settings.nn_multi_target_numpy_type,
+            copy=settings.numpy_copy_values)
     else:
         # get fingerprints as numpy array
         fpMatrix = np.array(
             df[df['fp'].notnull() & selector]['fp'].to_list(),
-            dtype=np.bool,
-            copy=False)
+            dtype=settings.nn_multi_fp_numpy_type,
+            copy=settings.numpy_copy_values)
 
         y = np.array(
             df[df['fp'].notnull() & selector][names_y],
-            copy=False)
+            dtype=settings.nn_multi_target_numpy_type,
+            copy=settings.numpy_copy_values)
 
     # do a kfold cross validation for the autoencoder training
     kfold_c_validator = KFold(n_splits=opts.kFolds,
@@ -726,8 +776,7 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         model = define_nn_model_multi(input_size=fpMatrix[train].shape[1],
                                       output_size=y.shape[1])
 
-        callback_list = ac.autoencoder_callback(checkpoint_path=checkpoint_path,
-                                                patience=20)
+        callback_list = nn_callback(checkpoint_path=checkpoint_path)
         # measure the training time
         start = time()
 
@@ -765,13 +814,13 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
                                        "loss", "val_loss", "acc", "val_acc", "f1_random", "f1_trained"]
                               )
 
-        print(row_df)
+        logging.info(row_df)
         all_scores = all_scores.append(row_df, ignore_index=True)
 
         fold_no += 1
         del model
 
-    print(all_scores)
+    logging.info(all_scores)
 
     # finalize model
     # 1. provide best performing fold variant
@@ -805,8 +854,7 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
     model = define_nn_model_multi(input_size=fpMatrix.shape[1],
                                   output_size=y.shape[1])
-    callback_list = ac.autoencoder_callback(checkpoint_path=full_model_file,
-                                            patience=20)
+    callback_list = nn_callback(checkpoint_path=full_model_file)
     # train and validate
     hist = model.fit(fpMatrix, y,
                      callbacks=callback_list,
@@ -818,22 +866,6 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     trainTime = str(round((time() - start) / 60,
                           ndigits=2))
 
-    if opts.verbose > 0:
-        logging.info("Computation time for training the full multi-label FNN: " + trainTime + " min")
+    logging.info("Computation time for training the full multi-label FNN: " + trainTime + " min")
+    ht.store_and_plot_history(base_file_name=model_hist_path, hist=hist)
 
-    ht.store_and_plot_history(base_file_name=model_hist_path,
-                              hist=hist)
-
-    # pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
-
-    # model_name = "multi" + "_compressed-" + str(use_compressed) + '.Full'
-    #
-    # plot_history_vis(hist,
-    #                  model_hist_plot_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
-    #                  model_hist_csv_path.replace("Fold-" + str(fold_no), "full.DNN-model"),
-    #                  model_hist_plot_path_acc.replace("Fold-" + str(fold_no), "full.DNN-model"),
-    #                  model_hist_plot_path_loss.replace("Fold-" + str(fold_no), "full.DNN-model"),
-    #                  target=model_name)
-    # logging.info("Full models for DNN is saved:\n" + full_model_file)
-
-    # pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))

@@ -12,6 +12,8 @@ import multiprocessing
 from functools import partial
 from typing import Callable
 
+import settings
+
 default_fp_size = 2048
 
 
@@ -36,7 +38,7 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         try:
             return np.array(
                 Chem.RDKFingerprint(Chem.MolFromSmiles(smile), fpSize=fp_size),
-                dtype=np.bool, copy=False)
+                dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
         except:
             # Note: We don't need to log here since rdkit already logs
             return None
@@ -51,7 +53,7 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         try:
             return np.array(
                 Chem.RDKFingerprint(Chem.MolFromInchi(inchi), fpSize=fp_size),
-                dtype=np.bool, copy=False)
+                dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
         except:
             # Note: We don't need to log here since rdkit already logs
             return None
