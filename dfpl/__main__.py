@@ -140,7 +140,7 @@ def main():
 
     try:
         if prog_args.method == "convert":
-            directory = prog_args.f
+            directory = makePathAbsolute(prog_args.f)
             if path.isdir(directory):
                 fp.convert_all(directory)
             else:
