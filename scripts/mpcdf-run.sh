@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source $ANACONDA_HOME/etc/profile.d/conda.sh
 conda activate rdkit2019
 conda develop dfpl
 

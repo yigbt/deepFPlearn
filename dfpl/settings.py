@@ -15,13 +15,13 @@ numpy_copy_values = False
 # The big dsstox dataset runs out of mem on Patrick's machine when
 # we use floats here.
 # Also, we possibly should give the FNN a float type fp
-ac_fp_numpy_type = np.float32
+ac_fp_numpy_type = np.bool8
 
 # Type used for the compressed fp which is an inner layer of the ac
 # an MUST be of float type. On Patrick's machine, (GPU) tensorflow layers
 # are float32 per default. Not sure if float64 can be used with GPU
 # training and if it enhances results. Needs to be evaluated.
-ac_fp_compressed_numpy_type = np.float32
+ac_fp_compressed_numpy_type = np.bool8
 
 # Feedforward Neuronal Network data type settings
 #

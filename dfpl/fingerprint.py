@@ -11,6 +11,7 @@ from typing import Any, List
 import multiprocessing
 from functools import partial
 from typing import Callable
+import logging
 
 import settings
 
@@ -122,10 +123,13 @@ conversion_rules = {
 def convert_all(directory: str) -> List[str]:
     files = [f for f in os.listdir(directory) for key, value in conversion_rules.items()
              if isfile(join(directory, f)) and f in key]
+    logging.info(f"Found {len(files)} files to convert")
     for f in files:
         path = join(directory, f)
+        logging.info(f"Importing file {f}")
         df = importDataFile(path, import_function=conversion_rules[f])
         name, ext = os.path.splitext(f)
         output_file = join(directory, name + ".pkl")
+        logging.info(f"Saving pickle of file {f}")
         df.to_pickle(output_file)
     return files

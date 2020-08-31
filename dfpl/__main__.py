@@ -141,6 +141,7 @@ def main():
     try:
         if prog_args.method == "convert":
             directory = makePathAbsolute(prog_args.f)
+            logging.info(f"Convert all data files in {directory}")
             if path.isdir(directory):
                 fp.convert_all(directory)
             else:
