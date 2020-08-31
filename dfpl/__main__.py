@@ -59,7 +59,6 @@ def train(opts: options.TrainOptions):
         if opts.trainAC:
             # train an autoencoder on the full feature matrix
             encoder = ac.train_full_ac(df, opts)
-            encoder.save_weights(path.join(opts.outputDir, opts.ecWeightsFile))
         else:
             # load trained model for autoencoder
             (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
