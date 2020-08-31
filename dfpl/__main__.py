@@ -139,6 +139,12 @@ def main():
     prog_args: Namespace = parser.parse_args()
 
     try:
+        if prog_args.method == "convert":
+            directory = prog_args.f
+            if path.isdir(directory):
+                fp.convert_all(directory)
+            else:
+                raise ValueError("Input directory is not a directory")
         if prog_args.method == "train":
             train_opts = options.TrainOptions.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(

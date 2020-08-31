@@ -23,7 +23,7 @@ respective conda environment:
     From within the `deepFPlearn` directory, you can create the conda environment with the provided
     yaml file that contains all information and necessary packages
 
-    `conda create -n rdkit2019 -f scripts/conda_env.rdkit2019.yml`
+    `conda env create -f scripts/conda_env.rdkit2019.yml`
 
 2. Activate the `rdkit2019` environment with
 

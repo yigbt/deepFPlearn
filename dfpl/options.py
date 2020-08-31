@@ -95,6 +95,10 @@ def createCommandlineParser() -> argparse.ArgumentParser:
     parser_predict = subparsers.add_parser("predict", help="Predict your data with existing models")
     parser_predict.set_defaults(method="predict")
     parseInputPredict(parser_predict)
+
+    parser_convert = subparsers.add_parser("convert", help="Convert known data files to pickle serialization files")
+    parser_convert.set_defaults(method="convert")
+    parseInputConvert(parser_convert)
     return parser
 
 
@@ -292,3 +296,14 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
                         help='The type of fingerprint to be generated/used in input file.',
                         default='topological')
+
+
+def parseInputConvert(parser: argparse.ArgumentParser) -> None:
+    """
+    Parse the input arguments.
+
+    :return: A namespace object built up from attributes parsed out of the cmd line.
+    """
+    parser.add_argument('-f', metavar='FILE', type=str,
+                        help="Input directory where your CSV/TSV files are stored.",
+                        required=True, default="")
