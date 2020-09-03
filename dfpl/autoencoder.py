@@ -169,7 +169,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
                                 validation_data=(x_test, x_test))
     logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
-    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name),
+    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
                               hist=auto_hist)
 
     encoder.save_weights(ec_weights_file)

@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/Sun_etal_dataset.csv",
-  "outputDir": "validation/case_02/results/",
-  "ecWeightsFile": "validation/case_ARonly/results/ac_S.encoder.hdf5",
+  "inputFile": "data/Sun_etal_dataset.pkl",
+  "outputDir": "validation/case_33/results/",
+  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,
