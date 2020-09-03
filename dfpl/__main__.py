@@ -89,6 +89,7 @@ def predict(opts: options.PredictOptions) -> None:
 
     use_compressed = False
     if opts.ecWeightsFile:
+        logging.info(f"Using fingerprint compression with AC {opts.ecWeightsFile}")
         use_compressed = True
         # load trained model for autoencoder
         (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
@@ -141,8 +142,9 @@ def main():
     try:
         if prog_args.method == "convert":
             directory = makePathAbsolute(prog_args.f)
-            logging.info(f"Convert all data files in {directory}")
             if path.isdir(directory):
+                createLogger(path.join(directory, "convert.log"))
+                logging.info(f"Convert all data files in {directory}")
                 fp.convert_all(directory)
             else:
                 raise ValueError("Input directory is not a directory")

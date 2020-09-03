@@ -268,17 +268,17 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                              "original identifiers. If this column is missing, the results are"
                              "numbered in the order of their appearance in the input file."
                              "A header is expected and respective column names are used.",
-                        required=True)
+                        required=False)
     parser.add_argument('--ECmodel', metavar='FILE', type=str,
                         help='The encoder model weights. If provided the fingerprints are compressed prior '
                              'to prediction.',
                         required=False)
     parser.add_argument('--model', metavar='FILE', type=str,
                         help='The model weights of the feed forward network.',
-                        required=True)
+                        required=False)
     parser.add_argument('--target', metavar='STR', type=str,
                         help='The name of the prediction target.',
-                        required=True)
+                        required=False)
     parser.add_argument('-s', type=int,
                         help='Size of fingerprint that should be generated.',
                         default=2048)

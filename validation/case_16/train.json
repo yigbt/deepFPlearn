@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/SunBDBTox21.merged4training.csv",
+  "inputFile": "data/SunBDBTox21.merged4training.pkl",
   "outputDir": "validation/case_16/results/",
   "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
