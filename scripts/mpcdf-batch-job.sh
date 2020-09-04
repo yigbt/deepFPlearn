@@ -1,29 +1,25 @@
 #!/bin/bash -l
 # Standard output and error:
-#SBATCH -o /u/pscheibe/deepFPlearn/tjob.out.%j
-#SBATCH -e /u/pscheibe/deepFPlearn/tjob.err.%j
+#SBATCH -o /u/pscheibe/deepFPlearn/mpcdf_job.out.%j
+#SBATCH -e /u/pscheibe/deepFPlearn/mpcdf_job.err.%j
+#
 # Initial working directory:
 #SBATCH -D /u/pscheibe/deepFPlearn
 #
-#SBATCH -J dfpl_analysis
+#SBATCH -J dfpl
 #
-# Node feature:
 #SBATCH --partition="gpu"
 #SBATCH --constraint="gpu"
-# Specify type and number of GPUs to use:
-#   GPU type can be v100 or rtx5000
 #SBATCH --gres=gpu:v100:2         # If using both GPUs of a node
 #SBATCH --mem=92500
 #
-# Number of nodes and MPI tasks per node:
 #SBATCH --nodes=1
-#SBATCH --ntask=1
+#SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=20
 #
 #SBATCH --mail-type=none
 #SBATCH --mail-user=pscheibe@rzg.mpg.de
 #
-# wall clock limit:
 #SBATCH --time=24:00:00
 module purge
 module load cuda
@@ -34,4 +30,4 @@ conda activate rdkit2019
 conda develop dfpl
 
 # Run the program:
-srun scripts/mpcpf-run.sh > prog.out
+srun scripts/run-all-cases.sh > mpcdf_dfpl_stdout.txt
