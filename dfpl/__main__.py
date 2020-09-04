@@ -116,7 +116,7 @@ def createLogger(filename: str) -> None:
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     # create file handler which logs info messages
-    fh = logging.FileHandler(filename)
+    fh = logging.FileHandler(filename, mode="w")
     fh.setLevel(logging.INFO)
     # create console handler
     ch = logging.StreamHandler()
