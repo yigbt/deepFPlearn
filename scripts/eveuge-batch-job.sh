@@ -5,6 +5,7 @@
 
 # requesting resources
 #$ -l gpu=1
+#$ -binding linear:1
 #$ -l h_rt=168:00:00
 #$ -l h_vmem=8G
 
@@ -22,12 +23,15 @@
 
 module purge
 # use a CUDA-enabled (EasyBuild) toolchain
-module load gcccuda
+#module load gcccuda
 module load fosscuda
 
-module load anaconda/5/5.0.1
-source /global/apps/bioinf/tools/anaconda/5/5.0.1/etc/profile.d/conda.sh
-conda activate rdkit2019
+# activate environment
+module load Anaconda2/2019.10
+source /software/easybuild-broadwell/software/Anaconda2/2019.10/etc/profile.d/conda.sh
+conda activate rdkit_tensorflowGPU_0.1
+# build package
+#conda develop -u dflpl
 conda develop dfpl
 
 # Run the program:
