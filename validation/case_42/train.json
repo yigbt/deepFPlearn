@@ -1,0 +1,18 @@
+{
+  "py/object": "dfpl.options.TrainOptions",
+  "inputFile": "data/T_tox21ChallengeData_4training.csv",
+  "outputDir": "validation/case_42/results/",
+  "ecWeightsFile": "",
+  "type": "smiles",
+  "fpType": "topological",
+  "epochs": 3000,
+  "fpSize": 2048,
+  "encFPSize": 256,
+  "kFolds": 5,
+  "testingFraction": 0.2,
+  "enableMultiLabel": true,
+  "verbose": 2,
+  "trainAC": true,
+  "trainFNN": true,
+  "compressFeatures": true
+}
