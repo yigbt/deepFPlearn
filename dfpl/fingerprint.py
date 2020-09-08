@@ -118,7 +118,8 @@ conversion_rules = {
     "SunBDBTox21.merged4training.csv": importSmilesCSV,
     "dsstox_20160701.tsv": importDstoxTSV,
     "01_combinedSUN-BDB.dataset.4training.csv": importSmilesCSV,
-    "07_BindingDB.trainingSet.csv": importSmilesCSV
+    "07_BindingDB.trainingSet.csv": importSmilesCSV,
+    "T_tox21ChallengeData_4training.csv": importSmilesCSV
 }
 
 

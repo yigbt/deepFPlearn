@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/T_tox21ChallengeData_4training.pkl",
-  "outputDir": "validation/case_41/results/",
-  "ecWeightsFile": "",
+  "outputDir": "validation/case_00/results_AC_T/",
+  "ecWeightsFile": "ac_T.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,
@@ -10,9 +10,9 @@
   "encFPSize": 256,
   "kFolds": 5,
   "testingFraction": 0.2,
-  "enableMultiLabel": true,
+  "enableMultiLabel": false,
   "verbose": 2,
-  "trainAC": false,
-  "trainFNN": true,
-  "compressFeatures": false
+  "trainAC": true,
+  "trainFNN": false,
+  "compressFeatures": true
 }
