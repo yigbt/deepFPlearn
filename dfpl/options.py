@@ -4,7 +4,7 @@ import jsonpickle
 import argparse
 from pathlib import Path
 
-from utils import makePathAbsolute
+from dfpl.utils import makePathAbsolute
 
 
 @dataclass

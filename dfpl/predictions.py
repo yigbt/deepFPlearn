@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 import logging
 
-import options
-import feedforwardNN as fNN
-import settings
+from dfpl import options
+from dfpl import feedforwardNN as fNN
+from dfpl import settings
 
 
 def predict_values(df: pd.DataFrame,

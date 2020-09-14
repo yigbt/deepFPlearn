@@ -24,10 +24,10 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import auc
 from sklearn.metrics import f1_score
 
-import options
-import autoencoder as ac
-import history as ht
-import settings
+from dfpl import options
+from dfpl import autoencoder as ac
+from dfpl import history as ht
+from dfpl import settings
 
 from time import time
 

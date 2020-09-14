@@ -13,8 +13,8 @@ from functools import partial
 from typing import Callable
 import logging
 
-import settings
-
+# import settings
+from dfpl import settings
 default_fp_size = 2048
 
 
