@@ -20,4 +20,4 @@
 #$ -M jana.schor@ufz.de
 
 # Train case_01
-singularity run --nv /global/apps/bioinf/singularity_images/conda_rdkit2019.sif "python -m dfpl train -f /home/hertelj/git-hertelj/code/deepFPlearn/validation/case_02/train.json"
+singularity run --nv /global/apps/bioinf/singularity_images/conda_rdkit2019.sif "python -m dfpl train -f /home/hertelj/git-hertelj/code/deepFPlearn/validation/case_02/trainEVE.json"
