@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "data/T_tox21ChallengeData_4training.pkl",
   "outputDir": "validation/case_42/results/",
-  "ecWeightsFile": "",
+  "ecWeightsFile": "validation/case_00/results_AC_T/ac_T.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,
@@ -12,7 +12,7 @@
   "testingFraction": 0.2,
   "enableMultiLabel": true,
   "verbose": 2,
-  "trainAC": true,
+  "trainAC": false,
   "trainFNN": true,
   "compressFeatures": true
 }
