@@ -9,7 +9,6 @@
 #$ -l gpu=1
 #$ -binding linear:1
 
-
 # Standard output and error:
 #$ -o /work/$USER/$JOB_NAME-$JOB_ID.out
 #$ -e /work/$USER/$JOB_NAME-$JOB_ID.err
@@ -27,9 +26,9 @@ module purge
 #module load gcccuda
 module load fosscuda
 
-module load Anaconda2/2019.10 
+module load Anaconda2/2019.10
 source /software/easybuild-broadwell/software/Anaconda2/2019.10/etc/profile.d/conda.sh
-conda activate rdkit2019TF 
+conda activate rdkit2019TF
 #conda develop -u dfpl
 conda develop dfpl
 
