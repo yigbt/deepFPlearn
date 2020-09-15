@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/T_tox21ChallengeData_4training.csv",
+  "inputFile": "data/T_tox21ChallengeData_4training.pkl",
   "outputDir": "validation/case_42/results/",
   "ecWeightsFile": "",
   "type": "smiles",

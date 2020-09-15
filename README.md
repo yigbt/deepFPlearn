@@ -110,7 +110,7 @@ train_opts = opts.TrainOptions()
 train_opts.saveToFile("train.json")
 
 predict_opts = opts.PredictOptions()
-predict_opts.saveToFile("predict.json")
+predict_opts.saveToFile("predict_bestER03.json")
 ```
 
 You can also work with the DFPL package from within an interactive Python session.
