@@ -1,0 +1,47 @@
+Bootstrap: localimage
+From: ./tensorflow_latest-gpu.sif
+
+# If you want to use the tensorflow base container from the repo, use this header:
+# Bootstrap: docker
+# From: tensorflow/tensorflow:latest-gpu
+
+
+%files
+    environment.yml
+    dfpl-0.1-py3-none-any.whl
+    
+%post
+    NOW=`date`
+    CONDA_DIR=/opt/local/miniconda3
+    echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
+    echo "export CONDA_DIR=\"${CONDA_DIR}\"" >> $SINGULARITY_ENVIRONMENT
+
+    apt-get update
+    apt-get install -y bash
+    apt-get install -y wget
+    apt-get install -y tar
+    apt-get install -y bzip2
+    apt-get install -y git
+
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p $CONDA_DIR
+    $CONDA_DIR/bin/conda update -n base -c defaults conda
+    $CONDA_DIR/bin/conda install conda-build
+    $CONDA_DIR/bin/conda env create -f environment.yml
+
+    /bin/bash -c ". $CONDA_DIR/etc/profile.d/conda.sh; conda activate rdkit2019; python -m pip install ./dfpl-0.1-py3-none-any.whl"
+
+    echo "## Activate rdkit2019 environment" >> /.start_dfpl_env
+    echo "source $CONDA_DIR/etc/profile.d/conda.sh" >> /.start_dfpl_env
+    echo "conda activate rdkit2019" >> /.start_dfpl_env
+
+
+%environment
+    CONDA_DIR=/opt/local/miniconda3
+
+%runscript
+    echo "This is an Ubuntu Container with Tensorflow and DFPL"
+    /bin/bash -c "source /.start_dfpl_env; $@"
+
+
+

@@ -12,9 +12,9 @@ from keras import optimizers
 from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
-import options
-import history as ht
-import settings
+from dfpl import options
+from dfpl import history as ht
+from dfpl import settings
 
 
 def define_ac_model(

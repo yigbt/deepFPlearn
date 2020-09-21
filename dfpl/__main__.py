@@ -4,12 +4,12 @@ import pathlib
 import dataclasses
 from os import path
 
-import options
-from utils import makePathAbsolute, createDirectory
-import fingerprint as fp
-import autoencoder as ac
-import feedforwardNN as fNN
-import predictions
+from dfpl.utils import makePathAbsolute, createDirectory
+from dfpl import options
+from dfpl import fingerprint as fp
+from dfpl import autoencoder as ac
+from dfpl import feedforwardNN as fNN
+from dfpl import predictions
 
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
