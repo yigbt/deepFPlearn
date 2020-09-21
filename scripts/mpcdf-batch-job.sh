@@ -30,4 +30,4 @@ conda activate rdkit2019
 conda develop dfpl
 
 # Run the program:
-srun scripts/run-all-cases.sh > mpcdf_dfpl_stdout.txt
+srun scripts/run-all-publication-cases.sh > mpcdf_dfpl_stdout.txt

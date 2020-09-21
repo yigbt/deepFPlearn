@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Calculates fingerprints"""
+"""Calculate fingerprints"""
 import os
 from os.path import isfile, join
 
@@ -20,11 +20,9 @@ default_fp_size = 2048
 
 def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
     """
-    Adds a fingerprint to each row in the dataframe. This function is
-    intended to be called in parallel chunks of the original dataframe.
-
-    :param data_frame: Input dataframe that needs to have a "smiles"
-    or a "inchi" column
+    Adds a fingerprint to each row in the dataframe. This function works on
+    parallel chunks of the original dataframe.
+    :param data_frame: Input dataframe that needs to have a "smiles" or an "inchi" column
     :param fp_size: Number of bits in the fingerprint
     :return: The dataframe with an additional "fp" column
     """
@@ -120,7 +118,7 @@ conversion_rules = {
     "01_combinedSUN-BDB.dataset.4training.csv": importSmilesCSV,
     "07_BindingDB.trainingSet.csv": importSmilesCSV,
     "T_tox21ChallengeData_4training.csv": importSmilesCSV,
-    "S_dataset_extended.csv":importSmilesCSV
+    "S_dataset_extended.csv": importSmilesCSV
 }
 
 
