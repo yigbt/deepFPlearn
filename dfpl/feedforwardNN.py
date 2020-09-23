@@ -480,7 +480,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     """
 
     # find target columns
-    names_y = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if c not in ['cid', 'id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
     # For each individual target train a model
     for target in names_y:  # [:2]:
