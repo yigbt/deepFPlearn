@@ -1,7 +1,7 @@
 # workflow adapted from
 # https://github.com/singularityhub/github-ci
 name: Singularity Build (docker)
-on: [push]
+on: [push, pull_request]
 jobs:
 
   build:
