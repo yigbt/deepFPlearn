@@ -25,7 +25,8 @@ jobs:
       run: |
        ls
        if [ -f "${SINGULARITY_RECIPE}" ]; then
-           singularity build ${OUTPUT_CONTAINER} ${SINGULARITY_RECIPE}
+           cd $(dirname ${SINGULARITY_RECIPE})
+           singularity build ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
            echo "${SINGULARITY_RECIPE} built successfully"
        else
            echo "${SINGULARITY_RECIPE} is not found."
