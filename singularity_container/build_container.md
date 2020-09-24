@@ -15,44 +15,15 @@ All other steps are as pointed out in the documentation linked above.
 
 Building the container using the provided `conda_rdkit2019.def` definition file requires only a few steps:
 
-1. Download the `tensorflow` base container which gives us many requirements for free
-2. Build a package from the DFPL sources, because DFPL will be installed inside the container
-3. (Optionally) Make some adjustments to the `.def` file
-3. Run the container build command
+1. (Optionally) Make some adjustments to the `.def` file
+2. Run the container build command
 
-## 1. Download Tensorflow base container
+## 1. Make some adjustments to the `.def` file
 
-Actually, it is not strictly necessary to download the Tensorflow base-container.
-However, for testing this speeds up the process since you only download it once and can use your local copy everytime
-you need to rebuild your container.
-Additionally, the `.def` file is set up to use the `tensorflow_latest-gpu.sif` file from the same directory.
-Therefore, from within the `singularity_container` directory, execute
-```shell script
-singularity pull docker://tensorflow/tensorflow:latest-gpu
-```
+You can adjust this file to your liking, e.g. adjust the conda environment that build inside the container
+and which is defined in the file `environment.yml`.
 
-This will save the downloaded `.sif` file.
-
-## 2. Building the DFPL package
-
-You need Python 3 for this with things like `setuptools` installed.
-The easiest way is to do this from within the conda `rdkit2019` environment if you have created it locally
-From the `deepFPlearn` directory, the following command will pack DFPL and write the output to the `singularity_container`
-directory.
-
-```shell script
-python setup.py bdist_wheel -d singularity_container
-```
-
-After this, you should have a `dfpl-XX.XX-py3-none-any.whl` file in the `singularity_container` directory.
-
-## 3. Make some adjustments to the `.def` file
-
-You can adjust this file to your liking, however, one important step is to verify that the file-name of DFPL package
-at the top of the `.def` file matches the `.whl` file you created in step 2.
-Also, the definitions for the conda `rdkit2019` environment are in the file `environment.yml`.
-
-## 4. Run the container build command
+## 2. Run the container build command
 
 Building the container needs to be done with sudo rights.
 From within the `singularity_container` directory, run the following commands:
