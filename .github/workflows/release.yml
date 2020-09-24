@@ -27,6 +27,7 @@ jobs:
        if [ -f "${SINGULARITY_RECIPE}" ]; then
            cd $(dirname ${SINGULARITY_RECIPE})
            singularity build ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
+           echo "${SINGULARITY_RECIPE} built successfully"
        else
            echo "${SINGULARITY_RECIPE} is not found."
            echo "Present working directory: $PWD"
