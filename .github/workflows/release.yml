@@ -23,8 +23,6 @@ jobs:
         SINGULARITY_RECIPE: singularity_container/conda_rdkit2019.def
         OUTPUT_CONTAINER: deepFPlearn.sif
       run: |
-       python setup.py bdist_wheel -d singularity_container
-       ls
        if [ -f "${SINGULARITY_RECIPE}" ]; then
            cd $(dirname ${SINGULARITY_RECIPE})
            singularity build ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
