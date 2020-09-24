@@ -1,5 +1,5 @@
-Bootstrap: localimage
-From: ./tensorflow_latest-gpu.sif
+Bootstrap: docker
+From: tensorflow/tensorflow:latest-gpu
 
 # If you want to use the tensorflow base container from the repo, use this header:
 # Bootstrap: docker
