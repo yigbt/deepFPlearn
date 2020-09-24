@@ -22,6 +22,7 @@ From: tensorflow/tensorflow:latest-gpu
     apt-get install -y tar
     apt-get install -y bzip2
     apt-get install -y git
+    apt-get install -y pip
 
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
     bash Miniconda3-latest-Linux-x86_64.sh -b -p $CONDA_DIR
@@ -29,7 +30,7 @@ From: tensorflow/tensorflow:latest-gpu
     $CONDA_DIR/bin/conda install conda-build
     $CONDA_DIR/bin/conda env create -f environment.yml
 
-    /bin/bash -c ". $CONDA_DIR/etc/profile.d/conda.sh; conda activate rdkit2019; python -m pip install ./dfpl-0.1-py3-none-any.whl"
+    /bin/bash -c ". $CONDA_DIR/etc/profile.d/conda.sh; conda activate rdkit2019; python -m pip install ."
 
     echo "## Activate rdkit2019 environment" >> /.start_dfpl_env
     echo "source $CONDA_DIR/etc/profile.d/conda.sh" >> /.start_dfpl_env
