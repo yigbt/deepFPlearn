@@ -1,12 +1,11 @@
 name: rdkit2019
 channels:
-  - defaults
   - conda-forge
   - bioconda
-  - r
-  - anaconda
+  - defaults
 dependencies:
-  - tensorflow-gpu
+  - conda
+##  - tensorflow-gpu
   - ncurses
   - numpy
   - pcre
@@ -16,12 +15,12 @@ dependencies:
   - python
   - rdkit
   - seaborn
-  - tensorboard
+#   - tensorboard
   - yaml
   - markdown
-  - scipy
+#   - scipy
   - pip
-  - scikit-learn
+##   - scikit-learn
   - pandas
   - keras
   - jsonpickle

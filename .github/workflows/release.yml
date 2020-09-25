@@ -20,8 +20,8 @@ jobs:
 
     - name: Build Container
       env:
-        SINGULARITY_RECIPE: singularity_container/dfpl.def
-        OUTPUT_CONTAINER: dfpl.sif
+        SINGULARITY_RECIPE: singularity_container/multi.def
+        OUTPUT_CONTAINER: multi.sif
       run: |
        df -h
        if [ -f "${SINGULARITY_RECIPE}" ]; then
