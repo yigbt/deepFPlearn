@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         singularity_version:
-          - '3.6.2'
+          - '3.6.2-slim'
     container:
       image: quay.io/singularity/singularity:v${{ matrix.singularity_version }}
       options: --privileged
@@ -20,8 +20,8 @@ jobs:
 
     - name: Build Container
       env:
-        SINGULARITY_RECIPE: singularity_container/conda_rdkit2019.def
-        OUTPUT_CONTAINER: deepFPlearn.sif
+        SINGULARITY_RECIPE: singularity_container/dfpl.def
+        OUTPUT_CONTAINER: dfpl.sif
       run: |
        df -h
        if [ -f "${SINGULARITY_RECIPE}" ]; then
