@@ -20,15 +20,15 @@ jobs:
 
     - name: Build Container
       env:
-        SINGULARITY_RECIPE: singularity_container/multi.def
-        OUTPUT_CONTAINER: multi.sif
+        SINGULARITY_RECIPE: singularity_container/conda_rdkit2019.def
+        OUTPUT_CONTAINER: conda_rdkit2019.sif
       run: |
        df -h
        if [ -f "${SINGULARITY_RECIPE}" ]; then
            cd $(dirname ${SINGULARITY_RECIPE})
            singularity build ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
            echo "${SINGULARITY_RECIPE} built successfully"
-           ls -la 
+           ls -lh 
        else
            echo "${SINGULARITY_RECIPE} is not found."
            echo "Present working directory: $PWD"
