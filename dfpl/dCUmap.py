@@ -60,14 +60,22 @@ df = fp.importDataFile("data/S_dataset_extended.pkl")
 df2 = np.array(df[df['fp'].notnull()]['fp'].to_list())
 er = df[df['fp'].notnull()]['ER'].fillna(-1)
 
-def label_target(row):
-    if row[]
-
 fit = umap.UMAP(metric="jaccard")
 %time u = fit.fit_transform(df2)
 
 plt.title("UMAP projection of Sun et al dataset using jaccard metric")
 plt.scatter(u[:,0], u[:,1],
             c=[sns.color_palette()[x] for x in er.map({-1.0:0, 0.0:1, 1.0:2})])
+# plt.legend(loc='upper right')
+plt.show()
+
+df_d = fp.importDataFile("data/dsstox_20160701.pkl")
+df_d2 = np.array(df_d[df_d['fp'].notnull()]['fp'].to_list())
+
+fit_d = umap.UMAP(metric="jaccard")
+%time u_d = fit_d.fit_transform(df_d2)
+
+plt.title("UMAP projection of Sun et al dataset using jaccard metric")
+plt.scatter(u[:,0], u[:,1])
 # plt.legend(loc='upper right')
 plt.show()

@@ -75,7 +75,7 @@ opts = opt.PredictOptions(
 )
 
 (_, encoder) = ac.define_ac_model(input_size=2048, encoding_dim=256)
-encoder.load_weights("/home/hertelj/git-hertelj/deepFPlearn_CODE/validation/case_00/results_AC_D/ac_D.encoder.hdf5")
+encoder.load_weights("/home/hertelj/git-hertelj/deepFPlearn_CODE/modeltraining/Sun_etal_dataset.encoder.hdf5")
 data = ac.compress_fingerprints(dfS, encoder)
 s_compressed = data[data['cid'].isin(cid_of_interest)]['fpcompressed']
 

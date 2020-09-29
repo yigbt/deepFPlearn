@@ -136,10 +136,11 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
     if opts.ecWeightsFile == "":
         logging.info("No AC encoder weights file specified")
         base_file_name = os.path.splitext(basename(opts.inputFile))[0]
+        logging.info(f"(auto)encoder weights will be saved in {base_file_name}.[auto]encoder.hdf5")
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
         ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.hdf5")
     else:
-        logging.info(f"AC encoder will be saved")
+        logging.info(f"AC encoder will be saved in {opts.ecWeightsFile}")
         base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
         ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
@@ -192,6 +193,7 @@ def compress_fingerprints(dataframe: pd.DataFrame,
                          dtype=settings.ac_fp_numpy_type,
                          copy=settings.numpy_copy_values)
     logging.info(f"Using input matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
-    dataframe['fpcompressed'] = pd.Series([pd.Series(s) for s in encoder.predict(fp_matrix)])
+    logging.info("Compressed fingerprints are added to input dataframe.")
+    dataframe['fpcompressed'] = [f for f in encoder.predict(fp_matrix)]
 
     return dataframe

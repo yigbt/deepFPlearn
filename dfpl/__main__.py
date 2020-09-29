@@ -82,6 +82,7 @@ def predict(opts: options.PredictOptions) -> None:
     :param opts: Options defining the details of the prediction
     """
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)
