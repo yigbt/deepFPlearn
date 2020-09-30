@@ -1,0 +1,64 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+Stage: build
+
+%files
+    environment.yml
+
+%post
+  CONDA_DIR=/opt/conda/
+
+  # prep environment
+  bash -c ". /etc/profile.d/conda.sh; conda env create -f environment.yml"
+
+  # Install conda-pack:
+  bash -c ". /etc/profile.d/conda.sh; conda install -c conda-forge conda-pack"
+
+  # Use conda-pack to create a standalone enviornment
+  # in /venv:
+  bash -c ". /etc/profile.d/conda.sh; conda info"
+  bash -c ". /etc/profile.d/conda.sh; conda env list"
+
+  bash -c ". /etc/profile.d/conda.sh; conda activate base; conda-pack -n rdkit2019 -o /tmp/env.tar"
+  mkdir /venv && cd /venv && tar xf /tmp/env.tar && \
+  rm /tmp/env.tar
+
+  # We've put venv in same path it'll be in final image,
+  # so now fix up paths:
+  /venv/bin/conda-unpack
+
+
+Bootstrap: docker
+From: tensorflow/tensorflow:latest-gpu
+Stage: final
+
+# install binary from stage one
+%files from build
+  /venv /venv
+
+%files
+    .. /deepFPlearn
+
+%post
+    NOW=`date`
+    CONDA_DIR=/venv
+    echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
+    echo "export CONDA_DIR=\"${CONDA_DIR}\"" >> $SINGULARITY_ENVIRONMENT
+
+    /bin/bash -c ". $CONDA_DIR/etc/profile.d/conda.sh; conda activate /venv; python -m pip install /deepFPlearn"
+
+    echo "## Activate rdkit2019 environment" >> /.start_dfpl_env
+    echo "source $CONDA_DIR/etc/profile.d/conda.sh" >> /.start_dfpl_env
+    echo "conda activate /venv" >> /.start_dfpl_env
+    df -h
+    du -hs /venv
+
+%environment
+    CONDA_DIR=/opt/local/miniconda3
+
+%runscript
+    echo "This is an Ubuntu Container with Tensorflow and DFPL"
+    /bin/bash -c "source /.start_dfpl_env; $@"
+
+
+

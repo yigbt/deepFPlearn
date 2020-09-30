@@ -1,0 +1,20 @@
+Bootstrap: docker
+From: tensorflow/tensorflow:latest-gpu
+
+%files
+    .. /deepFPlearn
+
+%post
+    NOW=`date`
+    echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
+    apt-get install -y --no-install-recommends python-rdkit librdkit1 rdkit-data
+
+    python3 -m pip install /deepFPlearn
+    python3 -m pip install numpy matplotlib pytest seaborn markdown pandas jsonpickle Keras
+
+%runscript
+    echo "This is an Ubuntu Container with Tensorflow and DFPL"
+    /bin/bash -c "source /.start_dfpl_env; $@"
+
+
+

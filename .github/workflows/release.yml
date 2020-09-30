@@ -1,0 +1,36 @@
+# workflow adapted from
+# https://github.com/singularityhub/github-ci
+name: Singularity Build (docker)
+on: [push, pull_request]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        singularity_version:
+          - '3.6.2-slim'
+    container:
+      image: quay.io/singularity/singularity:v${{ matrix.singularity_version }}
+      options: --privileged
+    steps:
+    - name: Check out code for the container build
+      uses: actions/checkout@v1
+
+    - name: Build Container
+      env:
+        SINGULARITY_RECIPE: singularity_container/conda_dfpl.def
+        OUTPUT_CONTAINER: conda_dfpl.sif
+      run: |
+       df -h
+       if [ -f "${SINGULARITY_RECIPE}" ]; then
+           cd $(dirname ${SINGULARITY_RECIPE})
+           singularity build ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
+           echo "${SINGULARITY_RECIPE} built successfully"
+           ls -lh 
+       else
+           echo "${SINGULARITY_RECIPE} is not found."
+           echo "Present working directory: $PWD"
+           ls
+       fi
