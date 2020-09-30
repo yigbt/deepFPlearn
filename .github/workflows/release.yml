@@ -20,8 +20,8 @@ jobs:
 
     - name: Build Container
       env:
-        SINGULARITY_RECIPE: singularity_container/conda_rdkit2019.def
-        OUTPUT_CONTAINER: conda_rdkit2019.sif
+        SINGULARITY_RECIPE: singularity_container/conda_dfpl.def
+        OUTPUT_CONTAINER: conda_dfpl.sif
       run: |
        df -h
        if [ -f "${SINGULARITY_RECIPE}" ]; then

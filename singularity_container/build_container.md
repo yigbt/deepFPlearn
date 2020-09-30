@@ -30,7 +30,7 @@ From within the `singularity_container` directory, run the following commands:
 
 ```shell script
 SING=$(command -v singularity)
-sudo $SING build conda_rdkit2019.sif conda_rdkit2019.def
+sudo $SING build conda_dfpl.sif conda_dfpl.def
 ```
 
 # Using the DFPL container
@@ -40,19 +40,19 @@ In `run` mode, the container will automatically activate the `rdkit2019` conda e
 easily run the DFPL package:
 
 ```shell script
-singularity run --nv singularity_container/conda_rdkit2019.sif "python -m dfpl convert -f \"data\""
+singularity run --nv singularity_container/conda_dfpl.sif "python -m dfpl convert -f \"data\""
 ```
 
 or you can run all cases using
 
 ```shell script
-singularity run --nv singularity_container/conda_rdkit2019.sif ". ./scripts/run-all-cases.sh"
+singularity run --nv singularity_container/conda_dfpl.sif ". ./scripts/run-all-cases.sh"
 ```
 
 It's also possible to get an interactive shell into the container
 
 ```shell script
-singularity shell --nv singularity_container/conda_rdkit2019.sif
+singularity shell --nv singularity_container/conda_dfpl.sif
 ```
 
 To activate the `rdkit2019` conda environment, you can run the following inside the container shell

@@ -1,11 +1,6 @@
 Bootstrap: docker
 From: tensorflow/tensorflow:latest-gpu
 
-# If you want to use the tensorflow base container from the repo, use this header:
-# Bootstrap: docker
-# From: tensorflow/tensorflow:latest-gpu
-
-
 %files
     environment.yml
     .. /deepFPlearn
@@ -33,11 +28,11 @@ From: tensorflow/tensorflow:latest-gpu
     df -h
     $CONDA_DIR/bin/conda env create -f environment.yml
 
-    /bin/bash -c ". $CONDA_DIR/etc/profile.d/conda.sh; conda activate rdkit2019; python -m pip install /deepFPlearn"
+    /bin/bash -c ". $CONDA_DIR/etc/profile.d/conda.sh; conda activate dfpl_env; python -m pip install /deepFPlearn"
 
-    echo "## Activate rdkit2019 environment" >> /.start_dfpl_env
+    echo "## Activate dfpl environment" >> /.start_dfpl_env
     echo "source $CONDA_DIR/etc/profile.d/conda.sh" >> /.start_dfpl_env
-    echo "conda activate rdkit2019" >> /.start_dfpl_env
+    echo "conda activate dfpl_env" >> /.start_dfpl_env
     df -h
 
 
