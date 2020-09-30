@@ -4,32 +4,59 @@
 # Importantly, the conda environment needs to be set up and actived! For certain machines/HPC,
 # we have a batch-job that does exactly that and then calls this file
 
-D="data"; if [ -d $D ] python -m dfpl convert -f $D; fi
+function log_error() {
+  echo "$@" 1>&2
+}
 
-F="validation/case_00/train_AC_S.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_00/train_AC_D.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+function call_convert() {
+  if [ -d "$1" ]; then
+    python -m dfpl convert -f "$1"
+  else
+    log_error "Could not find directory for data conversion $1"
+  fi
+}
 
-F="validation/case_01/train.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_02/train.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_03/train.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+function call_train() {
+  if [ -f "$1" ]; then
+    python -m dfpl train -f "$1"
+  else
+    log_error "Could not find training file $1"
+  fi
+}
 
-F="validation/case_07/predict_bestER03_Sdata.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_07/predict_bestER03.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_07/predict_fullER03.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-#F="validation/case_07/predict_bestARext03.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_07/predict_bestED03.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+function call_predict() {
+  if [ -f "$1" ]; then
+    python -m dfpl predict -f "$1"
+  else
+    log_error "Could not find prediction file $1"
+  fi
+}
 
-F="validation/case_01/train_0p5.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_01/train_0p6.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_01/train_0p7.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_01/train_0p8.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_01/train_0p9.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_01/train_1p0.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+call_convert "data"
 
-F="validation/case_02/train_0p5.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_02/train_0p6.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_02/train_0p7.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_02/train_0p8.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_02/train_0p9.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F="validation/case_02/train_1p0.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+call_train "validation/case_00/train_AC_S.json"
+call_train "validation/case_00/train_AC_D.json"
 
+call_train "validation/case_01/train.json"
+call_train "validation/case_02/train.json"
+
+call_train "validation/case_03/train.json"
+
+call_predict "validation/case_07/predict_bestAR03.json"
+call_predict "validation/case_07/predict_bestED03.json"
+call_predict "validation/case_07/predict_bestER03.json"
+call_predict "validation/case_07/predict_fullER03.json"
+
+call_train "validation/case_01/train_0p5.json"
+call_train "validation/case_01/train_0p6.json"
+call_train "validation/case_01/train_0p7.json"
+call_train "validation/case_01/train_0p8.json"
+call_train "validation/case_01/train_0p9.json"
+call_train "validation/case_01/train_1p0.json"
+
+call_train "validation/case_02/train_0p5.json"
+call_train "validation/case_02/train_0p6.json"
+call_train "validation/case_02/train_0p7.json"
+call_train "validation/case_02/train_0p8.json"
+call_train "validation/case_02/train_0p9.json"
+call_train "validation/case_02/train_1p0.json"
