@@ -194,6 +194,9 @@ def compress_fingerprints(dataframe: pd.DataFrame,
                          copy=settings.numpy_copy_values)
     logging.info(f"Using input matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
     logging.info("Compressed fingerprints are added to input dataframe.")
-    dataframe['fpcompressed'] = [f for f in encoder.predict(fp_matrix)]
+    dataframe = pd.concat([dataframe, pd.DataFrame({'fpcompressed': [s for s in encoder.predict(fp_matrix)]})], axis=1)
+    # df['fpc'] = pd.DataFrame({'fpc':[s for s in z]})
+    # dataframe[dataframe["fp"].notnull()]['fpcompressed'] = pd.DataFrame({'fpc': [s for s in encoder.predict(fp_matrix)]})
+    # dataframe['fpcompressed'] = [f for f in encoder.predict(fp_matrix)]
 
     return dataframe
