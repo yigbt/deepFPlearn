@@ -23,7 +23,6 @@
 #SBATCH --time=24:00:00
 module purge
 module load cuda
-module load anaconda/3/2020.02
 
 source $ANACONDA_HOME/etc/profile.d/conda.sh
 conda activate dfpl_env
