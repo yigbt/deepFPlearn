@@ -1,0 +1,9 @@
+{
+  "py/object": "dfpl.options.PredictOptions",
+  "inputFile": "data/dsstox_20160701.pkl",
+  "outputDir": "validation/case_07_D/results_fullAR03/",
+  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "model": "validation/case_03/results/AR_compressed-True_sampled-None.full.FNN.model.hdf5",
+  "type": "smiles",
+  "fpType": "topological"
+}

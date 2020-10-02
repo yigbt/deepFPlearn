@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/Sun_etal_dataset.pkl",
-  "outputDir": "validation/case_11/results/",
-  "ecWeightsFile": "",
+  "inputFile": "data/S_extended_subset.pkl",
+  "outputDir": "validation/case_03_Sext/results/",
+  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 3000,
@@ -14,6 +14,5 @@
   "verbose": 2,
   "trainAC": false,
   "trainFNN": true,
-  "compressFeatures": false,
-  "sampleFractionOnes": 0.5
+  "compressFeatures": true
 }

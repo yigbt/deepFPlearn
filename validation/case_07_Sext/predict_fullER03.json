@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.PredictOptions",
-  "inputFile": "data/dsstox_20160701.pkl",
-  "outputDir": "validation/case_07/results_fullER03/",
+  "inputFile": "data/S_extended_subset.pkl",
+  "outputDir": "validation/case_07_Sext/results_fullER03/",
   "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "model": "validation/case_03/results/ER_compressed-True_sampled-None.full.FNN.model.hdf5",
   "type": "smiles",
