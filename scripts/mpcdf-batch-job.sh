@@ -24,7 +24,7 @@
 module purge
 module load cuda
 
-source $ANACONDA_HOME/etc/profile.d/conda.sh
+source /u/pscheibe/conda/etc/profile.d/conda.sh
 conda activate dfpl_env
 conda develop dfpl
 
