@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/S_extended_subset.pkl",
+  "inputFile": "data/S_dataset_extended.pkl",
   "outputDir": "validation/case_03_Sext/results/",
   "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",

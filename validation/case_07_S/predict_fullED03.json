@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.PredictOptions",
-  "inputFile": "data/Sun_etal_dataset.pkl",
+  "inputFile": "data/S_dataset.pkl",
   "outputDir": "validation/case_07_S/results_fullED03/",
   "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "model": "validation/case_03_S/results/ED_compressed-True_sampled-None.full.FNN.model.hdf5",

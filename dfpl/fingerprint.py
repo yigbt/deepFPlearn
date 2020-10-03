@@ -112,9 +112,9 @@ def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
 
 
 conversion_rules = {
-    "Sun_etal_dataset.csv": importSmilesCSV,
-    "dsstox_20160701.tsv": importDstoxTSV,
-    "S_extended_subset.csv": importSmilesCSV
+    "S_dataset.csv": importSmilesCSV,
+    "S_dataset_extended.csv": importSmilesCSV,
+    "D_dataset.tsv": importDstoxTSV
 }
 
 
