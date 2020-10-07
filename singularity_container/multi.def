@@ -19,7 +19,7 @@ Stage: build
   bash -c ". /etc/profile.d/conda.sh; conda info"
   bash -c ". /etc/profile.d/conda.sh; conda env list"
 
-  bash -c ". /etc/profile.d/conda.sh; conda activate base; conda-pack -n rdkit2019 -o /tmp/env.tar"
+  bash -c ". /etc/profile.d/conda.sh; conda activate base; conda-pack -n dfpl_env -o /tmp/env.tar"
   mkdir /venv && cd /venv && tar xf /tmp/env.tar && \
   rm /tmp/env.tar
 
