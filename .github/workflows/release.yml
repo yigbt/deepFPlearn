@@ -20,8 +20,8 @@ jobs:
 
     - name: Build Container
       env:
-        SINGULARITY_RECIPE: singularity_container/conda_dfpl.def
-        OUTPUT_CONTAINER: conda_dfpl.sif
+        SINGULARITY_RECIPE: singularity_container/multi.def
+        OUTPUT_CONTAINER: multi.sif
       run: |
        df -h
        if [ -f "${SINGULARITY_RECIPE}" ]; then
@@ -34,3 +34,7 @@ jobs:
            echo "Present working directory: $PWD"
            ls
        fi
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Container
+        path: multi.sif
