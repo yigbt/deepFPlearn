@@ -47,7 +47,7 @@ Stage: final
 
     /bin/bash -c ". $CONDA_DIR/etc/profile.d/conda.sh; conda activate /venv; python -m pip install /deepFPlearn"
 
-    echo "## Activate rdkit2019 environment" >> /.start_dfpl_env
+    echo "## Activate dfpl_env conda environment" >> /.start_dfpl_env
     echo "source $CONDA_DIR/etc/profile.d/conda.sh" >> /.start_dfpl_env
     echo "conda activate /venv" >> /.start_dfpl_env
     df -h
