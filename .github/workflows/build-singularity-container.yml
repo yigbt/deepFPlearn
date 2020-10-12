@@ -1,9 +1,9 @@
-name: Singularity Build (native)
+name: Build DFPL Singularity Container
 on: [push]
 jobs:
 
   build:
-    name: Build
+    name: Install Base System
     runs-on: ubuntu-20.04
     steps:
 
@@ -45,15 +45,14 @@ jobs:
         cd ..
         rm -rf singularity
 
-    - name: Check out code for the container build
+    - name: Fetch DFPL Code from GitHub
       uses: actions/checkout@v1
 
-    - name: Build Container
+    - name: Build DFPL Singularity Container
       env:
-        SINGULARITY_RECIPE: singularity_container/conda_dfpl.def
-        OUTPUT_CONTAINER: conda_dfpl.sif
+        SINGULARITY_RECIPE: singularity_container/dfpl.def
+        OUTPUT_CONTAINER: dfpl.sif
       run: |
-       df -h
        if [ -f "${SINGULARITY_RECIPE}" ]; then
            cd $(dirname ${SINGULARITY_RECIPE})
            sudo singularity build ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
@@ -62,13 +61,11 @@ jobs:
            echo "${SINGULARITY_RECIPE} is not found."
            echo "Present working directory: $PWD"
        fi
-    - name: Deploy Container to Sylabs
+    - name: Deploy DFPL Container to Sylabs
       env:
         SINGULARITY_TOKEN: ${{ secrets.SINGULARITY_TOKEN }}
-        SINGULARITY_CONTAINER: singularity_container/conda_dfpl.sif
+        SINGULARITY_CONTAINER: singularity_container/dfpl.sif
       run: |
-        pwd
-        singularity remote list
         echo ${SINGULARITY_TOKEN} | singularity remote login
         singularity remote status
         singularity push -U ${SINGULARITY_CONTAINER} library://mai00fti/default/dfpl.sif:latest
