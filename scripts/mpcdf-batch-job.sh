@@ -26,7 +26,7 @@ module load cuda
 module load anaconda/3/2020.02
 
 source $ANACONDA_HOME/etc/profile.d/conda.sh
-conda activate rdkit2019
+conda activate dfpl_env
 conda develop dfpl
 
 # Run the program:
