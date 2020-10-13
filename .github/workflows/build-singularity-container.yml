@@ -1,5 +1,5 @@
 name: Build DFPL Singularity Container
-on: [push]
+on: [release]
 jobs:
 
   build:
