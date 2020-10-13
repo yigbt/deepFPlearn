@@ -14,28 +14,28 @@ from dfpl import predictions
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
 test_train_args = options.TrainOptions(
-    inputFile=f"{project_directory}/data/Sun_etal_dataset.csv",
+    inputFile=f"{project_directory}/data/Sun_etal_dataset.pkl",
     outputDir=f"{project_directory}/modeltraining",
     ecWeightsFile="",
     type='smiles',
     fpType='topological',
-    epochs=512,
+    epochs=3000,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
     testingFraction=0.2,
     kFolds=5,
     verbose=2,
-    trainAC=False,
+    trainAC=True,
     trainFNN=True,
-    sampleFractionOnes=0.5
+    compressFeatures=True
 )
 
 
 test_predict_args = options.PredictOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
     outputDir=f"{project_directory}/validation/case_01/results/",
-    ecWeightsFile=f"{project_directory}/validation/case_01/results/Sun_etal_dataset.AC.encoder.weights.hdf5",
+    ecWeightsFile=f"/home/hertelj/git-hertelj/deepFPlearn_CODE/validation/case_00/results_AC_S/ac_S.encoder.hdf5",
     model=f"{project_directory}/validation/case_01/results/AR_compressed-True.full.FNN-.model.hdf5",
     target="AR",
     fpSize=2048,
@@ -49,17 +49,20 @@ def train(opts: options.TrainOptions):
     Run the main training procedure
     :param opts: Options defining the details of the training
     """
+
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)
 
-    if opts.compressFeatures:  # compress features
+    encoder = None
+    if opts.trainAC:
+        # train an autoencoder on the full feature matrix
+        encoder = ac.train_full_ac(df, opts)
 
-        if opts.trainAC:
-            # train an autoencoder on the full feature matrix
-            encoder = ac.train_full_ac(df, opts)
-        else:
+    if opts.compressFeatures:
+
+        if not opts.trainAC:
             # load trained model for autoencoder
             (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
             encoder.load_weights(makePathAbsolute(opts.ecWeightsFile))
@@ -82,6 +85,7 @@ def predict(opts: options.PredictOptions) -> None:
     :param opts: Options defining the details of the prediction
     """
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)

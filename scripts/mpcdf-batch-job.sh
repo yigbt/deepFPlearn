@@ -23,11 +23,10 @@
 #SBATCH --time=24:00:00
 module purge
 module load cuda
-module load anaconda/3/2020.02
 
-source $ANACONDA_HOME/etc/profile.d/conda.sh
+source /u/pscheibe/conda/etc/profile.d/conda.sh
 conda activate dfpl_env
 conda develop dfpl
 
 # Run the program:
-srun scripts/run-all-publication-cases.sh > mpcdf_dfpl_stdout.txt
+srun scripts/run-all-publication-cases.sh &> mpcdf_dfpl_run.log

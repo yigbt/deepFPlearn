@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/dsstox_20160701.pkl",
+  "inputFile": "data/D_dataset.pkl",
   "outputDir": "validation/case_00/results_AC_D/",
   "ecWeightsFile": "ac_D.encoder.hdf5",
   "type": "smiles",
@@ -14,5 +14,5 @@
   "verbose": 2,
   "trainAC": true,
   "trainFNN": false,
-  "compressFeatures": true
+  "compressFeatures": false
 }
