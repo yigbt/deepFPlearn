@@ -1,5 +1,7 @@
 import pytest
 import pandas as pd
+from rdkit import RDLogger
+
 import dfpl.fingerprint as fp
 
 correct_smiles = [
@@ -41,6 +43,7 @@ def test_correct_mol_examples():
 
 
 def test_incorrect_smiles():
+    RDLogger.DisableLog("rdApp.*")
     df = pd.DataFrame(incorrect_smiles, columns=["smiles"])
     df = fp.addFPColumn(df, fp_size=2048)
     allNotNone = df[df["fp"].notnull()]

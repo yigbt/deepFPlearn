@@ -7,9 +7,9 @@ import dfpl.feedforwardNN as fNN
 import dfpl.options as opts
 
 
-def test_prepare_nn_training_data():
-    project_directory = pathlib.Path(__file__).parent.parent.absolute()
-    df = fp.importDataFile(os.path.join(project_directory, "data", "Sun_etal_dataset.csv"))
+def test_fractional_sampling():
+    test_directory = pathlib.Path(__file__).parent.absolute()
+    df = fp.importDataFile(os.path.join(test_directory, "data", "S_dataset.csv"))
 
     targets = ["AR", "ER", "GR", "Aromatase", "TR", "PPARg"]
     fractions = [0.5, 1.0, 2.0, 3.0]

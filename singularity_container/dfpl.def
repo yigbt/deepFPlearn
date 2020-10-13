@@ -60,5 +60,12 @@ Stage: final
     echo "This is an Ubuntu Container with Tensorflow and DFPL"
     /bin/bash -c "source /.start_dfpl_env; $@"
 
+%test
+    echo "Testing DFPL fingerprinting"
+    /bin/bash -c "source /.start_dfpl_env; pytest /deepFPlearn/tests"
+
+%labels
+    Author Jana Schor, Patrick Scheibe, Matthias Bernt
+    Version v1.0
 
 
