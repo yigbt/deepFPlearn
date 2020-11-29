@@ -30,7 +30,25 @@ test_train_args = options.TrainOptions(
     trainFNN=True,
     sampleFractionOnes=0.5
 )
-
+project_directory = pathlib.Path(".").parent.parent.absolute()
+opts = options.TrainOptions(
+    inputFile=f"{project_directory}/data/tox21.csv",
+    outputDir=f"{project_directory}/validation/case_Tox21/results_AC-specific/",
+    ecWeightsFile="",#f"{project_directory}/validation/case_Tox21/results_AC-specific/ac_pcba.encoder.hdf5",
+    type='smiles',
+    fpType='topological',
+    epochs=20,
+    fpSize=2048,
+    encFPSize=256,
+    enableMultiLabel=False,
+    testingFraction=0.2,
+    kFolds=5,
+    verbose=2,
+    trainAC=True,
+    trainFNN=True,
+    compressFeatures=True
+)
+logging.basicConfig(level=logging.INFO)
 
 test_predict_args = options.PredictOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
