@@ -1,0 +1,18 @@
+{
+  "py/object": "dfpl.options.TrainOptions",
+  "inputFile": "data/MoleculeNet/Physiology/tox21.pkl",
+  "outputDir": "validation/case_Tox21/results_AC-generic/",
+  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "type": "smiles",
+  "fpType": "topological",
+  "epochs": 1000,
+  "fpSize": 2048,
+  "encFPSize": 256,
+  "kFolds": 5,
+  "testingFraction": 0.2,
+  "enableMultiLabel": false,
+  "verbose": 2,
+  "trainAC": false,
+  "trainFNN": true,
+  "compressFeatures": true
+}

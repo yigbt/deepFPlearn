@@ -134,10 +134,13 @@ conversion_rules = {
     # "S_dataset.csv": importSmilesCSV,
     # "S_dataset_extended.csv": importSmilesCSV,
     # "D_dataset.tsv": importDstoxTSV,
-    # "muv.csv": importSmilesCSV,
-    # "pcba.csv": importSmilesCSV,
-    # "tox21.csv": importSmilesCSV
-    "tox21.NR-AR.csv": importSmilesCSV
+    # MoleculeNet Benchmark data
+    "tox21.csv": importSmilesCSV,
+    "bace_cols1-3.csv": importSmilesCSV,
+    "HIV.csv": importSmilesCSV,
+    "muv.csv": importSmilesCSV,
+    "pcba.csv": importSmilesCSV
+
 }
 
 
