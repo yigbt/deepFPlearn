@@ -6,9 +6,9 @@ import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
 import dfpl.feedforwardNN as fNN
 
-project_directory = pathlib.Path(__file__).parent.parent.absolute()
+project_directory = pathlib.Path(__file__).parent.absolute()
 test_train_args = opt.TrainOptions(
-    inputFile=f"{project_directory}/data/Sun_etal_dataset.csv",
+    inputFile=f"{project_directory}/data/S_dataset.csv",
     outputDir=f"{project_directory}/modeltraining/",
     ecWeightsFile="",
     type='smiles',

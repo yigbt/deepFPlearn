@@ -6,19 +6,9 @@ import dfpl.options as opt
 import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
 
-import tensorflow as tf
-gpus = tf.config.experimental.list_physical_devices('GPU')
-if gpus:
-    try:
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-
-    except RuntimeError as e:
-        print(e)
-
-project_directory = pathlib.Path(__file__).parent.parent.absolute()
+project_directory = pathlib.Path(__file__).parent.absolute()
 test_train_args = opt.TrainOptions(
-    inputFile=f"{project_directory}/data/Sun_etal_dataset.csv",
+    inputFile=f"{project_directory}/data/S_dataset.csv",
     outputDir=f"{project_directory}/modeltraining",
     ecWeightsFile="Sun_etal_dataset.encoder.hdf5",
     type='smiles',

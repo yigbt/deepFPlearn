@@ -7,7 +7,7 @@ import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
 import dfpl.predictions as p
 
-project_directory = pathlib.Path(__file__).parent.parent.absolute()
+project_directory = pathlib.Path(__file__).parent.absolute()
 test_predict_args = opt.PredictOptions(
     inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
     outputDir=f"{project_directory}/validation/case_01/results/",

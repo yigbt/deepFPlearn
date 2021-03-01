@@ -1,28 +1,20 @@
-name: rdkit2019
+name: dfpl_env
 channels:
-  - defaults
   - conda-forge
   - bioconda
-  - r
-  - anaconda
+  - defaults
 dependencies:
-  - tensorflow-gpu
-  - ncurses
-  - numpy
-  - pcre
-  - matplotlib
-  - pytest
-  - pyyaml
-  - python
-  - rdkit
-  - seaborn
-  - tensorboard
-  - yaml
-  - markdown
-  - scipy
-  - pip
-  - scikit-learn
-  - pandas
-  - keras
-  - jsonpickle
+  - python=3.8.2
+  - pip=20.1.1
+  - numpy=1.19.1
+  - conda=4.8.4
+  - conda-build=3.20.3
+  - tensorflow-gpu=2.2.0
+  - scikit-learn=0.23.1
+  - pandas=1.0.5
+  - keras=2.4.3
+  - rdkit=2020.03.4
+  - matplotlib=3.2.2
+  - pytest=5.4.3
+  - jsonpickle=1.4.1
 

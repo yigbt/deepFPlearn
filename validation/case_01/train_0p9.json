@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/S_dataset_extended.pkl",
+  "inputFile": "data/S_dataset.pkl",
   "outputDir": "validation/case_01/results_0p9/",
   "ecWeightsFile": "",
   "type": "smiles",
