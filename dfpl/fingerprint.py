@@ -7,6 +7,8 @@ import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit import RDLogger
+from rdkit.Chem import AllChem
+from rdkit import DataStructs
 from typing import Any, List
 import multiprocessing
 from functools import partial
@@ -15,6 +17,7 @@ import logging
 
 # import settings
 from dfpl import settings
+
 default_fp_size = 2048
 
 
@@ -34,13 +37,29 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         :return: List of bits if conversion is successfull,
         None otherwise
         """
-        try:
-            return np.array(
-                Chem.RDKFingerprint(Chem.MolFromSmiles(smile), fpSize=fp_size),
-                dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
-        except:
-            # Note: We don't need to log here since rdkit already logs
-            return None
+
+        # generate morgan fp (circular, ecfp)
+        # smile = df['smiles'][1]
+        # mol = Chem.MolFromSmiles(smile)
+        # from rdkit.Chem import AllChem
+        # morgan = AllChem.GetMorganFingerprintAsBitVect(mol, 2)
+        # npa = np.zeros((0,), dtype=np.bool)
+        # from rdkit import DataStructs
+        # DataStructs.ConvertToNumpyArray(morgan, npa)
+
+        npa = np.zeros((0,), dtype=np.bool)
+        DataStructs.ConvertToNumpyArray(
+            AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(smile), 2, nBits=fp_size),
+            npa)
+        return npa
+
+        # try:
+        #     return np.array(
+        #         Chem.RDKFingerprint(Chem.MolFromSmiles(smile), fpSize=fp_size),
+        #         dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
+        # except:
+        #     # Note: We don't need to log here since rdkit already logs
+        #     return None
 
     def inchi2fp(inchi: str) -> Any:
         """
@@ -112,9 +131,16 @@ def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
 
 
 conversion_rules = {
-    "S_dataset.csv": importSmilesCSV,
-    "S_dataset_extended.csv": importSmilesCSV,
-    "D_dataset.tsv": importDstoxTSV
+    # "S_dataset.csv": importSmilesCSV,
+    # "S_dataset_extended.csv": importSmilesCSV,
+    # "D_dataset.tsv": importDstoxTSV,
+    # MoleculeNet Benchmark data
+    "tox21.csv": importSmilesCSV,
+    "bace_cols1-3.csv": importSmilesCSV,
+    "HIV.csv": importSmilesCSV,
+    "muv.csv": importSmilesCSV,
+    "pcba.csv": importSmilesCSV
+
 }
 
 

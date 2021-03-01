@@ -411,6 +411,10 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
             )
         else:
             logging.info("Fraction sampling is OFF")
+            # how many ones, how many zeros
+            counts = df_fpc[target].value_counts()
+            logging.info(f"Number of values (total): 0 - {str(counts[0])}, 1 - {str(counts[1])}")
+
             x = np.array(
                 df_fpc["fpcompressed"].to_list(),
                 dtype=settings.nn_fp_compressed_numpy_type,
@@ -432,12 +436,16 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
 
             dfX = df_fp[df_fp[target] == 1.0].append(
                 df_fp[df_fp[target] == 0.0].sample(
-                    round(min(counts[0], counts[1] / opts.sampleFractionOnes)))
+                    int(min(counts[0], counts[1] / opts.sampleFractionOnes)))
             )
             x = np.array(dfX["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
             y = np.array(dfX[target].to_list(), copy=settings.numpy_copy_values)
         else:
             logging.info("Fraction sampling is OFF")
+            # how many ones, how many zeros
+            counts = df_fp[target].value_counts()
+            logging.info(f"Number of values (total): 0 - {str(counts[0])}, 1 - {str(counts[1])}")
+
             x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
             y = np.array(df_fp[target].to_list(), copy=settings.numpy_copy_values)
     return x, y

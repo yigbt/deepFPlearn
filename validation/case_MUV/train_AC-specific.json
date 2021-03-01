@@ -1,0 +1,18 @@
+{
+  "py/object": "dfpl.options.TrainOptions",
+  "inputFile": "data/MoleculeNet/Biophysics/muv.pkl",
+  "outputDir": "validation/case_MUV/results_AC-specific/",
+  "ecWeightsFile": "ac_muv.encoder.hdf5",
+  "type": "smiles",
+  "fpType": "topological",
+  "epochs": 1000,
+  "fpSize": 2048,
+  "encFPSize": 256,
+  "kFolds": 5,
+  "testingFraction": 0.2,
+  "enableMultiLabel": false,
+  "verbose": 2,
+  "trainAC": true,
+  "trainFNN": true,
+  "compressFeatures": true
+}
