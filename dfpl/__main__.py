@@ -32,9 +32,9 @@ test_train_args = options.TrainOptions(
 )
 project_directory = pathlib.Path(".").parent.parent.absolute()
 opts = options.TrainOptions(
-    inputFile=f"{project_directory}/data/tox21.csv",
+    inputFile=f"{project_directory}/data/MoleculeNet/Biophysics/muv.pkl",
     outputDir=f"{project_directory}/validation/case_Tox21/results_AC-specific/",
-    ecWeightsFile="",#f"{project_directory}/validation/case_Tox21/results_AC-specific/ac_pcba.encoder.hdf5",
+    ecWeightsFile="",  #f"{project_directory}/validation/case_Tox21/results_AC-specific/ac_pcba.encoder.hdf5",
     type='smiles',
     fpType='topological',
     epochs=20,

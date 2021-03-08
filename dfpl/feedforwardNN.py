@@ -382,6 +382,19 @@ def validate_model_on_test_data(x_test: array, checkpoint_path: str, y_test: arr
 
 
 def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainOptions) -> (np.ndarray, np.ndarray):
+    # check the value counts and abort if too imbalanced
+    allowed_imbalance = 0.1
+
+    if opts.compressFeatures:
+        vc = df[df[target].notna() & df["fpcompressed"].notnull()][target].value_counts()
+    else:
+        vc = df[df[target].notna() & df["fp"].notnull()][target].value_counts()
+    if min(vc) < max(vc) * allowed_imbalance:
+        logging.info(
+            f" Your training data is extremely unbalanced ({target}): 0 - {vc[0]}, and 1 - {vc[1]} values.")
+        logging.info(f" I will downsample your data")
+        opts.sampleFractionOnes = allowed_imbalance
+
     logging.info("Preparing training data matrices")
     if opts.compressFeatures:
         logging.info("Using compressed fingerprints")
@@ -488,12 +501,11 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     """
 
     # find target columns
-    names_y = [c for c in df.columns if c not in ['cid', 'id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if c not in ['cid', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
     # For each individual target train a model
     for target in names_y:  # [:2]:
         # target=names_y[0] # --> only for testing the code
-
         x, y = prepare_nn_training_data(df, target, opts)
         logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
@@ -518,7 +530,12 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
             logging.info("Training of fold number:" + str(fold_no))
 
-            model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + str(opts.sampleFractionOnes)
+            logging.info(f"The distribution of 0 and 1 values is:")
+            logging.info(f"\ttrain data:\t{pd.DataFrame(y[train])[0].value_counts().to_list()}")
+            logging.info(f"\ttest  data:\t{pd.DataFrame(y[test])[0].value_counts().to_list()}")
+
+            model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + \
+                         str(opts.sampleFractionOnes)
 
             # define all the output file/path names
             (model_file_path_weights, model_file_path_json, model_hist_path,
@@ -876,4 +893,3 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
     logging.info("Computation time for training the full multi-label FNN: " + trainTime + " min")
     ht.store_and_plot_history(base_file_name=model_hist_path, hist=hist)
-

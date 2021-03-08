@@ -45,11 +45,11 @@ def run_fnn_training(opts: opt.TrainOptions) -> None:
 
     # train FNNs with compressed features
     logging.info("Training the FNN using compressed input data.")
-    fNN.train_nn_models(df=df, opts=opts, use_compressed=True)
+    fNN.train_nn_models(df=df, opts=opts)
 
     # train FNNs with uncompressed features
     logging.info("Training the FNN using un-compressed input data.")
-    fNN.train_nn_models(df=df, opts=opts, use_compressed=False)
+    fNN.train_nn_models(df=df, opts=opts)
 
     logging.info("Done")
 
