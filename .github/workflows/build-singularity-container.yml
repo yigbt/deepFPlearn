@@ -55,7 +55,7 @@ jobs:
       run: |
        if [ -f "${SINGULARITY_RECIPE}" ]; then
            cd $(dirname ${SINGULARITY_RECIPE})
-           sudo singularity build ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
+           sudo singularity build -s  ${OUTPUT_CONTAINER} $(basename ${SINGULARITY_RECIPE})
            echo "${SINGULARITY_RECIPE} built successfully"
        else
            echo "${SINGULARITY_RECIPE} is not found."
