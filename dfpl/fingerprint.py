@@ -48,10 +48,13 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         # DataStructs.ConvertToNumpyArray(morgan, npa)
 
         npa = np.zeros((0,), dtype=np.bool)
-        DataStructs.ConvertToNumpyArray(
-            AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(smile), 2, nBits=fp_size),
-            npa)
-        return npa
+        try:
+            DataStructs.ConvertToNumpyArray(
+                AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(smile), 2, nBits=fp_size),
+                npa)
+            return npa
+        except:
+            return None
 
         # try:
         #     return np.array(

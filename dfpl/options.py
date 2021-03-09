@@ -28,6 +28,7 @@ class TrainOptions:
     trainFNN: bool = True
     compressFeatures: bool = True
     sampleFractionOnes: float = None
+    sampleDown: bool = False
 
     def saveToFile(self, file: str) -> None:
         """
@@ -77,7 +78,8 @@ class TrainOptions:
                 trainAC=args.trainAC,
                 trainFNN=args.trainFNN,
                 compressFeatures=args.c,
-                sampleFractionOnes=args.sampleFractionOnes
+                sampleFractionOnes=args.sampleFractionOnes,
+                sampleDown=args.sampleDown
             )
 
 
@@ -185,6 +187,10 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         help='This is the fraction of positive target associations (1s) after sampling from the "'
                              'negative target association (0s).',
                         default=None)
+    parser.add_argument('--sampleDown', metavar='BOOL', type=bool,
+                        help='Enable automatic down sampling of the 0 valued samples to compensate extremely '
+                             'unbalanced data (<10%).',
+                        default=Fals)
 
 
 @dataclass

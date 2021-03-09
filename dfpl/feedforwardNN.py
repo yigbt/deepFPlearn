@@ -392,8 +392,13 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
     if min(vc) < max(vc) * allowed_imbalance:
         logging.info(
             f" Your training data is extremely unbalanced ({target}): 0 - {vc[0]}, and 1 - {vc[1]} values.")
-        logging.info(f" I will downsample your data")
-        opts.sampleFractionOnes = allowed_imbalance
+        if opts.sampleDown:
+            logging.info(f" I will downsample your data")
+            opts.sampleFractionOnes = allowed_imbalance
+        else:
+            logging.info(f" It does not make sense to train a model under this circumstances.")
+            logging.info(f" Consider to enable down sampling of the 0 values with --sampleDown option.")
+            return None, None
 
     logging.info("Preparing training data matrices")
     if opts.compressFeatures:
@@ -507,6 +512,9 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     for target in names_y:  # [:2]:
         # target=names_y[0] # --> only for testing the code
         x, y = prepare_nn_training_data(df, target, opts)
+        if x is None:
+            continue
+
         logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
 

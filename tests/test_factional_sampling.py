@@ -20,7 +20,8 @@ def test_fractional_sampling():
         )
         for t in targets:
             x, y = fNN.prepare_nn_training_data(df, t, o)
-            unique, counts = np.unique(y, return_counts=True)
-            assert abs(counts[1]/counts[0] - f) < 0.01
-            print(f"Wanted \"{t}\" fraction: {f}, got sampling: {dict(zip(unique, counts))}, Result fraction: {counts[1]/counts[0]}")
-
+            if x is not None:
+                unique, counts = np.unique(y, return_counts=True)
+                assert abs(counts[1] / counts[0] - f) < 0.01
+                print(f"Wanted \"{t}\" fraction: {f}, got sampling: {dict(zip(unique, counts))}, "
+                      f"Result fraction: {counts[1] / counts[0]}")
