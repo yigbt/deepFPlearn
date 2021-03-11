@@ -190,7 +190,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--sampleDown', metavar='BOOL', type=bool,
                         help='Enable automatic down sampling of the 0 valued samples to compensate extremely '
                              'unbalanced data (<10%).',
-                        default=Fals)
+                        default=False)
 
 
 @dataclass
