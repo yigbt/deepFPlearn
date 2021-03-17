@@ -381,7 +381,9 @@ def validate_model_on_test_data(x_test: array, checkpoint_path: str, y_test: arr
     return scores[0], scores[1], MCC, cfm[0][0], cfm[0][1], cfm[1][0], cfm[1][1]
 
 
-def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainOptions) -> (np.ndarray, np.ndarray):
+def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainOptions) -> (np.ndarray,
+                                                                                            np.ndarray,
+                                                                                            options.TrainOptions):
     # check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
 
@@ -398,7 +400,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
         else:
             logging.info(f" It does not make sense to train a model under this circumstances.")
             logging.info(f" Consider to enable down sampling of the 0 values with --sampleDown option.")
-            return None, None
+            return None, None, None
 
     logging.info("Preparing training data matrices")
     if opts.compressFeatures:
@@ -466,7 +468,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
 
             x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
             y = np.array(df_fp[target].to_list(), copy=settings.numpy_copy_values)
-    return x, y
+    return x, y, opts
 
 
 def nn_callback(checkpoint_path: str) -> list:
@@ -511,7 +513,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     # For each individual target train a model
     for target in names_y:  # [:2]:
         # target=names_y[0] # --> only for testing the code
-        x, y = prepare_nn_training_data(df, target, opts)
+        x, y, opts = prepare_nn_training_data(df, target, opts)
         if x is None:
             continue
 

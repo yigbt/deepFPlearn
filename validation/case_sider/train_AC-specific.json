@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/MoleculeNet/Biophysics/BACE.pkl",
-  "outputDir": "validation/case_BACE/results_AC-generic/",
-  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "inputFile": "/data/bioinf/projects/data/2020_deepFPlearn/trainData/sider_convertedHeader.csv",
+  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_sider/results_AC-specific/",
+  "ecWeightsFile": "ac_sider.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 1000,
@@ -12,7 +12,7 @@
   "testingFraction": 0.2,
   "enableMultiLabel": false,
   "verbose": 2,
-  "trainAC": false,
+  "trainAC": true,
   "trainFNN": true,
   "compressFeatures": true,
   "sampleDown": true

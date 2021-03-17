@@ -14,5 +14,7 @@
   "verbose": 2,
   "trainAC": false,
   "trainFNN": true,
-  "compressFeatures": true
+  "compressFeatures": true,
+  "sampleFractionOnes": 0.1,
+  "sampleDown": true
 }

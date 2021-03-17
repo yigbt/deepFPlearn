@@ -19,7 +19,7 @@ def test_fractional_sampling():
             sampleFractionOnes=f
         )
         for t in targets:
-            x, y = fNN.prepare_nn_training_data(df, t, o)
+            x, y, o = fNN.prepare_nn_training_data(df, t, o)
             if x is not None:
                 unique, counts = np.unique(y, return_counts=True)
                 assert abs(counts[1] / counts[0] - f) < 0.01
