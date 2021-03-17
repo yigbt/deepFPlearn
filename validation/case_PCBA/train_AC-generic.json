@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.TrainOptions",
   "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/pcba.pkl",
   "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PCBA/results_AC-generic/",
-  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "ecWeightsFile": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 1000,
