@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/MoleculeNet/Biophysics/HIV.pkl",
+  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/HIV.pkl",
   "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_HIV/results_AC-specific/",
   "ecWeightsFile": "ac_hiv.encoder.hdf5",
   "type": "smiles",

@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/MoleculeNet/Biophysics/bace_cols1-3.pkl",
+  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/bace_cols1-3.pkl",
   "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_BACE/results_AC-generic/",
   "ecWeightsFile": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
