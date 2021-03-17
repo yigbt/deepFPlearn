@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "/data/bioinf/projects/data/2020_deepFPlearn/trainData/sider_convertedHeader.csv",
+  "inputFile": "/data/bioinf/projects/data/2020_deepFPlearn/trainData/sider_convertedHeader.pkl",
   "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_sider/results_AC-specific/",
   "ecWeightsFile": "ac_sider.encoder.hdf5",
   "type": "smiles",

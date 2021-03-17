@@ -142,7 +142,8 @@ conversion_rules = {
     "bace_cols1-3.csv": importSmilesCSV,
     "HIV.csv": importSmilesCSV,
     "muv.csv": importSmilesCSV,
-    "pcba.csv": importSmilesCSV
+    "pcba.csv": importSmilesCSV,
+    "sider_convertedHeader.csv": importSmilesCSV
 
 }
 

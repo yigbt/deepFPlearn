@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/MoleculeNet/Biophysics/BACE.pkl",
+  "inputFile": "data/MoleculeNet/Biophysics/bace_cols1-3.pkl",
   "outputDir": "validation/case_BACE/results_AC-specific/",
   "ecWeightsFile": "ac_bace.encoder.hdf5",
   "type": "smiles",
