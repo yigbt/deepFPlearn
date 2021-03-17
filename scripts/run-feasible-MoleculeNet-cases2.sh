@@ -16,12 +16,12 @@
 #F="validation/case_HIV/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
 #F="validation/case_HIV/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
 
-F="validation/case_BACE/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F= "validation/case_BACE/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_BACE/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+F= "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_BACE/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
 
-F="validation/case_sider/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F= "validation/case_sider/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_sider/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+F= "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_sider/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
 
-F="validation/case_PCBA/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
-F= "validation/case_PCBA/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PCBA/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
+F= "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PCBA/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
 
