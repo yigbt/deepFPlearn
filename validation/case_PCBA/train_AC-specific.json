@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/MoleculeNet/Biophysics/pcba.pkl",
-  "outputDir": "validation/case_PCBA/results_AC-specific/",
+  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/MoleculeNet/Biophysics/pcba.pkl",
+  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PCBA/results_AC-specific/",
   "ecWeightsFile": "ac_pcba.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",

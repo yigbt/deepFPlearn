@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/MoleculeNet/Biophysics/bace_cols1-3.pkl",
-  "outputDir": "validation/case_BACE/results_AC-specific/",
+  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/MoleculeNet/Biophysics/bace_cols1-3.pkl",
+  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_BACE/results_AC-specific/",
   "ecWeightsFile": "ac_bace.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",

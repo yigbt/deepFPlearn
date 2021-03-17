@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/MoleculeNet/Biophysics/muv.pkl",
-  "outputDir": "validation/case_MUV/results_AC-specific/",
+  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/MoleculeNet/Biophysics/muv.pkl",
+  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_MUV/results_AC-specific/",
   "ecWeightsFile": "ac_muv.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",

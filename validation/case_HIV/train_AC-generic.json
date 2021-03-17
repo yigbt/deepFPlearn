@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.TrainOptions",
-  "inputFile": "data/MoleculeNet/Biophysics/HIV.pkl",
-  "outputDir": "validation/case_HIV/results_AC-generic/",
-  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/MoleculeNet/Biophysics/HIV.pkl",
+  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_HIV/results_AC-generic/",
+  "ecWeightsFile": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
   "epochs": 1000,
