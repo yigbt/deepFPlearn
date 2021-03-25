@@ -178,7 +178,7 @@ def main():
             )
             createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "train.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
+            logging.info(f"The following arguments are received or filled with default values:\n{fixed_opts}")
             train(fixed_opts)
             exit(0)
         elif prog_args.method == "predict":
