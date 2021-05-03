@@ -1,0 +1,9 @@
+{
+  "py/object": "dfpl.options.PredictOptions",
+  "inputFile": "data/D_dataset.pkl",
+  "outputDir": "validation/case_PREDICT-D/results_AR/",
+  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "model": "/data/bioinf/projects/data/2020_deepFPlearn/validation/case_03/results/AR_compressed-True_sampled-None.full.FNN.model.hdf5",
+  "type": "smiles",
+  "fpType": "topological"
+}
