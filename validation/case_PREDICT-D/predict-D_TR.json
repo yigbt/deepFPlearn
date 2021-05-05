@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.PredictOptions",
-  "inputFile": "data/D_dataset.pkl",
-  "outputDir": "validation/case_PREDICT-D/results_TR/",
-  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+  "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/D_dataset.pkl",
+  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/results_TR/",
+  "ecWeightsFile": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "model": "/data/bioinf/projects/data/2020_deepFPlearn/validation/case_03/results/TR_compressed-True_sampled-None.full.FNN.model.hdf5",
   "type": "smiles",
   "fpType": "topological"
