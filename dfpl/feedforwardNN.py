@@ -14,6 +14,7 @@ from keras.layers import Dense, Dropout
 from keras.models import Model
 from keras import regularizers
 from keras import optimizers
+from keras import metrics
 from keras.optimizers import SGD
 from keras.callbacks import History, ModelCheckpoint, EarlyStopping
 
@@ -93,9 +94,14 @@ def define_nn_model(
     model.summary(print_fn=logging.info)
 
     # compile model
-    model.compile(loss="mse",
+    model.compile(loss="mean_squared_error",
                   optimizer=my_optimizer,
-                  metrics=['accuracy'])
+                  metrics=[metrics.Accuracy(name="my_acc")])  # ,
+    # metrics.Accuracy(),
+    # metrics.Precision(),
+    # metrics.Recall(),
+    # metrics.SpecificityAtSensitivity(),
+    # metrics.SensitivityAtSpecificity()])
 
     return model
 
@@ -398,9 +404,8 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
             logging.info(f" I will downsample your data")
             opts.sampleFractionOnes = allowed_imbalance
         else:
-            logging.info(f" It does not make sense to train a model under this circumstances.")
+            logging.info(f" I will not downsample your data automatically.")
             logging.info(f" Consider to enable down sampling of the 0 values with --sampleDown option.")
-            return None, None, None
 
     logging.info("Preparing training data matrices")
     if opts.compressFeatures:
@@ -519,6 +524,18 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
         logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
+
+        # from keras.wrappers.scikit_learn import KerasClassifier
+        # from sklearn.model_selection import cross_val_score
+        # from sklearn.model_selection import StratifiedKFold
+        # estimator = KerasClassifier(build_fn=define_nn_model,
+        #                             input_size=x.shape[1],
+        #                             epochs=100,
+        #                             batch_size=5,
+        #                             verbose=0)
+        # kfold = StratifiedKFold(n_splits=5, shuffle=True)
+        # results = cross_val_score(estimator, x, y, cv=kfold, verbose=2, n_jobs=5)
+        # print("Baseline: %.2f%% (%.2f%%)" % (results.mean() * 100, results.std() * 100))
 
         # do a kfold cross validation for the FNN training
         kfold_c_validator = KFold(n_splits=opts.kFolds,

@@ -13,10 +13,10 @@ from dfpl import predictions
 
 
 project_directory = pathlib.Path(__file__).parent.parent.absolute()
-test_train_args = options.TrainOptions(
-    inputFile=f"{project_directory}/data/Sun_etal_dataset.pkl",
+opts = options.TrainOptions(
+    inputFile=f"{project_directory}/data/muv.pkl",
     outputDir=f"{project_directory}/modeltraining",
-    ecWeightsFile="",
+    ecWeightsFile="/home/hertelj/git-hertelj/deepFPlearn_CODE/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
     type='smiles',
     fpType='topological',
     epochs=3000,
@@ -26,7 +26,7 @@ test_train_args = options.TrainOptions(
     testingFraction=0.2,
     kFolds=5,
     verbose=2,
-    trainAC=True,
+    trainAC=False,
     trainFNN=True,
     compressFeatures=True
 )

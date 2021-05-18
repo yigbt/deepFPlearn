@@ -143,7 +143,7 @@ conversion_rules = {
     # "HIV.csv": importSmilesCSV,
     # "muv.csv": importSmilesCSV,
     # "pcba.csv": importSmilesCSV,
-    # "sider_convertedHeader.csv": importSmilesCSV
+    # "sider_convertedHeader.csv": importSmilesCSVđ
 }
 
 
