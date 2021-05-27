@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.PredictOptions",
   "inputFile": "/home/hertelj/git-hertelj/code/deepFPlearn/data/D_dataset.pkl",
-  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/results_GR/",
+  "outputDir": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D_best/results_GR/",
   "ecWeightsFile": "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "model": "/data/bioinf/projects/data/2020_deepFPlearn/validation/case_03/results/GR_compressed-True_sampled-None.best.FNN.model.hdf5",
   "type": "smiles",
