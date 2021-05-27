@@ -25,9 +25,9 @@
 #F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PCBA/train_AC-generic.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
 #F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PCBA/train_AC-specific.json"; if [ -f $F ]; then python -m dfpl train -f $F; fi
 
-F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/predict-D_AR.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
-F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/predict-D_Aromatase.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
-F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/predict-D_ER.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
-F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/predict-D_GR.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
-F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/predict-D_PPARg.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
-F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D/predict-D_TR.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D_best/predict-D_AR.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D_best/predict-D_Aromatase.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D_best/predict-D_ER.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D_best/predict-D_GR.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D_best/predict-D_PPARg.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
+F="/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_PREDICT-D_best/predict-D_TR.json"; if [ -f $F ]; then python -m dfpl predict -f $F; fi
