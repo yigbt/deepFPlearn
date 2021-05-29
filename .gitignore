@@ -23,3 +23,6 @@ data/tox21*
 data/MoleculeNet
 singularity_container/dfpl.sif
 dfpl/testDFPLwithDCdata.py
+__pycache__
+dfpl/__pycache__
+tests/__pychace__
