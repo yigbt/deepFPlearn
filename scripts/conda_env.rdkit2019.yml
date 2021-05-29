@@ -1,28 +1,26 @@
 name: rdkit2019
 channels:
-  - defaults
   - conda-forge
-  - bioconda
   - r
-  - anaconda
+  - defaults
 dependencies:
-  - tensorflow
-  - ncurses
   - numpy
-  - pcre
-  - matplotlib
+  - keras
   - pytest
-  - pyyaml
-  - python
+  - matplotlib
   - rdkit
   - seaborn
-  - tensorboard
-  - yaml
   - markdown
-  - scipy
+  - jsonpickle
   - pip
+  - pcre
+  - tensorflow
+  - tensorboard
+  - scipy
+  - yaml
+  - pyyaml
+  - python
+  - ncurses
   - scikit-learn
   - pandas
-  - keras
-  - jsonpickle
-
+prefix: /data/conda-envs/rdkit2019
