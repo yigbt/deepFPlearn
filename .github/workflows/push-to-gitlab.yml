@@ -1,0 +1,23 @@
+name: Push changes to Gitlab
+on: [ push ]
+jobs:
+
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential\
+            git 
+          sudo apt-get clean
+        
+      - name: Push to GitLab
+        env:
+          ACCESS_TOKEN: ${{secrets.GITLAB_ACCESS_TOKEN}}
+        run: |
+          git clone -b master https://gitlab.hzdr.de/Normo/deepFPlearn.git/
+          cd deepFPlearn
+          git config --global user.name $GITHUB_ACTOR
+          git remote add github https://github.com/yigbt/deepFPlearn.git
+          git pull github master
+          git push https://Normo:$ACCESS_TOKEN@gitlab.hzdr.de/Normo/deepFPlearn.git/
