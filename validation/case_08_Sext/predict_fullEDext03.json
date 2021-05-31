@@ -1,9 +1,0 @@
-{
-  "py/object": "dfpl.options.PredictOptions",
-  "inputFile": "data/S_dataset_extended.pkl",
-  "outputDir": "validation/case_08_Sext/results_fullEDext03/",
-  "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
-  "model": "validation/case_03_Sext/results/EDext_compressed-True_sampled-None.full.FNN.model.hdf5",
-  "type": "smiles",
-  "fpType": "topological"
-}
