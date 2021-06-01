@@ -604,7 +604,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
             row_df = pd.DataFrame([[fold_no,
                                     hist.history['loss'][idx], hist.history['val_loss'][idx],
-                                    hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
+                                    hist.history['my_acc'][idx], hist.history['val_my_acc'][idx],
                                     scores[0], scores[1], scores[2]]],
                                   columns=["fold_no",  # fold number of k-fold CV
                                            "loss", "val_loss", "acc", "val_acc",  # FNN training

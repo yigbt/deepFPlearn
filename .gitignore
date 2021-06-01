@@ -27,3 +27,6 @@ __pycache__
 dfpl/__pycache__
 tests/__pychace__
 validation
+example/results_*
+example/data/convert.log
+results

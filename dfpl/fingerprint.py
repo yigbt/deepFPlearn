@@ -136,14 +136,9 @@ def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
 conversion_rules = {
     # "S_dataset.csv": importSmilesCSV,
     # "S_dataset_extended.csv": importSmilesCSV,
-    "D_dataset.tsv": importDstoxTSV,
-    # MoleculeNet Benchmark data
-    # "tox21.csv": importSmilesCSV,
-    # "bace_cols1-3.csv": importSmilesCSV,
-    # "HIV.csv": importSmilesCSV,
-    # "muv.csv": importSmilesCSV,
-    # "pcba.csv": importSmilesCSV,
-    # "sider_convertedHeader.csv": importSmilesCSVđ
+    # "D_dataset.tsv": importDstoxTSV,
+    "train_data.csv": importSmilesCSV,
+    "predict_data.csv": importDstoxTSV
 }
 
 

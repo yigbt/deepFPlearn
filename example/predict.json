@@ -1,0 +1,9 @@
+{
+  "py/object": "dfpl.options.PredictOptions",
+  "inputFile": "example/data/predict_data.csv",
+  "outputDir": "example/results_predict",
+  "ecWeightsFile": "example/models/generic_encoder.hdf5",
+  "model": "example/models/AR.model.hdf5",
+  "type": "smiles",
+  "fpType": "topological"
+}
