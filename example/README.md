@@ -1,7 +1,8 @@
 Here you find example code for running `deepFPlearn` in all three modes.
 
 The input for each of these scripts can be found in the `data` folder.
-The pre-computed output can be found in the `results_[train,predict,convert]` folder.
+The pre-computed output of the `train` mode can be found in the assets of the release, for the `predict` mode it is 
+stored in the respective `example/results_predict` folder.
 Trained models that are used in the prediction mode are stored in the `models` folder.
 
 ## Train
@@ -11,7 +12,6 @@ Trained models that are used in the prediction mode are stored in the `models` f
 Use this script to train a specific autoencoder with a provided data set, and subsequently train feed forward networks
 for the targets in this data set.
 
-This script should be called from the `examples` folder:
 ```
 cd example
 ./deepFPlearn_train.sh
@@ -27,7 +27,6 @@ Pre-computed results can be found in the github release assets.
 Use this script to predict the provided set of compounds using generic feature compression and the best AR model for 
 associations to androgen receptor.
 
-This script should be called from the `examples` folder:
 ```
 cd example
 ./deepFPlearn_predict.sh
@@ -44,7 +43,6 @@ The `.pkl` files then already contain the binary fingerprints and are ready to u
 
 **Note:** Train and Predict modes do not require their inputs to be in .pkl, .csv is also fine but a bit slower.
 
-This script should be called from the `examples` folder:
 ```
 cd example
 ./deepFPlearn_convert.sh
