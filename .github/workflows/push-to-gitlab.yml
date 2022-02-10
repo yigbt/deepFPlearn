@@ -20,4 +20,5 @@ jobs:
           git config --global user.name $GITHUB_ACTOR
           git remote add github https://github.com/yigbt/deepFPlearn.git
           git pull github master
+          git push --tags https://Normo:$ACCESS_TOKEN@gitlab.hzdr.de/Normo/deepFPlearn.git/
           git push https://Normo:$ACCESS_TOKEN@gitlab.hzdr.de/Normo/deepFPlearn.git/
