@@ -168,4 +168,7 @@ script and providing the commandline arguments there.
 
 # Please note that:
 
-This work is still in progress. So, if you fork or use it, please contact me first: jana.schor@ufz.de
+This work has been submitted in a research paper and is currently under review.
+You may read the preprint @bioRxiv: https://doi.org/10.1101/2021.06.24.449697
+
+For questions, comments please contact me: jana.schor@ufz.de
