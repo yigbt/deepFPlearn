@@ -29,7 +29,7 @@ jobs:
 
       - name: Install Singularity
         env:
-          SINGULARITY_VERSION: 3.6.3
+          SINGULARITY_VERSION: 3.9.5
           GOPATH: /tmp/go
         run: |
           mkdir -p $GOPATH
