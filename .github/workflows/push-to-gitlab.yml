@@ -15,10 +15,10 @@ jobs:
         env:
           ACCESS_TOKEN: ${{secrets.GITLAB_ACCESS_TOKEN}}
         run: |
-          git clone -b master https://gitlab.hzdr.de/Normo/deepFPlearn.git/
+          set -x
+          git clone -b master https://Normo:$ACCESS_TOKEN@gitlab.hzdr.de/Normo/deepFPlearn.git/
           cd deepFPlearn
           git config --global user.name $GITHUB_ACTOR
           git remote add github https://github.com/yigbt/deepFPlearn.git
           git pull github master
-          git push --tags https://Normo:$ACCESS_TOKEN@gitlab.hzdr.de/Normo/deepFPlearn.git/
-          git push https://Normo:$ACCESS_TOKEN@gitlab.hzdr.de/Normo/deepFPlearn.git/
+          git push -f --tags origin master 
