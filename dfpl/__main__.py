@@ -11,42 +11,24 @@ from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import predictions
 
-
-project_directory = pathlib.Path(__file__).parent.parent.absolute()
+project_directory = pathlib.Path(".").parent.parent.absolute()
 opts = options.TrainOptions(
-    inputFile=f"{project_directory}/data/muv.pkl",
-    outputDir=f"{project_directory}/modeltraining",
-    ecWeightsFile="/home/hertelj/git-hertelj/deepFPlearn_CODE/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+    inputFile=f"{project_directory}/data/S_dataset.pkl",
+    outputDir=f"{project_directory}/validation/case_S_ABD_mse/",
+    ecWeightsFile=f"{project_directory}/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
     type='smiles',
     fpType='topological',
-    epochs=3000,
+    epochs=11,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
     testingFraction=0.2,
-    kFolds=5,
+    kFolds=2,
     verbose=2,
     trainAC=False,
     trainFNN=True,
-    compressFeatures=True
-)
-project_directory = pathlib.Path(".").parent.parent.absolute()
-opts = options.TrainOptions(
-    inputFile=f"{project_directory}/data/MoleculeNet/Biophysics/muv.pkl",
-    outputDir=f"{project_directory}/validation/case_Tox21/results_AC-specific/",
-    ecWeightsFile="",  #f"{project_directory}/validation/case_Tox21/results_AC-specific/ac_pcba.encoder.hdf5",
-    type='smiles',
-    fpType='topological',
-    epochs=20,
-    fpSize=2048,
-    encFPSize=256,
-    enableMultiLabel=False,
-    testingFraction=0.2,
-    kFolds=5,
-    verbose=2,
-    trainAC=True,
-    trainFNN=True,
-    compressFeatures=True
+    compressFeatures=True,
+    lossFunction="mse"
 )
 logging.basicConfig(level=logging.INFO)
 

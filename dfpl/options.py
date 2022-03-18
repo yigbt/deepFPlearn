@@ -29,6 +29,7 @@ class TrainOptions:
     compressFeatures: bool = True
     sampleFractionOnes: float = None
     sampleDown: bool = False
+    lossFunction: str = "mse"
 
     def saveToFile(self, file: str) -> None:
         """
@@ -79,7 +80,8 @@ class TrainOptions:
                 trainFNN=args.trainFNN,
                 compressFeatures=args.c,
                 sampleFractionOnes=args.sampleFractionOnes,
-                sampleDown=args.sampleDown
+                sampleDown=args.sampleDown,
+                lossFunction=args.lossFunction
             )
 
 
@@ -191,6 +193,10 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         help='Enable automatic down sampling of the 0 valued samples to compensate extremely '
                              'unbalanced data (<10%%).',
                         default=False)
+    parser.add_argument('--lossFunction', metavar="character", type=str,
+                        choices=["mse", "bce"], default="mse",
+                        help="Loss function to use during training. "
+                             "mse - mean squared error, bce - binary cross entropy.")
 
 
 @dataclass

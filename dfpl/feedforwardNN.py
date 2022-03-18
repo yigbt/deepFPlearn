@@ -40,11 +40,13 @@ def define_nn_model(
         activation: str = 'relu',
         optimizer: str = 'Adam',
         lr: float = 0.001,
-        decay: float = 0.01) -> Model:
+        decay: float = 0.01,
+        loss_function: str = "mse") -> Model:
     """
     Sets up the structure of the feed forward neural network. The number and size of the hidden layers are based on
     the dimensions of the input vector.
 
+    :param loss_function: The loss function used during training. Values: mse or bco. Default 'mse'.
     :param input_size: Length of the input vector. Default: 2048
     :param l2reg: Log2 regularization value. Default: 0.001
     :param dropout: Value of dropout for hidden layers. Default: 0.2
@@ -54,6 +56,9 @@ def define_nn_model(
     :param decay: Decay of the optimizer. Default: 0.01
     :return: A keras model.
     """
+
+    lf = dict({"mse": "mean_squared_error",
+               "bce": "binary_crossentropy"})
 
     if optimizer == 'Adam':
         my_optimizer = optimizers.Adam(learning_rate=lr,
@@ -77,7 +82,8 @@ def define_nn_model(
     model.add(Dense(units=int(input_size / 2),
                     input_dim=input_size,
                     activation=activation,
-                    kernel_regularizer=regularizers.l2(l2reg)))
+                    kernel_regularizer=regularizers.l2(l2reg),
+                    kernel_initializer="he_uniform"))
     model.add(Dropout(dropout))
     # next hidden layers
     for i in range(1, nhl):
@@ -85,7 +91,8 @@ def define_nn_model(
         factor_dropout = 2 * i
         model.add(Dense(units=int(input_size / factor_units),
                         activation=activation,
-                        kernel_regularizer=regularizers.l2(l2reg)))
+                        kernel_regularizer=regularizers.l2(l2reg),
+                        kernel_initializer="he_uniform"))
         model.add(Dropout(dropout / factor_dropout))
     # output layer
     model.add(Dense(units=1,
@@ -94,9 +101,11 @@ def define_nn_model(
     model.summary(print_fn=logging.info)
 
     # compile model
-    model.compile(loss="mean_squared_error",
+    model.compile(loss=lf[loss_function],
                   optimizer=my_optimizer,
-                  metrics=[metrics.Accuracy(name="my_acc")])  # ,
+                  metrics=[metrics.Accuracy(name="train_acc"),
+                           metrics.Precision(name="train_precision"),
+                           metrics.Recall(name="train_recall")])  # ,
     # metrics.Accuracy(),
     # metrics.Precision(),
     # metrics.Recall(),
@@ -516,7 +525,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     names_y = [c for c in df.columns if c not in ['cid', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
     # For each individual target train a model
-    for target in names_y:  # [:2]:
+    for target in names_y:  # [:1]:
         # target=names_y[0] # --> only for testing the code
         x, y, opts = prepare_nn_training_data(df, target, opts)
         if x is None:
@@ -524,18 +533,6 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
         logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
-
-        # from keras.wrappers.scikit_learn import KerasClassifier
-        # from sklearn.model_selection import cross_val_score
-        # from sklearn.model_selection import StratifiedKFold
-        # estimator = KerasClassifier(build_fn=define_nn_model,
-        #                             input_size=x.shape[1],
-        #                             epochs=100,
-        #                             batch_size=5,
-        #                             verbose=0)
-        # kfold = StratifiedKFold(n_splits=5, shuffle=True)
-        # results = cross_val_score(estimator, x, y, cv=kfold, verbose=2, n_jobs=5)
-        # print("Baseline: %.2f%% (%.2f%%)" % (results.mean() * 100, results.std() * 100))
 
         # do a kfold cross validation for the FNN training
         kfold_c_validator = KFold(n_splits=opts.kFolds,
@@ -572,20 +569,22 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
                                                                        target=model_name,
                                                                        fold=fold_no)
 
-            model = define_nn_model(input_size=x[train].shape[1])
+            model = define_nn_model(input_size=x[train].shape[1], loss_function=opts.lossFunction, optimizer='SGD')
 
             callback_list = nn_callback(checkpoint_path=checkpoint_path)
 
             # measure the training time
             start = time()
             # train and validate
-            hist = model.fit(x[train], y[train],
+            y_int_train = np.array([int(i) for i in y[train]])
+            y_int_test = np.array([int(i) for i in y[test]])
+            hist = model.fit(x[train], y_int_train,  #y[train],
                              callbacks=callback_list,
-                             epochs=opts.epochs,
-                             batch_size=256,
+                             epochs=500,  # opts.epochs,
+                             batch_size=128,
                              verbose=opts.verbose,
-                             validation_split=opts.testingFraction)
-            #                             validation_data=(x_test, y_test))  # this overwrites val_split!
+                             # validation_split=opts.testingFraction)
+                             validation_data=(x[test], y_int_test)) # y[test]))  # this overwrites val_split!
             trainTime = str(round((time() - start) / 60, ndigits=2))
 
             logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
