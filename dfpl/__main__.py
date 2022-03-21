@@ -14,11 +14,12 @@ from dfpl import predictions
 project_directory = pathlib.Path(".").parent.parent.absolute()
 opts = options.TrainOptions(
     inputFile=f"{project_directory}/data/S_dataset.pkl",
-    outputDir=f"{project_directory}/validation/case_S_ABD_mse/",
+    outputDir=f"{project_directory}/validation/case_S_ABD_bce/",
     ecWeightsFile=f"{project_directory}/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
     type='smiles',
     fpType='topological',
-    epochs=11,
+    epochs=100,
+    batchSize=128,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
@@ -28,7 +29,8 @@ opts = options.TrainOptions(
     trainAC=False,
     trainFNN=True,
     compressFeatures=True,
-    lossFunction="mse"
+    lossFunction="mse",
+    optimizer="SGD"
 )
 logging.basicConfig(level=logging.INFO)
 

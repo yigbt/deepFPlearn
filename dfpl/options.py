@@ -30,6 +30,8 @@ class TrainOptions:
     sampleFractionOnes: float = None
     sampleDown: bool = False
     lossFunction: str = "mse"
+    optimizer: str = "Adam"
+    batchSize: int = 128
 
     def saveToFile(self, file: str) -> None:
         """
@@ -81,7 +83,9 @@ class TrainOptions:
                 compressFeatures=args.c,
                 sampleFractionOnes=args.sampleFractionOnes,
                 sampleDown=args.sampleDown,
-                lossFunction=args.lossFunction
+                lossFunction=args.lossFunction,
+                optimizer=args.optimizer,
+                batchSize=args.batchSize
             )
 
 
@@ -197,6 +201,12 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         choices=["mse", "bce"], default="mse",
                         help="Loss function to use during training. "
                              "mse - mean squared error, bce - binary cross entropy.")
+    parser.add_argument('--optimizer', metavar="character", type=str,
+                        choices=["Adam", "SGD"], default="mse",
+                        help="Optimizer to use for backpropagation in the FNN.")
+    parser.add_argument('--batchSize', metavar="INT", type=int,
+                        default=128,
+                        help="Batch size in FNN training.")
 
 
 @dataclass

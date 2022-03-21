@@ -23,7 +23,7 @@ from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import auc
-from sklearn.metrics import f1_score
+from sklearn.metrics import recall_score, precision_score, f1_score
 
 from dfpl import options
 from dfpl import autoencoder as ac
@@ -103,9 +103,10 @@ def define_nn_model(
     # compile model
     model.compile(loss=lf[loss_function],
                   optimizer=my_optimizer,
-                  metrics=[metrics.Accuracy(name="train_acc"),
-                           metrics.Precision(name="train_precision"),
-                           metrics.Recall(name="train_recall")])  # ,
+                  metrics=['accuracy',
+                           metrics.Precision(),
+                           metrics.Recall()]
+                  )  # ,
     # metrics.Accuracy(),
     # metrics.Precision(),
     # metrics.Recall(),
@@ -135,6 +136,7 @@ def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tupl
     model_file_path_json = str(path_prefix) + model_name + '.json'
     model_hist_path = str(path_prefix) + model_name
     model_hist_csv_path = str(path_prefix) + model_name + '.history.csv'
+    model_predict_valset_csv_path = str(path_prefix) + model_name + '.predictValSet.csv'
     model_validation = str(path_prefix) + model_name + '.validation.csv'
     model_auc_file = str(path_prefix) + model_name + '.auc_value.svg'
     model_auc_file_data = str(path_prefix) + model_name + '.auc_value.data.csv'
@@ -144,6 +146,7 @@ def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tupl
     model_heatmap_z = str(path_prefix) + model_name + '.AC.heatmap.Z.svg'
 
     return (model_file_path_weights, model_file_path_json, model_hist_path,
+            model_hist_csv_path, model_predict_valset_csv_path,
             model_validation, model_auc_file,
             model_auc_file_data, out_file_path, checkpoint_path,
             model_heatmap_x, model_heatmap_z)
@@ -562,55 +565,62 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
                          str(opts.sampleFractionOnes)
 
             # define all the output file/path names
-            (model_file_path_weights, model_file_path_json, model_hist_path,
+            (model_file_path_weights, model_file_path_json, model_hist_path, model_hist_csv_path,
+             model_predict_valset_csv_path,
              model_validation, model_auc_file,
              model_auc_file_data, outfile_path, checkpoint_path,
              model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
                                                                        target=model_name,
                                                                        fold=fold_no)
 
-            model = define_nn_model(input_size=x[train].shape[1], loss_function=opts.lossFunction, optimizer='SGD')
+            model = define_nn_model(input_size=x[train].shape[1],
+                                    loss_function=opts.lossFunction,
+                                    optimizer=opts.optimizer)
 
             callback_list = nn_callback(checkpoint_path=checkpoint_path)
 
             # measure the training time
             start = time()
             # train and validate
-            y_int_train = np.array([int(i) for i in y[train]])
-            y_int_test = np.array([int(i) for i in y[test]])
-            hist = model.fit(x[train], y_int_train,  #y[train],
+            # y_int_train = np.array([int(i) for i in y[train]])
+            # y_int_test = np.array([int(i) for i in y[test]])
+            hist = model.fit(x[train], y[train],  # y_int_train,
                              callbacks=callback_list,
-                             epochs=500,  # opts.epochs,
-                             batch_size=128,
+                             epochs=opts.epochs,
+                             batch_size=opts.batchSize,
                              verbose=opts.verbose,
-                             # validation_split=opts.testingFraction)
-                             validation_data=(x[test], y_int_test)) # y[test]))  # this overwrites val_split!
+                             # validation_split=opts.testingFraction
+                             validation_data=(x[test], y[test])  # y_int_test)  # this overwrites val_split!
+                             )
             trainTime = str(round((time() - start) / 60, ndigits=2))
 
             logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
 
-            ht.store_and_plot_history(base_file_name=model_hist_path,
-                                      hist=hist)
+            # ht.store_and_plot_history(base_file_name=model_hist_path,
+            #                           hist=hist)
 
-            # pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
+            pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
-            # validate model on test data set (x_test, y_test)
-            scores = validate_model_on_test_data(x[test], checkpoint_path, y[test],
-                                                 "FNN", model_validation, target,
-                                                 model_auc_file_data, model_auc_file)
+            # predict test data set (x_test, y_test) and store it to generate precision recall AUC curves
+            y_predict = model.predict(x[test]).flatten()
+            pd.DataFrame({"y_true": y[test], "y_predicted": y_predict}).to_csv(model_predict_valset_csv_path)
 
-            idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
-
-            row_df = pd.DataFrame([[fold_no,
-                                    hist.history['loss'][idx], hist.history['val_loss'][idx],
-                                    hist.history['my_acc'][idx], hist.history['val_my_acc'][idx],
-                                    scores[0], scores[1], scores[2]]],
-                                  columns=["fold_no",  # fold number of k-fold CV
-                                           "loss", "val_loss", "acc", "val_acc",  # FNN training
-                                           "loss_test", "acc_test", "mcc_test"]
-                                  )
-            logging.info(row_df)
-            all_scores = all_scores.append(row_df, ignore_index=True)
+            # scores = validate_model_on_test_data(x[test], checkpoint_path, y[test],
+            #                                      "FNN", model_validation, target,
+            #                                      model_auc_file_data, model_auc_file)
+            #
+            # idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
+            #
+            # row_df = pd.DataFrame([[fold_no,
+            #                         hist.history['loss'][idx], hist.history['val_loss'][idx],
+            #                         hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
+            #                         scores[0], scores[1], scores[2]]],
+            #                       columns=["fold_no",  # fold number of k-fold CV
+            #                                "loss", "val_loss", "acc", "val_acc",  # FNN training
+            #                                "loss_test", "acc_test", "mcc_test"]
+            #                       )
+            # logging.info(row_df)
+            # all_scores = all_scores.append(row_df, ignore_index=True)
             fold_no += 1
             del model
             # now next fold
@@ -620,26 +630,27 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         # finalize model
         # 1. provide best performing fold variant
         # select best model based on MCC
-        idx2 = all_scores[['mcc_test']].idxmax().ravel()[0]
-        fold_no = all_scores.iloc[idx2]['fold_no']
-
-        model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + str(
-            opts.sampleFractionOnes) + '.Fold-' + str(fold_no)
-        checkpoint_path = str(opts.outputDir) + "/" + model_name + '.checkpoint.model.hdf5'
-
-        best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "best.FNN")
-
-        # store all scores
-        file = re.sub(".hdf5", "scores.csv", re.sub("Fold-..checkpoint", "Fold-All", checkpoint_path))
-        all_scores.to_csv(file)
-
-        # copy best DNN model
-        shutil.copyfile(checkpoint_path, best_model_file)
-        logging.info("Best model for FNN is saved: " + best_model_file)
+        # idx2 = all_scores[['mcc_test']].idxmax().ravel()[0]
+        # fold_no = all_scores.iloc[idx2]['fold_no']
+        #
+        # model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + str(
+        #     opts.sampleFractionOnes) + '.Fold-' + str(fold_no)
+        # checkpoint_path = str(opts.outputDir) + "/" + model_name + '.checkpoint.model.hdf5'
+        #
+        # best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "best.FNN")
+        #
+        # # store all scores
+        # file = re.sub(".hdf5", "scores.csv", re.sub("Fold-..checkpoint", "Fold-All", checkpoint_path))
+        # all_scores.to_csv(file)
+        #
+        # # copy best DNN model
+        # shutil.copyfile(checkpoint_path, best_model_file)
+        # logging.info("Best model for FNN is saved: " + best_model_file)
 
         # AND retrain with full data set
         full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN")
         (model_file_path_weights, model_file_path_json, model_hist_path,
+         model_hist_csv_path, model_predict_valset_csv_path,
          model_validation, model_auc_file,
          model_auc_file_data, out_file_path, checkpoint_path,
          model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
@@ -656,7 +667,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         hist = model.fit(x, y,
                          callbacks=callback_list,
                          epochs=opts.epochs,
-                         batch_size=256,
+                         batch_size=opts.batchSize,
                          verbose=opts.verbose,
                          validation_split=opts.testingFraction)
 
@@ -666,10 +677,11 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         logging.info("Computation time for training the full classification FNN: " + trainTime + "min")
 
         model_hist_path = full_model_file.replace(".hdf5", "")
-        ht.store_and_plot_history(base_file_name=model_hist_path,
-                                  hist=hist)
+        # ht.store_and_plot_history(base_file_name=model_hist_path,
+        #                           hist=hist)
 
         # pd.DataFrame(hist.history).to_csv(full_model_file.replace(".hdf5", ".history.csv"))
+        pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
         del model
         # now next target
