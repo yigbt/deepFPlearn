@@ -21,7 +21,7 @@ class TrainOptions:
     fpSize: int = 2048
     encFPSize: int = 256
     kFolds: int = 0
-    testingFraction: float = 0.2
+    testSize: float = 0.2
     enableMultiLabel: bool = True
     verbose: int = 0
     trainAC: bool = True  # if set to False, an AC weight file must be provided!
@@ -33,6 +33,9 @@ class TrainOptions:
     optimizer: str = "Adam"
     batchSize: int = 128
     learningRate: float = 0.001
+    activationFunction: str = "relu"
+    l2reg: float = 0.001
+    dropout: float = 0.2
 
     def saveToFile(self, file: str) -> None:
         """
@@ -76,7 +79,7 @@ class TrainOptions:
                 encFPSize=args.d,
                 epochs=args.e,
                 kFolds=args.K,
-                testingFraction=args.l,
+                testSize=args.l,
                 enableMultiLabel=args.m,
                 verbose=args.v,
                 trainAC=args.trainAC,
@@ -87,7 +90,10 @@ class TrainOptions:
                 lossFunction=args.lossFunction,
                 optimizer=args.optimizer,
                 batchSize=args.batchSize,
-                learningRate=args.learningRate
+                learningRate=args.learningRate,
+                activationFunction=args.activationFunction,
+                l2reg=args.l2reg,
+                dropout=args.dropout
             )
 
 
@@ -212,6 +218,15 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--learningRate', metavar="FLOAT", type=float,
                         default=0.001,
                         help="Batch size in FNN training.")
+    parser.add_argument('--activationFunction', metavar="character", type=str,
+                        default="relu", choices=['relu', 'tanh'],
+                        help="The activation function for hidden layers in the FNN.")
+    parser.add_argument('--l2reg', metavar="FLOAT", type=float,
+                        default=0.001,
+                        help="Value for l2 kernel regularizer.")
+    parser.add_argument('--dropout', metavar="FLOAT", type=float,
+                        default=0.2,
+                        help="The fraction of data that is dropped out in each dropout layer.")
 
 
 @dataclass

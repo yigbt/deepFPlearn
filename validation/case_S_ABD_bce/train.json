@@ -9,7 +9,7 @@
   "batchSize": 128,
   "fpSize": 2048,
   "encFPSize": 256,
-  "kFolds": 5,
+  "kFolds": 0,
   "testingFraction": 0.2,
   "enableMultiLabel": true,
   "verbose": 2,

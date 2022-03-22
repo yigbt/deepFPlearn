@@ -25,6 +25,7 @@ from sklearn.metrics import roc_curve
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import auc
 from sklearn.metrics import recall_score, precision_score, f1_score
+from sklearn.model_selection import train_test_split
 
 from dfpl import options
 from dfpl import autoencoder as ac
@@ -32,6 +33,62 @@ from dfpl import history as ht
 from dfpl import settings
 
 from time import time
+
+# for testing in Weights & Biases
+# import wandb
+
+
+def define_nn_single_label_model(input_size: int,
+                                 opts: options.TrainOptions) -> Model:
+    lf = dict({"mse": "mean_squared_error",
+               "bce": "binary_crossentropy"})
+
+    if opts.optimizer == 'Adam':
+        my_optimizer = optimizers.Adam(learning_rate=opts.learningRate)
+    elif opts.optimizer == 'SGD':
+        my_optimizer = optimizers.SGD(lr=opts.learningRate, momentum=0.9)
+    else:
+        logging.error(f"Your selected optimizer is not supported:{opts.optimizer}.")
+        sys.exit("Unsupported optimizer.")
+
+    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
+
+    if not str(input_size) in my_hidden_layers.keys():
+        raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
+
+    nhl = int(math.log2(input_size) / 2 - 1)
+
+    model = Sequential()
+    # From input to 1st hidden layer
+    model.add(Dense(units=int(input_size / 2),
+                    input_dim=input_size,
+                    activation=opts.activationFunction,
+                    kernel_regularizer=regularizers.l2(opts.l2reg),
+                    kernel_initializer="he_uniform"))
+    model.add(Dropout(opts.dropout))
+    # next hidden layers
+    for i in range(1, nhl):
+        factor_units = 2 ** (i + 1)
+        factor_dropout = 2 * i
+        model.add(Dense(units=int(input_size / factor_units),
+                        activation=opts.activationFunction,
+                        kernel_regularizer=regularizers.l2(opts.l2reg),
+                        kernel_initializer="he_uniform"))
+        model.add(Dropout(opts.dropout / factor_dropout))
+    # output layer
+    model.add(Dense(units=1,
+                    activation='sigmoid'))
+
+    model.summary(print_fn=logging.info)
+
+    # compile model
+    model.compile(loss=lf[opts.lossFunction],
+                  optimizer=my_optimizer,
+                  metrics=['accuracy',
+                           metrics.Precision(),
+                           metrics.Recall()]
+                  )
+    return model
 
 
 def define_nn_model(
@@ -531,6 +588,9 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     # For each individual target train a model
     for target in names_y:  # [:1]:
         # target=names_y[0] # --> only for testing the code
+        # wandb.init(project=f"dfpl-training-{target}", config=vars(opts))
+        # opts = wandb.config
+
         x, y, opts = prepare_nn_training_data(df, target, opts)
         if x is None:
             continue
@@ -538,144 +598,160 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
 
-        # do a kfold cross validation for the FNN training
-        kfold_c_validator = KFold(n_splits=opts.kFolds,
-                                  shuffle=True,
-                                  random_state=42)
+        if opts.kFolds > 0:
+            # do a kfold cross validation for the FNN training
+            kfold_c_validator = KFold(n_splits=opts.kFolds,
+                                      shuffle=True,
+                                      random_state=42)
 
-        # store acc and loss for each fold
-        all_scores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
-                                           "loss", "val_loss", "acc", "val_acc",  # FNN training
-                                           "loss_test", "acc_test"])  # FNN test data
+            # store acc and loss for each fold
+            all_scores = pd.DataFrame(columns=["fold_no",  # fold number of k-fold CV
+                                               "loss", "val_loss", "acc", "val_acc",  # FNN training
+                                               "loss_test", "acc_test"])  # FNN test data
 
-        fold_no = 1
+            fold_no = 1
 
-        # split the data
-        for train, test in kfold_c_validator.split(x, y):  # kfold_c_validator.split(Xt, Yt):
-            # for testing use one of the splits:
-            # kf = kfold_c_validator.split(x, y)
-            # train, test = next(kf)
+            # split the data
+            for train, test in kfold_c_validator.split(x, y):  # kfold_c_validator.split(Xt, Yt):
+                # for testing use one of the splits:
+                # kf = kfold_c_validator.split(x, y)
+                # train, test = next(kf)
 
-            logging.info("Training of fold number:" + str(fold_no))
+                logging.info("Training of fold number:" + str(fold_no))
 
-            logging.info(f"The distribution of 0 and 1 values is:")
-            logging.info(f"\ttrain data:\t{pd.DataFrame(y[train])[0].value_counts().to_list()}")
-            logging.info(f"\ttest  data:\t{pd.DataFrame(y[test])[0].value_counts().to_list()}")
+                logging.info(f"The distribution of 0 and 1 values is:")
+                logging.info(f"\ttrain data:\t{pd.DataFrame(y[train])[0].value_counts().to_list()}")
+                logging.info(f"\ttest  data:\t{pd.DataFrame(y[test])[0].value_counts().to_list()}")
 
-            model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + \
-                         str(opts.sampleFractionOnes)
+                model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + \
+                             str(opts.sampleFractionOnes)
 
-            # define all the output file/path names
-            (model_file_path_weights, model_file_path_json, model_hist_path, model_hist_csv_path,
-             model_predict_valset_csv_path,
-             model_validation, model_auc_file,
-             model_auc_file_data, outfile_path, checkpoint_path,
-             model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
-                                                                       target=model_name,
-                                                                       fold=fold_no)
+                # define all the output file/path names
+                (model_file_path_weights, model_file_path_json, model_hist_path, model_hist_csv_path,
+                 model_predict_valset_csv_path,
+                 model_validation, model_auc_file,
+                 model_auc_file_data, outfile_path, checkpoint_path,
+                 model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
+                                                                           target=model_name,
+                                                                           fold=fold_no)
 
-            model = define_nn_model(input_size=x[train].shape[1],
-                                    loss_function=opts.lossFunction,
-                                    optimizer=opts.optimizer)
+                model = define_nn_model(input_size=x[train].shape[1],
+                                        loss_function=opts.lossFunction,
+                                        optimizer=opts.optimizer)
 
-            callback_list = nn_callback(checkpoint_path=checkpoint_path)
+                callback_list = nn_callback(checkpoint_path=checkpoint_path)
 
-            # measure the training time
-            start = time()
-            # train and validate
-            # y_int_train = np.array([int(i) for i in y[train]])
-            # y_int_test = np.array([int(i) for i in y[test]])
-            hist = model.fit(x[train], y[train],  # y_int_train,
-                             callbacks=callback_list,
-                             epochs=opts.epochs,
-                             batch_size=opts.batchSize,
-                             verbose=opts.verbose,
-                             # validation_split=opts.testingFraction
-                             validation_data=(x[test], y[test])  # y_int_test)  # this overwrites val_split!
-                             )
-            trainTime = str(round((time() - start) / 60, ndigits=2))
+                # measure the training time
+                start = time()
+                # train and validate
+                # y_int_train = np.array([int(i) for i in y[train]])
+                # y_int_test = np.array([int(i) for i in y[test]])
+                hist = model.fit(x[train], y[train],  # y_int_train,
+                                 callbacks=callback_list,
+                                 epochs=opts.epochs,
+                                 batch_size=opts.batchSize,
+                                 verbose=opts.verbose,
+                                 # validation_split=opts.testSize
+                                 validation_data=(x[test], y[test])  # y_int_test)  # this overwrites val_split!
+                                 )
+                trainTime = str(round((time() - start) / 60, ndigits=2))
 
-            logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
+                logging.info("Computation time for training the single-label FNN:" + trainTime + "min")
 
-            # ht.store_and_plot_history(base_file_name=model_hist_path,
-            #                           hist=hist)
+                # ht.store_and_plot_history(base_file_name=model_hist_path,
+                #                           hist=hist)
 
-            pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
+                pd.DataFrame(hist.history).to_csv(model_hist_csv_path)
 
-            # predict test data set (x_test, y_test) and store it to generate precision recall AUC curves
-            y_predict = model.predict(x[test]).flatten()
-            pd.DataFrame({"y_true": y[test], "y_predicted": y_predict}).to_csv(model_predict_valset_csv_path)
+                # predict test data set (x_test, y_test) and store it to generate precision recall AUC curves
+                y_predict = model.predict(x[test]).flatten()
+                pd.DataFrame({"y_true": y[test], "y_predicted": y_predict}).to_csv(model_predict_valset_csv_path)
 
-            # scores = validate_model_on_test_data(x[test], checkpoint_path, y[test],
-            #                                      "FNN", model_validation, target,
-            #                                      model_auc_file_data, model_auc_file)
+                # scores = validate_model_on_test_data(x[test], checkpoint_path, y[test],
+                #                                      "FNN", model_validation, target,
+                #                                      model_auc_file_data, model_auc_file)
+                #
+                # idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
+                #
+                # row_df = pd.DataFrame([[fold_no,
+                #                         hist.history['loss'][idx], hist.history['val_loss'][idx],
+                #                         hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
+                #                         scores[0], scores[1], scores[2]]],
+                #                       columns=["fold_no",  # fold number of k-fold CV
+                #                                "loss", "val_loss", "acc", "val_acc",  # FNN training
+                #                                "loss_test", "acc_test", "mcc_test"]
+                #                       )
+                # logging.info(row_df)
+                # all_scores = all_scores.append(row_df, ignore_index=True)
+                fold_no += 1
+                del model
+                # now next fold
+
+            logging.info(all_scores)
+
+            # finalize model
+            # 1. provide best performing fold variant
+            # select best model based on MCC
+            # idx2 = all_scores[['mcc_test']].idxmax().ravel()[0]
+            # fold_no = all_scores.iloc[idx2]['fold_no']
             #
-            # idx = hist.history['val_loss'].index(min(hist.history['val_loss']))
+            # model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + str(
+            #     opts.sampleFractionOnes) + '.Fold-' + str(fold_no)
+            # checkpoint_path = str(opts.outputDir) + "/" + model_name + '.checkpoint.model.hdf5'
             #
-            # row_df = pd.DataFrame([[fold_no,
-            #                         hist.history['loss'][idx], hist.history['val_loss'][idx],
-            #                         hist.history['accuracy'][idx], hist.history['val_accuracy'][idx],
-            #                         scores[0], scores[1], scores[2]]],
-            #                       columns=["fold_no",  # fold number of k-fold CV
-            #                                "loss", "val_loss", "acc", "val_acc",  # FNN training
-            #                                "loss_test", "acc_test", "mcc_test"]
-            #                       )
-            # logging.info(row_df)
-            # all_scores = all_scores.append(row_df, ignore_index=True)
-            fold_no += 1
-            del model
-            # now next fold
+            # best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "best.FNN")
+            #
+            # # store all scores
+            # file = re.sub(".hdf5", "scores.csv", re.sub("Fold-..checkpoint", "Fold-All", checkpoint_path))
+            # all_scores.to_csv(file)
+            #
+            # # copy best DNN model
+            # shutil.copyfile(checkpoint_path, best_model_file)
+            # logging.info("Best model for FNN is saved: " + best_model_file)
 
-        logging.info(all_scores)
+        # train with full data set
+        # test training data split
+        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=opts.testSize)
 
-        # finalize model
-        # 1. provide best performing fold variant
-        # select best model based on MCC
-        # idx2 = all_scores[['mcc_test']].idxmax().ravel()[0]
-        # fold_no = all_scores.iloc[idx2]['fold_no']
-        #
-        # model_name = target + "_compressed-" + str(opts.compressFeatures) + "_sampled-" + str(
-        #     opts.sampleFractionOnes) + '.Fold-' + str(fold_no)
-        # checkpoint_path = str(opts.outputDir) + "/" + model_name + '.checkpoint.model.hdf5'
-        #
-        # best_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "best.FNN")
-        #
-        # # store all scores
-        # file = re.sub(".hdf5", "scores.csv", re.sub("Fold-..checkpoint", "Fold-All", checkpoint_path))
-        # all_scores.to_csv(file)
-        #
-        # # copy best DNN model
-        # shutil.copyfile(checkpoint_path, best_model_file)
-        # logging.info("Best model for FNN is saved: " + best_model_file)
-
-        # AND retrain with full data set
-        full_model_file = checkpoint_path.replace("Fold-" + str(fold_no) + ".checkpoint", "full.FNN")
+        full_model_file = f"{opts.outputDir}/{target}_full.FNN.model.hdf5"
         (model_file_path_weights, model_file_path_json, model_hist_path,
          model_hist_csv_path, model_predict_valset_csv_path,
          model_validation, model_auc_file,
          model_auc_file_data, out_file_path, checkpoint_path,
          model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
-                                                                   target=target + "_compressed-" + str(
-                                                                       opts.compressFeatures) + "_sampled-" + str(
-                                                                       opts.sampleFractionOnes))
-        # measure the training time
-        start = time()
+                                                                   target=f"{target}"
+                                                                          f"_compressed-{str(opts.compressFeatures)}"
+                                                                          f"_sampled-{str(opts.sampleFractionOnes)}")
 
-        model = define_nn_model(input_size=x.shape[1])
+        # model = define_nn_model(input_size=x.shape[1])
+        model = define_nn_single_label_model(input_size=X_train.shape[1], opts=opts)
+        # evaluate randomly initiated model
+        performance = model.evaluate(X_test, y_test)
+        logging.info(f"{target}-model (random) evaluation [loss, accuracy, precision, recall]:\n"
+                     f"{[round(i, ndigits=4) for i in performance]}")
+
         callback_list = nn_callback(checkpoint_path=full_model_file)
 
+        # measure the training time
+        start = time()
         # train and validate
-        hist = model.fit(x, y,
+        hist = model.fit(X_train, y_train,
                          callbacks=callback_list,
                          epochs=opts.epochs,
                          batch_size=opts.batchSize,
                          verbose=opts.verbose,
-                         validation_split=opts.testingFraction)
+                         validation_data=(X_test, y_test)
+                         )
 
-        trainTime = str(round((time() - start) / 60,
-                              ndigits=2))
+        trainTime = str(round((time() - start) / 60, ndigits=2))
 
-        logging.info("Computation time for training the full classification FNN: " + trainTime + "min")
+        performance = model.evaluate(X_test, y_test)
+        y_predict = model.predict(X_test).flatten()
+        pd.DataFrame({"y_true": y_test, "y_predicted": y_predict}).to_csv(model_predict_valset_csv_path)
+
+        logging.info(f"Computation time for training the full classification FNN: {trainTime}min")
+        logging.info(f"{target}-model (trained) evaluation [loss, accuracy, precision, recall]:\n"
+                     f"{[round(i, ndigits=4) for i in performance]}")
 
         model_hist_path = full_model_file.replace(".hdf5", "")
         # ht.store_and_plot_history(base_file_name=model_hist_path,
@@ -699,27 +775,26 @@ def define_nn_multi_label_model(input_size: int,
         logging.error(f"Your selected optimizer is not supported:{opts.optimizer}.")
         sys.exit("Unsupported optimizer.")
 
-    # Todo: hier gehts weiter!
-
     nhl = int(math.log2(input_size) / 2 - 1)
 
     model = Sequential()
     # From input to 1st hidden layer
     model.add(Dense(units=int(input_size / 2),
                     input_dim=input_size,
-                    activation=activation,
-                    kernel_regularizer=regularizers.l2(l2reg)))
-    model.add(Dropout(dropout))
+                    activation=opts.activationFunction,
+                    kernel_regularizer=regularizers.l2(opts.l2reg)))
+    model.add(Dropout(opts.dropout))
     # next hidden layers
     for i in range(1, nhl):
         factor_units = 2 ** (i + 1)
         factor_dropout = 2 * i
         model.add(Dense(units=int(input_size / factor_units),
-                        activation=activation,
-                        kernel_regularizer=regularizers.l2(l2reg)))
-        model.add(Dropout(dropout / factor_dropout))
+                        activation=opts.activationFunction,
+                        kernel_regularizer=regularizers.l2(opts.l2reg)))
+        model.add(Dropout(opts.dropout / factor_dropout))
     # multi-class output layer
     # use sigmoid to get independent probabilities for each output node
+    # we use sigmoid since one chemical can be active for multiple targets
     # (need not add up to one, as they would using softmax)
     # https://www.depends-on-the-definition.com/guide-to-multi-label-classification-with-neural-networks/
     model.add(Dense(units=output_size,
@@ -730,7 +805,7 @@ def define_nn_multi_label_model(input_size: int,
     # compile model
     model.compile(loss="binary_crossentropy",
                   optimizer=my_optimizer,
-                  metrics=['accuracy'])
+                  metrics=['accuracy', metrics.Recall(), metrics.Precision()])
 
     return model
 
@@ -833,7 +908,7 @@ def validate_multi_model_on_test_data(x_test: array, checkpoint_path: str, y_tes
 
 def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     # find target columns
-    names_y = [c for c in df.columns if c not in ['id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if c not in ['cid', 'id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
     selector = df[names_y].notna().apply(np.logical_and.reduce, axis=1)
 
     if opts.compressFeatures:
@@ -899,7 +974,7 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
                              epochs=opts.epochs,
                              batch_size=256,
                              verbose=opts.verbose,
-                             validation_split=opts.testingFraction)
+                             validation_split=opts.testSize)
 
             trainTime = str(round((time() - start) / 60, ndigits=2))
 
@@ -953,7 +1028,7 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         logging.info("Best models for FNN is saved:\n" + best_model_file)
 
     # AND retrain with full data set
-    full_model_file = f"{opts.outputDir}/full.FNN.checkpoint.model.hdf5"
+    full_model_file = f"{opts.outputDir}/multi_full.FNN.checkpoint.model.hdf5"
 
     (model_file_path_weights, model_file_path_json, model_hist_path, model_hist_csv_path,
      model_predict_valset_csv_path,
@@ -963,22 +1038,31 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
                                                                target="multi" + "_compressed-" + str(
                                                                    opts.compressFeatures))
 
-    # measure the training time
-    start = time()
+    # test training data split
+    X_train, X_test, y_train, y_test = train_test_split(fpMatrix, y, test_size=opts.testSize)
 
-    model = define_nn_model_multi(input_size=fpMatrix.shape[1],
-                                  output_size=y.shape[1])
+    # measure the training time
+    model = define_nn_multi_label_model(input_size=fpMatrix.shape[1],
+                                        output_size=y.shape[1],
+                                        opts=opts)
+    model.evaluate(X_test, y_test)
+
+    # model = define_nn_model_multi(input_size=fpMatrix.shape[1],
+    #                               output_size=y.shape[1])
     callback_list = nn_callback(checkpoint_path=full_model_file)
     # train and validate
-    hist = model.fit(fpMatrix, y,
-                     callbacks=callback_list,
+    start = time()
+    hist = model.fit(X_train, y_train,
+                     # callbacks=callback_list,
                      epochs=opts.epochs,
-                     batch_size=256,
+                     batch_size=opts.batchSize,
                      verbose=opts.verbose,
-                     validation_split=opts.testingFraction)
+                     validation_data=(X_test, y_test)
+                     )
+    trainTime = str(round((time() - start) / 60, ndigits=2))
 
-    trainTime = str(round((time() - start) / 60,
-                          ndigits=2))
+    # yhat = model.predict(X_test)
+    model.evaluate(X_test, y_test)
 
     logging.info("Computation time for training the full multi-label FNN: " + trainTime + " min")
     ht.store_and_plot_history(base_file_name=model_hist_path, hist=hist)

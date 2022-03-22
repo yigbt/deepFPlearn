@@ -5,11 +5,11 @@
   "ecWeightsFile": "validation/case_00/results_AC_D/ac_D.encoder.hdf5",
   "type": "smiles",
   "fpType": "topological",
-  "epochs": 100,
+  "epochs": 1000,
   "batchSize": 128,
   "fpSize": 2048,
   "encFPSize": 256,
-  "kFolds": 5,
+  "kFolds": 0,
   "testingFraction": 0.2,
   "enableMultiLabel": true,
   "verbose": 2,
@@ -17,5 +17,6 @@
   "trainFNN": true,
   "compressFeatures": true,
   "lossFunction": "mse",
-  "optimizer": "Adam"
+  "optimizer": "Adam",
+  "activationFunction": "relu"
 }

@@ -4,6 +4,8 @@ import pathlib
 import dataclasses
 from os import path
 
+# import wandb
+
 from dfpl.utils import makePathAbsolute, createDirectory
 from dfpl import options
 from dfpl import fingerprint as fp
@@ -23,14 +25,14 @@ opts = options.TrainOptions(
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
-    testingFraction=0.2,
+    testSize=0.2,
     kFolds=2,
     verbose=2,
     trainAC=False,
     trainFNN=True,
     compressFeatures=True,
-    lossFunction="mse",
-    optimizer="SGD"
+    lossFunction="bce",
+    optimizer="Adam"
 )
 logging.basicConfig(level=logging.INFO)
 
