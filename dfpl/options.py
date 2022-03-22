@@ -20,11 +20,11 @@ class TrainOptions:
     epochs: int = 512
     fpSize: int = 2048
     encFPSize: int = 256
-    kFolds: int = 5
+    kFolds: int = 0
     testingFraction: float = 0.2
-    enableMultiLabel: bool = False
+    enableMultiLabel: bool = True
     verbose: int = 0
-    trainAC: bool = True    # if set to False, an AC weight file must be provided!
+    trainAC: bool = True  # if set to False, an AC weight file must be provided!
     trainFNN: bool = True
     compressFeatures: bool = True
     sampleFractionOnes: float = None
@@ -32,6 +32,7 @@ class TrainOptions:
     lossFunction: str = "mse"
     optimizer: str = "Adam"
     batchSize: int = 128
+    learningRate: float = 0.001
 
     def saveToFile(self, file: str) -> None:
         """
@@ -85,7 +86,8 @@ class TrainOptions:
                 sampleDown=args.sampleDown,
                 lossFunction=args.lossFunction,
                 optimizer=args.optimizer,
-                batchSize=args.batchSize
+                batchSize=args.batchSize,
+                learningRate=args.learningRate
             )
 
 
@@ -206,6 +208,9 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         help="Optimizer to use for backpropagation in the FNN.")
     parser.add_argument('--batchSize', metavar="INT", type=int,
                         default=128,
+                        help="Batch size in FNN training.")
+    parser.add_argument('--learningRate', metavar="FLOAT", type=float,
+                        default=0.001,
                         help="Batch size in FNN training.")
 
 
