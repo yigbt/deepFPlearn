@@ -36,6 +36,7 @@ class TrainOptions:
     activationFunction: str = "relu"
     l2reg: float = 0.001
     dropout: float = 0.2
+    trackWandB: bool = False
 
     def saveToFile(self, file: str) -> None:
         """
@@ -93,7 +94,8 @@ class TrainOptions:
                 learningRate=args.learningRate,
                 activationFunction=args.activationFunction,
                 l2reg=args.l2reg,
-                dropout=args.dropout
+                dropout=args.dropout,
+                trackWandB=args.trackWandB
             )
 
 
@@ -227,6 +229,9 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--dropout', metavar="FLOAT", type=float,
                         default=0.2,
                         help="The fraction of data that is dropped out in each dropout layer.")
+    parser.add_argument('--trackWandB', metavar="BOOL", type=bool,
+                        default=False,
+                        help="Track training performance via Weights & Biases, see https://wandb.ai.")
 
 
 @dataclass

@@ -35,8 +35,8 @@ from dfpl import settings
 from time import time
 
 # for testing in Weights & Biases
-# import wandb
-
+import wandb
+from wandb.keras import WandbCallback
 
 def define_nn_single_label_model(input_size: int,
                                  opts: options.TrainOptions) -> Model:
@@ -568,7 +568,11 @@ def nn_callback(checkpoint_path: str) -> list:
                                verbose=1,
                                restore_best_weights=True)
 
-    return [checkpoint, early_stop]
+    trackWandB_callback = WandbCallback()
+    # trackWandB_callback = WandbCallback(monitor={'Train loss': 'loss', 'Val loss': 'val_loss',
+    #                                              'Train accuracy': 'accuracy', 'Val accuracy': 'val_accuracy'})
+
+    return [checkpoint, early_stop, trackWandB_callback]
 
 
 def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
@@ -587,9 +591,10 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
     # For each individual target train a model
     for target in names_y:  # [:1]:
-        # target=names_y[0] # --> only for testing the code
-        # wandb.init(project=f"dfpl-training-{target}", config=vars(opts))
-        # opts = wandb.config
+        # target=names_y[1] # --> only for testing the code
+        if opts.trackWandB:
+            wandb.init(project=f"dfpl-training-{target}", config=vars(opts))
+            opts = wandb.config
 
         x, y, opts = prepare_nn_training_data(df, target, opts)
         if x is None:
@@ -745,9 +750,9 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
         trainTime = str(round((time() - start) / 60, ndigits=2))
 
-        performance = model.evaluate(X_test, y_test)
         y_predict = model.predict(X_test).flatten()
         pd.DataFrame({"y_true": y_test, "y_predicted": y_predict}).to_csv(model_predict_valset_csv_path)
+        performance = model.evaluate(X_test, y_test)
 
         logging.info(f"Computation time for training the full classification FNN: {trainTime}min")
         logging.info(f"{target}-model (trained) evaluation [loss, accuracy, precision, recall]:\n"
