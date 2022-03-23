@@ -385,6 +385,8 @@ def validate_model_on_test_data(x_test: array, checkpoint_path: str, y_test: arr
     """
     Function that validates trained model with test data set. History and AUC plots are generated.
     Accuracy and Loss of model on test data, as well as MCC and confusion matrix is calculated and returned.
+    Validation metrics to return
+    - AUROC: predictive power, values in [0.5,1.0] from no, over poor, good and perfect predictive power
 
     :param x_test:
     :param checkpoint_path:
