@@ -38,6 +38,7 @@ from time import time
 import wandb
 from wandb.keras import WandbCallback
 
+
 def define_nn_single_label_model(input_size: int,
                                  opts: options.TrainOptions) -> Model:
     lf = dict({"mse": "mean_squared_error",
@@ -546,7 +547,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
     return x, y, opts
 
 
-def nn_callback(checkpoint_path: str) -> list:
+def nn_callback(checkpoint_path: str, opts: options.TrainOptions) -> list:
     """
     Callbacks for fitting the autoencoder
 
@@ -564,15 +565,20 @@ def nn_callback(checkpoint_path: str) -> list:
 
     # enable early stopping if val_loss is not improving anymore
     early_stop = EarlyStopping(patience=settings.nn_train_patience,
+                               monitor="loss",
                                min_delta=settings.nn_train_min_delta,
                                verbose=1,
                                restore_best_weights=True)
 
-    trackWandB_callback = WandbCallback()
+    if opts.wabTracking:
+        trackWandB_callback = WandbCallback()
+        return [checkpoint, early_stop, trackWandB_callback]
+    else:
+        return [checkpoint, early_stop]
+
     # trackWandB_callback = WandbCallback(monitor={'Train loss': 'loss', 'Val loss': 'val_loss',
     #                                              'Train accuracy': 'accuracy', 'Val accuracy': 'val_accuracy'})
 
-    return [checkpoint, early_stop, trackWandB_callback]
 
 
 def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
@@ -589,13 +595,20 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
     # find target columns
     names_y = [c for c in df.columns if c not in ['cid', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
+    if opts.wabTracking:
+        # For W&B tracking, we only train one target.
+        # We love to have the ER target, but in case it's not there, we use the first one available
+        if opts.wabTarget in names_y:
+            names_y = [opts.wabTarget]
+        else:
+            logging.error(f"The specified wabTarget for Weights & Biases tracking does not exist: {opts.wabTarget}")
+            names_y = [names_y[0]]
+        wandb.init(project=f"dfpl-training-{names_y[0]}", config=vars(opts))
+        opts = wandb.config
+
     # For each individual target train a model
     for target in names_y:  # [:1]:
         # target=names_y[1] # --> only for testing the code
-        if opts.trackWandB:
-            wandb.init(project=f"dfpl-training-{target}", config=vars(opts))
-            opts = wandb.config
-
         x, y, opts = prepare_nn_training_data(df, target, opts)
         if x is None:
             continue
@@ -735,7 +748,7 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         logging.info(f"{target}-model (random) evaluation [loss, accuracy, precision, recall]:\n"
                      f"{[round(i, ndigits=4) for i in performance]}")
 
-        callback_list = nn_callback(checkpoint_path=full_model_file)
+        callback_list = nn_callback(checkpoint_path=full_model_file, opts=opts)
 
         # measure the training time
         start = time()
@@ -826,7 +839,7 @@ def define_nn_model_multi(input_size: int = 2048,
     if optimizer == 'Adam':
         my_optimizer = optimizers.Adam(learning_rate=lr, decay=decay)
     elif optimizer == 'SGD':
-        my_optimizer = SGD(lr=lr, momentum=0.9, decay=decay)
+        my_optimizer = optimizers.SGD(lr=lr, momentum=0.9, decay=decay)
     else:
         my_optimizer = optimizer
 
@@ -1054,7 +1067,7 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
 
     # model = define_nn_model_multi(input_size=fpMatrix.shape[1],
     #                               output_size=y.shape[1])
-    callback_list = nn_callback(checkpoint_path=full_model_file)
+    # callback_list = nn_callback(checkpoint_path=full_model_file, opts=opts)
     # train and validate
     start = time()
     hist = model.fit(X_train, y_train,

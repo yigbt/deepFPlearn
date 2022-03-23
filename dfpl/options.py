@@ -36,11 +36,12 @@ class TrainOptions:
     activationFunction: str = "relu"
     l2reg: float = 0.001
     dropout: float = 0.2
-    trackWandB: bool = False
+    wabTracking: bool = False  # Wand & Biases tracking
+    wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
 
     def saveToFile(self, file: str) -> None:
         """
-        Saves a instance to a JSON file
+        Saves an instance to a JSON file
         """
         jsonFile = Path(file)
         with jsonFile.open("w") as f:
@@ -95,7 +96,8 @@ class TrainOptions:
                 activationFunction=args.activationFunction,
                 l2reg=args.l2reg,
                 dropout=args.dropout,
-                trackWandB=args.trackWandB
+                wabTracking=args.wabTracking,
+                wabTarget=args.wabTarget
             )
 
 
@@ -221,7 +223,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         default=0.001,
                         help="Batch size in FNN training.")
     parser.add_argument('--activationFunction', metavar="character", type=str,
-                        default="relu", choices=['relu', 'tanh'],
+                        default="relu", choices=["relu", "tanh", "selu", "elu", "exponential"],
                         help="The activation function for hidden layers in the FNN.")
     parser.add_argument('--l2reg', metavar="FLOAT", type=float,
                         default=0.001,
@@ -229,9 +231,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--dropout', metavar="FLOAT", type=float,
                         default=0.2,
                         help="The fraction of data that is dropped out in each dropout layer.")
-    parser.add_argument('--trackWandB', metavar="BOOL", type=bool,
+    parser.add_argument('--wabTracking', metavar="BOOL", type=bool,
                         default=False,
                         help="Track training performance via Weights & Biases, see https://wandb.ai.")
+    parser.add_argument('--wabTarget', metavar="STRING", type=str,
+                        default="ER",
+                        help="Which target to use for tracking training performance via Weights & Biases, "
+                             "see https://wandb.ai.")
 
 
 @dataclass
