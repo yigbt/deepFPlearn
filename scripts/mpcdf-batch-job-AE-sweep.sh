@@ -29,4 +29,4 @@ conda activate dfpl_env
 conda develop dfpl
 
 # Run the program:
-srun scripts/run-all-publication-cases.sh &> mpcdf_dfpl_run.log
+srun wandb agent halance/deepFPlearn/phsf7666 &> mpcdf_dfpl_run.log

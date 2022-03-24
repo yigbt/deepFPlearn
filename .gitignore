@@ -4,6 +4,8 @@ predictions
 .idea
 .pytest_cache
 .RDataFiles
+input_datasets
+output_data
 tests
 data
 singularity_container/dfpl.sif
