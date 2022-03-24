@@ -12,12 +12,13 @@ from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import predictions
+from dfpl import single_label_model as sl
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 opts = options.TrainOptions(
-    inputFile=f"{project_directory}/data/S_dataset.pkl",
-    outputDir=f"{project_directory}/validation/case_S_ABD_bce/",
-    ecWeightsFile=f"{project_directory}/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+    inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
+    outputDir=f"{project_directory}/output_data/console_test",
+    ecWeightsFile=f"{project_directory}/output_data/case_00/AE_D/ac_D.encoder.hdf5",
     type='smiles',
     fpType='topological',
     epochs=100,
@@ -80,7 +81,8 @@ def train(opts: options.TrainOptions):
 
     if opts.trainFNN:
         # train single label models
-        fNN.train_nn_models(df=df, opts=opts)
+        # fNN.train_single_label_models(df=df, opts=opts)
+        sl.train_single_label_models(df=df, opts=opts)
 
     # train multi-label models
     if opts.enableMultiLabel:
@@ -103,7 +105,7 @@ def predict(opts: options.PredictOptions) -> None:
         logging.info(f"Using fingerprint compression with AC {opts.ecWeightsFile}")
         use_compressed = True
         # load trained model for autoencoder
-        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+        (_, encoder) = ac.define_ac_model(opts=opts)
         encoder.load_weights(opts.ecWeightsFile)
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
