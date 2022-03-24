@@ -12,20 +12,21 @@ from keras import optimizers
 from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
+# for testing in Weights & Biases
+import wandb
+from wandb.keras import WandbCallback
+
 from dfpl import options
 from dfpl import history as ht
 from dfpl import settings
 
 
-def define_ac_model(
-        input_size: int = 2048,
-        encoding_dim: int = 256,
-        my_loss: str = "binary_crossentropy",
-        my_lr: float = 0.001,
-        my_decay: float = 0.01) -> (Model, Model):
+def define_ac_model(opts: options.TrainOptions,
+                    my_loss: str = "binary_crossentropy") -> (Model, Model):
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
+    :param opts: Training options that provide values for adjusting the neural net
     :param encoding_dim: Size of the compressed representation. Default: 85
     :param input_size: Size of the input. Default: 2048
     :param my_loss: Loss function, see Keras Loss functions for potential values. Default: binary_crossentropy
@@ -33,9 +34,10 @@ def define_ac_model(
     :param my_decay:
     :return: a tuple of autoencoder and encoder models
     """
-
-    ac_optimizer = optimizers.Adam(learning_rate=my_lr,
-                                   decay=my_decay)
+    input_size = opts.fpSize
+    encoding_dim = opts.encFPSize
+    ac_optimizer = optimizers.Adam(learning_rate=opts.aeLearningRate,
+                                   decay=opts.aeLearningRateDecay)
 
     # get the number of meaningful hidden layers (latent space included)
     hidden_layer_count = round(math.log2(input_size / encoding_dim))
@@ -44,29 +46,45 @@ def define_ac_model(
     input_vec = Input(shape=(input_size,))
 
     # 1st hidden layer, that receives weights from input layer
-    # equals bottle neck layer, if hidden_layer_count==1!
-    encoded = Dense(units=int(input_size / 2),
-                    activation='relu')(input_vec)
+    # equals bottleneck layer, if hidden_layer_count==1!
+    if opts.aeActivationFunction != "selu":
+        encoded = Dense(units=int(input_size / 2), activation=opts.aeActivationFunction)(input_vec)
+    else:
+        encoded = Dense(units=int(input_size / 2),
+                        activation=opts.aeActivationFunction,
+                        kernel_initializer="lecun_normal")(input_vec)
 
     if hidden_layer_count > 1:
         # encoding layers, incl. bottle neck
         for i in range(1, hidden_layer_count):
             factor_units = 2 ** (i + 1)
             # print(f'{factor_units}: {int(input_size / factor_units)}')
-            encoded = Dense(units=int(input_size / factor_units),
-                            activation='relu')(encoded)
+            if opts.aeActivationFunction != "selu":
+                encoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(encoded)
+            else:
+                encoded = Dense(units=int(input_size / factor_units),
+                                activation=opts.aeActivationFunction,
+                                kernel_initializer="lecun_normal")(encoded)
 
         # 1st decoding layer
         factor_units = 2 ** (hidden_layer_count - 1)
-        decoded = Dense(units=int(input_size / factor_units),
-                        activation='relu')(encoded)
+        if opts.aeActivationFunction != "selu":
+            decoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(encoded)
+        else:
+            decoded = Dense(units=int(input_size / factor_units),
+                            activation=opts.aeActivationFunction,
+                            kernel_initializer="lecun_normal")(encoded)
 
         # decoding layers
         for i in range(hidden_layer_count - 2, 0, -1):
             factor_units = 2 ** i
             # print(f'{factor_units}: {int(input_size/factor_units)}')
-            decoded = Dense(units=int(input_size / factor_units),
-                            activation='relu')(decoded)
+            if opts.aeActivationFunction != "selu":
+                decoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(decoded)
+            else:
+                decoded = Dense(units=int(input_size / factor_units),
+                                activation=opts.aeActivationFunction,
+                                kernel_initializer="lecun_normal")(decoded)
 
         # output layer
         # The output layer needs to predict the probability of an output which needs
@@ -93,7 +111,7 @@ def define_ac_model(
     return autoencoder, encoder
 
 
-def autoencoder_callback(checkpoint_path: str) -> list:
+def autoencoder_callback(checkpoint_path: str, opts: options.TrainOptions) -> list:
     """
     Callbacks for fitting the autoencoder
 
@@ -115,7 +133,11 @@ def autoencoder_callback(checkpoint_path: str) -> list:
                                verbose=1,
                                restore_best_weights=True)
 
-    return [checkpoint, early_stop]
+    if opts.wabTracking:
+        trackWandB_callback = WandbCallback(save_model=False)
+        return [checkpoint, early_stop, trackWandB_callback]
+    else:
+        return [checkpoint, early_stop]
 
 
 def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
@@ -129,8 +151,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
     """
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    (autoencoder, encoder) = define_ac_model(input_size=opts.fpSize,
-                                             encoding_dim=opts.encFPSize)
+    (autoencoder, encoder) = define_ac_model(opts)
 
     # define output file for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
@@ -146,7 +167,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
         ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # collect the callbacks for training
-    callback_list = autoencoder_callback(checkpoint_path=ac_weights_file)
+    callback_list = autoencoder_callback(checkpoint_path=ac_weights_file, opts=opts)
 
     # Select all fps that are valid and turn them into a numpy array
     # This step is crucial for speed!!!
@@ -164,7 +185,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
 
     auto_hist = autoencoder.fit(x_train, x_train,
                                 callbacks=callback_list,
-                                epochs=opts.epochs,
+                                epochs=opts.aeEpochs,
                                 batch_size=256,
                                 verbose=opts.verbose,
                                 validation_data=(x_test, x_test))

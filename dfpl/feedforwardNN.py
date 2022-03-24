@@ -123,9 +123,9 @@ def define_nn_model(
         my_optimizer = optimizers.Adam(learning_rate=lr,
                                        decay=decay)
     elif optimizer == 'SGD':
-        my_optimizer = SGD(lr=lr,
-                           momentum=0.9,
-                           decay=decay)
+        my_optimizer = optimizers.SGD(lr=lr,
+                                      momentum=0.9,
+                                      decay=decay)
     else:
         my_optimizer = optimizer
 
@@ -485,7 +485,8 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
         logging.info("Using compressed fingerprints")
         df_fpc = df[df[target].notna() & df["fpcompressed"].notnull()]
         logging.info(f"DataSet has {str(df_fpc.shape)} entries with not NA values in fpcompressed and {target}")
-        if opts.sampleFractionOnes:
+        if opts.sampleDown:
+            assert 0.0 < opts.sampleFractionOnes < 1.0
             logging.info(f"Using fractional sampling {opts.sampleFractionOnes}")
             # how many ones
             counts = df_fpc[target].value_counts()
@@ -573,14 +574,13 @@ def nn_callback(checkpoint_path: str, opts: options.TrainOptions) -> list:
                                restore_best_weights=True)
 
     if opts.wabTracking:
-        trackWandB_callback = WandbCallback()
+        trackWandB_callback = WandbCallback(save_model=False)
         return [checkpoint, early_stop, trackWandB_callback]
     else:
         return [checkpoint, early_stop]
 
     # trackWandB_callback = WandbCallback(monitor={'Train loss': 'loss', 'Val loss': 'val_loss',
     #                                              'Train accuracy': 'accuracy', 'Val accuracy': 'val_accuracy'})
-
 
 
 def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
@@ -605,8 +605,6 @@ def train_nn_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
         else:
             logging.error(f"The specified wabTarget for Weights & Biases tracking does not exist: {opts.wabTarget}")
             names_y = [names_y[0]]
-        wandb.init(project=f"dfpl-training-{names_y[0]}", config=vars(opts))
-        opts = wandb.config
 
     # For each individual target train a model
     for target in names_y:  # [:1]:

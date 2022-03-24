@@ -4,7 +4,7 @@ import pathlib
 import dataclasses
 from os import path
 
-# import wandb
+import wandb
 
 from dfpl.utils import makePathAbsolute, createDirectory
 from dfpl import options
@@ -54,6 +54,10 @@ def train(opts: options.TrainOptions):
     :param opts: Options defining the details of the training
     """
 
+    if opts.wabTracking:
+        wandb.init(project=f"dfpl-training-{opts.wabTarget}", config=vars(opts))
+        # opts = wandb.config
+
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
@@ -68,7 +72,7 @@ def train(opts: options.TrainOptions):
 
         if not opts.trainAC:
             # load trained model for autoencoder
-            (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
+            (_, encoder) = ac.define_ac_model(opts)
             encoder.load_weights(makePathAbsolute(opts.ecWeightsFile))
 
         # compress the fingerprints using the autoencoder
