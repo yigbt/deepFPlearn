@@ -18,6 +18,8 @@ from sklearn.metrics import auc
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
+from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 
@@ -173,26 +175,31 @@ def define_single_label_model(input_size: int,
 def evaluate_model(X_test: np.ndarray, y_test: np.ndarray, file_prefix: str, model: Model,
                    target: str, fold: int) -> pd.DataFrame:
     name = path.basename(file_prefix).replace("_", " ")
-
-    # evaluation
-    performance = model.evaluate(x=X_test, y=y_test)
+    performance = pd.DataFrame()
 
     # predict test set to compute MCC, AUC, ROC curve, etc. (see below)
     y_predict = model.predict(X_test).flatten()
-    pd.DataFrame({"y_true": y_test, "y_predicted": y_predict}). \
-        to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.csv")
-
-    # compute MCC
     y_predict_int = [int(round(y)) for y in y_predict]
     y_test_int = [int(y) for y in y_test]
-    MCC = matthews_corrcoef(y_test_int, y_predict_int)
+    pd.DataFrame({"y_true": y_test, "y_predicted": y_predict,
+                  "y_true_int": y_test_int, "y_predicted_int": y_predict_int,
+                  "target": target, "fold": fold}). \
+        to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.csv")
 
+    # compute the metrics that depend on the class label
+    precicion_recall = classification_report(y_test_int, y_predict_int, output_dict=True)
+    prf = pd.DataFrame.from_dict(precicion_recall)[['0', '1']]
+    prf.to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.prec_rec_f1.csv")
+
+    # validation loss, accuracy
+    loss, acc = tuple(model.evaluate(x=X_test, y=y_test)[:2])
+    # MCC
+    MCC = matthews_corrcoef(y_test_int, y_predict_int)
     # generate the AUC-ROC curve data from the validation data
     FPR, TPR, thresholds_keras = roc_curve(y_true=y_test_int,
                                            y_score=y_predict_int,
                                            drop_intermediate=False)
     AUC = auc(FPR, TPR)
-
     # save AUC data to csv
     pd.DataFrame(list(zip(FPR, TPR, [AUC] * len(FPR), [target] * len(FPR), [fold] * len(FPR))),
                  columns=['fpr', 'tpr', 'auc_value', 'target', 'fold']). \
@@ -213,12 +220,18 @@ def evaluate_model(X_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
     logging.info('CFM: \n\tTN=' + str(cfm[0][0]) + '\tFP=' + str(cfm[0][1]) + '\n\tFN=' + str(cfm[1][0]) +
                  '\tTP=' + str(cfm[1][1]))
 
-    columns = ["loss", "accuracy", "precision", "recall"]
-    performance_dict = {columns[i]: [performance[i]] for i in range(4)}
-    performance_dict['target'] = [target]
-    performance_dict['fold_no'] = [fold]
-
-    return pd.DataFrame(performance_dict)
+    return pd.DataFrame.from_dict({'p_0': prf['0']['precision'],
+                                   'r_0': prf['0']['recall'],
+                                   'f1_0': prf['0']['f1-score'],
+                                   'p_1': prf['1']['precision'],
+                                   'r_1': prf['1']['recall'],
+                                   'f1_1': prf['1']['f1-score'],
+                                   'loss': loss,
+                                   'accuracy': acc,
+                                   'MCC': MCC,
+                                   'AUC': AUC,
+                                   'target': target,
+                                   'fold': fold}, orient='index').T
 
 
 def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray,
@@ -283,7 +296,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.TrainOptions) -> N
             names_y = [names_y[0]]
 
     model_evaluation = pd.DataFrame(
-        columns=["loss", "accuracy", "precision", "recall", "target", "fold_no"])  # FNN test data
+        columns=["p_0", "r_0", "f1_0", "p_1", "r_1", "f1_1",  # class label dependent metrics
+                 "loss", "accuracy", "MCC", "AUC", "target", "fold"])  # total metrics
 
     # For each individual target train a model
     for target in names_y:  # [:1]:
@@ -322,9 +336,9 @@ def train_single_label_models(df: pd.DataFrame, opts: options.TrainOptions) -> N
                          "It must be 1 or smaller than 1 hundredth of the number of samples.")
             exit(1)
         # select and copy best model - how to define the best model?
-        best_fold = model_evaluation.sort_values(by=['precision', 'recall', 'loss'],
+        best_fold = model_evaluation.sort_values(by=['p_1', 'r_1', 'MCC'],
                                                  ascending=False,
-                                                 ignore_index=True)['fold_no'][0]
+                                                 ignore_index=True)['fold'][0]
 
         shutil.copy(src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.checkpoint.model.hdf5"),
                     dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.hdf5"))
