@@ -344,4 +344,4 @@ def train_single_label_models(df: pd.DataFrame, opts: options.TrainOptions) -> N
                     dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.hdf5"))
         # now next target
     # store the evaluation data of all trained models (all targets, all folds)
-    model_evaluation.to_csv(path_or_buf=path.join(opts.outputDir, "single_label_model.evaluation.csv"))
+    model_evaluation.to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_model.evaluation.csv'))
