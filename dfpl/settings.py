@@ -47,6 +47,6 @@ ac_train_check_period = 20
 ac_train_patience = 20
 
 # Training settings of the FNN that were magic numbers in the code before.
-nn_train_min_delta = 0
+nn_train_min_delta = 0.0005
 nn_train_check_period = 10
 nn_train_patience = 30
