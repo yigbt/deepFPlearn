@@ -24,16 +24,16 @@ from rdkit.Chem.AtomPairs import Pairs
 from rdkit.Chem.AtomPairs import Torsions
 
 # for NN model functions
-from keras.models import Sequential
-from keras.layers import Input, Dense, Dropout
-from keras.models import Model
-from keras import regularizers
-from keras import optimizers
-from keras.optimizers import SGD
-from keras.models import model_from_json
-from keras.callbacks import ModelCheckpoint
-from keras.callbacks import EarlyStopping
-from keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Input, Dense, Dropout
+from tensorflow.keras.models import Model
+from tensorflow.keras import regularizers
+from tensorflow.keras import optimizers
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.models import model_from_json
+from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ReduceLROnPlateau
 import sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve

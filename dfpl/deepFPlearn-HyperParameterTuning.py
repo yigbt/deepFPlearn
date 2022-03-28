@@ -5,10 +5,10 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 
-from keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.wrappers.scikit_learn import KerasClassifier
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
 from time import time
 

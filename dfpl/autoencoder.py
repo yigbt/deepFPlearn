@@ -5,12 +5,12 @@ import numpy as np
 import pandas as pd
 import logging
 
-from keras.models import Model
-from keras.layers import Input, Dense
-from keras import optimizers
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
+from tensorflow.keras import optimizers
 
 from sklearn.model_selection import train_test_split
-from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from dfpl import options
 from dfpl import history as ht
