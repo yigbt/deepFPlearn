@@ -26,7 +26,6 @@ from sklearn.metrics import auc
 from sklearn.metrics import f1_score
 
 from dfpl import options
-from dfpl import autoencoder as ac
 from dfpl import history as ht
 from dfpl import settings
 
@@ -125,7 +124,6 @@ def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tupl
     model_file_path_weights = str(path_prefix) + model_name + '.weights.h5'
     model_file_path_json = str(path_prefix) + model_name + '.json'
     model_hist_path = str(path_prefix) + model_name
-    model_hist_csv_path = str(path_prefix) + model_name + '.history.csv'
     model_validation = str(path_prefix) + model_name + '.validation.csv'
     model_auc_file = str(path_prefix) + model_name + '.auc_value.svg'
     model_auc_file_data = str(path_prefix) + model_name + '.auc_value.data.csv'
