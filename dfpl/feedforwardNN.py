@@ -63,7 +63,7 @@ def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tupl
 
 def define_nn_multi_label_model(input_size: int,
                                 output_size: int,
-                                opts: options.TrainOptions) -> Model:
+                                opts: options.Options) -> Model:
     if opts.optimizer == 'Adam':
         my_optimizer = optimizers.Adam(learning_rate=opts.learningRate)
     elif opts.optimizer == 'SGD':
@@ -203,7 +203,7 @@ def validate_multi_model_on_test_data(x_test: array, checkpoint_path: str, y_tes
     return [f1_random, f1_trained]
 
 
-def train_nn_models_multi(df: pd.DataFrame, opts: options.TrainOptions) -> None:
+def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
     # find target columns
     names_y = [c for c in df.columns if c not in ['cid', 'id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
     selector = df[names_y].notna().apply(np.logical_and.reduce, axis=1)

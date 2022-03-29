@@ -30,9 +30,9 @@ from dfpl import plot as pl
 from dfpl import settings
 
 
-def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainOptions) -> (np.ndarray,
-                                                                                            np.ndarray,
-                                                                                            options.TrainOptions):
+def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Options) -> (np.ndarray,
+                                                                                       np.ndarray,
+                                                                                       options.Options):
     # check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
 
@@ -121,7 +121,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.TrainO
 
 
 def define_single_label_model(input_size: int,
-                              opts: options.TrainOptions) -> Model:
+                              opts: options.Options) -> Model:
     lf = dict({"mse": "mean_squared_error",
                "bce": "binary_crossentropy"})
 
@@ -236,7 +236,7 @@ def evaluate_model(X_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
 
 
 def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray,
-                           fold: int, target: str, opts: options.TrainOptions) -> pd.DataFrame:
+                           fold: int, target: str, opts: options.Options) -> pd.DataFrame:
     logging.info("Training of fold number:" + str(fold))
     logging.info(f"The distribution of 0 and 1 values is:")
     logging.info(f"\ttrain data:\t{pd.DataFrame(y_train)[0].value_counts().to_list()}")
@@ -273,7 +273,7 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
     return performance
 
 
-def train_single_label_models(df: pd.DataFrame, opts: options.TrainOptions) -> None:
+def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     """
     Train individual models for all targets (columns) present in the provided target data (y) and a multi-label
     model that classifies all targets at once. For each individual target the data is first subset to exclude NA

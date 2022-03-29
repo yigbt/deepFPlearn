@@ -8,17 +8,19 @@ from dfpl.utils import makePathAbsolute
 
 
 @dataclass
-class TrainOptions:
+class Options:
     """
     Dataclass for all options necessary for training the neural nets
     """
-    trainingFile: str = ''
-    inputFile: str = 'data/Sun_etal_dataset.csv'
-    outputDir: str = 'modeltraining'
-    ecWeightsFile: str = 'AE.encoder.weights.hdf5'
+    configFile: str = ""
+    inputFile: str = "data/Sun_etal_dataset.csv"
+    outputDir: str = "."
+    outputFile: str = ""
+    ecWeightsFile: str = "AE.encoder.weights.hdf5"
     ecModelDir: str = 'AE_encoder'
-    type: str = 'smiles'
-    fpType: str = 'topological'  # also "MACCS", "atompairs"
+    fnnModelDir: str = "modeltraining"
+    type: str = "smiles"
+    fpType: str = "topological"  # also "MACCS", "atompairs"
 
     epochs: int = 512
     fpSize: int = 2048
@@ -58,7 +60,7 @@ class TrainOptions:
             f.write(jsonpickle.encode(self))
 
     @classmethod
-    def fromJson(cls, file: str) -> TrainOptions:
+    def fromJson(cls, file: str) -> Options:
         """
         Create an instance from a JSON file
         """
@@ -70,17 +72,17 @@ class TrainOptions:
         raise ValueError("JSON file does not exist or is not readable")
 
     @classmethod
-    def fromCmdArgs(cls, args: argparse.Namespace) -> TrainOptions:
+    def fromCmdArgs(cls, args: argparse.Namespace) -> Options:
         """
-        Creates TrainOptions instance from cmdline arguments.
+        Creates Options instance from cmdline arguments.
 
         If a training file (JSON) is provided, the values from that file are used.
         However, additional commandline arguments will be preferred. If, e.g., "fpSize" is specified both in the
         JSON file and on the commandline, then the value of the commandline argument will be used.
         """
-        result = TrainOptions()
-        if "trainingFile" in vars(args).keys():
-            jsonFile = Path(makePathAbsolute(args.trainingFile))
+        result = Options()
+        if "configFile" in vars(args).keys():
+            jsonFile = Path(makePathAbsolute(args.configFile))
             if jsonFile.exists() and jsonFile.is_file():
                 with jsonFile.open() as f:
                     content = f.read()
@@ -126,10 +128,10 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     #    parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
     #                                     'target(s). Trained models are saved to disk including fitted weights and '
     #                                     'can be used in the deepFPlearn-Predict.py tool to make predictions.')
-    parser.add_argument("-f", "--trainingFile",
+    parser.add_argument("-f", "--configFile",
                         metavar='FILE',
                         type=str,
-                        help="Input JSON file that contains all information for training.",
+                        help="Input JSON file that contains all information for training/predicting.",
                         default=argparse.SUPPRESS)
     parser.add_argument("-i", "--inputFile",
                         metavar='FILE',
@@ -145,8 +147,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         metavar='FILE',
                         type=str,
                         help='Prefix of output file name. Trained model(s) and '
-                             'respective stats will be returned in 2 output files '
-                             'with this prefix. Default: prefix of input file name.',
+                             'respective stats will be returned in this directory.',
                         default=argparse.SUPPRESS)
     parser.add_argument('-t', "--type",
                         metavar='STR',
@@ -323,64 +324,62 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         default=argparse.SUPPRESS)
 
 
-@dataclass
-class PredictOptions:
-    """
-    Dataclass to hold all options used for prediction
-    """
-    inputFile: str = ""
-    outputDir: str = ""
-    ecWeightsFile: str = ""
-    model: str = ""
-    target: str = ""
-    fpSize: int = 2048
-    encFPSize: int = 256
-    type: str = "smiles"
-    fpType: str = "topological"  # also "MACCS", "atompairs"
-
-    def saveToFile(self, file: str) -> None:
-        """
-        Export an instance to JSON. This file is useful for creating template JSON files
-        """
-        jsonFile = Path(file)
-        with jsonFile.open("w") as f:
-            f.write(jsonpickle.encode(self))
-
-    @classmethod
-    def fromJson(cls, file: str) -> PredictOptions:
-        """
-        Create an instance from a JSON file
-        """
-        jsonFile = Path(file)
-        if jsonFile.exists() and jsonFile.is_file():
-            with jsonFile.open() as f:
-                content = f.read()
-                return jsonpickle.decode(content)
-        raise ValueError("JSON file does not exist or is not readable")
-
-    @classmethod
-    def fromCmdArgs(cls, args: argparse.Namespace) -> PredictOptions:
-        """Creates TrainOptions instance from cmdline arguments"""
-        if args.f != "":
-            jsonFile = Path(makePathAbsolute(args.f))
-            if jsonFile.exists() and jsonFile.is_file():
-                with jsonFile.open() as f:
-                    content = f.read()
-                    return jsonpickle.decode(content)
-            else:
-                raise ValueError("Could not find JSON input file")
-        else:
-            return cls(
-                inputFile=args.i,
-                outputDir=args.o,
-                ecWeightsFile=args.ECmodel,
-                model=args.model,
-                target=args.target,
-                fpSize=args.s,
-                encFPSize=args.d,
-                type=args.t,
-                fpType=args.k,
-            )
+# @dataclass
+# class PredictOptions(Options):
+#     """
+#     Dataclass to hold all options used for prediction
+#     """
+#
+#     def saveToFile(self, file: str) -> None:
+#         """
+#         Export an instance to JSON. This file is useful for creating template JSON files
+#         """
+#         jsonFile = Path(file)
+#         with jsonFile.open("w") as f:
+#             f.write(jsonpickle.encode(self))
+#
+#     @classmethod
+#     def fromJson(cls, file: str) -> PredictOptions:
+#         """
+#         Create an instance from a JSON file
+#         """
+#         jsonFile = Path(file)
+#         if jsonFile.exists() and jsonFile.is_file():
+#             with jsonFile.open() as f:
+#                 content = f.read()
+#                 return jsonpickle.decode(content)
+#         raise ValueError("JSON file does not exist or is not readable")
+#
+#     @classmethod
+#     def fromCmdArgs(cls, args: argparse.Namespace) -> PredictOptions:
+#         """Creates Options instance from cmdline arguments"""
+#         for key, value in vars(args).items():
+#             # The args dict will contain a "method" key from the subparser.
+#             # We don't use this.
+#             if key != "method":
+#                 result.__setattr__(key, value)
+#         return result
+#
+#         if args.f != "":
+#             jsonFile = Path(makePathAbsolute(args.f))
+#             if jsonFile.exists() and jsonFile.is_file():
+#                 with jsonFile.open() as f:
+#                     content = f.read()
+#                     return jsonpickle.decode(content)
+#             else:
+#                 raise ValueError("Could not find JSON input file")
+#         else:
+#             return cls(
+#                 inputFile=args.i,
+#                 outputDir=args.o,
+#                 ecWeightsFile=args.ECmodel,
+#                 model=args.model,
+#                 target=args.target,
+#                 fpSize=args.s,
+#                 encFPSize=args.d,
+#                 type=args.t,
+#                 fpType=args.k,
+#             )
 
 
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:
@@ -392,11 +391,16 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     #    parser = argparse.ArgumentParser(description='Use models that have been generated by deepFPlearn-Train.py '
     #                                                 'tool to make predictions on chemicals (provide SMILES or '
     #                                                 'topological fingerprints).')
-    parser.add_argument('-f', metavar='FILE', type=str,
-                        help="Input JSON file that contains all information for predictions.",
-                        required=False, default="")
-    parser.add_argument('-i', metavar='FILE', type=str,
-                        help="The file containing the data for the prediction. It is in"
+
+    parser.add_argument("-f", "--configFile",
+                        metavar='FILE',
+                        type=str,
+                        help="Input JSON file that contains all information for training/predicting.",
+                        default=argparse.SUPPRESS)
+    parser.add_argument("-i", "--inputFile",
+                        metavar='FILE',
+                        type=str,
+                        help="The file containing the data for the prediction in (unquoted) "
                              "comma separated CSV format. The column named 'smiles' or 'fp'"
                              "contains the field to be predicted. Please adjust the type "
                              "that should be predicted (fp or smile) with -t option appropriately."
@@ -404,34 +408,43 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                              "original identifiers. If this column is missing, the results are"
                              "numbered in the order of their appearance in the input file."
                              "A header is expected and respective column names are used.",
-                        required=False)
-    parser.add_argument('--ECmodel', metavar='FILE', type=str,
-                        help='The encoder model weights. If provided the fingerprints are compressed prior '
-                             'to prediction.',
-                        required=False)
-    parser.add_argument('--model', metavar='FILE', type=str,
-                        help='The model weights of the feed forward network.',
-                        required=False)
-    parser.add_argument('--target', metavar='STR', type=str,
-                        help='The name of the prediction target.',
-                        required=False)
-    parser.add_argument('-s', type=int,
-                        help='Size of fingerprint that should be generated.',
-                        default=2048)
-    parser.add_argument('-d', metavar='INT', type=int,
-                        help='Size of encoded fingerprint (z-layer of autoencoder).',
-                        default=256)
-    parser.add_argument('-o', metavar='FILE', type=str,
-                        help='Output directory. It will contain logging information and an extended version of the '
-                             'input file containing additional columns with the predictions of a random and the '
-                             'trained model.')
-    parser.add_argument('-t', metavar='STR', type=str, choices=['fp', 'smiles'],
+                        default=argparse.SUPPRESS)
+    parser.add_argument("-o", "--outputDir",
+                        metavar='FILE',
+                        type=str,
+                        help='Prefix of output directory. It will contain a log file and the file specified'
+                             'with --outputFile.',
+                        default=argparse.SUPPRESS)
+    parser.add_argument("--outputFile",
+                        metavar='FILE',
+                        type=str,
+                        help='Output .CSV file name which will contain one prediction per input line. '
+                             'Default: prefix of input file name.',
+                        default=argparse.SUPPRESS)
+    parser.add_argument('-t', "--type",
+                        metavar='STR',
+                        type=str,
+                        choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-                        default='smiles')
-    parser.add_argument('-k', metavar='STR', type=str,
+                        default=argparse.SUPPRESS)
+    parser.add_argument('-k', "--fpType",
+                        metavar='STR',
+                        type=str,
                         choices=['topological', 'MACCS'],  # , 'atompairs', 'torsions'],
                         help='The type of fingerprint to be generated/used in input file.',
-                        default='topological')
+                        default=argparse.SUPPRESS)
+    parser.add_argument("--ecModelDir",
+                        type=str,
+                        metavar='DIR',
+                        help='The directory where the full model of the encoder is loaded from.'
+                             'Provide a full path here.',
+                        default=argparse.SUPPRESS)
+    parser.add_argument("--fnnModelDir",
+                        type=str,
+                        metavar='DIR',
+                        help='The directory where the full model of the fnn is loaded from. '
+                             'Provide a full path here.',
+                        default=argparse.SUPPRESS)
 
 
 def parseInputConvert(parser: argparse.ArgumentParser) -> None:

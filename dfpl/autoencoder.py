@@ -21,7 +21,7 @@ from dfpl import history as ht
 from dfpl import settings
 
 
-def define_ac_model(opts: options.TrainOptions,
+def define_ac_model(opts: options.Options,
                     my_loss: str = "binary_crossentropy") -> (Model, Model):
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
@@ -111,7 +111,7 @@ def define_ac_model(opts: options.TrainOptions,
     return autoencoder, encoder
 
 
-def autoencoder_callback(checkpoint_path: str, opts: options.TrainOptions) -> list:
+def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
     """
     Callbacks for fitting the autoencoder
 
@@ -140,7 +140,7 @@ def autoencoder_callback(checkpoint_path: str, opts: options.TrainOptions) -> li
         return [checkpoint, early_stop]
 
 
-def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
+def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     """
     Train an autoencoder on the given feature matrix X. Response matrix is only used to
     split meaningfully in test and train data set.

@@ -7,7 +7,7 @@ from dfpl import options
 from dfpl import settings
 
 
-def nn_callback(checkpoint_path: str, opts: options.TrainOptions) -> list:
+def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
     """
     Callbacks for fitting the autoencoder
 

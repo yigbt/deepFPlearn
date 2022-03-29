@@ -7,7 +7,7 @@ import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_train_args = opt.TrainOptions(
+test_train_args = opt.Options(
     inputFile=f"{project_directory}/data/S_dataset.csv",
     outputDir=f"{project_directory}/modeltraining",
     ecWeightsFile="Sun_etal_dataset.encoder.hdf5",
@@ -25,7 +25,7 @@ test_train_args = opt.TrainOptions(
 )
 
 
-def runAutoencoder(opts: opt.TrainOptions) -> None:
+def runAutoencoder(opts: opt.Options) -> None:
     """
     Run and test auto-encoder
     """

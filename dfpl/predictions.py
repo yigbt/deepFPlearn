@@ -1,15 +1,14 @@
+import keras.models
 import pandas as pd
 import numpy as np
 import logging
 
 from dfpl import options
-from dfpl import feedforwardNN as fNN
 from dfpl import settings
 
 
 def predict_values(df: pd.DataFrame,
-                   opts: options.PredictOptions,
-                   use_compressed: bool) -> pd.DataFrame:
+                   opts: options.Options) -> pd.DataFrame:
     """
     Predict a set of chemicals using a selected model.
 
@@ -19,25 +18,25 @@ def predict_values(df: pd.DataFrame,
     :return:
     """
 
-    if use_compressed:
+    model = keras.models.load_model(opts.fnnModelDir)
+
+    if opts.compressFeatures:
+        sub_df = df[df['fpcompressed'].notnull()]
         x = np.array(
-            df[df['fpcompressed'].notnull()]['fpcompressed'].to_list(),
+            sub_df['fpcompressed'].to_list(),
             dtype=settings.nn_fp_compressed_numpy_type,
             copy=settings.numpy_copy_values
         )
         logging.info(f"Compressed FP matrix with shape {x.shape} and type {x.dtype}")
+        sub_df['predicted'] = pd.DataFrame(model.predict(x), columns=['predicted'])
+        return sub_df
     else:
+        sub_df = df[df['fp'].notnull()]
         x = np.array(
-            df[df['fp'].notnull()]['fp'].to_list(),
+            sub_df['fp'].to_list(),
             dtype=settings.nn_fp_numpy_type,
             copy=settings.numpy_copy_values
         )
         logging.info(f"Uncompressed FP matrix with shape {x.shape} and type {x.dtype}")
-
-    model = fNN.define_nn_model(input_size=x.shape[1])
-    logging.info("Predicting with random model weights")
-    predictions_random = pd.DataFrame(model.predict(x), columns=['random'])
-    model.load_weights(opts.model)
-    logging.info("Predicting with trained model weights")
-    predictions = pd.DataFrame(model.predict(x), columns=['trained'])
-    return df.join(predictions_random.join(predictions))
+        sub_df['predicted'] = pd.DataFrame(model.predict(x), columns=['predicted'])
+        return sub_df

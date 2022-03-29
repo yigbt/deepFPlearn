@@ -14,7 +14,7 @@ def test_fractional_sampling():
     targets = ["AR", "ER", "GR", "Aromatase", "TR", "PPARg"]
     fractions = [0.5, 1.0, 2.0, 3.0]
     for f in fractions:
-        o = opts.TrainOptions(
+        o = opts.Options(
             compressFeatures=False,
             sampleFractionOnes=f
         )
