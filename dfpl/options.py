@@ -12,12 +12,13 @@ class TrainOptions:
     """
     Dataclass for all options necessary for training the neural nets
     """
-    trainingFile: str = ""
-    inputFile: str = "data/Sun_etal_dataset.csv"
-    outputDir: str = "modeltraining"
-    ecWeightsFile: str = "Sun_etal_dataset.AC.encoder.weights.hdf5"
-    type: str = "smiles"
-    fpType: str = "topological"  # also "MACCS", "atompairs"
+    trainingFile: str = ''
+    inputFile: str = 'data/Sun_etal_dataset.csv'
+    outputDir: str = 'modeltraining'
+    ecWeightsFile: str = 'AE.encoder.weights.hdf5'
+    ecModelDir: str = 'AE_encoder'
+    type: str = 'smiles'
+    fpType: str = 'topological'  # also "MACCS", "atompairs"
 
     epochs: int = 512
     fpSize: int = 2048
@@ -36,7 +37,7 @@ class TrainOptions:
     aeBatchSize: int = 512
     aeLearningRate: float = 0.001
     aeLearningRateDecay: float = 0.01
-    aeActivationFunction: str = "relu"
+    aeActivationFunction: str = 'relu'
 
     batchSize: int = 128
     optimizer: str = "Adam"
@@ -177,6 +178,12 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                              'training run. This avoids a retraining of the autoencoder on the'
                              'training data set (provided with -i). NOTE that the input and encoding'
                              'dimensions must fit your data and settings. Default: train new autoencoder.',
+                        default=argparse.SUPPRESS)
+    parser.add_argument("--ecModelDir",
+                        type=str,
+                        metavar='DIR',
+                        help='The directory where the full model of the encoder will be saved (if trainAE=True) or '
+                             'loaded from (if trainAE=False). Provide a full path here.',
                         default=argparse.SUPPRESS)
     parser.add_argument("-d", "--encFPSize",
                         metavar='INT',

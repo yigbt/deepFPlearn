@@ -4,6 +4,8 @@ import pathlib
 import dataclasses
 from os import path
 
+from tensorflow import keras
+import keras.models
 import wandb
 
 from dfpl.utils import makePathAbsolute, createDirectory
@@ -16,9 +18,10 @@ from dfpl import single_label_model as sl
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 opts = options.TrainOptions(
-    inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
-    outputDir=f"{project_directory}/output_data/console_test",
-    ecWeightsFile=f"{project_directory}/output_data/case_00/AE_D/ac_D.encoder.hdf5",
+    inputFile=f'{project_directory}/input_datasets/S_dataset.pkl',
+    outputDir=f'{project_directory}/output_data/console_test',
+    ecWeightsFile=f'{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5',
+    ecModelDir=f'{project_directory}/output_data/case_00/AE_S/saved_model',
     type='smiles',
     fpType='topological',
     epochs=100,
@@ -29,11 +32,11 @@ opts = options.TrainOptions(
     testSize=0.2,
     kFolds=2,
     verbose=2,
-    trainAC=False,
+    trainAC=True,
     trainFNN=True,
     compressFeatures=True,
-    lossFunction="bce",
-    optimizer="Adam"
+    lossFunction='bce',
+    optimizer='Adam'
 )
 logging.basicConfig(level=logging.INFO)
 
@@ -73,8 +76,7 @@ def train(opts: options.TrainOptions):
 
         if not opts.trainAC:
             # load trained model for autoencoder
-            (_, encoder) = ac.define_ac_model(opts)
-            encoder.load_weights(makePathAbsolute(opts.ecWeightsFile))
+            encoder = keras.models.load_model(opts.ecModelDir)
 
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
@@ -102,7 +104,7 @@ def predict(opts: options.PredictOptions) -> None:
 
     use_compressed = False
     if opts.ecWeightsFile:
-        logging.info(f"Using fingerprint compression with AC {opts.ecWeightsFile}")
+        logging.info(f"Using fingerprint compression with AE {opts.ecWeightsFile}")
         use_compressed = True
         # load trained model for autoencoder
         (_, encoder) = ac.define_ac_model(opts=opts)

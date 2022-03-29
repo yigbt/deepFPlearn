@@ -22,6 +22,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
+from tensorflow import keras
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -246,7 +247,7 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
     model = define_single_label_model(input_size=X_train.shape[1],
                                       opts=opts)
 
-    callback_list = cb.nn_callback(checkpoint_path=f"{model_file_prefix}.checkpoint.model.hdf5",
+    callback_list = cb.nn_callback(checkpoint_path=f"{model_file_prefix}.model.weights.hdf5",
                                    opts=opts)
 
     # measure the training time
@@ -315,7 +316,14 @@ def train_single_label_models(df: pd.DataFrame, opts: options.TrainOptions) -> N
             performance = fit_and_evaluate_model(X_train=xtrain, X_test=xtest, y_train=ytrain, y_test=ytest,
                                                  fold=0, target=target, opts=opts)
             model_evaluation = model_evaluation.append(performance, ignore_index=True)
-
+            # save complete model
+            trained_model = define_single_label_model(input_size=x[0].__len__(),
+                                                      opts=opts)
+            trained_model.load_weights(path.join(opts.outputDir,
+                                                 f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
+            # create output directory and store complete model
+            trained_model.save(filepath=path.join(opts.outputDir,
+                                                  f"{target}_saved_model"))
         elif 1 < opts.kFolds < int(x.shape[0] / 100):
             # do a kfold cross-validation
             kfold_c_validator = KFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
@@ -331,17 +339,28 @@ def train_single_label_models(df: pd.DataFrame, opts: options.TrainOptions) -> N
                 model_evaluation = model_evaluation.append(performance, ignore_index=True)
                 fold_no += 1
                 # now next fold
+
+            # select and copy best model - how to define the best model?
+            best_fold = model_evaluation.sort_values(by=['p_1', 'r_1', 'MCC'],
+                                                     ascending=False,
+                                                     ignore_index=True)['fold'][0]
+            # copy checkpoint model weights
+            shutil.copy(
+                src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"),
+                dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
+            # save complete model
+            best_model = define_single_label_model(input_size=x[0].__len__(),
+                                                   opts=opts)
+            best_model.load_weights(path.join(opts.outputDir,
+                                              f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
+            # create output directory and store complete model
+            best_model.save(filepath=path.join(opts.outputDir,
+                                               f"{target}_saved_model"))
         else:
             logging.info("Your selected number of folds for Cross validation is out of range. "
                          "It must be 1 or smaller than 1 hundredth of the number of samples.")
             exit(1)
-        # select and copy best model - how to define the best model?
-        best_fold = model_evaluation.sort_values(by=['p_1', 'r_1', 'MCC'],
-                                                 ascending=False,
-                                                 ignore_index=True)['fold'][0]
 
-        shutil.copy(src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.checkpoint.model.hdf5"),
-                    dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.hdf5"))
         # now next target
     # store the evaluation data of all trained models (all targets, all folds)
     model_evaluation.to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_model.evaluation.csv'))

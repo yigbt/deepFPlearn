@@ -2,6 +2,7 @@ validation
 modeltraining
 predictions
 .idea
+.idea/*
 .pytest_cache
 .RDataFiles
 input_datasets

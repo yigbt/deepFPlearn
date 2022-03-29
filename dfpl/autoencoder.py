@@ -155,15 +155,15 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
 
     # define output file for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
-        logging.info("No AC encoder weights file specified")
+        logging.info("No AE encoder weights file specified")
         base_file_name = os.path.splitext(basename(opts.inputFile))[0]
         logging.info(f"(auto)encoder weights will be saved in {base_file_name}.[auto]encoder.hdf5")
-        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
-        ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.hdf5")
+        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
+        ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.weights.hdf5")
     else:
-        logging.info(f"AC encoder will be saved in {opts.ecWeightsFile}")
+        logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
         base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
-        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.hdf5")
+        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
         ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # collect the callbacks for training
@@ -196,6 +196,8 @@ def train_full_ac(df: pd.DataFrame, opts: options.TrainOptions) -> Model:
 
     encoder.save_weights(ec_weights_file)
     logging.info(f"Encoder weights stored in file: {ec_weights_file}")
+    # save AE full model
+    encoder.save(filepath=opts.ecModelDir)
 
     return encoder
 
