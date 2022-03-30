@@ -9,6 +9,7 @@ dependencies:
   - numpy=1.19.1
   - conda=4.8.4
   - conda-build=3.20.3
+  # TODO this might be removed in the docker build?
   - tensorflow-gpu=2.2.0
   - scikit-learn=0.23.1
   - pandas=1.0.5
