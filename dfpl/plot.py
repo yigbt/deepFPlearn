@@ -15,7 +15,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.models import Model
 from keras import regularizers
-from keras import optimizers
+from tensorflow.keras import optimizers
 from keras import metrics
 from keras.callbacks import History, ModelCheckpoint, EarlyStopping
 

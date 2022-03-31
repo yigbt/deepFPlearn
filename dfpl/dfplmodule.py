@@ -28,7 +28,7 @@ from keras.models import Sequential
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model
 from keras import regularizers
-from keras import optimizers
+from tensorflow.keras import optimizers
 from keras.optimizers import SGD
 from keras.models import model_from_json
 from keras.callbacks import ModelCheckpoint

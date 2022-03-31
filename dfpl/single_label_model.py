@@ -8,7 +8,8 @@ from time import time
 import numpy as np
 import pandas as pd
 from keras import metrics
-from keras import optimizers
+import tensorflow_addons as tfa
+from tensorflow.keras import optimizers
 from keras import regularizers
 from keras.layers import Dense, Dropout
 from keras.models import Model
@@ -167,6 +168,7 @@ def define_single_label_model(input_size: int,
     model.compile(loss=lf[opts.lossFunction],
                   optimizer=my_optimizer,
                   metrics=['accuracy',
+                           tfa.metrics.F1Score(num_classes=1, threshold=0.5),
                            metrics.Precision(),
                            metrics.Recall()]
                   )
