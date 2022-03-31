@@ -1,12 +1,12 @@
-FROM tensorflow/tensorflow:latest-gpu
+FROM tensorflow/tensorflow:2.7.1-gpu
 
 # copy dfpl sources for installation
 # unfortunatelly COPY setup.py README.md dfpl/ /deepFPlearn/
 # does not work sind it just copies the files in dfpl
 COPY ./ /deepFPlearn/
 
-# install dfpl
-RUN python -m pip install /deepFPlearn && pip install pytest
+# install dfpl 
+RUN python -m pip install --no-cache-dir  /deepFPlearn && pip install --no-cache-dir pytest
 
 # The code to run when container is started. 
 CMD ["bash"]
