@@ -34,7 +34,7 @@ build:
       --build-arg VCS_URL=$CI_PROJECT_URL
       --no-cache
       --tag $CI_REGISTRY_IMAGE/deepfplearn:$CI_COMMIT_REF_NAME
-      -f container/Dockerfile-pip
+      -f container/Dockerfile
       .
 
     # run tests 

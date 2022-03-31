@@ -1,28 +1,4 @@
-FROM continuumio/miniconda3 AS build
-
-# Install the package as normal:
-COPY container/environment.yml .
-RUN conda env create -f environment.yml
-
-# Install conda-pack:
-RUN conda install -c conda-forge conda-pack
-
-# Use conda-pack to create a standalone enviornment
-# in /venv:
-RUN conda-pack -n dfpl_env -o /tmp/env.tar && \
-  mkdir /venv && cd /venv && tar xf /tmp/env.tar && \
-  rm /tmp/env.tar
-
-# We've put venv in same path it'll be in final image,
-# so now fix up paths:
-RUN /venv/bin/conda-unpack
-
-
-# The runtime-stage image 
-FROM tensorflow/tensorflow:latest-gpu AS runtime
-
-# Copy /venv from the previous stage:
-COPY --from=build /venv /venv
+FROM tensorflow/tensorflow:latest-gpu
 
 # copy dfpl sources for installation
 # unfortunatelly COPY setup.py README.md dfpl/ /deepFPlearn/
@@ -30,12 +6,12 @@ COPY --from=build /venv /venv
 COPY ./ /deepFPlearn/
 
 # install dfpl
-RUN source /venv/bin/activate && python -m pip install --no-deps /deepFPlearn
+RUN python -m pip install /deepFPlearn && pip install pytest
 
 # The code to run when container is started. 
-ENTRYPOINT ["/deepFPlearn/container/entrypoint.sh"]
+CMD ["bash"]
 # docker run dfpl:latest dfpl DFPL_ARGUMENTS # to run dfpl
-# docker run -it dfpl:latest bash # and an interactive shell
+# docker run -it dfpl:latest # and an interactive shell
 # 
 # if using the container like an executable, ie 
 # `docker run dfpl:latest DFPL_ARGUMENTS`
