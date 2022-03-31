@@ -133,7 +133,7 @@ def define_single_label_model(input_size: int,
         logging.error(f"Your selected optimizer is not supported:{opts.optimizer}.")
         sys.exit("Unsupported optimizer.")
 
-    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
+    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3, "16": 3}
 
     if not str(input_size) in my_hidden_layers.keys():
         raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")

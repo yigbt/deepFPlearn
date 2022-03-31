@@ -1,6 +1,8 @@
 import os.path
 from os.path import basename
 import math
+
+import keras.metrics
 import numpy as np
 import pandas as pd
 import logging
@@ -8,6 +10,7 @@ import logging
 from keras.models import Model
 from keras.layers import Input, Dense
 from keras import optimizers
+import tensorflow_addons as tfa
 
 from sklearn.model_selection import train_test_split
 from keras.callbacks import ModelCheckpoint, EarlyStopping
@@ -106,7 +109,9 @@ def define_ac_model(opts: options.Options,
     # We compile the autoencoder model with adam optimizer.
     # As fingerprint positions have a value of 0 or 1 we use binary_crossentropy as the loss function
     autoencoder.compile(optimizer=ac_optimizer,
-                        loss=my_loss)
+                        loss=my_loss,
+                        metrics=[tfa.metrics.F1Score(num_classes=1, average="micro"), keras.metrics.Precision(), keras.metrics.Recall()]
+                        )
 
     return autoencoder, encoder
 
