@@ -6,35 +6,66 @@ Link molecular structures of chemicals (in form of topological fingerprints) wit
 
 The DFPL package requires a particular Python environment to work properly.
 It consists of a recent Python interpreter and packages for data-science and neural networks.
-The exact dependencies can be found in this
-[`environment.yml`](singularity_container/environment.yml) which is the basis for creating
-a conda environment and a Singularity container.
+The exact dependencies can be found in the
+[`requirements.txt`](requirements.txt) (which is used when installing the package with pip)
+and [`environment.yml`](environment.yml) (for installtion with conda).
 
 You have several ways to provide the correct environment to run code from the DFPL package.
 
-1. Use the automatically built Singularity container
-2. Build your own Singularity container [following the steps here](singularity_container/build_container.md)
-3. Set up a conda environment
+1. Use the automatically built docker/Singularity containers
+2. Build your own container [following the steps here](container/build_container.md)
+3. Setup a python virtual environment
+4. Set up a conda environment install the requirements via conda and the DFPL package via pip
 
-In the following, you find details for option 1. and 3.
+In the following, you find details for option 1., 3., and 4.
+
+### Docker container
+
+You need docker installed on you machine. 
+
+In order to run DFPL use the following command line 
+
+```shell
+docker run --gpus GPU_REQUEST registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG dfpl DFPL_ARGS
+```
+
+where you replace
+
+- `TAG` by the version you want to use or `latest` if you want to use latest available version)
+- You can see available tags here https://gitlab.hzdr.de/department-computational-biology/deepfplearn/container_registry/5827.
+  In general a container should be available for each released version of DFPL.
+- `GPU_REQUEST` by the GPUs you want to use or `all` if all GPUs should be used (remove `--gpus GPU_REQUEST` if only the CPU should)
+- `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
+
+In order to get an interactive bash shell in the container use:
+
+```shell
+docker run -it --gpus GPU_REQUEST registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG bash
+```
 
 ### Singularity container
 
-You need Singularity installed on your machine, and for details, please read the first
-section of [this document](singularity_container/build_container.md).
-You can download the latest version of the container with
+You need Singularity installed on your machine. You can download a container with
 
 ```shell
-singularity pull --arch amd64 library://mai00fti/default/dfpl.sif:latest
+singularity pull dfpl.TAG.sif docker://registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG
 ```
 
-After that, you can run DFPL with
+- replace `TAG` by the version you want to use or `latest` if you want to use latest available version)
+- You can see available tags here https://gitlab.hzdr.de/department-computational-biology/deepfplearn/container_registry/5827.
+  In general a container should be available for each released version of DFPL.
+
+
+This stores the container as a file `dfpl.TAG.sif` which can be run as follows:
 
 ```shell script
-singularity run --nv dfpl.sif "python -m dfpl convert -f \"data\""
+singularity run --nv dfpl.TAG.sif dfpl DFPL_ARGS
 ```
+- replace `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
+- omit the `--nv` tag if you don't want to use GPUs 
 
-or you can start a shell script (look at [run-all-publication-cases.sh](scripts/run-all-publication-cases.sh) for an
+
+or you can start a shell script (look at [run-all-cases.sh](scripts/run-all-cases.sh) for an
 example)
 
 ```shell script
@@ -44,14 +75,29 @@ singularity run --nv dfpl.sif ". ./scripts/run-all-cases.sh"
 It's also possible to get an interactive shell into the container
 
 ```shell script
-singularity shell --nv dfpl.sif
+singularity shell --nv dfpl.TAG.sif
 ```
 
 **Note:** The Singularity container is intended to be used on HPC cluster where your ability to install software might
 be limited.
 For local testing or development, setting up the conda environment is preferable.
 
-### Set up conda environment
+### Set up DFPL in a python virtual environment
+
+From within the `deepFPlearn` directory call
+
+```
+virtualenv -p python3 ENV_PATH
+. ENV_PATH/bin/activate
+pip install ./
+```
+
+replace `ENV_PATH` by the directory where the python virtual environment should be created.
+If your system has only python3 installed `-p python3` may be removed.
+
+In order to use the environment it needs to be activated with `. ENV_PATH/bin/activate`.
+
+### Set up DFPL in a conda environment
 
 To use this tool outside the Singularity container first create the respective conda environment:
 
@@ -61,7 +107,7 @@ To use this tool outside the Singularity container first create the respective c
    contains all information and necessary packages
 
    ```shell
-   conda env create -f singularity_container/environment.yml
+   conda env create -f environment.yml
    ```
 
 2. Activate the `dfpl_env` environment with
@@ -73,7 +119,7 @@ To use this tool outside the Singularity container first create the respective c
 3. Install the local `dfpl` package by calling
 
    ```shell
-   conda develop dfpl
+   pip install --no-deps ./
    ```
 
 ## Prepare data
@@ -125,16 +171,16 @@ You have several options to work with the DFPL package. The package can be start
 you can provide all necessary information as commandline-parameters. Check
 
 ```shell script
-python -m dfpl --help
-python -m dfpl train --help
-python -m dfpl predict --help
+dfpl --help
+dfpl train --help
+dfpl predict --help
 ```
 
 However, using JSON files that contain all train/predict options an easy way to preserve what was run and you can use
 them instead of providing multiple commandline arguments.
 
 ```shell script
-python -m dfpl train -f path/to/file.json
+dfpl train -f path/to/file.json
 ```
 
 See, e.g. the JSON files under `validation/case_XX` for examples. Also, you can use the following to create template
