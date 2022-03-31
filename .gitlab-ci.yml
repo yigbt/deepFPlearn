@@ -25,19 +25,14 @@ build:
     - dind
 
   script:
-    # fetches the latest image (not failing if image is not found)
-    - docker pull $CI_REGISTRY_IMAGE/deepfplearn:latest || true
-
     # builds the project, passing proxy variables, and vcs vars for LABEL
-    # notice the cache-from, which is going to use the image we just pulled locally
-    # the built image is tagged locally with the commit SHA, and then pushed to 
+    # the built image is tagged locally with the tag, and then pushed to 
     # the GitLab registry
     - >
       docker build
-      --pull
       --build-arg VCS_REF=$CI_COMMIT_REF_NAME
       --build-arg VCS_URL=$CI_PROJECT_URL
-      --cache-from $CI_REGISTRY_IMAGE/deepfplearn:latest
+      --no-cache
       --tag $CI_REGISTRY_IMAGE/deepfplearn:$CI_COMMIT_REF_NAME
       -f container/Dockerfile-pip
       .
