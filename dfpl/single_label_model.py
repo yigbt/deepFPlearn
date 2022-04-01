@@ -11,7 +11,7 @@ from keras import metrics
 import tensorflow_addons as tfa
 from tensorflow.keras import optimizers
 from keras import regularizers
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout, AlphaDropout
 from keras.models import Model
 # for NN model functions
 from keras.models import Sequential
@@ -143,21 +143,42 @@ def define_single_label_model(input_size: int,
 
     model = Sequential()
     # From input to 1st hidden layer
-    model.add(Dense(units=int(input_size / 2),
-                    input_dim=input_size,
-                    activation=opts.activationFunction,
-                    kernel_regularizer=regularizers.l2(opts.l2reg),
-                    kernel_initializer="he_uniform"))
-    model.add(Dropout(opts.dropout))
+    if opts.activationFunction == "relu":
+        model.add(Dense(units=int(input_size / 2),
+                        input_dim=input_size,
+                        activation="relu",
+                        kernel_regularizer=regularizers.l2(opts.l2reg),
+                        kernel_initializer="he_uniform"))
+        model.add(Dropout(opts.dropout))
+    if opts.activationFunction == "selu":
+        model.add(Dense(units=int(input_size / 2),
+                        input_dim=input_size,
+                        activation="selu",
+                        kernel_initializer="lecun_normal"))
+        model.add(AlphaDropout(opts.dropout))
+    else:
+        logging.error("Only 'relu' and 'selu' activation is supported")
+        sys.exit(-1)
+
     # next hidden layers
     for i in range(1, nhl):
         factor_units = 2 ** (i + 1)
         factor_dropout = 2 * i
-        model.add(Dense(units=int(input_size / factor_units),
-                        activation=opts.activationFunction,
-                        kernel_regularizer=regularizers.l2(opts.l2reg),
-                        kernel_initializer="he_uniform"))
-        model.add(Dropout(opts.dropout / factor_dropout))
+        if opts.activationFunction == "relu":
+            model.add(Dense(units=int(input_size / factor_units),
+                            activation="relu",
+                            kernel_regularizer=regularizers.l2(opts.l2reg),
+                            kernel_initializer="he_uniform"))
+            model.add(Dropout(opts.dropout / factor_dropout))
+        if opts.activationFunction == "selu":
+            model.add(Dense(units=int(input_size / factor_units),
+                            activation="selu",
+                            kernel_initializer="lecun_normal"))
+            model.add(AlphaDropout(opts.dropout / factor_dropout))
+        else:
+            logging.error("Only 'relu' and 'selu' activation is supported")
+            sys.exit(-1)
+
     # output layer
     model.add(Dense(units=1,
                     activation='sigmoid'))
@@ -168,7 +189,7 @@ def define_single_label_model(input_size: int,
     model.compile(loss=lf[opts.lossFunction],
                   optimizer=my_optimizer,
                   metrics=['accuracy',
-                           tfa.metrics.F1Score(num_classes=1, threshold=0.5),
+                           tfa.metrics.F1Score(num_classes=1, threshold=0.5, average="weighted"),
                            metrics.Precision(),
                            metrics.Recall()]
                   )

@@ -20,12 +20,14 @@ def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
                                  verbose=1,
                                  period=settings.nn_train_check_period,
                                  save_best_only=True,
-                                 mode='min',
+                                 monitor="val_f1_score",
+                                 mode='max',
                                  save_weights_only=True)
 
     # enable early stopping if val_loss is not improving anymore
     early_stop = EarlyStopping(patience=settings.nn_train_patience,
-                               monitor="loss",
+                               monitor="val_f1_score",
+                               mode="max",
                                min_delta=settings.nn_train_min_delta,
                                verbose=1,
                                restore_best_weights=True)
