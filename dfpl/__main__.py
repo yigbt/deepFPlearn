@@ -174,9 +174,11 @@ def main():
                 predict_opts,
                 inputFile=makePathAbsolute(predict_opts.inputFile),
                 outputDir=makePathAbsolute(predict_opts.outputDir),
-                outputFile=makePathAbsolute(predict_opts.outputFile),
+                outputFile=makePathAbsolute(path.join(predict_opts.outputDir,predict_opts.outputFile)),
                 ecModelDir=makePathAbsolute(predict_opts.ecModelDir),
-                fnnModelDir=makePathAbsolute(predict_opts.fnnModelDir)
+                fnnModelDir=makePathAbsolute(predict_opts.fnnModelDir),
+                trainAC=False,
+                trainFNN=False
             )
             createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "predict.log"))

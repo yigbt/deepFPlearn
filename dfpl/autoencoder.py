@@ -13,13 +13,9 @@ from tensorflow.keras import optimizers
 import tensorflow_addons as tfa
 
 from sklearn.model_selection import train_test_split
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-
-# for testing in Weights & Biases
-import wandb
-from wandb.keras import WandbCallback
 
 from dfpl import options
+from dfpl import callbacks
 from dfpl import history as ht
 from dfpl import settings
 
@@ -110,39 +106,10 @@ def define_ac_model(opts: options.Options,
     # As fingerprint positions have a value of 0 or 1 we use binary_crossentropy as the loss function
     autoencoder.compile(optimizer=ac_optimizer,
                         loss=my_loss,
-                        metrics=[tfa.metrics.F1Score(num_classes=1, average="micro"), keras.metrics.Precision(), keras.metrics.Recall()]
+                        metrics=[tfa.metrics.F1Score(num_classes=1, threshold=0.5, average="micro"), keras.metrics.Precision(), keras.metrics.Recall()]
                         )
 
     return autoencoder, encoder
-
-
-def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
-    """
-    Callbacks for fitting the autoencoder
-
-    :param checkpoint_path: The output directory to store the checkpoint weight files
-    :return: List of ModelCheckpoint and EarlyStopping class.
-    """
-
-    # enable this checkpoint to restore the weights of the best performing model
-    checkpoint = ModelCheckpoint(checkpoint_path,
-                                 verbose=1,
-                                 period=settings.ac_train_check_period,
-                                 save_best_only=True,
-                                 mode='min',
-                                 save_weights_only=True)
-
-    # enable early stopping if val_loss is not improving anymore
-    early_stop = EarlyStopping(patience=settings.ac_train_patience,
-                               min_delta=settings.ac_train_min_delta,
-                               verbose=1,
-                               restore_best_weights=True)
-
-    if opts.wabTracking:
-        trackWandB_callback = WandbCallback(save_model=False)
-        return [checkpoint, early_stop, trackWandB_callback]
-    else:
-        return [checkpoint, early_stop]
 
 
 def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
@@ -172,7 +139,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # collect the callbacks for training
-    callback_list = autoencoder_callback(checkpoint_path=ac_weights_file, opts=opts)
+    callback_list = callbacks.autoencoder_callback(checkpoint_path=ac_weights_file, opts=opts)
 
     # Select all fps that are valid and turn them into a numpy array
     # This step is crucial for speed!!!
