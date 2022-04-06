@@ -290,7 +290,7 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
     # save and plot history
     pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
     pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
-    
+
     # evaluate callback model
     callback_model = define_single_label_model(input_size=X_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)

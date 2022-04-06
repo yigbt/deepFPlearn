@@ -169,8 +169,8 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     # encoder.save_weights(ec_weights_file) # these are the wrong weights! we need those from the callback model
     # logging.info(f"Encoder weights stored in file: {ec_weights_file}")
     # save AE callback model
-    (_, callback_encoder) = define_ac_model(opts)
-    callback_encoder.load_weights(filepath=ec_weights_file)
+    (callback_autoencoder, callback_encoder) = define_ac_model(opts)
+    callback_autoencoder.load_weights(filepath=ac_weights_file)
     callback_encoder.save(filepath=opts.ecModelDir)
 
     return encoder
