@@ -270,7 +270,8 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
     model = define_single_label_model(input_size=X_train.shape[1],
                                       opts=opts)
 
-    callback_list = cb.nn_callback(checkpoint_path=f"{model_file_prefix}.model.weights.hdf5",
+    checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
+    callback_list = cb.nn_callback(checkpoint_path=checkpoint_model_weights_path,
                                    opts=opts)
 
     # measure the training time
@@ -289,8 +290,11 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
     # save and plot history
     pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
     pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
-    # evaluate model
-    performance = evaluate_model(X_test=X_test, y_test=y_test, file_prefix=model_file_prefix, model=model,
+    
+    # evaluate callback model
+    callback_model = define_single_label_model(input_size=X_train.shape[1], opts=opts)
+    callback_model.load_weights(filepath=checkpoint_model_weights_path)
+    performance = evaluate_model(X_test=X_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
                                  target=target, fold=fold)
 
     return performance
@@ -308,7 +312,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     """
 
     # find target columns
-    names_y = [c for c in df.columns if c not in ['cid', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
     if opts.wabTracking:
         # For W&B tracking, we only train one target.

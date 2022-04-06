@@ -166,10 +166,12 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
                               hist=auto_hist)
 
-    encoder.save_weights(ec_weights_file)
-    logging.info(f"Encoder weights stored in file: {ec_weights_file}")
-    # save AE full model
-    encoder.save(filepath=opts.ecModelDir)
+    # encoder.save_weights(ec_weights_file) # these are the wrong weights! we need those from the callback model
+    # logging.info(f"Encoder weights stored in file: {ec_weights_file}")
+    # save AE callback model
+    (_, callback_encoder) = define_ac_model(opts)
+    callback_encoder.load_weights(filepath=ec_weights_file)
+    callback_encoder.save(filepath=opts.ecModelDir)
 
     return encoder
 
