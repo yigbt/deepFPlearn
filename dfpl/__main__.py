@@ -39,7 +39,6 @@ test_train_opts = options.Options(
     optimizer='Adam',
     fnnType='FNN'
 )
-logging.basicConfig(level=logging.INFO)
 
 test_pred_opts = options.Options(
     inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
