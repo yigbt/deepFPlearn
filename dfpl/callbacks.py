@@ -18,16 +18,16 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
 
     # enable this checkpoint to restore the weights of the best performing model
     checkpoint = ModelCheckpoint(checkpoint_path,
-                                 monitor="val_auc",
-                                 mode='max',
+                                 monitor="val_loss",
+                                 mode='min',
                                  verbose=1,
                                  period=settings.ac_train_check_period,
                                  save_best_only=True,
                                  save_weights_only=True)
 
     # enable early stopping if val_loss is not improving anymore
-    early_stop = EarlyStopping(monitor="val_auc",
-                               mode='max',
+    early_stop = EarlyStopping(monitor="val_loss",
+                               mode='min',
                                patience=settings.ac_train_patience,
                                min_delta=settings.ac_train_min_delta,
                                verbose=1,

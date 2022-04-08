@@ -36,7 +36,8 @@ test_train_opts = options.Options(
     compressFeatures=True,
     activationFunction="selu",
     lossFunction='bce',
-    optimizer='Adam'
+    optimizer='Adam',
+    fnnType='FNN'
 )
 logging.basicConfig(level=logging.INFO)
 
@@ -174,7 +175,7 @@ def main():
                 predict_opts,
                 inputFile=makePathAbsolute(predict_opts.inputFile),
                 outputDir=makePathAbsolute(predict_opts.outputDir),
-                outputFile=makePathAbsolute(path.join(predict_opts.outputDir,predict_opts.outputFile)),
+                outputFile=makePathAbsolute(path.join(predict_opts.outputDir, predict_opts.outputFile)),
                 ecModelDir=makePathAbsolute(predict_opts.ecModelDir),
                 fnnModelDir=makePathAbsolute(predict_opts.fnnModelDir),
                 trainAC=False,

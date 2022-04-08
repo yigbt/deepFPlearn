@@ -21,6 +21,7 @@ from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
 from tensorflow.keras.models import Model
 # for NN model functions
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.utils import to_categorical
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -92,6 +93,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
                 dtype=settings.nn_target_numpy_type,
                 copy=settings.numpy_copy_values
             )
+            y_one_hot = to_categorical(y)
     else:
         logging.info("Using uncompressed fingerprints")
         df_fp = df[df[target].notna() & df["fp"].notnull()]
@@ -107,6 +109,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
             )
             x = np.array(dfX["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
             y = np.array(dfX[target].to_list(), copy=settings.numpy_copy_values)
+            y_one_hot = to_categorical(y)
         else:
             logging.info("Fraction sampling is OFF")
             # how many ones, how many zeros
@@ -115,7 +118,8 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
 
             x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
             y = np.array(df_fp[target].to_list(), copy=settings.numpy_copy_values)
-    return x, y, opts
+            y_one_hot = to_categorical(y)
+    return x, y_one_hot, opts
 
 
 def build_fnn_network(input_size: int, opts: options.Options) -> Model:
@@ -164,8 +168,8 @@ def build_fnn_network(input_size: int, opts: options.Options) -> Model:
             sys.exit(-1)
 
     # output layer
-    model.add(Dense(units=1,
-                    activation='sigmoid'))
+    model.add(Dense(units=2,
+                    activation='softmax'))
     return model
 
 
@@ -177,7 +181,7 @@ def build_snn_network(input_size: int, opts: options.Options) -> Model:
     for i in range(7):
         model.add(Dense(units=50, activation="selu", kernel_initializer="lecun_normal"))
         model.add(AlphaDropout(opts.dropout))
-    model.add(Dense(units=1, activation="sigmoid"))
+    model.add(Dense(units=2, activation="softmax"))
     return model
 
 
@@ -360,12 +364,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             if opts.wabTracking:
                 x_train, x_test, y_train, y_test = train_test_split(x, y,
                                                                     test_size=opts.testSize,
-                                                                    stratify=True,
+                                                                    stratify=y,
                                                                     random_state=1)
             else:
                 x_train, x_test, y_train, y_test = train_test_split(x, y,
                                                                     test_size=opts.testSize,
-                                                                    stratify=True)
+                                                                    stratify=y)
 
             performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                  fold=0, target=target, opts=opts)
