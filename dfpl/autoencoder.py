@@ -2,15 +2,14 @@ import os.path
 from os.path import basename
 import math
 
-import keras.metrics
 import numpy as np
 import pandas as pd
 import logging
 
-from keras.models import Model
-from keras.layers import Input, Dense
-from tensorflow.keras import optimizers
-import tensorflow_addons as tfa
+import tensorflow.keras.metrics as metrics
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
+from tensorflow.keras import optimizers, losses
 
 from sklearn.model_selection import train_test_split
 
@@ -26,11 +25,7 @@ def define_ac_model(opts: options.Options,
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
     :param opts: Training options that provide values for adjusting the neural net
-    :param encoding_dim: Size of the compressed representation. Default: 85
-    :param input_size: Size of the input. Default: 2048
     :param my_loss: Loss function, see Keras Loss functions for potential values. Default: binary_crossentropy
-    :param my_lr:
-    :param my_decay:
     :return: a tuple of autoencoder and encoder models
     """
     input_size = opts.fpSize
@@ -98,17 +93,16 @@ def define_ac_model(opts: options.Options,
 
     autoencoder = Model(input_vec, decoded)
     encoder = Model(input_vec, encoded)
-
     autoencoder.summary(print_fn=logging.info)
-    encoder.summary(print_fn=logging.info)
 
-    # We compile the autoencoder model with adam optimizer.
-    # As fingerprint positions have a value of 0 or 1 we use binary_crossentropy as the loss function
     autoencoder.compile(optimizer=ac_optimizer,
                         loss=my_loss,
-                        metrics=[tfa.metrics.F1Score(num_classes=1, threshold=0.5, average="micro"), keras.metrics.Precision(), keras.metrics.Recall()]
+                        metrics=[
+                            metrics.AUC(),
+                            metrics.Precision(),
+                            metrics.Recall()
+                        ]
                         )
-
     return autoencoder, encoder
 
 
@@ -149,9 +143,11 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     logging.info(f"Training AC on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
 
     # split data into test and training data
-    x_train, x_test = train_test_split(fp_matrix,
-                                       test_size=0.2,
-                                       random_state=42)
+    if opts.wabTracking:
+        x_train, x_test = train_test_split(fp_matrix, test_size=0.2, random_state=42)
+    else:
+        x_train, x_test = train_test_split(fp_matrix, test_size=0.2)
+
     logging.info(f"AC train data shape {x_train.shape} with type {x_train.dtype}")
     logging.info(f"AC test data shape {x_test.shape} with type {x_test.dtype}")
 

@@ -1,5 +1,5 @@
-import math
 import logging
+import math
 import shutil
 import sys
 from os import path
@@ -7,23 +7,20 @@ from time import time
 
 import numpy as np
 import pandas as pd
-from keras import metrics
-import tensorflow_addons as tfa
-from tensorflow.keras import optimizers
-from keras import regularizers
-from keras.layers import Dense, Dropout, AlphaDropout
-from keras.models import Model
-# for NN model functions
-from keras.models import Sequential
 from sklearn.metrics import auc
+from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
-from sklearn.metrics import classification_report
-from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
-from tensorflow import keras
+from tensorflow.keras import metrics
+from tensorflow.keras import optimizers
+from tensorflow.keras import regularizers
+from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
+from tensorflow.keras.models import Model
+# for NN model functions
+from tensorflow.keras.models import Sequential
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -121,21 +118,8 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
     return x, y, opts
 
 
-def define_single_label_model(input_size: int,
-                              opts: options.Options) -> Model:
-    lf = dict({"mse": "mean_squared_error",
-               "bce": "binary_crossentropy"})
-
-    if opts.optimizer == 'Adam':
-        my_optimizer = optimizers.Adam(learning_rate=opts.learningRate)
-    elif opts.optimizer == 'SGD':
-        my_optimizer = optimizers.SGD(lr=opts.learningRate, momentum=0.9)
-    else:
-        logging.error(f"Your selected optimizer is not supported:{opts.optimizer}.")
-        sys.exit("Unsupported optimizer.")
-
-    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3, "16": 3}
-
+def build_fnn_network(input_size: int, opts: options.Options) -> Model:
+    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
     if not str(input_size) in my_hidden_layers.keys():
         raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
 
@@ -150,7 +134,7 @@ def define_single_label_model(input_size: int,
                         kernel_regularizer=regularizers.l2(opts.l2reg),
                         kernel_initializer="he_uniform"))
         model.add(Dropout(opts.dropout))
-    if opts.activationFunction == "selu":
+    elif opts.activationFunction == "selu":
         model.add(Dense(units=int(input_size / 2),
                         input_dim=input_size,
                         activation="selu",
@@ -170,7 +154,7 @@ def define_single_label_model(input_size: int,
                             kernel_regularizer=regularizers.l2(opts.l2reg),
                             kernel_initializer="he_uniform"))
             model.add(Dropout(opts.dropout / factor_dropout))
-        if opts.activationFunction == "selu":
+        elif opts.activationFunction == "selu":
             model.add(Dense(units=int(input_size / factor_units),
                             activation="selu",
                             kernel_initializer="lecun_normal"))
@@ -182,6 +166,40 @@ def define_single_label_model(input_size: int,
     # output layer
     model.add(Dense(units=1,
                     activation='sigmoid'))
+    return model
+
+
+def build_snn_network(input_size: int, opts: options.Options) -> Model:
+    model = Sequential()
+    model.add(Dense(input_dim=input_size, units=50, activation="selu", kernel_initializer="lecun_normal"))
+    model.add(AlphaDropout(opts.dropout))
+
+    for i in range(7):
+        model.add(Dense(units=50, activation="selu", kernel_initializer="lecun_normal"))
+        model.add(AlphaDropout(opts.dropout))
+    model.add(Dense(units=1, activation="sigmoid"))
+    return model
+
+
+def define_single_label_model(input_size: int,
+                              opts: options.Options) -> Model:
+    lf = dict({"mse": "mean_squared_error",
+               "bce": "binary_crossentropy"})
+
+    if opts.optimizer == 'Adam':
+        my_optimizer = optimizers.Adam(learning_rate=opts.learningRate)
+    elif opts.optimizer == 'SGD':
+        my_optimizer = optimizers.SGD(lr=opts.learningRate, momentum=0.9)
+    else:
+        logging.error(f"Your selected optimizer is not supported:{opts.optimizer}.")
+        sys.exit("Unsupported optimizer.")
+
+    if opts.fnnType == "FNN":
+        model = build_fnn_network(input_size, opts)
+    elif opts.fnnType == "SNN":
+        model = build_snn_network(input_size, opts)
+    else:
+        raise ValueError(f"Option FNN Type is not \"FNN\" or \"SNN\", but {opts.fnnType}.")
 
     model.summary(print_fn=logging.info)
 
@@ -189,20 +207,20 @@ def define_single_label_model(input_size: int,
     model.compile(loss=lf[opts.lossFunction],
                   optimizer=my_optimizer,
                   metrics=['accuracy',
-                           tfa.metrics.F1Score(num_classes=1, threshold=0.5, average="weighted"),
+                           metrics.AUC(),
                            metrics.Precision(),
                            metrics.Recall()]
                   )
     return model
 
 
-def evaluate_model(X_test: np.ndarray, y_test: np.ndarray, file_prefix: str, model: Model,
+def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, model: Model,
                    target: str, fold: int) -> pd.DataFrame:
     name = path.basename(file_prefix).replace("_", " ")
     performance = pd.DataFrame()
 
     # predict test set to compute MCC, AUC, ROC curve, etc. (see below)
-    y_predict = model.predict(X_test).flatten()
+    y_predict = model.predict(x_test).flatten()
     y_predict_int = [int(round(y)) for y in y_predict]
     y_test_int = [int(y) for y in y_test]
     pd.DataFrame({"y_true": y_test, "y_predicted": y_predict,
@@ -211,12 +229,12 @@ def evaluate_model(X_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
         to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.csv")
 
     # compute the metrics that depend on the class label
-    precicion_recall = classification_report(y_test_int, y_predict_int, output_dict=True)
-    prf = pd.DataFrame.from_dict(precicion_recall)[['0', '1']]
+    precision_recall = classification_report(y_test_int, y_predict_int, output_dict=True)
+    prf = pd.DataFrame.from_dict(precision_recall)[['0', '1']]
     prf.to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.prec_rec_f1.csv")
 
     # validation loss, accuracy
-    loss, acc = tuple(model.evaluate(x=X_test, y=y_test)[:2])
+    loss, acc = tuple(model.evaluate(x=x_test, y=y_test)[:2])
     # MCC
     MCC = matthews_corrcoef(y_test_int, y_predict_int)
     # generate the AUC-ROC curve data from the validation data
@@ -258,7 +276,7 @@ def evaluate_model(X_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
                                    'fold': fold}, orient='index').T
 
 
-def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray,
+def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray,
                            fold: int, target: str, opts: options.Options) -> pd.DataFrame:
     logging.info("Training of fold number:" + str(fold))
     logging.info(f"The distribution of 0 and 1 values is:")
@@ -267,7 +285,7 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
 
     model_file_prefix = path.join(opts.outputDir, f"{target}_single-labeled_Fold-{fold}")
 
-    model = define_single_label_model(input_size=X_train.shape[1],
+    model = define_single_label_model(input_size=x_train.shape[1],
                                       opts=opts)
 
     checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
@@ -276,13 +294,13 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
 
     # measure the training time
     start = time()
-    hist = model.fit(X_train, y_train,
+    hist = model.fit(x_train, y_train,
                      callbacks=callback_list,
                      epochs=opts.epochs,
                      batch_size=opts.batchSize,
                      verbose=opts.verbose,
                      # validation_split=opts.testSize
-                     validation_data=(X_test, y_test)
+                     validation_data=(x_test, y_test)
                      )
     trainTime = str(round((time() - start) / 60, ndigits=2))
     logging.info(f"Computation time for training the single-label model for {target}: {trainTime} min")
@@ -292,9 +310,9 @@ def fit_and_evaluate_model(X_train: np.ndarray, X_test: np.ndarray, y_train: np.
     pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
 
     # evaluate callback model
-    callback_model = define_single_label_model(input_size=X_train.shape[1], opts=opts)
+    callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)
-    performance = evaluate_model(X_test=X_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
+    performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
                                  target=target, fold=fold)
 
     return performance
@@ -338,9 +356,18 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
 
         if opts.kFolds == 1:
-            # train a single 'fold'
-            xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=opts.testSize)
-            performance = fit_and_evaluate_model(X_train=xtrain, X_test=xtest, y_train=ytrain, y_test=ytest,
+            # for single 'folds' and when sweeping on W&B, we fix the random state
+            if opts.wabTracking:
+                x_train, x_test, y_train, y_test = train_test_split(x, y,
+                                                                    test_size=opts.testSize,
+                                                                    stratify=True,
+                                                                    random_state=1)
+            else:
+                x_train, x_test, y_train, y_test = train_test_split(x, y,
+                                                                    test_size=opts.testSize,
+                                                                    stratify=True)
+
+            performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                  fold=0, target=target, opts=opts)
             model_evaluation = model_evaluation.append(performance, ignore_index=True)
             # save complete model
@@ -360,7 +387,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # for testing use one of the splits:
                 # kf = kfold_c_validator.split(x, y)
                 # train, test = next(kf)
-                performance = fit_and_evaluate_model(X_train=x[train], X_test=x[test],
+                performance = fit_and_evaluate_model(x_train=x[train], x_test=x[test],
                                                      y_train=y[train], y_test=y[test],
                                                      fold=fold_no, target=target, opts=opts)
                 model_evaluation = model_evaluation.append(performance, ignore_index=True)

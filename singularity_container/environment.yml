@@ -12,9 +12,8 @@ dependencies:
   - tensorflow-gpu=2.2.0
   - scikit-learn=0.23.1
   - pandas=1.0.5
-  - keras=2.4.3
   - rdkit=2020.03.4
   - matplotlib=3.2.2
   - pytest=5.4.3
   - jsonpickle=1.4.1
-
+  - wandb

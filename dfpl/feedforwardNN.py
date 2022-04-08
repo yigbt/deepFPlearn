@@ -8,13 +8,13 @@ from time import time
 
 import numpy as np
 import pandas as pd
-from keras import metrics
 from tensorflow.keras import optimizers
-from keras import regularizers
-from keras.layers import Dense, Dropout
-from keras.models import Model
+from tensorflow.keras import metrics
+from tensorflow.keras import regularizers
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Model
 # for NN model functions
-from keras.models import Sequential
+from tensorflow.keras.models import Sequential
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split

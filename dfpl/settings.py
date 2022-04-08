@@ -43,10 +43,10 @@ nn_multi_target_numpy_type = np.float32
 
 # Training settings of the AC that were magic numbers in the code before.
 ac_train_min_delta = 0.001
-ac_train_check_period = 10
-ac_train_patience = 100
+ac_train_check_period = 5
+ac_train_patience = 10
 
 # Training settings of the FNN that were magic numbers in the code before.
 nn_train_min_delta = 0.0001
-nn_train_check_period = 10
-nn_train_patience = 100
+nn_train_check_period = 5
+nn_train_patience = 10

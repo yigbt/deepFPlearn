@@ -5,17 +5,24 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 
-from keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.wrappers.scikit_learn import KerasClassifier
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
 from time import time
 
-# --------------------------------------------------------------------------- #
 
-# model for tuning optmizer, activation functions and initialization of hidden layers
 def tuning_model(optimizer, activation, init, dropout=0.2):
+    """
+    model for tuning optimizer, activation functions and initialization of hidden layers
+
+    :param optimizer:
+    :param activation:
+    :param init:
+    :param dropout:
+    :return:
+    """
     model = Sequential()
     model.add(Dense(1024, activation=activation, init=init))
     model.add(Dropout(dropout))

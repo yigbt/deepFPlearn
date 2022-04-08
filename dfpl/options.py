@@ -41,13 +41,16 @@ class Options:
     aeLearningRateDecay: float = 0.01
     aeActivationFunction: str = 'relu'
 
+    fnnType = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
     learningRate: float = 0.001
-    lossFunction: str = "mse"
+    lossFunction: str = "bce"
     activationFunction: str = "relu"
     l2reg: float = 0.001
     dropout: float = 0.2
+    snnDepth = 8
+    snnWidth = 50
     wabTracking: bool = False  # Wand & Biases tracking
     wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
 

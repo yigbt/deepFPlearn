@@ -1,4 +1,4 @@
-import keras.models
+import tensorflow.keras.models
 import pandas as pd
 import numpy as np
 import logging
@@ -18,7 +18,7 @@ def predict_values(df: pd.DataFrame,
     :return:
     """
 
-    model = keras.models.load_model(opts.fnnModelDir)
+    model = tensorflow.keras.models.load_model(opts.fnnModelDir)
 
     if opts.compressFeatures:
         sub_df = df[df['fpcompressed'].notnull()]

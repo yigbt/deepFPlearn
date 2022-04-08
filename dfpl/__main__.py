@@ -5,7 +5,6 @@ import dataclasses
 from os import path
 
 from tensorflow import keras
-import keras.models
 import wandb
 
 from dfpl.utils import makePathAbsolute, createDirectory

@@ -1,43 +1,13 @@
 import array
-import re
-import math
-import sys
 
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-import logging
-import shutil
-
+import pandas as pd
 # for NN model functions
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.models import Model
-from keras import regularizers
-from tensorflow.keras import optimizers
-from keras import metrics
-from keras.callbacks import History, ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import History
+from matplotlib.axes import Axes
 
-from sklearn.model_selection import KFold
-from sklearn.metrics import matthews_corrcoef
-from sklearn.metrics import roc_curve
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import auc
-from sklearn.metrics import recall_score, precision_score, f1_score
-from sklearn.model_selection import train_test_split
-
-from dfpl import options
-from dfpl import autoencoder as ac
-from dfpl import history as ht
-from dfpl import settings
-from dfpl import single_label_model
-
-from time import time
 
 # for testing in Weights & Biases
-import wandb
-from wandb.keras import WandbCallback
 
 
 def get_max_validation_accuracy(history: History) -> str:
