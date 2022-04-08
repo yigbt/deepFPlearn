@@ -41,7 +41,7 @@ class Options:
     aeLearningRateDecay: float = 0.01
     aeActivationFunction: str = 'relu'
 
-    fnnType = "FNN"
+    fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
     learningRate: float = 0.001
