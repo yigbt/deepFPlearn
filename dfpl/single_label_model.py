@@ -4,6 +4,7 @@ import shutil
 import sys
 from os import path
 from time import time
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -14,6 +15,7 @@ from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
+import tensorflow as tf
 from tensorflow.keras import metrics
 from tensorflow.keras import optimizers
 from tensorflow.keras import regularizers
@@ -21,7 +23,6 @@ from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
-# from tensorflow.keras.utils import to_categorical
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -118,7 +119,9 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
     return x, y
 
 
-def build_fnn_network(input_size: int, opts: options.Options) -> Model:
+def build_fnn_network(input_size: int, opts: options.Options, output_bias: Union[None, float] = None) -> Model:
+    if output_bias is not None:
+        output_bias = tf.keras.initializers.Constant(output_bias)
     my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
     if not str(input_size) in my_hidden_layers.keys():
         raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
@@ -163,11 +166,13 @@ def build_fnn_network(input_size: int, opts: options.Options) -> Model:
             logging.error("Only 'relu' and 'selu' activation is supported")
             sys.exit(-1)
 
-    model.add(Dense(units=1, activation='sigmoid'))
+    model.add(Dense(units=1, activation='sigmoid', bias_initializer=output_bias))
     return model
 
 
-def build_snn_network(input_size: int, opts: options.Options) -> Model:
+def build_snn_network(input_size: int, opts: options.Options, output_bias: Union[None, float] = None) -> Model:
+    if output_bias is not None:
+        output_bias = tf.keras.initializers.Constant(output_bias)
     model = Sequential()
     model.add(Dense(input_dim=input_size, units=50, activation="selu", kernel_initializer="lecun_normal"))
     model.add(AlphaDropout(opts.dropout))
@@ -179,8 +184,7 @@ def build_snn_network(input_size: int, opts: options.Options) -> Model:
     return model
 
 
-def define_single_label_model(input_size: int,
-                              opts: options.Options) -> Model:
+def define_single_label_model(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if opts.lossFunction == "bce":
         loss_function = BinaryCrossentropy()
     elif opts.lossFunction == "mse":
@@ -198,9 +202,9 @@ def define_single_label_model(input_size: int,
         sys.exit("Unsupported optimizer")
 
     if opts.fnnType == "FNN":
-        model = build_fnn_network(input_size, opts)
+        model = build_fnn_network(input_size, opts, output_bias)
     elif opts.fnnType == "SNN":
-        model = build_snn_network(input_size, opts)
+        model = build_snn_network(input_size, opts, output_bias)
     else:
         raise ValueError(f"Option FNN Type is not \"FNN\" or \"SNN\", but {opts.fnnType}.")
     logging.info(f"Network type: {opts.fnnType}")
@@ -297,7 +301,16 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
 
     model_file_prefix = path.join(opts.outputDir, f"{target}_single-labeled_Fold-{fold}")
 
-    model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
+    ids, counts = np.unique(y_train, return_counts=True)
+    count_dict = dict(zip(ids, counts))
+    if count_dict[0] == 0:
+        initial_bias = None
+        logging.info("No zeroes in training labels. Setting initial_bias to None.")
+    else:
+        initial_bias = np.log([count_dict[1]/count_dict[0]])
+        logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
+
+    model = define_single_label_model(input_size=x_train.shape[1], opts=opts, output_bias=initial_bias)
 
     checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
     callback_list = cb.nn_callback(checkpoint_path=checkpoint_model_weights_path,
@@ -400,12 +413,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
             # select and copy best model - how to define the best model?
             best_fold = (
-                    pd
+                pd
                     .concat(performance_list, ignore_index=True)
                     .sort_values(
-                        by=['p_1', 'r_1', 'MCC'],
-                        ascending=False,
-                        ignore_index=True)['fold'][0]
+                    by=['p_1', 'r_1', 'MCC'],
+                    ascending=False,
+                    ignore_index=True)['fold'][0]
             )
 
             # copy checkpoint model weights
