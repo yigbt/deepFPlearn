@@ -21,7 +21,7 @@ from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
-from tensorflow.keras.utils import to_categorical
+# from tensorflow.keras.utils import to_categorical
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -30,8 +30,7 @@ from dfpl import settings
 
 
 def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Options) -> (np.ndarray,
-                                                                                       np.ndarray,
-                                                                                       options.Options):
+                                                                                       np.ndarray):
     # check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
 
@@ -77,7 +76,6 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
                 dtype=settings.nn_target_numpy_type,
                 copy=settings.numpy_copy_values
             )
-            y_one_hot = to_categorical(y)
         else:
             logging.info("Fraction sampling is OFF")
             # how many ones, how many zeros
@@ -94,7 +92,6 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
                 dtype=settings.nn_target_numpy_type,
                 copy=settings.numpy_copy_values
             )
-            y_one_hot = to_categorical(y)
     else:
         logging.info("Using uncompressed fingerprints")
         df_fp = df[df[target].notna() & df["fp"].notnull()]
@@ -109,8 +106,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
                     int(min(counts[0], counts[1] / opts.sampleFractionOnes)))
             )
             x = np.array(dfX["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
-            y = np.array(dfX[target].to_list(), copy=settings.numpy_copy_values)
-            y_one_hot = to_categorical(y)
+            y = np.array(dfX[target].to_list(), dtype=settings.nn_target_numpy_type, copy=settings.numpy_copy_values)
         else:
             logging.info("Fraction sampling is OFF")
             # how many ones, how many zeros
@@ -118,9 +114,8 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
             logging.info(f"Number of sampling values: {counts.to_dict()}")
 
             x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
-            y = np.array(df_fp[target].to_list(), copy=settings.numpy_copy_values)
-            y_one_hot = to_categorical(y)
-    return x, y_one_hot, opts
+            y = np.array(df_fp[target].to_list(), dtype=settings.nn_target_numpy_type, copy=settings.numpy_copy_values)
+    return x, y
 
 
 def build_fnn_network(input_size: int, opts: options.Options) -> Model:
@@ -168,9 +163,7 @@ def build_fnn_network(input_size: int, opts: options.Options) -> Model:
             logging.error("Only 'relu' and 'selu' activation is supported")
             sys.exit(-1)
 
-    # output layer
-    model.add(Dense(units=2,
-                    activation='softmax'))
+    model.add(Dense(units=1, activation='sigmoid'))
     return model
 
 
@@ -182,7 +175,7 @@ def build_snn_network(input_size: int, opts: options.Options) -> Model:
     for i in range(7):
         model.add(Dense(units=50, activation="selu", kernel_initializer="lecun_normal"))
         model.add(AlphaDropout(opts.dropout))
-    model.add(Dense(units=2, activation="softmax"))
+    model.add(Dense(units=1, activation="sigmoid"))
     return model
 
 
@@ -215,7 +208,7 @@ def define_single_label_model(input_size: int,
 
     model.compile(loss=loss_function,
                   optimizer=my_optimizer,
-                  metrics=['accuracy',
+                  metrics=[metrics.BinaryAccuracy(name="accuracy"),
                            metrics.AUC(),
                            metrics.Precision(),
                            metrics.Recall()]
@@ -230,14 +223,15 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
 
     # predict test set to compute MCC, AUC, ROC curve, etc. (see below)
     # TODO: Introduce thresholds different from 0.5!
-    y_predict = model.predict(x_test)
-    y_predict_int = np.argmax(y_predict, axis=1)
-    y_test_int = np.argmax(y_test, axis=1)
+    threshold = 0.5
+    y_predict = model.predict(x_test).flatten()
+    y_predict_int = (y_predict >= threshold).astype(np.short)
+    y_test_int = y_test.astype(np.short)
 
     (pd
      .DataFrame({
         "y_true": y_test_int,
-        "y_predicted": y_predict[:, 1],
+        "y_predicted": y_predict,
         "y_predicted_int": y_predict_int,
         "target": target,
         "fold": fold})
@@ -262,7 +256,7 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
 
     # generate the AUC-ROC curve data from the validation data
     FPR, TPR, thresholds_keras = roc_curve(y_true=y_test_int,
-                                           y_score=y_predict[:, 1],
+                                           y_score=y_predict,
                                            drop_intermediate=False)
     AUC = auc(FPR, TPR)
     # save AUC data to csv
@@ -298,13 +292,12 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
 def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray,
                            fold: int, target: str, opts: options.Options) -> pd.DataFrame:
     logging.info(f"Training of fold number: {fold}")
-    logging.info(f"Training sample distribution: train data: {pd.DataFrame(y_train)[0].value_counts().to_dict()}"
+    logging.info(f"Training sample distribution: train data: {pd.DataFrame(y_train)[0].value_counts().to_dict()} "
                  f"test data: {pd.DataFrame(y_test)[0].value_counts().to_dict()}")
 
     model_file_prefix = path.join(opts.outputDir, f"{target}_single-labeled_Fold-{fold}")
 
-    model = define_single_label_model(input_size=x_train.shape[1],
-                                      opts=opts)
+    model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
 
     checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
     callback_list = cb.nn_callback(checkpoint_path=checkpoint_model_weights_path,
@@ -364,7 +357,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     # For each individual target train a model
     for target in names_y:  # [:1]:
         # target=names_y[1] # --> only for testing the code
-        x, y, opts = prepare_nn_training_data(df, target, opts)
+        x, y = prepare_nn_training_data(df, target, opts)
         if x is None:
             continue
 
@@ -374,15 +367,11 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         if opts.kFolds == 1:
             # for single 'folds' and when sweeping on W&B, we fix the random state
             if opts.wabTracking:
-                x_train, x_test, y_train, y_test = train_test_split(x, y,
-                                                                    test_size=opts.testSize,
-                                                                    stratify=y,
-                                                                    random_state=1)
+                x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y,
+                                                                    test_size=opts.testSize, random_state=1)
                 logging.info(f"Splitting train/test data with fixed random initializer")
             else:
-                x_train, x_test, y_train, y_test = train_test_split(x, y,
-                                                                    test_size=opts.testSize,
-                                                                    stratify=y)
+                x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=opts.testSize)
 
             performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                  fold=0, target=target, opts=opts)
