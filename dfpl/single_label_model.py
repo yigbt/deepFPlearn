@@ -119,7 +119,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
     return x, y
 
 
-def build_fnn_network(input_size: int, opts: options.Options, output_bias: Union[None, float] = None) -> Model:
+def build_fnn_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
     my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
@@ -170,7 +170,7 @@ def build_fnn_network(input_size: int, opts: options.Options, output_bias: Union
     return model
 
 
-def build_snn_network(input_size: int, opts: options.Options, output_bias: Union[None, float] = None) -> Model:
+def build_snn_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
     model = Sequential()
@@ -180,7 +180,7 @@ def build_snn_network(input_size: int, opts: options.Options, output_bias: Union
     for i in range(7):
         model.add(Dense(units=50, activation="selu", kernel_initializer="lecun_normal"))
         model.add(AlphaDropout(opts.dropout))
-    model.add(Dense(units=1, activation="sigmoid"))
+    model.add(Dense(units=1, activation="sigmoid", bias_initializer=output_bias))
     return model
 
 
