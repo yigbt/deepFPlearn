@@ -9,7 +9,7 @@ import logging
 import tensorflow.keras.metrics as metrics
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense
-from tensorflow.keras import optimizers, losses
+from tensorflow.keras import optimizers, losses, initializers
 
 from sklearn.model_selection import train_test_split
 
@@ -19,8 +19,7 @@ from dfpl import history as ht
 from dfpl import settings
 
 
-def define_ac_model(opts: options.Options,
-                    my_loss: str = "binary_crossentropy") -> (Model, Model):
+def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -32,6 +31,10 @@ def define_ac_model(opts: options.Options,
     encoding_dim = opts.encFPSize
     ac_optimizer = optimizers.Adam(learning_rate=opts.aeLearningRate,
                                    decay=opts.aeLearningRateDecay)
+
+    if output_bias is not None:
+        output_bias = initializers.Constant(output_bias)
+        logging.info(f"")
 
     # get the number of meaningful hidden layers (latent space included)
     hidden_layer_count = round(math.log2(input_size / encoding_dim))
@@ -49,7 +52,7 @@ def define_ac_model(opts: options.Options,
                         kernel_initializer="lecun_normal")(input_vec)
 
     if hidden_layer_count > 1:
-        # encoding layers, incl. bottle neck
+        # encoding layers, incl. bottle-neck
         for i in range(1, hidden_layer_count):
             factor_units = 2 ** (i + 1)
             # print(f'{factor_units}: {int(input_size / factor_units)}')
@@ -83,20 +86,18 @@ def define_ac_model(opts: options.Options,
         # output layer
         # The output layer needs to predict the probability of an output which needs
         # to either 0 or 1 and hence we use sigmoid activation function.
-        decoded = Dense(units=input_size,
-                        activation='sigmoid')(decoded)
+        decoded = Dense(units=input_size, activation='sigmoid', bias_initializer=output_bias)(decoded)
 
     else:
         # output layer
-        decoded = Dense(units=input_size,
-                        activation='sigmoid')(encoded)
+        decoded = Dense(units=input_size, activation='sigmoid', bias_initializer=output_bias)(encoded)
 
     autoencoder = Model(input_vec, decoded)
     encoder = Model(input_vec, encoded)
     autoencoder.summary(print_fn=logging.info)
 
     autoencoder.compile(optimizer=ac_optimizer,
-                        loss=my_loss,
+                        loss=losses.BinaryCrossentropy(),
                         metrics=[
                             metrics.AUC(),
                             metrics.Precision(),
@@ -115,9 +116,6 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     :param df: Pandas dataframe that contains the smiles/inchi data for training the autoencoder
     :return: The encoder model of the trained autoencoder
     """
-
-    # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    (autoencoder, encoder) = define_ac_model(opts)
 
     # define output file for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
@@ -148,8 +146,20 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     else:
         x_train, x_test = train_test_split(fp_matrix, test_size=0.2)
 
+    ids, counts = np.unique(x_train.flatten(), return_counts=True)
+    count_dict = dict(zip(ids, counts))
+    if count_dict[0] == 0:
+        initial_bias = None
+        logging.info("No zeroes in training labels. Setting initial_bias to None.")
+    else:
+        initial_bias = np.log([count_dict[1]/count_dict[0]])
+        logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
+
     logging.info(f"AC train data shape {x_train.shape} with type {x_train.dtype}")
     logging.info(f"AC test data shape {x_test.shape} with type {x_test.dtype}")
+
+    # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
+    (autoencoder, encoder) = define_ac_model(opts, output_bias=initial_bias)
 
     auto_hist = autoencoder.fit(x_train, x_train,
                                 callbacks=callback_list,
