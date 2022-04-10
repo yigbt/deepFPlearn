@@ -24,7 +24,8 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
     :param opts: Training options that provide values for adjusting the neural net
-    :param my_loss: Loss function, see Keras Loss functions for potential values. Default: binary_crossentropy
+    :param output_bias: Bias used to initialize the last layer. It gives the net a head start in training on
+    imbalanced data (which the fingerprints are, because they have many more 0's than 1's in them).
     :return: a tuple of autoencoder and encoder models
     """
     input_size = opts.fpSize
@@ -34,7 +35,6 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
 
     if output_bias is not None:
         output_bias = initializers.Constant(output_bias)
-        logging.info(f"")
 
     # get the number of meaningful hidden layers (latent space included)
     hidden_layer_count = round(math.log2(input_size / encoding_dim))
@@ -140,12 +140,20 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
                          copy=settings.numpy_copy_values)
     logging.info(f"Training AC on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
 
-    # split data into test and training data
-    if opts.wabTracking:
-        x_train, x_test = train_test_split(fp_matrix, test_size=0.2, random_state=42)
+    # When training the final AE, we don't want any test data. We want to train it on the all available
+    # fingerprints.
+    assert(0.0 <= opts.testSize <= 0.5)
+    if opts.testSize > 0.0:
+        # split data into test and training data
+        if opts.wabTracking:
+            x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize, random_state=42)
+        else:
+            x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize)
     else:
-        x_train, x_test = train_test_split(fp_matrix, test_size=0.2)
+        x_train = fp_matrix
+        x_test = None
 
+    # Calculate the initial bias aka the log ratio between 1's and 0'1 in all fingerprints
     ids, counts = np.unique(x_train.flatten(), return_counts=True)
     count_dict = dict(zip(ids, counts))
     if count_dict[0] == 0:
@@ -155,8 +163,13 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         initial_bias = np.log([count_dict[1]/count_dict[0]])
         logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
 
-    logging.info(f"AC train data shape {x_train.shape} with type {x_train.dtype}")
-    logging.info(f"AC test data shape {x_test.shape} with type {x_test.dtype}")
+    if opts.testSize > 0.0:
+        logging.info(f"AE training/testing mode with train- and test-samples")
+        logging.info(f"AC train data shape {x_train.shape} with type {x_train.dtype}")
+        logging.info(f"AC test data shape {x_test.shape} with type {x_test.dtype}")
+    else:
+        logging.info(f"AE full train mode without test-samples")
+        logging.info(f"AC train data shape {x_train.shape} with type {x_train.dtype}")
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = define_ac_model(opts, output_bias=initial_bias)
@@ -164,9 +177,10 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     auto_hist = autoencoder.fit(x_train, x_train,
                                 callbacks=callback_list,
                                 epochs=opts.aeEpochs,
-                                batch_size=256,
+                                batch_size=opts.aeBatchSize,
                                 verbose=opts.verbose,
-                                validation_data=(x_test, x_test))
+                                validation_data=(x_test, x_test) if opts.testSize > 0.0 else None
+                                )
     logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
     ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
@@ -175,10 +189,12 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     # encoder.save_weights(ec_weights_file) # these are the wrong weights! we need those from the callback model
     # logging.info(f"Encoder weights stored in file: {ec_weights_file}")
     # save AE callback model
-    (callback_autoencoder, callback_encoder) = define_ac_model(opts)
-    callback_autoencoder.load_weights(filepath=ac_weights_file)
-    callback_encoder.save(filepath=opts.ecModelDir)
-
+    if opts.testSize > 0.0:
+        (callback_autoencoder, callback_encoder) = define_ac_model(opts)
+        callback_autoencoder.load_weights(filepath=ac_weights_file)
+        callback_encoder.save(filepath=opts.ecModelDir)
+    else:
+        encoder.save(filepath=opts.ecModelDir)
     return encoder
 
 

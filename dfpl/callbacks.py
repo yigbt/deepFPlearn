@@ -15,30 +15,31 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
     :param opts: Training options provided to the run
     :return: List of ModelCheckpoint and EarlyStopping class.
     """
+    callbacks = []
 
-    # enable this checkpoint to restore the weights of the best performing model
-    checkpoint = ModelCheckpoint(checkpoint_path,
-                                 monitor="val_loss",
-                                 mode='min',
-                                 verbose=1,
-                                 period=settings.ac_train_check_period,
-                                 save_best_only=True,
-                                 save_weights_only=True)
+    if opts.testSize > 0.0:
+        # enable this checkpoint to restore the weights of the best performing model
+        checkpoint = ModelCheckpoint(checkpoint_path,
+                                     monitor="val_loss",
+                                     mode='min',
+                                     verbose=1,
+                                     period=settings.ac_train_check_period,
+                                     save_best_only=True,
+                                     save_weights_only=True)
+        callbacks.append(checkpoint)
 
-    # enable early stopping if val_loss is not improving anymore
-    early_stop = EarlyStopping(monitor="val_loss",
-                               mode='min',
-                               patience=settings.ac_train_patience,
-                               min_delta=settings.ac_train_min_delta,
-                               verbose=1,
-                               restore_best_weights=True)
+        # enable early stopping if val_loss is not improving anymore
+        early_stop = EarlyStopping(monitor="val_loss",
+                                   mode='min',
+                                   patience=settings.ac_train_patience,
+                                   min_delta=settings.ac_train_min_delta,
+                                   verbose=1,
+                                   restore_best_weights=True)
+        callbacks.append(early_stop)
 
     if opts.wabTracking:
-        trackWandB_callback = WandbCallback(save_model=False)
-        return [checkpoint, early_stop, trackWandB_callback]
-    else:
-        return [checkpoint, early_stop]
-
+        callbacks.append(WandbCallback(save_model=False))
+    return callbacks
 
 def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
     """
@@ -49,25 +50,28 @@ def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
     :return: List of ModelCheckpoint and EarlyStopping class.
     """
 
-    # enable this checkpoint to restore the weights of the best performing model
-    checkpoint = ModelCheckpoint(checkpoint_path,
-                                 verbose=1,
-                                 period=settings.nn_train_check_period,
-                                 save_best_only=True,
-                                 monitor="val_loss",
-                                 mode='min',
-                                 save_weights_only=True)
+    callbacks = []
 
-    # enable early stopping if val_loss is not improving anymore
-    early_stop = EarlyStopping(patience=settings.nn_train_patience,
-                               monitor="val_loss",
-                               mode="min",
-                               min_delta=settings.nn_train_min_delta,
-                               verbose=1,
-                               restore_best_weights=True)
+    if opts.testSize > 0.0:
+        # enable this checkpoint to restore the weights of the best performing model
+        checkpoint = ModelCheckpoint(checkpoint_path,
+                                     verbose=1,
+                                     period=settings.nn_train_check_period,
+                                     save_best_only=True,
+                                     monitor="val_loss",
+                                     mode='min',
+                                     save_weights_only=True)
+        callbacks.append(checkpoint)
+
+        # enable early stopping if val_loss is not improving anymore
+        early_stop = EarlyStopping(patience=settings.nn_train_patience,
+                                   monitor="val_loss",
+                                   mode="min",
+                                   min_delta=settings.nn_train_min_delta,
+                                   verbose=1,
+                                   restore_best_weights=True)
+        callbacks.append(early_stop)
 
     if opts.wabTracking:
-        trackWandB_callback = WandbCallback(save_model=False)
-        return [checkpoint, early_stop, trackWandB_callback]
-    else:
-        return [checkpoint, early_stop]
+        callbacks.append(WandbCallback(save_model=False))
+    return callbacks
