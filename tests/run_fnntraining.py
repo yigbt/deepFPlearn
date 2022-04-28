@@ -7,7 +7,7 @@ import dfpl.autoencoder as ac
 import dfpl.feedforwardNN as fNN
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_train_args = opt.TrainOptions(
+test_train_args = opt.Options(
     inputFile=f"{project_directory}/data/S_dataset.csv",
     outputDir=f"{project_directory}/modeltraining/",
     ecWeightsFile="",
@@ -25,7 +25,7 @@ test_train_args = opt.TrainOptions(
 )
 
 
-def run_fnn_training(opts: opt.TrainOptions) -> None:
+def run_fnn_training(opts: opt.Options) -> None:
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
@@ -54,7 +54,7 @@ def run_fnn_training(opts: opt.TrainOptions) -> None:
     logging.info("Done")
 
 
-def run_fnn_training_multi(opts: opt.TrainOptions) -> None:
+def run_fnn_training_multi(opts: opt.Options) -> None:
 
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")

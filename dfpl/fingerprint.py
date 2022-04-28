@@ -137,8 +137,9 @@ conversion_rules = {
     # "S_dataset.csv": importSmilesCSV,
     # "S_dataset_extended.csv": importSmilesCSV,
     # "D_dataset.tsv": importDstoxTSV,
-    "train_data.csv": importSmilesCSV,
-    "predict_data.csv": importDstoxTSV
+    # "train_data.csv": importSmilesCSV,
+    # "predict_data.csv": importDstoxTSV,
+    "B_data_ER.csv": importDstoxTSV
 }
 
 
