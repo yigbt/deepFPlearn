@@ -1,9 +1,11 @@
 {
-  "py/object": "dfpl.options.PredictOptions",
+  "py/object": "dfpl.options.Options",
   "inputFile": "example/data/predict_data.csv",
   "outputDir": "example/results_predict",
-  "ecWeightsFile": "example/models/generic_encoder.hdf5",
-  "model": "example/models/AR.model.hdf5",
-  "type": "smiles",
-  "fpType": "topological"
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "example/models/AR_saved_model",
+  "compressFeatures": true,
+  "trainAC": false,
+  "trainFNN": false
 }
