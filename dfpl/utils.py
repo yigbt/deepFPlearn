@@ -11,6 +11,6 @@ def makePathAbsolute(p: str) -> str:
 
 
 def createDirectory(directory: str):
-    path = makePathAbsolute(pathlib.Path(directory))
+    path = makePathAbsolute(directory)
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)

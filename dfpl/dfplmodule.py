@@ -1,12 +1,17 @@
 import argparse
 
 # Python module for deepFPlearn tools
+import re
 import math
 import csv
 import numpy as np
 import pandas as pd
+import shutil
 import matplotlib.pyplot as plt
+import matplotlib
 # matplotlib.use('Agg')
+import matplotlib.patches as mpatches
+from matplotlib.colors import LinearSegmentedColormap
 # %matplotlib inline
 # for drawing the heatmaps
 import seaborn as sns
@@ -28,8 +33,15 @@ from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ReduceLROnPlateau
+import sklearn
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_curve
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import auc
+from sklearn.metrics import matthews_corrcoef
+from sklearn.model_selection import KFold
 
+from time import time
 
 
 ###############################################################################
@@ -119,6 +131,9 @@ def smi2fp(smile, fptype, size=2048):
             f'[WARNING]: Not able to extract molecule from (canonically transformed) SMILES: {cs}\n          Original SMILE: {smile}')
     if not mol:
         return None
+
+    # init fp, any better idea? e.g. calling a constructor?
+    fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
 
     if fptype == 'topological':  # 2048 bits
         # Topological Fingerprints:
