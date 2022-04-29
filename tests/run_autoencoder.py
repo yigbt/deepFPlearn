@@ -1,15 +1,16 @@
 import pathlib
 import logging
-import pandas as pd
 
 import dfpl.options as opt
 import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
+import dfpl.utils as utils
 
 project_directory = pathlib.Path(__file__).parent.absolute()
 test_train_args = opt.Options(
-    inputFile=f"{project_directory}/data/S_dataset.csv",
-    outputDir=f"{project_directory}/modeltraining",
+    inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
+    ecModelDir=utils.makePathAbsolute(f"{project_directory}/output_data/modeltraining"),
+    outputDir=utils.makePathAbsolute(f"{project_directory}/output_data"),
     ecWeightsFile="Sun_etal_dataset.encoder.hdf5",
     type='smiles',
     fpType='topological',
@@ -17,7 +18,7 @@ test_train_args = opt.Options(
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
-    testingFraction=0.2,
+    testSize=0.2,
     kFolds=5,
     verbose=2,
     trainFNN=False,
@@ -39,4 +40,5 @@ def runAutoencoder(opts: opt.Options) -> None:
 
 if __name__ == '__main__':
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
-    ac.train_full_ac(pd.read_pickle("/home/patrick/Workspace/PycharmProjects/deepFPlearn/modeltraining/df.pkl"), test_train_args)
+    utils.createDirectory(test_train_args.outputDir)
+    runAutoencoder(test_train_args)
