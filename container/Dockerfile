@@ -7,7 +7,6 @@ COPY ./ /deepFPlearn/
 
 # install dfpl 
 RUN python -m pip install --no-cache-dir  /deepFPlearn && pip install --no-cache-dir pytest
-RUN grep -v "tensorflow=" /deepFPlearn/setup.py > tmp && mv tmp /deepFPlearn/setup.py && python -m pip install --no-cache-dir  /deepFPlearn && pip install --no-cache-dir pytest
 
 # The code to run when container is started. 
 CMD ["bash"]
