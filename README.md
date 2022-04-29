@@ -8,7 +8,7 @@ The DFPL package requires a particular Python environment to work properly.
 It consists of a recent Python interpreter and packages for data-science and neural networks.
 The exact dependencies can be found in the
 [`requirements.txt`](requirements.txt) (which is used when installing the package with pip)
-and [`environment.yml`](environment.yml) (for installtion with conda).
+and [`environment.yml`](environment.yml) (for installation with conda).
 
 You have several ways to provide the correct environment to run code from the DFPL package.
 
@@ -99,7 +99,7 @@ In order to use the environment it needs to be activated with `. ENV_PATH/bin/ac
 
 ### Set up DFPL in a conda environment
 
-To use this tool outside the Singularity container first create the respective conda environment:
+To use this tool in a conda environment:
 
 1. Create the conda env from scratch
 
