@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.7.1-gpu
+FROM tensorflow/tensorflow:2.6.0-gpu
 
 # copy dfpl sources for installation
 # unfortunatelly COPY setup.py README.md dfpl/ /deepFPlearn/
