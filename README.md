@@ -143,10 +143,10 @@ JSON files for training or prediction
 ```python
 import dfpl.options as opts
 
-train_opts = opts.TrainOptions()
+train_opts = opts.Options()
 train_opts.saveToFile("train.json")
 
-predict_opts = opts.PredictOptions()
+predict_opts = opts.Options()
 predict_opts.saveToFile("predict_bestER03.json")
 ```
 
@@ -159,7 +159,7 @@ of `dfpl.options.TrainingOptions` or
 import dfpl.__main__ as main
 import dfpl.options as opts
 
-o = opts.TrainOptions.fromJson("/path/to/train.json")
+o = opts.Options.fromJson("/path/to/train.json")
 main.train(o)
 ```
 

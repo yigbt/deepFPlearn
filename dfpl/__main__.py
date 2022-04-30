@@ -4,74 +4,67 @@ import pathlib
 import dataclasses
 from os import path
 
+from tensorflow import keras
+import wandb
+
 from dfpl.utils import makePathAbsolute, createDirectory
 from dfpl import options
 from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import predictions
+from dfpl import single_label_model as sl
 
-
-project_directory = pathlib.Path(__file__).parent.parent.absolute()
-opts = options.TrainOptions(
-    inputFile=f"{project_directory}/data/muv.pkl",
-    outputDir=f"{project_directory}/modeltraining",
-    ecWeightsFile="/home/hertelj/git-hertelj/deepFPlearn_CODE/validation/case_00/results_AC_D/ac_D.encoder.hdf5",
+project_directory = pathlib.Path(".").parent.parent.absolute()
+test_train_opts = options.Options(
+    inputFile=f'{project_directory}/input_datasets/S_dataset.pkl',
+    outputDir=f'{project_directory}/output_data/console_test',
+    ecWeightsFile=f'{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5',
+    ecModelDir=f'{project_directory}/output_data/case_00/AE_S/saved_model',
     type='smiles',
     fpType='topological',
-    epochs=3000,
+    epochs=100,
+    batchSize=1024,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
-    testingFraction=0.2,
-    kFolds=5,
+    testSize=0.2,
+    kFolds=2,
     verbose=2,
     trainAC=False,
     trainFNN=True,
-    compressFeatures=True
+    compressFeatures=True,
+    activationFunction="selu",
+    lossFunction='bce',
+    optimizer='Adam',
+    fnnType='FNN'
 )
-project_directory = pathlib.Path(".").parent.parent.absolute()
-opts = options.TrainOptions(
-    inputFile=f"{project_directory}/data/MoleculeNet/Biophysics/muv.pkl",
-    outputDir=f"{project_directory}/validation/case_Tox21/results_AC-specific/",
-    ecWeightsFile="",  #f"{project_directory}/validation/case_Tox21/results_AC-specific/ac_pcba.encoder.hdf5",
-    type='smiles',
-    fpType='topological',
-    epochs=20,
-    fpSize=2048,
-    encFPSize=256,
-    enableMultiLabel=False,
-    testingFraction=0.2,
-    kFolds=5,
-    verbose=2,
-    trainAC=True,
-    trainFNN=True,
-    compressFeatures=True
-)
-logging.basicConfig(level=logging.INFO)
 
-test_predict_args = options.PredictOptions(
-    inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
-    outputDir=f"{project_directory}/validation/case_01/results/",
-    ecWeightsFile=f"/home/hertelj/git-hertelj/deepFPlearn_CODE/validation/case_00/results_AC_S/ac_S.encoder.hdf5",
-    model=f"{project_directory}/validation/case_01/results/AR_compressed-True.full.FNN-.model.hdf5",
-    target="AR",
-    fpSize=2048,
+test_pred_opts = options.Options(
+    inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
+    outputDir=f"{project_directory}/output_data/console_test",
+    outputFile=f"{project_directory}/output_data/console_test/S_dataset.predictions_ER.csv",
+    ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
+    fnnModelDir=f"{project_directory}/output_data/console_test/ER_saved_model",
     type="smiles",
     fpType="topological"
 )
 
 
-def train(opts: options.TrainOptions):
+def train(opts: options.Options):
     """
     Run the main training procedure
     :param opts: Options defining the details of the training
     """
 
+    if opts.wabTracking:
+        wandb.init(project=f"dfpl-training-{opts.wabTarget}", config=vars(opts))
+        # opts = wandb.config
+
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
-    createDirectory(opts.outputDir)
+    createDirectory(opts.outputDir)  # why? we just created that directory in the function before??
 
     encoder = None
     if opts.trainAC:
@@ -82,22 +75,22 @@ def train(opts: options.TrainOptions):
 
         if not opts.trainAC:
             # load trained model for autoencoder
-            (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-            encoder.load_weights(makePathAbsolute(opts.ecWeightsFile))
+            encoder = keras.models.load_model(opts.ecModelDir)
 
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
     if opts.trainFNN:
         # train single label models
-        fNN.train_nn_models(df=df, opts=opts)
+        # fNN.train_single_label_models(df=df, opts=opts)
+        sl.train_single_label_models(df=df, opts=opts)
 
     # train multi-label models
     if opts.enableMultiLabel:
         fNN.train_nn_models_multi(df=df, opts=opts)
 
 
-def predict(opts: options.PredictOptions) -> None:
+def predict(opts: options.Options) -> None:
     """
     Run prediction given specific options
     :param opts: Options defining the details of the prediction
@@ -108,26 +101,20 @@ def predict(opts: options.PredictOptions) -> None:
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)
 
-    use_compressed = False
-    if opts.ecWeightsFile:
-        logging.info(f"Using fingerprint compression with AC {opts.ecWeightsFile}")
-        use_compressed = True
+    if opts.compressFeatures:
         # load trained model for autoencoder
-        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-        encoder.load_weights(opts.ecWeightsFile)
+        encoder = keras.models.load_model(opts.ecModelDir)
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
     # predict
     df2 = predictions.predict_values(df=df,
-                                     opts=opts,
-                                     use_compressed=use_compressed)
+                                     opts=opts)
 
     names_columns = [c for c in df2.columns if c not in ['fp', 'fpcompressed']]
 
-    output_file = path.join(opts.outputDir,
-                            path.basename(path.splitext(opts.inputFile)[0]) + ".predictions.csv")
-    df2[names_columns].to_csv(path_or_buf=output_file)
+    df2[names_columns].to_csv(path_or_buf=path.join(opts.outputDir, opts.outputFile))
+    logging.info(f"Prediction successful. Results written to '{path.join(opts.outputDir, opts.outputFile)}'")
 
 
 def createLogger(filename: str) -> None:
@@ -170,7 +157,7 @@ def main():
             else:
                 raise ValueError("Input directory is not a directory")
         if prog_args.method == "train":
-            train_opts = options.TrainOptions.fromCmdArgs(prog_args)
+            train_opts = options.Options.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 train_opts,
                 inputFile=makePathAbsolute(train_opts.inputFile),
@@ -182,11 +169,16 @@ def main():
             train(fixed_opts)
             exit(0)
         elif prog_args.method == "predict":
-            predict_opts = options.PredictOptions.fromCmdArgs(prog_args)
+            predict_opts = options.Options.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 predict_opts,
                 inputFile=makePathAbsolute(predict_opts.inputFile),
-                outputDir=makePathAbsolute(predict_opts.outputDir)
+                outputDir=makePathAbsolute(predict_opts.outputDir),
+                outputFile=makePathAbsolute(path.join(predict_opts.outputDir, predict_opts.outputFile)),
+                ecModelDir=makePathAbsolute(predict_opts.ecModelDir),
+                fnnModelDir=makePathAbsolute(predict_opts.fnnModelDir),
+                trainAC=False,
+                trainFNN=False
             )
             createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "predict.log"))
