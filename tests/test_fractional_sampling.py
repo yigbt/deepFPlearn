@@ -2,9 +2,15 @@ import pathlib
 import os.path
 import numpy as np
 
-import dfpl.fingerprint as fp
-import dfpl.single_label_model as fNN
-import dfpl.options as opts
+import os, sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+from dfpl import fingerprint as fp
+from dfpl import single_label_model as fNN
+from dfpl import options as opts
 
 
 def test_fractional_sampling():

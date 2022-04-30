@@ -7,7 +7,6 @@ predictions
 .RDataFiles
 input_datasets
 output_data
-tests
 data
 singularity_container/dfpl.sif
 dfpl/testDFPLwithDCdata.py
