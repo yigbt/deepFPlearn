@@ -38,7 +38,7 @@ or you can start a shell script (look at [run-all-publication-cases.sh](scripts/
 example)
 
 ```shell script
-singularity run --nv dfpl.sif ". ./scripts/run-all-cases.sh"
+singularity run --nv dfpl.sif ". ./example/run-multiple-cases.sh"
 ```
 
 It's also possible to get an interactive shell into the container
