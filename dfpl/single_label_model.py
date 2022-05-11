@@ -312,15 +312,15 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
 
     model = define_single_label_model(input_size=x_train.shape[1], opts=opts, output_bias=initial_bias)
 
-    checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
-    callback_list = cb.nn_callback(checkpoint_path=checkpoint_model_weights_path,
-                                   opts=opts)
+    # checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
+    # callback_list = cb.nn_callback(checkpoint_path=checkpoint_model_weights_path,
+    #                                opts=opts)
 
     # measure the training time
     start = time()
     hist = model.fit(x_train, y_train,
-                     callbacks=callback_list,
-                     epochs=opts.epochs,
+                     # callbacks=callback_list,
+                     epochs=500, #opts.epochs,
                      batch_size=opts.batchSize,
                      verbose=opts.verbose,
                      validation_data=(x_test, y_test)
@@ -333,9 +333,11 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
     pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
 
     # evaluate callback model
-    callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
-    callback_model.load_weights(filepath=checkpoint_model_weights_path)
-    performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
+    # callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
+    # callback_model.load_weights(filepath=checkpoint_model_weights_path)
+    # performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
+    #                              target=target, fold=fold)
+    performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=model,
                                  target=target, fold=fold)
 
     return performance
