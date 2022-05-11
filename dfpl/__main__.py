@@ -16,39 +16,39 @@ from dfpl import predictions
 from dfpl import single_label_model as sl
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
-test_train_opts = options.Options(
-    inputFile=f'{project_directory}/input_datasets/S_dataset.pkl',
-    outputDir=f'{project_directory}/output_data/console_test',
-    ecWeightsFile=f'{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5',
-    ecModelDir=f'{project_directory}/output_data/case_00/AE_S/saved_model',
-    type='smiles',
-    fpType='topological',
-    epochs=100,
-    batchSize=1024,
-    fpSize=2048,
-    encFPSize=256,
-    enableMultiLabel=False,
-    testSize=0.2,
-    kFolds=2,
-    verbose=2,
-    trainAC=False,
-    trainFNN=True,
-    compressFeatures=True,
-    activationFunction="selu",
-    lossFunction='bce',
-    optimizer='Adam',
-    fnnType='FNN'
-)
-
-test_pred_opts = options.Options(
-    inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
-    outputDir=f"{project_directory}/output_data/console_test",
-    outputFile=f"{project_directory}/output_data/console_test/S_dataset.predictions_ER.csv",
-    ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
-    fnnModelDir=f"{project_directory}/output_data/console_test/ER_saved_model",
-    type="smiles",
-    fpType="topological"
-)
+# test_train_opts = options.Options(
+#     inputFile=f'{project_directory}/input_datasets/S_dataset.pkl',
+#     outputDir=f'{project_directory}/output_data/console_test',
+#     ecWeightsFile=f'{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5',
+#     ecModelDir=f'{project_directory}/output_data/case_00/AE_S/saved_model',
+#     type='smiles',
+#     fpType='topological',
+#     epochs=100,
+#     batchSize=1024,
+#     fpSize=2048,
+#     encFPSize=256,
+#     enableMultiLabel=False,
+#     testSize=0.2,
+#     kFolds=2,
+#     verbose=2,
+#     trainAC=False,
+#     trainFNN=True,
+#     compressFeatures=True,
+#     activationFunction="selu",
+#     lossFunction='bce',
+#     optimizer='Adam',
+#     fnnType='FNN'
+# )
+#
+# test_pred_opts = options.Options(
+#     inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
+#     outputDir=f"{project_directory}/output_data/console_test",
+#     outputFile=f"{project_directory}/output_data/console_test/S_dataset.predictions_ER.csv",
+#     ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
+#     fnnModelDir=f"{project_directory}/output_data/console_test/ER_saved_model",
+#     type="smiles",
+#     fpType="topological"
+# )
 
 
 def train(opts: options.Options):
