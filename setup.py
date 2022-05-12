@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="dfpl",
-    version="0.1",
+    version="1.2",
     author="Jana Schor, Patrick Scheibe, Matthias Bernt",
     author_email="jana.schor@ufz.de",
     packages=find_packages(include=['dfpl', 'dfpl.*']),
