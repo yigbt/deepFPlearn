@@ -13,7 +13,7 @@ and [`environment.yml`](environment.yml) (for installation with conda).
 You have several ways to provide the correct environment to run code from the DFPL package.
 
 1. Use the automatically built docker/Singularity containers
-2. Build your own container [following the steps here](container/build_container.md)
+2. Build your own container [following the steps here](container/README.md)
 3. Setup a python virtual environment
 4. Set up a conda environment install the requirements via conda and the DFPL package via pip
 
