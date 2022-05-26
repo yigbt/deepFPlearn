@@ -25,7 +25,7 @@ setup(
         "rdkit-pypi==2022.03.1",
         "scikit-learn==1.0.2",
         "keras==2.6.0",
-        "tensorflow-gpu==2.6.0",
+        "tensorflow-gpu==2.7.2",
         "wandb~=0.12",
     ],
     entry_points={
