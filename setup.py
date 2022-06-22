@@ -20,7 +20,7 @@ setup(
     install_requires=[
         "jsonpickle~=2.1",
         "matplotlib==3.5.1",
-        "numpy==1.19.5",
+        "numpy==1.22.0",
         "pandas==1.4.2",
         "rdkit-pypi==2022.03.1",
         "scikit-learn==1.0.2",
