@@ -38,7 +38,7 @@ test_train_opts = options.Options(
     activationFunction="selu",
     lossFunction='mae',
     optimizer='Adam',
-    fnnType='REG'
+    fnnType='REG'  # todo: replace useRegressionModel with fnnType variable
 )
 
 test_pred_opts = options.Options(
