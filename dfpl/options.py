@@ -34,6 +34,7 @@ class Options:
     compressFeatures: bool = True
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
+    useRegressionModel: bool = False
 
     aeEpochs: int = 3000
     aeBatchSize: int = 512
@@ -174,6 +175,11 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         help='Compress the fingerprints. This is done either with an existing autoencoder or a new '
                              'autoencoder model will be trained using the input compounds (see further options for '
                              'details).',
+                        default=argparse.SUPPRESS)
+    parser.add_argument('-r', "--useRegressionModel",
+                        metavar='BOOL',
+                        type=bool,
+                        help='Use the regression model instead of the (default) classification model for the FNN.',
                         default=argparse.SUPPRESS)
     parser.add_argument('-a', "--ecWeightsFile",
                         type=str,

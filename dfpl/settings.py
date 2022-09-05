@@ -34,6 +34,7 @@ ac_fp_compressed_numpy_type = np.bool8
 nn_fp_numpy_type = np.float32
 nn_fp_compressed_numpy_type = np.float32
 nn_target_numpy_type = np.short
+nn_target_numpy_type_regression = np.float32
 
 nn_multi_fp_numpy_type = np.float32
 nn_multi_fp_compressed_numpy_type = np.float32

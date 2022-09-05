@@ -6,6 +6,7 @@ from os import path
 from time import time
 from typing import Union
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import auc
@@ -22,7 +23,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
+from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError, MeanAbsoluteError, Loss
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -35,19 +36,20 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
     # check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
 
-    if opts.compressFeatures:
-        vc = df[df[target].notna() & df["fpcompressed"].notnull()][target].value_counts()
-    else:
-        vc = df[df[target].notna() & df["fp"].notnull()][target].value_counts()
-    if min(vc) < max(vc) * allowed_imbalance:
-        logging.info(
-            f" Your training data is extremely unbalanced ({target}): 0 - {vc[0]}, and 1 - {vc[1]} values.")
-        if opts.sampleDown:
-            logging.info(f" I will down-sample your data")
-            opts.sampleFractionOnes = allowed_imbalance
+    if not opts.useRegressionModel:
+        if opts.compressFeatures:
+            vc = df[df[target].notna() & df["fpcompressed"].notnull()][target].value_counts()
         else:
-            logging.info(f" I will not down-sample your data automatically.")
-            logging.info(f" Consider to enable down sampling of the 0 values with --sampleDown option.")
+            vc = df[df[target].notna() & df["fp"].notnull()][target].value_counts()
+        if min(vc) < max(vc) * allowed_imbalance:
+            logging.info(
+                f" Your training data is extremely unbalanced ({target}): 0 - {vc[0]}, and 1 - {vc[1]} values.")
+            if opts.sampleDown:
+                logging.info(f" I will down-sample your data")
+                opts.sampleFractionOnes = allowed_imbalance
+            else:
+                logging.info(f" I will not down-sample your data automatically.")
+                logging.info(f" Consider to enable down sampling of the 0 values with --sampleDown option.")
 
     logging.info("Preparing training data matrices")
     if opts.compressFeatures:
@@ -79,15 +81,22 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
             )
         else:
             logging.info("Fraction sampling is OFF")
+
+        x = np.array(
+            df_fpc["fpcompressed"].to_list(),
+            dtype=settings.nn_fp_compressed_numpy_type,
+            copy=settings.numpy_copy_values
+        )
+        if opts.useRegressionModel:
+            y = np.array(
+                df_fpc[target].to_list(),
+                dtype=settings.nn_target_numpy_type_regression,
+                copy=settings.numpy_copy_values
+            )
+        else:
             # how many ones, how many zeros
             counts = df_fpc[target].value_counts()
             logging.info(f"Number of sampling values: {counts.to_dict()}")
-
-            x = np.array(
-                df_fpc["fpcompressed"].to_list(),
-                dtype=settings.nn_fp_compressed_numpy_type,
-                copy=settings.numpy_copy_values
-            )
             y = np.array(
                 df_fpc[target].to_list(),
                 dtype=settings.nn_target_numpy_type,
@@ -107,7 +116,12 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
                     int(min(counts[0], counts[1] / opts.sampleFractionOnes)))
             )
             x = np.array(dfX["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
-            y = np.array(dfX[target].to_list(), dtype=settings.nn_target_numpy_type, copy=settings.numpy_copy_values)
+            if opts.useRegressionModel:
+                y = np.array(dfX[target].to_list(), dtype=settings.nn_target_numpy_type_regression,
+                             copy=settings.numpy_copy_values)
+            else:
+                y = np.array(dfX[target].to_list(), dtype=settings.nn_target_numpy_type,
+                             copy=settings.numpy_copy_values)
         else:
             logging.info("Fraction sampling is OFF")
             # how many ones, how many zeros
@@ -115,7 +129,13 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
             logging.info(f"Number of sampling values: {counts.to_dict()}")
 
             x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
-            y = np.array(df_fp[target].to_list(), dtype=settings.nn_target_numpy_type, copy=settings.numpy_copy_values)
+            if opts.useRegressionModel:
+                y = np.array(df_fp[target].to_list(), dtype=settings.nn_target_numpy_type_regression,
+                             copy=settings.numpy_copy_values)
+            else:
+                y = np.array(df_fp[target].to_list(), dtype=settings.nn_target_numpy_type,
+                             copy=settings.numpy_copy_values)
+
     return x, y
 
 
@@ -184,11 +204,63 @@ def build_snn_network(input_size: int, opts: options.Options, output_bias=None) 
     return model
 
 
+def build_regression_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
+    if output_bias is not None:
+        output_bias = tf.keras.initializers.Constant(output_bias)
+
+    nhl = int(math.log2(input_size) / 2 - 1)
+
+    model = Sequential()
+    # From input to 1st hidden layer
+    if opts.activationFunction == "relu":
+        model.add(Dense(units=int(input_size / 2),
+                        input_dim=input_size,
+                        activation="relu",
+                        kernel_regularizer=regularizers.l2(opts.l2reg),
+                        kernel_initializer="he_uniform"))
+        model.add(Dropout(opts.dropout))
+    elif opts.activationFunction == "selu":
+        model.add(Dense(units=int(input_size / 2),
+                        input_dim=input_size,
+                        activation="selu",
+                        kernel_initializer="lecun_normal"))
+        model.add(AlphaDropout(opts.dropout))
+    else:
+        logging.error("Only 'relu' and 'selu' activation is supported")
+        sys.exit(-1)
+
+    # next hidden layers
+    for i in range(1, nhl):
+        factor_units = 2 ** (i + 1)
+        factor_dropout = 2 * i
+        if opts.activationFunction == "relu":
+            model.add(Dense(units=int(input_size / factor_units),
+                            activation="relu",
+                            kernel_regularizer=regularizers.l2(opts.l2reg),
+                            kernel_initializer="he_uniform"))
+            model.add(Dropout(opts.dropout / factor_dropout))
+        elif opts.activationFunction == "selu":
+            model.add(Dense(units=int(input_size / factor_units),
+                            activation="selu",
+                            kernel_initializer="lecun_normal"))
+            model.add(AlphaDropout(opts.dropout / factor_dropout))
+        else:
+            logging.error("Only 'relu' and 'selu' activation is supported")
+            sys.exit(-1)
+
+    model.add(Dense(units=1,
+                    # activation='sigmoid',
+                    bias_initializer=output_bias))
+    return model
+
+
 def define_single_label_model(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if opts.lossFunction == "bce":
         loss_function = BinaryCrossentropy()
     elif opts.lossFunction == "mse":
         loss_function = MeanSquaredError()
+    elif opts.lossFunction == 'mae':
+        loss_function = MeanAbsoluteError()
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")
@@ -205,18 +277,26 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
         model = build_fnn_network(input_size, opts, output_bias)
     elif opts.fnnType == "SNN":
         model = build_snn_network(input_size, opts, output_bias)
+    elif opts.fnnType == "REG":
+        model = build_regression_network(input_size, opts, output_bias)
     else:
         raise ValueError(f"Option FNN Type is not \"FNN\" or \"SNN\", but {opts.fnnType}.")
     logging.info(f"Network type: {opts.fnnType}")
     model.summary(print_fn=logging.info)
 
-    model.compile(loss=loss_function,
-                  optimizer=my_optimizer,
-                  metrics=[metrics.BinaryAccuracy(name="accuracy"),
-                           metrics.AUC(),
-                           metrics.Precision(),
-                           metrics.Recall()]
-                  )
+    if opts.fnnType == "REG":
+        model.compile(loss=loss_function,
+                      optimizer=my_optimizer #,
+                      # metrics=[metrics.MeanAbsoluteError, 'loss', 'val_loss']
+                      )
+    else:
+        model.compile(loss=loss_function,
+                      optimizer=my_optimizer,
+                      metrics=[metrics.BinaryAccuracy(name="accuracy"),
+                               metrics.AUC(),
+                               metrics.Precision(),
+                               metrics.Recall()]
+                      )
     return model
 
 
@@ -307,7 +387,10 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
         initial_bias = None
         logging.info("No zeroes in training labels. Setting initial_bias to None.")
     else:
-        initial_bias = np.log([count_dict[1]/count_dict[0]])
+        if opts.useRegressionModel:
+            initial_bias = np.log([(y_train.__len__() - count_dict[0.0]) / count_dict[0.0]])
+        else:
+            initial_bias = np.log([count_dict[1] / count_dict[0]])
         logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
 
     model = define_single_label_model(input_size=x_train.shape[1], opts=opts, output_bias=initial_bias)
@@ -330,13 +413,17 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
 
     # save and plot history
     pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
-    pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
+    if opts.fnnType == 'REG':
+        pl.plot_loss(hist=hist, file=f"{model_file_prefix}.history.jpg")
+        # todo: model evaluation
+    else:
+        pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
 
-    # evaluate callback model
-    callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
-    callback_model.load_weights(filepath=checkpoint_model_weights_path)
-    performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
-                                 target=target, fold=fold)
+        # evaluate callback model
+        callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
+        callback_model.load_weights(filepath=checkpoint_model_weights_path)
+        performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
+                                     target=target, fold=fold)
 
     return performance
 
@@ -384,7 +471,11 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                                                                     test_size=opts.testSize, random_state=1)
                 logging.info(f"Splitting train/test data with fixed random initializer")
             else:
-                x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=opts.testSize)
+                if opts.useRegressionModel:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle=True, stratify=None,
+                                                                        test_size=opts.testSize)
+                else:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=opts.testSize)
 
             performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                  fold=0, target=target, opts=opts)
@@ -414,8 +505,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             # select and copy best model - how to define the best model?
             best_fold = (
                 pd
-                    .concat(performance_list, ignore_index=True)
-                    .sort_values(
+                .concat(performance_list, ignore_index=True)
+                .sort_values(
                     by=['p_1', 'r_1', 'MCC'],
                     ascending=False,
                     ignore_index=True)['fold'][0]

@@ -58,6 +58,20 @@ def set_plot_history_data(ax: Axes, history: History, which_graph: str) -> None:
     ax.plot(epochs[trim:], valid[trim:], 'g', label='Validation')
 
 
+def plot_loss(hist: History, file: str) -> None:
+    # fig, ax = plt.plot()
+    plt.plot(hist.epoch, smooth_curve(hist.history['loss']), 'dodgerblue', linewidth=15, alpha=0.1)
+    plt.plot(hist.epoch, smooth_curve(hist.history['loss']), 'dodgerblue', label='Training')
+    plt.plot(hist.epoch, smooth_curve(hist.history['val_loss']), 'g', linewidth=15, alpha=0.1)
+    plt.plot(hist.epoch, smooth_curve(hist.history['val_loss']), 'g', label='Validation')
+    # plt.set_ylabel('Loss')
+    plt.legend(loc="upper right")
+    # plt.set_xlabel('Epochs')
+    plt.tight_layout()
+    plt.savefig(fname=file, format='jpg')
+    plt.close()
+
+
 def plot_history(history: History, file: str) -> None:
     fig, (ax1, ax2) = plt.subplots(nrows=2,
                                    ncols=1,
