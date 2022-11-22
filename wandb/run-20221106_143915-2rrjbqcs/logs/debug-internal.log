@@ -1,0 +1,188 @@
+2022-11-06 14:39:15,649 INFO    StreamThr :93813 [internal.py:wandb_internal():88] W&B internal server running at pid: 93813, started at: 2022-11-06 14:39:15.649430
+2022-11-06 14:39:15,652 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: status
+2022-11-06 14:39:15,653 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: status
+2022-11-06 14:39:15,898 DEBUG   SenderThread:93813 [sender.py:send():301] send: header
+2022-11-06 14:39:15,899 INFO    WriterThread:93813 [datastore.py:open_for_write():75] open: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/run-2rrjbqcs.wandb
+2022-11-06 14:39:15,918 DEBUG   SenderThread:93813 [sender.py:send():301] send: run
+2022-11-06 14:39:16,786 INFO    SenderThread:93813 [dir_watcher.py:__init__():216] watching files in: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files
+2022-11-06 14:39:16,786 INFO    SenderThread:93813 [sender.py:_start_run_threads():912] run started: 2rrjbqcs with start time 1667741955.648568
+2022-11-06 14:39:17,137 DEBUG   SenderThread:93813 [sender.py:send():301] send: summary
+2022-11-06 14:39:17,137 INFO    SenderThread:93813 [sender.py:_save_file():1155] saving file wandb-summary.json with policy end
+2022-11-06 14:39:17,141 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: check_version
+2022-11-06 14:39:17,141 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: check_version
+2022-11-06 14:39:17,302 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: run_start
+2022-11-06 14:39:17,371 DEBUG   HandlerThread:93813 [meta.py:__init__():34] meta init
+2022-11-06 14:39:17,372 DEBUG   HandlerThread:93813 [meta.py:__init__():49] meta init done
+2022-11-06 14:39:17,372 DEBUG   HandlerThread:93813 [meta.py:probe():215] probe
+2022-11-06 14:39:17,380 DEBUG   HandlerThread:93813 [meta.py:_setup_git():205] setup git
+2022-11-06 14:39:17,412 DEBUG   HandlerThread:93813 [meta.py:_setup_git():212] setup git done
+2022-11-06 14:39:17,413 DEBUG   HandlerThread:93813 [meta.py:_save_pip():53] save pip
+2022-11-06 14:39:17,414 DEBUG   HandlerThread:93813 [meta.py:_save_pip():67] save pip done
+2022-11-06 14:39:17,414 DEBUG   HandlerThread:93813 [meta.py:_save_conda():74] save conda
+2022-11-06 14:39:17,787 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/wandb-summary.json
+2022-11-06 14:39:17,788 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/conda-environment.yaml
+2022-11-06 14:39:17,788 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/requirements.txt
+2022-11-06 14:39:18,158 DEBUG   HandlerThread:93813 [meta.py:_save_conda():84] save conda done
+2022-11-06 14:39:18,158 DEBUG   HandlerThread:93813 [meta.py:probe():253] probe done
+2022-11-06 14:39:18,188 DEBUG   SenderThread:93813 [sender.py:send():301] send: files
+2022-11-06 14:39:18,188 INFO    SenderThread:93813 [sender.py:_save_file():1155] saving file wandb-metadata.json with policy now
+2022-11-06 14:39:18,192 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: stop_status
+2022-11-06 14:39:18,193 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: stop_status
+2022-11-06 14:39:18,198 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: partial_history
+2022-11-06 14:39:18,388 DEBUG   SenderThread:93813 [sender.py:send():301] send: telemetry
+2022-11-06 14:39:18,388 DEBUG   SenderThread:93813 [sender.py:send():301] send: history
+2022-11-06 14:39:18,388 DEBUG   SenderThread:93813 [sender.py:send():301] send: summary
+2022-11-06 14:39:18,392 INFO    SenderThread:93813 [sender.py:_save_file():1155] saving file wandb-summary.json with policy end
+2022-11-06 14:39:18,787 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/wandb-summary.json
+2022-11-06 14:39:18,787 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/conda-environment.yaml
+2022-11-06 14:39:18,787 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:18,787 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/wandb-metadata.json
+2022-11-06 14:39:18,797 INFO    Thread-17 :93813 [upload_job.py:push():139] Uploaded file /tmp/tmpkjy25sj8wandb/3hluaqtp-wandb-metadata.json
+2022-11-06 14:39:20,787 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:22,789 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:24,789 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:26,790 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:28,790 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:30,791 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:32,792 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:33,390 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: stop_status
+2022-11-06 14:39:33,390 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: stop_status
+2022-11-06 14:39:34,129 DEBUG   SenderThread:93813 [sender.py:send():301] send: exit
+2022-11-06 14:39:34,130 INFO    SenderThread:93813 [sender.py:send_exit():437] handling exit code: 0
+2022-11-06 14:39:34,130 INFO    SenderThread:93813 [sender.py:send_exit():439] handling runtime: 16
+2022-11-06 14:39:34,130 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:34,130 INFO    SenderThread:93813 [sender.py:_save_file():1155] saving file wandb-summary.json with policy end
+2022-11-06 14:39:34,130 INFO    SenderThread:93813 [sender.py:send_exit():445] send defer
+2022-11-06 14:39:34,130 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:34,131 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:34,131 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 0
+2022-11-06 14:39:34,131 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:34,131 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 0
+2022-11-06 14:39:34,131 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 1
+2022-11-06 14:39:34,131 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:34,131 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 1
+2022-11-06 14:39:34,225 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:34,226 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 1
+2022-11-06 14:39:34,226 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 2
+2022-11-06 14:39:34,226 DEBUG   SenderThread:93813 [sender.py:send():301] send: stats
+2022-11-06 14:39:34,227 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:34,227 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 2
+2022-11-06 14:39:34,227 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:34,227 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 2
+2022-11-06 14:39:34,228 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 3
+2022-11-06 14:39:34,228 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:34,228 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 3
+2022-11-06 14:39:34,229 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:34,229 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 3
+2022-11-06 14:39:34,229 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 4
+2022-11-06 14:39:34,229 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:34,230 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 4
+2022-11-06 14:39:34,230 DEBUG   SenderThread:93813 [sender.py:send():301] send: summary
+2022-11-06 14:39:34,231 INFO    SenderThread:93813 [sender.py:_save_file():1155] saving file wandb-summary.json with policy end
+2022-11-06 14:39:34,231 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:34,232 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 4
+2022-11-06 14:39:34,232 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 5
+2022-11-06 14:39:34,233 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:34,233 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 5
+2022-11-06 14:39:34,233 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:34,234 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:34,234 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 5
+2022-11-06 14:39:34,793 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:34,794 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/wandb-summary.json
+2022-11-06 14:39:36,794 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:39,334 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:44,436 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:45,854 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 6
+2022-11-06 14:39:45,854 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:45,854 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:45,855 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:45,855 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:45,855 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 6
+2022-11-06 14:39:45,856 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:45,856 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 6
+2022-11-06 14:39:45,957 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:46,828 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/config.yaml
+2022-11-06 14:39:48,145 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 7
+2022-11-06 14:39:48,145 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:48,145 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:48,146 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 7
+2022-11-06 14:39:48,146 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:48,146 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 7
+2022-11-06 14:39:48,146 INFO    SenderThread:93813 [dir_watcher.py:finish():362] shutting down directory watcher
+2022-11-06 14:39:48,246 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:48,829 INFO    Thread-13 :93813 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:48,830 INFO    SenderThread:93813 [dir_watcher.py:finish():392] scan: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files
+2022-11-06 14:39:48,830 INFO    SenderThread:93813 [dir_watcher.py:finish():406] scan save: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/requirements.txt requirements.txt
+2022-11-06 14:39:48,830 INFO    SenderThread:93813 [dir_watcher.py:finish():406] scan save: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/wandb-metadata.json wandb-metadata.json
+2022-11-06 14:39:48,830 INFO    SenderThread:93813 [dir_watcher.py:finish():406] scan save: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log output.log
+2022-11-06 14:39:48,830 INFO    SenderThread:93813 [dir_watcher.py:finish():406] scan save: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/config.yaml config.yaml
+2022-11-06 14:39:48,830 INFO    SenderThread:93813 [dir_watcher.py:finish():406] scan save: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/conda-environment.yaml conda-environment.yaml
+2022-11-06 14:39:48,830 INFO    SenderThread:93813 [dir_watcher.py:finish():406] scan save: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/wandb-summary.json wandb-summary.json
+2022-11-06 14:39:48,834 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 8
+2022-11-06 14:39:48,837 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:48,841 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:48,841 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 8
+2022-11-06 14:39:48,841 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:48,844 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 8
+2022-11-06 14:39:48,847 INFO    SenderThread:93813 [file_pusher.py:finish():168] shutting down file pusher
+2022-11-06 14:39:48,947 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:48,947 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,049 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,050 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,152 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,153 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,254 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,255 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,358 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,359 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,461 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,461 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,528 INFO    Thread-18 :93813 [upload_job.py:push():139] Uploaded file /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/requirements.txt
+2022-11-06 14:39:49,532 INFO    Thread-22 :93813 [upload_job.py:push():139] Uploaded file /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/wandb-summary.json
+2022-11-06 14:39:49,535 INFO    Thread-19 :93813 [upload_job.py:push():139] Uploaded file /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/output.log
+2022-11-06 14:39:49,539 INFO    Thread-21 :93813 [upload_job.py:push():139] Uploaded file /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/conda-environment.yaml
+2022-11-06 14:39:49,563 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,564 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,667 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,668 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,771 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,772 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,779 INFO    Thread-20 :93813 [upload_job.py:push():139] Uploaded file /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/files/config.yaml
+2022-11-06 14:39:49,875 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,875 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,979 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:49,979 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:49,981 INFO    Thread-12 :93813 [sender.py:transition_state():458] send defer: 9
+2022-11-06 14:39:49,983 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:49,983 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 9
+2022-11-06 14:39:49,983 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:49,984 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 9
+2022-11-06 14:39:50,082 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:50,229 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 10
+2022-11-06 14:39:50,229 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:50,231 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:50,232 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 10
+2022-11-06 14:39:50,233 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:50,233 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 10
+2022-11-06 14:39:50,233 INFO    SenderThread:93813 [sender.py:transition_state():458] send defer: 11
+2022-11-06 14:39:50,235 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: defer
+2022-11-06 14:39:50,236 INFO    HandlerThread:93813 [handler.py:handle_request_defer():161] handle defer: 11
+2022-11-06 14:39:50,236 DEBUG   SenderThread:93813 [sender.py:send():301] send: final
+2022-11-06 14:39:50,237 DEBUG   SenderThread:93813 [sender.py:send():301] send: footer
+2022-11-06 14:39:50,237 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: defer
+2022-11-06 14:39:50,237 INFO    SenderThread:93813 [sender.py:send_request_defer():454] handle sender defer: 11
+2022-11-06 14:39:50,334 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: poll_exit
+2022-11-06 14:39:50,335 DEBUG   SenderThread:93813 [sender.py:send_request():315] send_request: poll_exit
+2022-11-06 14:39:50,336 INFO    SenderThread:93813 [file_pusher.py:join():173] waiting for file pusher
+2022-11-06 14:39:50,918 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: sampled_history
+2022-11-06 14:39:50,919 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: get_summary
+2022-11-06 14:39:50,919 INFO    MainThread:93813 [wandb_run.py:_footer_history_summary_info():3321] rendering history
+2022-11-06 14:39:50,919 INFO    MainThread:93813 [wandb_run.py:_footer_history_summary_info():3353] rendering summary
+2022-11-06 14:39:50,920 INFO    MainThread:93813 [wandb_run.py:_footer_sync_info():3277] logging synced files
+2022-11-06 14:39:50,920 DEBUG   HandlerThread:93813 [handler.py:handle_request():138] handle_request: shutdown
+2022-11-06 14:39:50,920 INFO    HandlerThread:93813 [handler.py:finish():807] shutting down handler
+2022-11-06 14:39:51,238 INFO    WriterThread:93813 [datastore.py:close():279] close: /home/soulios/git-hzdr-soulios/deepFPlearn/wandb/run-20221106_143915-2rrjbqcs/run-2rrjbqcs.wandb
+2022-11-06 14:39:51,816 INFO    SenderThread:93813 [sender.py:finish():1315] shutting down sender
+2022-11-06 14:39:51,817 INFO    SenderThread:93813 [file_pusher.py:finish():168] shutting down file pusher
+2022-11-06 14:39:51,817 INFO    SenderThread:93813 [file_pusher.py:join():173] waiting for file pusher
+2022-11-06 14:39:51,924 INFO    MainThread:93813 [internal.py:handle_exit():78] Internal process exited

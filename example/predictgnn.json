@@ -1,0 +1,6 @@
+{
+  "py/object": "dfpl.options.GnnOptions",
+  "gnn_type": "cmpnn",
+  "test_path": "./CMPNN/data/tox21.csv",
+  "checkpoint_paths": "./ckpt/fold_0/model_0/model.pt"
+}

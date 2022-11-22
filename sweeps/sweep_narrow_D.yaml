@@ -1,0 +1,27 @@
+program: dfpl-narrow-D
+command:
+  - python
+  - "-m"
+  - dfpl
+  - train
+  - "-f"
+  - "./example/train.json"
+  - ${args}
+
+method: random
+metric:
+  name: val_loss
+  goal: minimize
+parameters:
+  aeBatchSize:
+    distribution: int_uniform
+    min: 16
+    max: 128
+  aeLearningRate:
+    distribution: uniform
+    min: 0.002
+    max: 0.009
+  aeLearningRateDecay:
+    distribution: uniform
+    min: 0.05
+    max: 0.1

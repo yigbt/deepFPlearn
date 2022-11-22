@@ -1,0 +1,32 @@
+# program: dfpl
+command:
+  - python
+  - "-m"
+  - dfpl
+  - train
+  - "-f"
+  - "./example/train.json"
+  - ${args}
+program: S-128-FNN-random
+project: S-128-FNN-random-ED
+method: random
+metric:
+  name: val_loss
+  goal: minimize
+parameters:
+  batchSize:
+    distribution: int_uniform
+    min: 28
+    max: 144
+  learningRate:
+    distribution: uniform
+    min: 0.000001
+    max: 0.01
+  dropout:
+    distribution: uniform
+    min: 0.1
+    max: 0.9
+  activationFunction:
+    values: ["selu","relu"]
+  optimizer:
+    values: [ "Adam","SGD" ]

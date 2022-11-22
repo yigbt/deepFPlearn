@@ -4,8 +4,10 @@ import shutil
 import sys
 from os import path
 from time import time
-from typing import Union
-
+# from typing import Union
+import deepchem as dc
+from deepchem.data import NumpyDataset
+import chemprop as cp
 import numpy as np
 import pandas as pd
 from sklearn.metrics import auc
@@ -15,21 +17,22 @@ from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
+import keras
 import tensorflow as tf
 from tensorflow.keras import metrics
 from tensorflow.keras import optimizers
 from tensorflow.keras import regularizers
+from tensorflow.keras import layers, Input
 from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
 
+# from splitters import scaffold_split, scaffold_to_smiles, generate_scaffold , log_scaffold_stats
 from dfpl import callbacks as cb
 from dfpl import options
 from dfpl import plot as pl
 from dfpl import settings
-
-
 def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Options) -> (np.ndarray,
                                                                                        np.ndarray):
     # check the value counts and abort if too imbalanced
@@ -122,7 +125,7 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
 def build_fnn_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
-    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
+    my_hidden_layers = {"2048": 8, "1024": 5, "999": 5, "512": 4, "256": 3,"167": 3,"128": 3}
     if not str(input_size) in my_hidden_layers.keys():
         raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
 
@@ -334,7 +337,7 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
 
     # evaluate callback model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
-    callback_model.load_weights(filepath=checkpoint_model_weights_path)
+    # callback_model.load_weights(filepath=checkpoint_model_weights_path)
     performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
                                  target=target, fold=fold)
 
@@ -351,7 +354,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     :param opts: The command line arguments in the options class
     :param df: The dataframe containing x matrix and at least one column for a y target.
     """
-
     # find target columns
     names_y = [c for c in df.columns if c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
@@ -366,78 +368,150 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
     # Collect metrics for each fold and target
     performance_list = []
+    if opts.split_type == 'random':
+        for target in names_y:  # [:1]:
+            # target=names_y[1] # --> only for testing the code
+            x, y = prepare_nn_training_data(df, target, opts)
+            if x is None:
+                continue
+
+            logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
+            logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
+
+            if opts.kFolds == 1:
+                # for single 'folds' and when sweeping on W&B, we fix the random state
+                if opts.wabTracking:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y,
+                                                                        test_size=opts.testSize, random_state=1)
+                    logging.info(f"Splitting train/test data with fixed random initializer")
+                else:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=opts.testSize)
+
+                performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
+                                                     fold=0, target=target, opts=opts)
+                performance_list.append(performance)
+
+                # save complete model
+                trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
+                # trained_model.load_weights(path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
+                trained_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
+
+            elif 1 < opts.kFolds < int(x.shape[0] / 100):
+                # do a kfold cross-validation
+                kfold_c_validator = StratifiedKFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
+                fold_no = 1
+                # split the data
+                for train, test in kfold_c_validator.split(x, y):
+                    # for testing use one of the splits:
+                    # kf = kfold_c_validator.split(x, y)
+                    # train, test = next(kf)
+                    performance = fit_and_evaluate_model(x_train=x[train], x_test=x[test],
+                                                         y_train=y[train], y_test=y[test],
+                                                         fold=fold_no, target=target, opts=opts)
+                    performance_list.append(performance)
+                    fold_no += 1
+                    # now next fold
+
+                # select and copy best model - how to define the best model?
+                best_fold = (
+                    pd
+                        .concat(performance_list, ignore_index=True)
+                        .sort_values(
+                        by=['p_1', 'r_1', 'MCC'],
+                        ascending=False,
+                        ignore_index=True)['fold'][0]
+                )
+
+                # copy checkpoint model weights
+                # shutil.copy(
+                #     src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"),
+                #     dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
+                # save complete model
+                best_model = define_single_label_model(input_size=len(x[0]), opts=opts)
+                # best_model.load_weights(path.join(opts.outputDir,
+                #                                   f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
+                # create output directory and store complete model
+                best_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
+            else:
+                logging.info("Your selected number of folds for Cross validation is out of range. "
+                             "It must be 1 or smaller than 1 hundredth of the number of samples.")
+                sys.exit("Number of folds out of range")
 
     # For each individual target train a model
-    for target in names_y:  # [:1]:
-        # target=names_y[1] # --> only for testing the code
-        x, y = prepare_nn_training_data(df, target, opts)
-        if x is None:
-            continue
-
-        logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
-        logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
-
+    elif opts.split_type == "scaffold":
+        logging.info(f"Splitting train/test data with Murcko scaffolds")
+        scaffoldsplitter = dc.splits.ScaffoldSplitter()
         if opts.kFolds == 1:
-            # for single 'folds' and when sweeping on W&B, we fix the random state
-            if opts.wabTracking:
-                x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y,
-                                                                    test_size=opts.testSize, random_state=1)
-                logging.info(f"Splitting train/test data with fixed random initializer")
-            else:
-                x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=opts.testSize)
-
-            performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
-                                                 fold=0, target=target, opts=opts)
-            performance_list.append(performance)
-
-            # save complete model
-            trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
-            trained_model.load_weights(path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
-            trained_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
-
-        elif 1 < opts.kFolds < int(x.shape[0] / 100):
-            # do a kfold cross-validation
-            kfold_c_validator = StratifiedKFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
-            fold_no = 1
-            # split the data
-            for train, test in kfold_c_validator.split(x, y):
-                # for testing use one of the splits:
-                # kf = kfold_c_validator.split(x, y)
-                # train, test = next(kf)
-                performance = fit_and_evaluate_model(x_train=x[train], x_test=x[test],
-                                                     y_train=y[train], y_test=y[test],
-                                                     fold=fold_no, target=target, opts=opts)
+            for idx,task in enumerate(opts.tasks):
+                logging.info(f"Building dataset for {opts.tasks[idx]}")
+                loader = dc.data.CSVLoader(tasks=[opts.tasks[idx]], feature_field="smiles", featurizer=dc.feat.CircularFingerprint(size=2048))
+                dataset = loader.create_dataset(opts.inputFile)
+                x = dataset.X
+                train, test = scaffoldsplitter.train_test_split(dataset=dataset)
+                x_train = train.X
+                x_test = test.X
+                y_train = train.y.flatten()
+                y_test = test.y.flatten()
+                logging.info(f"Training model for {opts.tasks[idx]}")
+                performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
+                                    fold=0, target=task, opts=opts)
                 performance_list.append(performance)
-                fold_no += 1
-                # now next fold
+                # save complete model
+                trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
+                # trained_model.load_weights(path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
+                trained_model.save(filepath=path.join(opts.outputDir, f"{task}_saved_model"))
+
+        elif 1 < opts.kFolds < 1000:
+            for idx, task in enumerate(opts.tasks):
+                logging.info(f"Building dataset for {opts.tasks[idx]}")
+                loader = dc.data.CSVLoader(tasks=[opts.tasks[idx]], feature_field="smiles",
+                                           featurizer=dc.feat.CircularFingerprint(size=2048))
+                dataset = loader.create_dataset(opts.inputFile)
+                x = dataset.X
+                train, test = scaffoldsplitter.train_test_split(dataset=dataset)
+                x_train = train.X
+                x_test = test.X
+                y_train = train.y.flatten()
+                y_test = test.y.flatten()
+                logging.info(f"Training model for {opts.tasks[idx]}")
+                for fold_no in range(opts.kFolds):
+                    performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
+                                                         fold=fold_no, target=task, opts=opts)
+                    performance_list.append(performance)
+                # save complete model
+                trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
+                # trained_model.load_weights(path.join(opts.outputDir, f"{task}_single-labeled_Fold-0.model.weights.hdf5"))
+                trained_model.save(filepath=path.join(opts.outputDir, f"{task}_scaf_saved_model"))
 
             # select and copy best model - how to define the best model?
             best_fold = (
                 pd
-                    .concat(performance_list, ignore_index=True)
-                    .sort_values(
-                    by=['p_1', 'r_1', 'MCC'],
-                    ascending=False,
-                    ignore_index=True)['fold'][0]
+                .concat(performance_list, ignore_index=True)
+                .sort_values(
+                by=['p_1', 'r_1', 'MCC'],
+                ascending=False,
+                ignore_index=True)['fold'][0]
             )
 
-            # copy checkpoint model weights
-            shutil.copy(
-                src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"),
-                dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
-            # save complete model
+        # copy checkpoint model weights
+
+            # shutil.copy(
+            #     src=path.join(opts.outputDir, f"{task}_single-labeled_scaf_Fold-{best_fold}.model.weights.hdf5"),
+            #     dst=path.join(opts.outputDir, f"{task}_single-labeled_scaf_Fold-{best_fold}.best.model.weights.hdf5"))
+        # save complete model
             best_model = define_single_label_model(input_size=len(x[0]), opts=opts)
-            best_model.load_weights(path.join(opts.outputDir,
-                                              f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
-            # create output directory and store complete model
-            best_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
+            # best_model.load_weights(path.join(opts.outputDir,
+            #                               f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
+        # create output directory and store complete model
+            best_model.save(filepath=path.join(opts.outputDir, f"{task}_scaf_saved_model"))
+            # store the evaluation data of all trained models (all targets, all folds)
+            (pd
+             .concat(performance_list, ignore_index=True)
+             .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_scaf_model.evaluation.csv'))
+             )
         else:
             logging.info("Your selected number of folds for Cross validation is out of range. "
-                         "It must be 1 or smaller than 1 hundredth of the number of samples.")
+                     "It must be 1 or smaller than 1 hundredth of the number of samples.")
             sys.exit("Number of folds out of range")
 
-    # store the evaluation data of all trained models (all targets, all folds)
-    (pd
-     .concat(performance_list, ignore_index=True)
-     .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_model.evaluation.csv'))
-     )
+

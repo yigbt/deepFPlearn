@@ -1,0 +1,315 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.13.3
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.8.13
+    start_time: 1667742520.804004
+    t:
+      1:
+      - 1
+      - 2
+      - 3
+      - 5
+      - 21
+      - 53
+      - 55
+      2:
+      - 1
+      - 2
+      - 3
+      - 5
+      - 21
+      - 53
+      - 55
+      3:
+      - 16
+      - 23
+      4: 3.8.13
+      5: 0.13.3
+      8:
+      - 5
+activation:
+  desc: null
+  value: ReLU
+adding_h:
+  desc: null
+  value: null
+aggregation:
+  desc: null
+  value: null
+aggregation_norm:
+  desc: null
+  value: null
+atom_messages:
+  desc: null
+  value: false
+batch_size:
+  desc: null
+  value: 50
+bias:
+  desc: null
+  value: false
+cache_cutoff:
+  desc: null
+  value: null
+checkpoint_dir:
+  desc: null
+  value: null
+checkpoint_frzn:
+  desc: null
+  value: null
+checkpoint_path:
+  desc: null
+  value: null
+checkpoint_paths:
+  desc: null
+  value: null
+class_balance:
+  desc: null
+  value: null
+config_path:
+  desc: null
+  value: null
+crossval_index_dir:
+  desc: null
+  value: null
+crossval_index_file:
+  desc: null
+  value: null
+cuda:
+  desc: null
+  value: false
+data_path:
+  desc: null
+  value: ./CMPNN/data/tox21.csv
+data_weights_path:
+  desc: null
+  value: null
+dataset_type:
+  desc: null
+  value: classification
+depth:
+  desc: null
+  value: 3
+dropout:
+  desc: null
+  value: 0.0
+ensemble_size:
+  desc: null
+  value: 1
+epochs:
+  desc: null
+  value: 1
+evidential_regularization:
+  desc: null
+  value: null
+explicit_h:
+  desc: null
+  value: null
+extra_metrics:
+  desc: null
+  value:
+  - mcc
+features_generator:
+  desc: null
+  value: null
+features_only:
+  desc: null
+  value: false
+features_path:
+  desc: null
+  value: null
+features_scaling:
+  desc: null
+  value: false
+ffn_hidden_size:
+  desc: null
+  value: 2
+ffn_num_layers:
+  desc: null
+  value: 2
+final_lr:
+  desc: null
+  value: 0.0001
+folds_file:
+  desc: null
+  value: null
+freeze_first_only:
+  desc: null
+  value: null
+frzn_ffn_layers:
+  desc: null
+  value: null
+gpu:
+  desc: null
+  value: null
+grad_clip:
+  desc: null
+  value: null
+hidden_size:
+  desc: null
+  value: 300
+ignore_columns:
+  desc: null
+  value: null
+init_lr:
+  desc: null
+  value: 0.0001
+log_frequency:
+  desc: null
+  value: 10
+loss_function:
+  desc: null
+  value: null
+max_data_size:
+  desc: null
+  value: null
+max_lr:
+  desc: null
+  value: 0.001
+method:
+  desc: null
+  value: traincmpnn
+metric:
+  desc: null
+  value: auc
+minimize_score:
+  desc: null
+  value: false
+mpn_shared:
+  desc: null
+  value: null
+multiclass_num_classes:
+  desc: null
+  value: 3
+no_atom_descriptor_scaling:
+  desc: null
+  value: null
+no_bond_features_scaling:
+  desc: null
+  value: null
+no_cache:
+  desc: null
+  value: false
+no_cuda:
+  desc: null
+  value: true
+no_features_scaling:
+  desc: null
+  value: false
+num_folds:
+  desc: null
+  value: 1
+num_lrs:
+  desc: null
+  value: 2
+num_tasks:
+  desc: null
+  value: null
+overwrite_default_atom_features:
+  desc: null
+  value: null
+overwrite_default_bond_features:
+  desc: null
+  value: null
+pytorch_seed:
+  desc: null
+  value: null
+quiet:
+  desc: null
+  value: false
+save:
+  desc: null
+  value: null
+save_dir:
+  desc: null
+  value: example/gnn_results/
+save_preds:
+  desc: null
+  value: null
+save_smiles_splits:
+  desc: null
+  value: false
+seed:
+  desc: null
+  value: 0
+separate_test_atom_descriptors_path:
+  desc: null
+  value: null
+separate_test_bond_features_path:
+  desc: null
+  value: null
+separate_test_features_path:
+  desc: null
+  value: null
+separate_test_path:
+  desc: null
+  value: null
+separate_test_phase_features_path:
+  desc: null
+  value: null
+separate_val_atom_descriptors_path:
+  desc: null
+  value: null
+separate_val_bond_features_path:
+  desc: null
+  value: null
+separate_val_features_path:
+  desc: null
+  value: null
+separate_val_path:
+  desc: null
+  value: null
+separate_val_phase_features_path:
+  desc: null
+  value: null
+show_individual_scores:
+  desc: null
+  value: false
+smiles_columns:
+  desc: null
+  value: smiles
+split_key_molecule:
+  desc: null
+  value: null
+split_sizes:
+  desc: null
+  value:
+  - 0.8
+  - 0.1
+  - 0.1
+split_type:
+  desc: null
+  value: scaffold_balanced
+target_columns:
+  desc: null
+  value: null
+test:
+  desc: null
+  value: false
+test_fold_index:
+  desc: null
+  value: null
+total_epochs:
+  desc: null
+  value: 30
+undirected:
+  desc: null
+  value: false
+use_compound_names:
+  desc: null
+  value: false
+use_input_features:
+  desc: null
+  value: null
+val_fold_index:
+  desc: null
+  value: null
+warmup_epochs:
+  desc: null
+  value: 2.0

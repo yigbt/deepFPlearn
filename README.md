@@ -165,6 +165,11 @@ data.to_pickle("output/path/file.pkl")
 Note that the file-extension needs to be `"pkl"` to be identified correctly by DFPL. Also, you might want to look at
 the `convert_all` function in the `fingerprint` module that we use to convert different data-files all at once.
 
+## Splitting data
+When using the models using the fingerprints, you can ass the argument split_type and select either random or scaffold
+or [scaffold split](https://oloren.ai/blog/scaff_split.html). If you use scaffold split the training will take a bit 
+longer according to the number of targets.
+
 ## Use training/prediction functions
 
 You have several options to work with the DFPL package. The package can be started as a program on the commandline and
@@ -174,10 +179,32 @@ you can provide all necessary information as commandline-parameters. Check
 dfpl --help
 dfpl train --help
 dfpl predict --help
+dfpl traingnn --help
+dfpl predictgnn --help
 ```
-
 However, using JSON files that contain all train/predict options an easy way to preserve what was run and you can use
 them instead of providing multiple commandline arguments.
+
+## Graph based models
+We expand our package by including two Message passing neural networks, namely 
+[DMPNN](link:https://chemprop.readthedocs.io/en/latest/index.html)
+and [CMPNN](https://github.com/SY575/CMPNN)
+The traingnn and predictgnn modes require the argument --gnn_type to be either 'cmpnn' or 'dmpnn'.
+
+```shell script
+dfpl traingnn --gnn_type cmpnn --data_path /path/to/csv/file --metric auc
+dfpl traingnn --gnn_type dmpnn --data_path /path/to/csv/file --dataset_type classfication
+````
+Accordingly, each model needs its own arguments. The *DMPNN* model is sourced from the chemprop library and 
+*CMPNN* from the local directory.
+Both models require a data path and then *CMPNN* requires a metric and *DMPNN* the dataset_type as an argument.
+If you do not provide them an error will be shown accordingly.
+For predicting the command is the same for both models as shown below
+```shell script
+dfpl predictgnn --gnn_type dmpnn --test_path /path/to/the/smiles/to/predict --checkpoint_paths path/to/the/model.pt/to/be/used/ --preds_path /path/to/the/file/tobesaved
+dfpl predictgnn --gnn_type cmpnn --test_path /path/to/the/smiles/to/predict --checkpoint_paths path/to/the/model.pt/to/be/used/ --preds_path /path/to/the/file/tobesaved
+````
+
 
 ```shell script
 dfpl train -f path/to/file.json

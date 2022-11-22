@@ -18,6 +18,8 @@ from tensorflow.keras.models import Sequential
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
+from wandb.keras import WandbCallback
+
 
 from dfpl import callbacks as cb
 from dfpl import history as ht

@@ -1,0 +1,341 @@
+Command line
+python /home/soulios/git-hzdr-soulios/deepFPlearn/dfpl/__main__.py traindmpnn --data_path ./CMPNN/data/tox21.csv --metric auc --dataset_type classification --epochs 5 --smiles_columns smiles --save_dir example/gnn_results/ --split_type scaffold_balanced --num_folds 1 --extra_metrics mcc --class_balance True
+Args
+{'activation': 'ReLU',
+ 'adding_h': False,
+ 'aggregation': 'mean',
+ 'aggregation_norm': 100,
+ 'atom_descriptor_scaling': True,
+ 'atom_descriptors': None,
+ 'atom_descriptors_path': None,
+ 'atom_descriptors_size': 0,
+ 'atom_features_size': 0,
+ 'atom_messages': False,
+ 'batch_size': 50,
+ 'bias': False,
+ 'bias_solvent': False,
+ 'bond_feature_scaling': True,
+ 'bond_features_path': None,
+ 'bond_features_size': 0,
+ 'cache_cutoff': 10000,
+ 'checkpoint_dir': None,
+ 'checkpoint_frzn': None,
+ 'checkpoint_path': None,
+ 'checkpoint_paths': None,
+ 'class_balance': True,
+ 'config_path': None,
+ 'crossval_index_dir': None,
+ 'crossval_index_file': None,
+ 'crossval_index_sets': None,
+ 'cuda': False,
+ 'data_path': './CMPNN/data/tox21.csv',
+ 'data_weights_path': None,
+ 'dataset_type': 'classification',
+ 'depth': 3,
+ 'depth_solvent': 3,
+ 'device': device(type='cpu'),
+ 'dropout': 0.0,
+ 'empty_cache': False,
+ 'ensemble_size': 1,
+ 'epochs': 5,
+ 'evidential_regularization': 0,
+ 'explicit_h': False,
+ 'extra_metrics': ['mcc'],
+ 'features_generator': None,
+ 'features_only': False,
+ 'features_path': None,
+ 'features_scaling': True,
+ 'features_size': None,
+ 'ffn_hidden_size': 300,
+ 'ffn_num_layers': 2,
+ 'final_lr': 0.0001,
+ 'folds_file': None,
+ 'freeze_first_only': False,
+ 'frzn_ffn_layers': 0,
+ 'gpu': None,
+ 'grad_clip': None,
+ 'hidden_size': 300,
+ 'hidden_size_solvent': 300,
+ 'ignore_columns': None,
+ 'init_lr': 0.0001,
+ 'log_frequency': 10,
+ 'loss_function': 'binary_cross_entropy',
+ 'max_data_size': None,
+ 'max_lr': 0.001,
+ 'metric': 'auc',
+ 'metrics': ['auc', 'mcc'],
+ 'minimize_score': False,
+ 'mpn_shared': False,
+ 'multiclass_num_classes': 3,
+ 'no_atom_descriptor_scaling': False,
+ 'no_bond_features_scaling': False,
+ 'no_cache_mol': False,
+ 'no_cuda': False,
+ 'no_features_scaling': False,
+ 'num_folds': 1,
+ 'num_lrs': 1,
+ 'num_tasks': 12,
+ 'num_workers': 8,
+ 'number_of_molecules': 1,
+ 'overwrite_default_atom_features': False,
+ 'overwrite_default_bond_features': False,
+ 'phase_features_path': None,
+ 'pytorch_seed': 0,
+ 'quiet': False,
+ 'reaction': False,
+ 'reaction_mode': 'reac_diff',
+ 'reaction_solvent': False,
+ 'resume_experiment': False,
+ 'save_dir': 'example/gnn_results/',
+ 'save_preds': False,
+ 'save_smiles_splits': False,
+ 'seed': 0,
+ 'separate_test_atom_descriptors_path': None,
+ 'separate_test_bond_features_path': None,
+ 'separate_test_features_path': None,
+ 'separate_test_path': None,
+ 'separate_test_phase_features_path': None,
+ 'separate_val_atom_descriptors_path': None,
+ 'separate_val_bond_features_path': None,
+ 'separate_val_features_path': None,
+ 'separate_val_path': None,
+ 'separate_val_phase_features_path': None,
+ 'show_individual_scores': False,
+ 'smiles_columns': ['smiles'],
+ 'spectra_activation': 'exp',
+ 'spectra_phase_mask_path': None,
+ 'spectra_target_floor': 1e-08,
+ 'split_key_molecule': 0,
+ 'split_sizes': [0.8, 0.1, 0.1],
+ 'split_type': 'scaffold_balanced',
+ 'target_columns': None,
+ 'target_weights': None,
+ 'task_names': ['NR-AR',
+                'NR-AR-LBD',
+                'NR-AhR',
+                'NR-Aromatase',
+                'NR-ER',
+                'NR-ER-LBD',
+                'NR-PPAR-gamma',
+                'SR-ARE',
+                'SR-ATAD5',
+                'SR-HSE',
+                'SR-MMP',
+                'SR-p53'],
+ 'test': False,
+ 'test_fold_index': None,
+ 'train_data_size': None,
+ 'undirected': False,
+ 'use_input_features': False,
+ 'val_fold_index': None,
+ 'warmup_epochs': 2.0}
+Setting molecule featurization parameters to default.
+Loading data
+7831it [00:00, 108710.57it/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7831/7831 [00:00<00:00, 45832.26it/s]
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7831/7831 [00:00<00:00, 8934.20it/s]
+Number of tasks = 12
+Fold 0
+Splitting data with seed 0
+Task 6: count = 73 | target average = 0.000000███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7831/7831 [00:00<00:00, 8742.38it/s]
+Total scaffolds = 2,326 | train scaffolds = 1,535 | val scaffolds = 367 | test scaffolds = 424
+Label averages per scaffold, in decreasing order of scaffold frequency,capped at 10 scaffolds and 20 labels:
+Scaffold 0
+Task 0: count = 1,703 | target average = 0.010570
+Task 1: count = 1,650 | target average = 0.013939
+Task 2: count = 1,623 | target average = 0.013555
+Task 3: count = 1,527 | target average = 0.010478
+Task 4: count = 1,562 | target average = 0.060819
+Task 5: count = 1,676 | target average = 0.022076
+Task 6: count = 1,646 | target average = 0.023086
+Task 7: count = 1,518 | target average = 0.093544
+Task 8: count = 1,700 | target average = 0.020588
+Task 9: count = 1,613 | target average = 0.046497
+Task 10: count = 1,472 | target average = 0.038043
+Task 11: count = 1,657 | target average = 0.021123
+Scaffold 1
+Task 0: count = 1,382 | target average = 0.017366
+Task 1: count = 1,312 | target average = 0.015244
+Task 2: count = 1,246 | target average = 0.126003
+Task 3: count = 1,146 | target average = 0.028796
+Task 4: count = 1,215 | target average = 0.114403
+Task 5: count = 1,353 | target average = 0.039172
+Task 6: count = 1,282 | target average = 0.017941
+Task 7: count = 1,224 | target average = 0.116013
+Task 8: count = 1,358 | target average = 0.025773
+Task 9: count = 1,328 | target average = 0.044428
+Task 10: count = 1,159 | target average = 0.164797
+Task 11: count = 1,325 | target average = 0.039245
+Scaffold 2
+Task 0: count = 77 | target average = 0.000000
+Task 1: count = 74 | target average = 0.000000
+Task 2: count = 72 | target average = 0.166667
+Task 3: count = 70 | target average = 0.028571
+Task 4: count = 70 | target average = 0.028571
+Task 5: count = 78 | target average = 0.038462
+Task 6: count = 73 | target average = 0.000000███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7831/7831 [00:00<00:00, 8742.38it/s]
+Task 7: count = 75 | target average = 0.093333
+Task 8: count = 77 | target average = 0.038961
+Task 9: count = 77 | target average = 0.012987
+Task 10: count = 70 | target average = 0.085714
+Task 11: count = 77 | target average = 0.012987
+Scaffold 3
+Task 0: count = 79 | target average = 0.000000
+Task 1: count = 70 | target average = 0.000000
+Task 2: count = 69 | target average = 0.086957
+Task 3: count = 50 | target average = 0.040000
+Task 4: count = 60 | target average = 0.316667
+Task 5: count = 67 | target average = 0.223881
+Task 6: count = 57 | target average = 0.070175
+Task 7: count = 52 | target average = 0.288462
+Task 8: count = 75 | target average = 0.000000
+Task 9: count = 67 | target average = 0.134328
+Task 10: count = 60 | target average = 0.600000
+Task 11: count = 60 | target average = 0.150000
+Scaffold 4
+Task 0: count = 65 | target average = 0.000000
+Task 1: count = 62 | target average = 0.000000
+Task 2: count = 55 | target average = 0.327273
+Task 3: count = 53 | target average = 0.037736
+Task 4: count = 56 | target average = 0.142857
+Task 5: count = 65 | target average = 0.030769
+Task 6: count = 60 | target average = 0.033333
+Task 7: count = 56 | target average = 0.196429
+Task 8: count = 64 | target average = 0.015625
+Task 9: count = 61 | target average = 0.016393
+Task 10: count = 53 | target average = 0.113208
+Task 11: count = 63 | target average = 0.047619
+Scaffold 5
+Task 0: count = 62 | target average = 0.016129
+Task 1: count = 62 | target average = 0.000000
+Task 2: count = 60 | target average = 0.000000
+Task 3: count = 58 | target average = 0.000000
+Task 4: count = 58 | target average = 0.068966
+Task 5: count = 61 | target average = 0.016393
+Task 6: count = 61 | target average = 0.000000
+Task 7: count = 56 | target average = 0.035714
+Task 8: count = 62 | target average = 0.000000
+Task 9: count = 57 | target average = 0.000000
+Task 10: count = 53 | target average = 0.037736
+Task 11: count = 61 | target average = 0.000000
+Scaffold 6
+Task 0: count = 48 | target average = 0.000000
+Task 1: count = 37 | target average = 0.000000
+Task 2: count = 41 | target average = 0.000000
+Task 3: count = 47 | target average = 0.340426
+Task 4: count = 27 | target average = 0.037037
+Task 5: count = 32 | target average = 0.000000
+Task 6: count = 37 | target average = 0.000000
+Task 7: count = 42 | target average = 0.476190
+Task 8: count = 38 | target average = 0.000000
+Task 9: count = 40 | target average = 0.050000
+Task 10: count = 31 | target average = 0.354839
+Task 11: count = 31 | target average = 0.000000
+Scaffold 7
+Task 0: count = 45 | target average = 0.022222
+Task 1: count = 41 | target average = 0.000000
+Task 2: count = 39 | target average = 0.230769
+Task 3: count = 31 | target average = 0.225806
+Task 4: count = 31 | target average = 0.290323
+Task 5: count = 39 | target average = 0.076923
+Task 6: count = 39 | target average = 0.051282
+Task 7: count = 37 | target average = 0.216216
+Task 8: count = 45 | target average = 0.022222
+Task 9: count = 40 | target average = 0.050000
+Task 10: count = 33 | target average = 0.454545
+Task 11: count = 41 | target average = 0.048780
+Scaffold 8
+Task 0: count = 34 | target average = 1.000000
+Task 1: count = 35 | target average = 0.971429
+Task 2: count = 33 | target average = 0.000000
+Task 3: count = 12 | target average = 0.083333
+Task 4: count = 30 | target average = 0.833333
+Task 5: count = 31 | target average = 0.516129
+Task 6: count = 32 | target average = 0.000000
+Task 7: count = 23 | target average = 0.347826
+Task 8: count = 35 | target average = 0.000000
+Task 9: count = 33 | target average = 0.030303
+Task 10: count = 32 | target average = 0.062500
+Task 11: count = 35 | target average = 0.028571
+Scaffold 9
+Task 0: count = 37 | target average = 1.000000
+Task 1: count = 37 | target average = 0.918919
+Task 2: count = 19 | target average = 0.105263
+Task 3: count = 0 | target average = nan
+Task 4: count = 29 | target average = 0.172414
+Task 5: count = 33 | target average = 0.030303
+Task 6: count = 32 | target average = 0.000000
+Task 7: count = 25 | target average = 0.120000
+Task 8: count = 35 | target average = 0.000000
+Task 9: count = 29 | target average = 0.000000
+Task 10: count = 33 | target average = 0.272727
+Task 11: count = 35 | target average = 0.000000
+Class sizes
+NR-AR 0: 95.75%, 1: 4.25%
+NR-AR-LBD 0: 96.49%, 1: 3.51%
+NR-AhR 0: 88.27%, 1: 11.73%
+NR-Aromatase 0: 94.85%, 1: 5.15%
+NR-ER 0: 87.20%, 1: 12.80%
+NR-ER-LBD 0: 94.97%, 1: 5.03%
+NR-PPAR-gamma 0: 97.12%, 1: 2.88%
+SR-ARE 0: 83.85%, 1: 16.15%
+SR-ATAD5 0: 96.27%, 1: 3.73%
+SR-HSE 0: 94.25%, 1: 5.75%
+SR-MMP 0: 84.20%, 1: 15.80%
+SR-p53 0: 93.76%, 1: 6.24%
+Total size = 7,831 | train size = 6,264 | val size = 783 | test size = 784
+With class_balance, effective train size = 4,346
+Building model 0
+MoleculeModel(
+  (sigmoid): Sigmoid()
+  (encoder): MPN(
+    (encoder): ModuleList(
+      (0): MPNEncoder(
+        (dropout_layer): Dropout(p=0.0, inplace=False)
+        (act_func): ReLU()
+        (W_i): Linear(in_features=147, out_features=300, bias=False)
+        (W_h): Linear(in_features=300, out_features=300, bias=False)
+        (W_o): Linear(in_features=433, out_features=300, bias=True)
+      )
+    )
+  )
+  (ffn): Sequential(
+    (0): Dropout(p=0.0, inplace=False)
+    (1): Linear(in_features=300, out_features=300, bias=True)
+    (2): ReLU()
+    (3): Dropout(p=0.0, inplace=False)
+    (4): Linear(in_features=300, out_features=12, bias=True)
+  )
+)
+Number of parameters = 358,512
+  0%|                                                                                                                                                                                                    | 0/5 [00:00<?, ?it/s]Epoch 0
+                                                                                                                                                                                                                               Loss = 6.5406e-01, PNorm = 34.3450, GNorm = 0.7461, lr_0 = 1.3960e-04
+  9%|█████████████████▏                                                                                                                                                                         | 8/87 [00:00<00:07, 10.48it/s]
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 32%|███████████████████████████████████████████████████████████▊                                                                                                                              | 28/87 [00:03<00:07,  8.38it/s]
+ 37%|████████████████████████████████████████████████████████████████████▍                                                                                                                     | 32/87 [00:03<00:05,  9.53it/s]
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+ 22%|████████████████████████████████████████▌                                                                                                                                                 | 19/87 [00:01<00:06,  9.95it/s]Loss = 3.4750e-01, PNorm = 34.3756, GNorm = 0.4955, lr_0 = 2.1160e-04
+Results: 0.75407 +/- 0.00000

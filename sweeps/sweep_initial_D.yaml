@@ -1,0 +1,27 @@
+# program: dfpl train -f ./example/train.json
+command:
+  - python
+  - "-m"
+  - dfpl
+  - train
+  - "-f"
+  - "./example/train.json"
+  - ${args}
+method: random
+metric:
+  name: val_loss
+  goal: minimize
+  target: 0.1
+parameters:
+  aeBatchSize:
+    distribution: int_uniform
+    min: 32
+    max: 256
+  aeLearningRate:
+    distribution: uniform
+    min: 0.000001
+    max: 0.001
+  aeLearningRateDecay:
+    distribution: uniform
+    min: 0.00001
+    max: 0.01
