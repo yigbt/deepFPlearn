@@ -1,12 +1,13 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "data_path": "deepFPlearn/CMPNN/data/tox21.csv",
+  "data_path": "CMPNN/data/tox21.csv",
   "gnn_type": "dmpnn",
-  "outputDir": "example/results_gnn/",
-  "epochs": 1,
-  "num_folds":2,
+  "save_dir": "trained_dmpnn_sample/",
+  "epochs": 4,
+  "num_folds": 2,
   "split_type": "scaffold_balanced",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
-  "extra_metrics": "f1"
+  "wabTracking": "False"
 }
+

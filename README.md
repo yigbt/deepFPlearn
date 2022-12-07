@@ -11,76 +11,9 @@ The exact dependencies can be found in the
 and [`environment.yml`](environment.yml) (for installation with conda).
 
 You have several ways to provide the correct environment to run code from the DFPL package.
+1. Setup a python virtual environment
+2. Set up a conda environment install the requirements via conda and the DFPL package via pip
 
-1. Use the automatically built docker/Singularity containers
-2. Build your own container [following the steps here](container/README.md)
-3. Setup a python virtual environment
-4. Set up a conda environment install the requirements via conda and the DFPL package via pip
-
-In the following, you find details for option 1., 3., and 4.
-
-### Docker container
-
-You need docker installed on you machine. 
-
-In order to run DFPL use the following command line 
-
-```shell
-docker run --gpus GPU_REQUEST registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG dfpl DFPL_ARGS
-```
-
-where you replace
-
-- `TAG` by the version you want to use or `latest` if you want to use latest available version)
-- You can see available tags here https://gitlab.hzdr.de/department-computational-biology/deepfplearn/container_registry/5827.
-  In general a container should be available for each released version of DFPL.
-- `GPU_REQUEST` by the GPUs you want to use or `all` if all GPUs should be used (remove `--gpus GPU_REQUEST` if only the CPU should)
-- `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
-
-In order to get an interactive bash shell in the container use:
-
-```shell
-docker run -it --gpus GPU_REQUEST registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG bash
-```
-
-### Singularity container
-
-You need Singularity installed on your machine. You can download a container with
-
-```shell
-singularity pull dfpl.TAG.sif docker://registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG
-```
-
-- replace `TAG` by the version you want to use or `latest` if you want to use latest available version)
-- You can see available tags here https://gitlab.hzdr.de/department-computational-biology/deepfplearn/container_registry/5827.
-  In general a container should be available for each released version of DFPL.
-
-
-This stores the container as a file `dfpl.TAG.sif` which can be run as follows:
-
-```shell script
-singularity run --nv dfpl.TAG.sif dfpl DFPL_ARGS
-```
-- replace `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
-- omit the `--nv` tag if you don't want to use GPUs 
-
-
-or you can start a shell script (look at [run-all-cases.sh](scripts/run-all-cases.sh) for an
-example)
-
-```shell script
-singularity run --nv dfpl.sif ". ./example/run-multiple-cases.sh"
-```
-
-It's also possible to get an interactive shell into the container
-
-```shell script
-singularity shell --nv dfpl.TAG.sif
-```
-
-**Note:** The Singularity container is intended to be used on HPC cluster where your ability to install software might
-be limited.
-For local testing or development, setting up the conda environment is preferable.
 
 ### Set up DFPL in a python virtual environment
 
@@ -165,11 +98,6 @@ data.to_pickle("output/path/file.pkl")
 Note that the file-extension needs to be `"pkl"` to be identified correctly by DFPL. Also, you might want to look at
 the `convert_all` function in the `fingerprint` module that we use to convert different data-files all at once.
 
-## Splitting data
-When using the models using the fingerprints, you can ass the argument split_type and select either random or scaffold
-or [scaffold split](https://oloren.ai/blog/scaff_split.html). If you use scaffold split the training will take a bit 
-longer according to the number of targets.
-
 ## Use training/prediction functions
 
 You have several options to work with the DFPL package. The package can be started as a program on the commandline and
@@ -179,32 +107,10 @@ you can provide all necessary information as commandline-parameters. Check
 dfpl --help
 dfpl train --help
 dfpl predict --help
-dfpl traingnn --help
-dfpl predictgnn --help
 ```
+
 However, using JSON files that contain all train/predict options an easy way to preserve what was run and you can use
 them instead of providing multiple commandline arguments.
-
-## Graph based models
-We expand our package by including two Message passing neural networks, namely 
-[DMPNN](link:https://chemprop.readthedocs.io/en/latest/index.html)
-and [CMPNN](https://github.com/SY575/CMPNN)
-The traingnn and predictgnn modes require the argument --gnn_type to be either 'cmpnn' or 'dmpnn'.
-
-```shell script
-dfpl traingnn --gnn_type cmpnn --data_path /path/to/csv/file --metric auc
-dfpl traingnn --gnn_type dmpnn --data_path /path/to/csv/file --dataset_type classfication
-````
-Accordingly, each model needs its own arguments. The *DMPNN* model is sourced from the chemprop library and 
-*CMPNN* from the local directory.
-Both models require a data path and then *CMPNN* requires a metric and *DMPNN* the dataset_type as an argument.
-If you do not provide them an error will be shown accordingly.
-For predicting the command is the same for both models as shown below
-```shell script
-dfpl predictgnn --gnn_type dmpnn --test_path /path/to/the/smiles/to/predict --checkpoint_paths path/to/the/model.pt/to/be/used/ --preds_path /path/to/the/file/tobesaved
-dfpl predictgnn --gnn_type cmpnn --test_path /path/to/the/smiles/to/predict --checkpoint_paths path/to/the/model.pt/to/be/used/ --preds_path /path/to/the/file/tobesaved
-````
-
 
 ```shell script
 dfpl train -f path/to/file.json
@@ -239,9 +145,3 @@ main.train(o)
 Finally, if you like to work in PyCharm, you can also create a run-configuration in PyCharm using the `dfpl/__main__.py`
 script and providing the commandline arguments there.
 
-# Please note that:
-
-This work has been submitted in a research paper and is currently under review.
-You may read the preprint @bioRxiv: https://doi.org/10.1101/2021.06.24.449697
-
-For questions, comments please contact me: jana.schor@ufz.de

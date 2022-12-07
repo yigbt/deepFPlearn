@@ -1,26 +1,31 @@
 from argparse import Namespace
 # import wandb
+import pandas as pd
 import csv
 from logging import Logger
 import os
 from pprint import pformat
 from typing import List
-
+import wandb
 import numpy as np
 from tensorboardX import SummaryWriter
 import torch
 import pickle
 from torch.optim.lr_scheduler import ExponentialLR
+import sys
+sys.path.insert(0, "dfpl")
 import options
 from .evaluate import evaluate, evaluate_predictions
 from .predict import predict
 from .train import train
+from .only_val_loss import train2
 from cmpnnchemprop.data import StandardScaler
 from cmpnnchemprop.data.utils import get_class_sizes, get_data, get_task_names, split_data
 from cmpnnchemprop.models import build_model
 from cmpnnchemprop.nn_utils import param_count
 from cmpnnchemprop.utils import build_optimizer, build_lr_scheduler, get_loss_func, get_metric_func, load_checkpoint,\
     makedirs, save_checkpoint
+from matplotlib import pyplot as plt
 
 
 def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]:
@@ -32,6 +37,9 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
     :return: A list of ensemble scores for each task.
     """
     # print(args)
+    if args.wabTracking == "True":
+        wandb.init(project="cmpnn", config=args)
+
     if logger is not None:
         debug, info = logger.debug, logger.info
     else:
@@ -161,7 +169,7 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
             debug(f'Building model {model_idx}')
             model = build_model(args)
 
-        debug(model)
+        # debug(model)
         debug(f'Number of parameters = {param_count(model):,}')
         if args.cuda:
             debug('Moving model to cuda')
@@ -175,14 +183,20 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
 
         # Learning rate schedulers
         scheduler = build_lr_scheduler(optimizer, args)
-
         # Run training
         best_score = float('inf') if args.minimize_score else -float('inf')
         best_epoch, n_iter = 0, 0
+        n_iter_ = 0
+
+        training_auc_list = []
+        training_loss_list = []
+        validation_auc_list = []
+        validation_loss_list = []
+
         for epoch in range(args.epochs):
             debug(f'Epoch {epoch}')
 
-            n_iter = train(
+            n_iter, training_loss = train(
                 model=model,
                 data=train_data,
                 loss_func=loss_func,
@@ -193,8 +207,22 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                 logger=logger,
                 writer=writer
             )
+
+            n_iter_, validation_loss = train2(
+                model=model,
+                data=val_data,
+                loss_func=loss_func,
+                optimizer=optimizer,
+                scheduler=scheduler,
+                args=args,
+                n_iter=n_iter_,
+                logger=logger,
+                writer=writer
+            )
+
             if isinstance(scheduler, ExponentialLR):
                 scheduler.step()
+
             val_scores = evaluate(
                 model=model,
                 data=val_data,
@@ -206,8 +234,50 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                 logger=logger
             )
 
-            # Average validation score
+            training_score = evaluate(
+                model=model,
+                data=train_data,
+                num_tasks=args.num_tasks,
+                metric_func=metric_func,
+                batch_size=args.batch_size,
+                dataset_type=args.dataset_type,
+                scaler=scaler,
+                logger=logger
+            )
+
+
+
+            training_score = np.nanmean(training_score)
             avg_val_score = np.nanmean(val_scores)
+            training_loss = np.nanmean(training_loss)
+            validation_loss = np.nanmean(validation_loss)
+
+
+            if str(validation_loss) != 'nan':
+                if args.wabTracking == "True":
+                    wandb.log({"validation_loss": validation_loss})
+                validation_loss_list.append(validation_loss)
+            else:
+                if args.wabTracking == "True":
+                    wandb.log({"validation_loss": 0})
+                validation_loss_list.append(0)
+
+
+
+            if args.wabTracking == "True":
+                wandb.log({
+                    "epoch": epoch,
+                    "batch_size": args.batch_size,
+                    "validation_auc": avg_val_score,
+                    "training_auc": training_score,
+                    "training_loss": training_loss})
+
+
+            training_auc_list.append(training_score)
+            training_loss_list.append(training_loss)
+            validation_auc_list.append(avg_val_score)
+
+
             debug(f'Validation {args.metric} = {avg_val_score:.6f}')
             writer.add_scalar(f'validation_{args.metric}', avg_val_score, n_iter)
 
@@ -221,7 +291,14 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
             if args.minimize_score and avg_val_score < best_score or \
                     not args.minimize_score and avg_val_score > best_score:
                 best_score, best_epoch = avg_val_score, epoch
-                save_checkpoint(os.path.join(save_dir, 'model.pt'), model, scaler, features_scaler, args)        
+                save_checkpoint(os.path.join(save_dir, 'model.pt'), model, scaler, features_scaler, args)
+
+
+        zipped = list(zip(training_loss_list, validation_loss_list, training_auc_list, validation_auc_list))
+        metricsdf = pd.DataFrame(zipped, columns=['LOSS', 'VAL_LOSS', 'AUC', 'VAL_AUC', ])
+        metricsdf.plot(title='Model performance', colormap='viridis')
+        plt.savefig(f"{args.save_dir}/plot.png", format='png')
+
 
         # Evaluate on test set using model with best validation score
         info(f'Model {model_idx} best validation {args.metric} = {best_score:.6f} on epoch {best_epoch}')

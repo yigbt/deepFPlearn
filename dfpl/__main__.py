@@ -11,21 +11,33 @@ import math
 from tensorflow import keras
 import wandb
 import sys
-sys.path.insert(0, "CMPNN")
-from CMPNN import training
+import json
+
+sys.path.append("./CMPNN")
+
+
+# from CMPNN import training
 from CMPNN.cmpnnchemprop.train import *
 from CMPNN.cmpnnchemprop.utils import create_logger
-from CMPNN.cmpnnchemprop.parsing import add_train_args,parse_predict_args,parse_train_args,modify_train_args
+# from CMPNN.cmpnnchemprop.train import make_predictions
+# from CMPNN.cmpnnchemprop.parsing import add_train_args,parse_predict_args,parse_train_args,modify_train_args
 from CMPNN.training import cross_validate
-import chemprop as cp
-from chemprop.args import TrainArgs,SklearnTrainArgs,PredictArgs
-from dfpl.utils import makePathAbsolute, createDirectory
+
+
+sys.path.insert(0, "./chemprop_repo")
+import chemprop
+# print(chemprop.__file__)
+# print("==================")
+# from chemprop.args import TrainArgs,SklearnTrainArgs,PredictArgs
+
+
+from dfpl.utils import makePathAbsolute, createDirectory, createArgsFromJson
 from dfpl import options
 from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import predictions
-from dfpl import single_label_model as sl
+# from dfpl import single_label_model as sl
 from dfpl import rbm as rbm
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
@@ -69,15 +81,15 @@ def traincmpnn(opts:options.GnnOptions):
     mean_auc_score, std_auc_score = cross_validate(opts, logger)
     # wandb.log({"mean_auc": mean_auc_score})
     print(f'Results: {mean_auc_score:.5f} +/- {std_auc_score:.5f}')
-def traindmpnn(opts:options.GnnOptions):
-    opts, _ = cp.args.TrainArgs().parse_known_args()
-    opts = cp.args.TrainArgs().parse_args(known_only=True)
-    # wandb.init(project='dmpnn-training', config=vars(args))
-    mean_score, std_score = cp.train.cross_validate(args=opts, train_func=cp.train.run_training)
-    # wandb.log({"mean_auc": mean_score})
+def traindmpnn(opts:options.GnnOptions, JSON_ARG_PATH):
+    ignore_elements = ["py/object", "gnn_type"]
+    arguments = createArgsFromJson(JSON_ARG_PATH, ignore_elements, return_json_object = False)
+    opts = chemprop.args.TrainArgs().parse_args(arguments)
+    print("Training DMPNN...")
+    mean_score, std_score = chemprop.train.cross_validate(args=opts, train_func=chemprop.train.run_training)
+
     print(f'Results: {mean_score:.5f} +/- {std_score:.5f}')
- 
-    return mean_score , std_score
+    # return mean_score , std_score
     # df = pd.read_csv('./example/data/train_data.csv')
     # dmpnn_model = training.TrainDMPNN(df = opts.data_path, opts=options.Options)
     # return dmpnn_model
@@ -86,22 +98,31 @@ def predictcmpnn(opts: options.GnnOptions)-> None:
     # opts = parser.parse_args()
     # predict
     df = pd.read_csv(opts.test_path)
-    df = df.head(10)
+    # df = df.head(30)
     pred, smiles = make_predictions(opts, df.smiles.tolist())
     df = pd.DataFrame({'smiles':smiles})
     for i in range(len(pred[0])):
         df[f'pred_{i}'] = [item[i] for item in pred]
-    df.to_csv(f'./predictcmpnn.csv', index=False)
-def predictdmpnn(opts: options.GnnOptions)-> None:
-    opts, _ = cp.args.PredictArgs().parse_known_args()
-    opts = cp.args.PredictArgs().parse_args(known_only=True)
+    df.to_csv(f'{opts.save_dir}/{opts.saving_name}', index=False)
+def predictdmpnn(opts: options.GnnOptions, JSON_ARG_PATH)-> None:
+    ignore_elements = ["py/object", "gnn_type", "checkpoint_paths", "save_dir", "saving_name"]
+    arguments, data = createArgsFromJson(JSON_ARG_PATH, ignore_elements, return_json_object = True)
+    arguments.append("--preds_path")
+    arguments.append("")
+
+    save_dir = data.get("save_dir")
+    name = data.get("saving_name")
+
+    opts = chemprop.args.PredictArgs().parse_args(arguments)
+    opts.preds_path = save_dir + "/" + name
     df = pd.read_csv(opts.test_path)
-    df = df.head(10)
+    # df = df.head(10)
     smiles = []
     for index, rows in df.iterrows():
         my_list = [rows.smiles]
         smiles.append(my_list)
-    pred = cp.train.make_predictions(args=opts, smiles=smiles)
+    print(smiles)
+    pred = chemprop.train.make_predictions(args=opts, smiles=smiles)
 
 def train(opts: options.Options):
     """
@@ -215,7 +236,6 @@ def main():
     """
     parser = options.createCommandlineParser()
     prog_args: Namespace = parser.parse_args()
-
     try:
         if prog_args.method == "convert":
             directory = makePathAbsolute(prog_args.f)
@@ -229,16 +249,18 @@ def main():
             traingnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 traingnn_opts,
-                data_path=makePathAbsolute(traingnn_opts.data_path),
-                save_dir=makePathAbsolute(traingnn_opts.save_dir)
+                # inputFile=makePathAbsolute(traingnn_opts.data_path),
+                # outputDir=makePathAbsolute(traingnn_opts.save_dir)
             )
-            createDirectory(fixed_opts.save_dir)
-            createLogger(path.join(fixed_opts.save_dir, "traingnn.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{fixed_opts}")
+
+            # createLogger(path.join(fixed_opts.save_dir, "traingnn.log"))
+            # logging.info(f"The following arguments are received or filled with default values:\n{fixed_opts}")
             if traingnn_opts.gnn_type == "cmpnn":
+                createDirectory(fixed_opts.save_dir)
                 traincmpnn(fixed_opts)
             elif traingnn_opts.gnn_type == "dmpnn":
-                traindmpnn(fixed_opts)
+                traindmpnn(fixed_opts, prog_args.configFile)
+            exit(0)
         elif prog_args.method == "predictgnn":
             predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
@@ -249,13 +271,15 @@ def main():
                 trainAC=False,
                 trainFNN=False
             )
-            createDirectory(fixed_opts.outputDir)
-            createLogger(path.join(fixed_opts.outputDir, "predictgnn.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
+
+            # createLogger(path.join(fixed_opts.save_dir, "predictgnn.log"))
+            # logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
             if predictgnn_opts.gnn_type == "cmpnn":
+                createDirectory(fixed_opts.save_dir)
                 predictcmpnn(fixed_opts)
             elif predictgnn_opts.gnn_type == "dmpnn":
-                predictdmpnn(fixed_opts)
+                predictdmpnn(fixed_opts, prog_args.configFile)
+            exit(0)
 
         elif prog_args.method == "train":
             train_opts = options.Options.fromCmdArgs(prog_args)

@@ -8,7 +8,7 @@ import torch.nn as nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 from tqdm import trange
-
+import wandb
 from cmpnnchemprop.data import MoleculeDataset
 from cmpnnchemprop.nn_utils import compute_gnorm, compute_pnorm, NoamLR
 
@@ -37,7 +37,6 @@ def train(model: nn.Module,
     :return: The total number of iterations (training examples) trained on so far.
     """
     debug = logger.debug if logger is not None else print
-    
     model.train()
     
     data.shuffle()
@@ -47,7 +46,7 @@ def train(model: nn.Module,
     num_iters = len(data) // args.batch_size * args.batch_size  # don't use the last batch if it's small, for stability
 
     iter_size = args.batch_size
-
+    loss_plot = []
     for i in trange(0, num_iters, iter_size):
         # Prepare batch
         if i + args.batch_size > len(data):
@@ -76,7 +75,6 @@ def train(model: nn.Module,
         else:
             loss = loss_func(preds, targets) * class_weights * mask
         loss = loss.sum() / mask.sum()
-        
         loss_sum += loss.item()
         iter_count += len(mol_batch)
 
@@ -95,11 +93,17 @@ def train(model: nn.Module,
             gnorm = compute_gnorm(model)
             loss_avg = loss_sum / iter_count
             loss_sum, iter_count = 0, 0
-
+            loss_plot.append(loss_avg)
 # =============================================================================
 #             lrs_str = ', '.join(f'lr_{i} = {lr:.4e}' for i, lr in enumerate(lrs))
 #             debug(f'Loss = {loss_avg:.4e}, PNorm = {pnorm:.4f}, GNorm = {gnorm:.4f}, {lrs_str}')
 # =============================================================================
+            if args.wabTracking == "True":
+                wandb.log({
+                    "pnorm": pnorm,
+                    "gnorm": gnorm})
+                for i, lr in enumerate(lrs):
+                    wandb.log({"lr": lr})
 
             if writer is not None:
                 writer.add_scalar('train_loss', loss_avg, n_iter)
@@ -108,4 +112,4 @@ def train(model: nn.Module,
                 for i, lr in enumerate(lrs):
                     writer.add_scalar(f'learning_rate_{i}', lr, n_iter)
 
-    return n_iter
+    return n_iter, loss_plot

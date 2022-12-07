@@ -23,7 +23,7 @@
   "aeLearningRateDecay": 0.03633,
   "aeActivationFunction": "relu",
   "kFolds": 2,
-  "gnn_type": "cmpnn",
+  "gnn_type": "",
   "testSize": 0.2,
   "fnnType": "FNN",
   "optimizer": "Adam",

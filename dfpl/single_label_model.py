@@ -428,8 +428,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 #     dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
                 # save complete model
                 best_model = define_single_label_model(input_size=len(x[0]), opts=opts)
-                # best_model.load_weights(path.join(opts.outputDir,
-                #                                   f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
+                best_model.load_weights(path.join(opts.outputDir,
+                                                  f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
                 # create output directory and store complete model
                 best_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
             else:
@@ -443,7 +443,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         scaffoldsplitter = dc.splits.ScaffoldSplitter()
         if opts.kFolds == 1:
             for idx,task in enumerate(opts.tasks):
-                logging.info(f"Building dataset for {opts.tasks[idx]}")
                 loader = dc.data.CSVLoader(tasks=[opts.tasks[idx]], feature_field="smiles", featurizer=dc.feat.CircularFingerprint(size=2048))
                 dataset = loader.create_dataset(opts.inputFile)
                 x = dataset.X
@@ -452,7 +451,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 x_test = test.X
                 y_train = train.y.flatten()
                 y_test = test.y.flatten()
-                logging.info(f"Training model for {opts.tasks[idx]}")
                 performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                     fold=0, target=task, opts=opts)
                 performance_list.append(performance)
@@ -463,7 +461,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
         elif 1 < opts.kFolds < 1000:
             for idx, task in enumerate(opts.tasks):
-                logging.info(f"Building dataset for {opts.tasks[idx]}")
                 loader = dc.data.CSVLoader(tasks=[opts.tasks[idx]], feature_field="smiles",
                                            featurizer=dc.feat.CircularFingerprint(size=2048))
                 dataset = loader.create_dataset(opts.inputFile)
@@ -473,15 +470,14 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 x_test = test.X
                 y_train = train.y.flatten()
                 y_test = test.y.flatten()
-                logging.info(f"Training model for {opts.tasks[idx]}")
-                for fold_no in range(opts.kFolds):
+                for i in range(opts.kFolds):
                     performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
-                                                         fold=fold_no, target=task, opts=opts)
+                                                         fold=i, target=task, opts=opts)
                     performance_list.append(performance)
-                # save complete model
-                trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
-                # trained_model.load_weights(path.join(opts.outputDir, f"{task}_single-labeled_Fold-0.model.weights.hdf5"))
-                trained_model.save(filepath=path.join(opts.outputDir, f"{task}_scaf_saved_model"))
+                    # save complete model
+                    trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
+                    # trained_model.load_weights(path.join(opts.outputDir, f"{task}_single-labeled_Fold-0.model.weights.hdf5"))
+                    trained_model.save(filepath=path.join(opts.outputDir, f"{task}_scaf_saved_model"))
 
             # select and copy best model - how to define the best model?
             best_fold = (

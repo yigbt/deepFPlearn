@@ -1,5 +1,7 @@
 from __future__ import annotations
-from chemprop.features import get_available_features_generators
+
+import sys
+# from chemprop.features import get_available_features_generators
 from dfpl.utils import makePathAbsolute
 from dataclasses import dataclass
 import jsonpickle
@@ -13,7 +15,7 @@ from pathlib import Path
 # from sklearn import ensemble, multiclass
 import torch
 import sys
-sys.path.insert(0, "CMPNN")
+# sys.path.insert(0, "CMPNN")
 
 
 # from CMPNN import cmpnnchemprop
@@ -117,14 +119,15 @@ class Options:
 
 
 @dataclass
-class GnnOptions(Options):
+# class GnnOptions(Options):
+class GnnOptions:
     """
     Dataclass to hold all options used for prediction
     """
     batch_size: int = 32
     total_epochs: int = 30
     save: bool = True
-    save_dir: str = "./ckpt/"
+    save_dir: str = ""
     data_path: str = "./CMPNN/data/tox21.csv"
     seed: int = 42
     gpu: int = None
@@ -144,7 +147,8 @@ class GnnOptions(Options):
     separate_test_path: str = ""
     separate_test_features_path: str = ""
     split_sizes: float = 0.8, 0.1, 0.1
-    num_folds: int = 1
+    split_type: str = 'random'
+    num_folds: int = 10
     folds_file: str = ""
     val_fold_index: int = None
     test_fold_index: int = None
@@ -184,7 +188,7 @@ class GnnOptions(Options):
     extra_metrics: str = ""
     loss_function: str = None
     spectra_phase_mask_path: str = ""
-    data_weights_path: str = ""
+    data_weights_path: str = None
     target_weights: float = None
     split_key_molecule: int = 0
     pytorch_seed: int = 0
@@ -206,6 +210,7 @@ class GnnOptions(Options):
     adding_h: bool = False
     # Training arguments
     grad_clip: float = 0.1
+    epochs: int = 10
     spectra_target_floor: float = 1e-8
     evidential_regularization: float = 0
     overwrite_default_atom_features: bool = False
@@ -217,8 +222,21 @@ class GnnOptions(Options):
     spectra_activation: str = ""
     gnn_type: str = "cmpnn"
     preds_path: str = "./tox21dmpnn.csv"
-    test_path: str = "./CMPNN/data/tox21.csv"
+    test_path: str = ""
     no_cache_mol: bool = False
+    dropout: float = 0.2
+    reaction: bool = False
+    reaction_solvent: bool = False
+    phase_features_path: str = None
+    atom_descriptors_path: str = None
+    bond_features_path: str = None
+    atom_descriptors: str = None
+    resume_experiment: bool = False
+    wabTracking: str = ""
+    # Prediction
+    trainAC: bool = True
+    trainFNN: bool = True
+    saving_name: str = "samplecmpnn.csv"
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> GnnOptions:
@@ -239,13 +257,23 @@ class GnnOptions(Options):
             else:
                 raise ValueError("Could not find JSON input file")
 
-        for key, value in vars(args).items():
-            # The args dict will contain a "method" key from the subparser.
-            # We don't use this.
-            if key != "method":
-                result.__setattr__(key, value)
+        # for key, value in vars(args).items():
+        #     # The args dict will contain a "method" key from the subparser.
+        #     # We don't use this.
+        #     if key != "method":
+        #         result.__setattr__(key, value)
         return result
-
+    @classmethod
+    def fromJson(cls, file: str) -> GnnOptions:
+        """
+        Create an instance from a JSON file
+        """
+        jsonFile = Path(file)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = f.read()
+                return jsonpickle.decode(content)
+        raise ValueError("JSON file does not exist or is not readable")
 
 def createCommandlineParser() -> argparse.ArgumentParser:
     """
@@ -493,10 +521,10 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
 
 def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--save", type=bool)
-    # parser.add_argument("-f", "--configFile",
-    #                     metavar='FILE',
-    #                     type=str,
-    #                     help="Input JSON file that contains all information for training/predicting.")
+    parser.add_argument("-f", "--configFile",
+                        metavar='FILE',
+                        type=str,
+                        help="Input JSON file that contains all information for training/predicting.")
     parser.add_argument('--gpu', type=int,
                         choices=list(range(torch.cuda.device_count())),
                         help='Which GPU to use')
@@ -511,9 +539,9 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
                         help='Whether to skip training and only test the model')
     parser.add_argument('--features_only', action='store_true', default=False,
                         help='Use only the additional features in an FFN, no graph network')
-    parser.add_argument('--features_generator', type=str, nargs='*',
-                        choices=get_available_features_generators(),
-                        help='Method of generating additional features')
+    # parser.add_argument('--features_generator', type=str, nargs='*',
+    #                     choices=get_available_features_generators(),
+    #                     help='Method of generating additional features')
     parser.add_argument('--features_path', type=str, nargs='*',
                         help='Path to features to use in FNN (instead of features_generator)')
     parser.add_argument('--save_dir', type=str, default='./ckpt/',
@@ -684,6 +712,7 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
                         choices=['cmpnn', 'dmpnn'],
                         help="Define GNN Model",
                         default=argparse.SUPPRESS)
+    parser.add_argument("--wabTracking", type=str)
 
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     """
@@ -781,9 +810,9 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
                         help='Batch size')
     parser.add_argument('--no_cuda', action='store_true', default=False,
                         help='Turn off cuda')
-    parser.add_argument('--features_generator', type=str, nargs='*',
-                        choices=get_available_features_generators(),
-                        help='Method of generating additional features')
+    # parser.add_argument('--features_generator', type=str, nargs='*',
+    #                     choices=get_available_features_generators(),
+    #                     help='Method of generating additional features')
     parser.add_argument('--features_path', type=str, nargs='*',
                         help='Path to features to use in FNN (instead of features_generator)')
     parser.add_argument('--no_features_scaling', action='store_true', default=False,
