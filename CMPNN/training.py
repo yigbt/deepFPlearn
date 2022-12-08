@@ -67,12 +67,8 @@ def cross_validate(opts = options.GnnOptions, logger: Logger = None) -> Tuple[fl
     max_index = all_fold_score.index(max(all_fold_score))
     print("All Fold List ===", all_fold_score)
     print("max index====", max_index)
-    # plot_path = os.path.join(save_path, f'fold_{max_index}', 'plot.png')
-    # new_name = plot_path.replace("plot", "best_plot")
-    # os.rename(plot_path, new_name)
 
     plot_path = os.path.join(save_path, f'fold_{max_index}', 'plot.png')
-    # new_name = plot_path.replace("plot", "best_plot")
     new_name = f'best_plot_fold_{max_index}'
     new_name = plot_path.replace("plot", new_name)
     os.rename(plot_path, new_name)

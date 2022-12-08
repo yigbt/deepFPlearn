@@ -1,13 +1,21 @@
 {
   "py/object": "dfpl.options.GnnOptions",
   "data_path": "CMPNN/data/tox21.csv",
-  "gnn_type": "dmpnn",
-  "save_dir": "trained_dmpnn_sample/",
-  "epochs": 4,
-  "num_folds": 2,
+  "gnn_type": "cmpnn",
+  "save_dir": "trained_cmpnn_sample/",
+  "epochs": 2,
+  "num_folds": 1,
   "split_type": "scaffold_balanced",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
-  "wabTracking": "False"
+  "wabTracking": "True",
+  "show_individual_scores": true,
+  "metric":"auc",
+  "extra_metrics": "f1",
+  "dropout": 0,
+  "hidden_size": 300,
+  "depth": 3,
+  "ffn_hidden_size": 2,
+  "ffn_num_layers": 2,
+  "frzn_ffn_layers":0
 }
-

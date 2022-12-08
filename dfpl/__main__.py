@@ -24,7 +24,7 @@ from CMPNN.cmpnnchemprop.utils import create_logger
 from CMPNN.training import cross_validate
 
 
-sys.path.insert(0, "./chemprop_repo")
+sys.path.append("./chemprop_repo")
 import chemprop
 # print(chemprop.__file__)
 # print("==================")
@@ -78,12 +78,14 @@ def traincmpnn(opts:options.GnnOptions):
     # parser = options.createCommandlineParser()
     # opts = parser.parse_args()
     logger = create_logger(name='traincmpnn')
+    print("Training CMPNN...")
     mean_auc_score, std_auc_score = cross_validate(opts, logger)
     # wandb.log({"mean_auc": mean_auc_score})
     print(f'Results: {mean_auc_score:.5f} +/- {std_auc_score:.5f}')
 def traindmpnn(opts:options.GnnOptions, JSON_ARG_PATH):
+
     ignore_elements = ["py/object", "gnn_type"]
-    arguments = createArgsFromJson(JSON_ARG_PATH, ignore_elements, return_json_object = False)
+    arguments = createArgsFromJson(JSON_ARG_PATH, ignore_elements, return_json_object=False)
     opts = chemprop.args.TrainArgs().parse_args(arguments)
     print("Training DMPNN...")
     mean_score, std_score = chemprop.train.cross_validate(args=opts, train_func=chemprop.train.run_training)
@@ -96,7 +98,6 @@ def traindmpnn(opts:options.GnnOptions, JSON_ARG_PATH):
 def predictcmpnn(opts: options.GnnOptions)-> None:
     # parser = options.createCommandlineParser()
     # opts = parser.parse_args()
-    # predict
     df = pd.read_csv(opts.test_path)
     # df = df.head(30)
     pred, smiles = make_predictions(opts, df.smiles.tolist())
@@ -105,8 +106,9 @@ def predictcmpnn(opts: options.GnnOptions)-> None:
         df[f'pred_{i}'] = [item[i] for item in pred]
     df.to_csv(f'{opts.save_dir}/{opts.saving_name}', index=False)
 def predictdmpnn(opts: options.GnnOptions, JSON_ARG_PATH)-> None:
+
     ignore_elements = ["py/object", "gnn_type", "checkpoint_paths", "save_dir", "saving_name"]
-    arguments, data = createArgsFromJson(JSON_ARG_PATH, ignore_elements, return_json_object = True)
+    arguments, data = createArgsFromJson(JSON_ARG_PATH, ignore_elements, return_json_object=True)
     arguments.append("--preds_path")
     arguments.append("")
 
@@ -121,7 +123,7 @@ def predictdmpnn(opts: options.GnnOptions, JSON_ARG_PATH)-> None:
     for index, rows in df.iterrows():
         my_list = [rows.smiles]
         smiles.append(my_list)
-    print(smiles)
+    # print(smiles)
     pred = chemprop.train.make_predictions(args=opts, smiles=smiles)
 
 def train(opts: options.Options):

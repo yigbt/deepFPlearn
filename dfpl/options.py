@@ -712,7 +712,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
                         choices=['cmpnn', 'dmpnn'],
                         help="Define GNN Model",
                         default=argparse.SUPPRESS)
-    parser.add_argument("--wabTracking", type=str)
 
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     """

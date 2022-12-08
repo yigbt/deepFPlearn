@@ -1,6 +1,5 @@
 from argparse import Namespace
 # import wandb
-import pandas as pd
 import csv
 from logging import Logger
 import os
@@ -15,6 +14,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 import sys
 sys.path.insert(0, "dfpl")
 import options
+from utils import make_plots
 from .evaluate import evaluate, evaluate_predictions
 from .predict import predict
 from .train import train
@@ -25,7 +25,7 @@ from cmpnnchemprop.models import build_model
 from cmpnnchemprop.nn_utils import param_count
 from cmpnnchemprop.utils import build_optimizer, build_lr_scheduler, get_loss_func, get_metric_func, load_checkpoint,\
     makedirs, save_checkpoint
-from matplotlib import pyplot as plt
+
 
 
 def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]:
@@ -188,6 +188,7 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
         best_epoch, n_iter = 0, 0
         n_iter_ = 0
 
+
         training_auc_list = []
         training_loss_list = []
         validation_auc_list = []
@@ -234,7 +235,7 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                 logger=logger
             )
 
-            training_score = evaluate(
+            training_score_ = evaluate(
                 model=model,
                 data=train_data,
                 num_tasks=args.num_tasks,
@@ -247,21 +248,20 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
 
 
 
-            training_score = np.nanmean(training_score)
+            training_score = np.nanmean(training_score_)
             avg_val_score = np.nanmean(val_scores)
             training_loss = np.nanmean(training_loss)
+
             validation_loss = np.nanmean(validation_loss)
-
-
             if str(validation_loss) != 'nan':
-                if args.wabTracking == "True":
-                    wandb.log({"validation_loss": validation_loss})
                 validation_loss_list.append(validation_loss)
             else:
-                if args.wabTracking == "True":
-                    wandb.log({"validation_loss": 0})
-                validation_loss_list.append(0)
+                validation_loss = 0
+                validation_loss_list.append(validation_loss)
 
+            training_auc_list.append(training_score)
+            training_loss_list.append(training_loss)
+            validation_auc_list.append(avg_val_score)
 
 
             if args.wabTracking == "True":
@@ -270,12 +270,11 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                     "batch_size": args.batch_size,
                     "validation_auc": avg_val_score,
                     "training_auc": training_score,
-                    "training_loss": training_loss})
+                    "training_loss": training_loss,
+                    "validation_loss": validation_loss})
 
 
-            training_auc_list.append(training_score)
-            training_loss_list.append(training_loss)
-            validation_auc_list.append(avg_val_score)
+
 
 
             debug(f'Validation {args.metric} = {avg_val_score:.6f}')
@@ -284,8 +283,18 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
             if args.show_individual_scores:
                 # Individual validation scores
                 for task_name, val_score in zip(args.task_names, val_scores):
+                    if args.wabTracking == "True":
+                        wandb.log({f'Validation {task_name} {args.metric}': val_score})
                     debug(f'Validation {task_name} {args.metric} = {val_score:.6f}')
                     writer.add_scalar(f'validation_{task_name}_{args.metric}', val_score, n_iter)
+
+
+                for task_name2, t_score in zip(args.task_names, training_score_):
+                    if args.wabTracking == "True":
+                        wandb.log({f'Training {task_name2} {args.metric}': t_score})
+                    debug(f'Training {task_name2} {args.metric} = {t_score:.6f}')
+                    writer.add_scalar(f'Training_{task_name2}_{args.metric}', t_score, n_iter)
+
 
             # Save model checkpoint if improved validation score
             if args.minimize_score and avg_val_score < best_score or \
@@ -293,11 +302,7 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                 best_score, best_epoch = avg_val_score, epoch
                 save_checkpoint(os.path.join(save_dir, 'model.pt'), model, scaler, features_scaler, args)
 
-
-        zipped = list(zip(training_loss_list, validation_loss_list, training_auc_list, validation_auc_list))
-        metricsdf = pd.DataFrame(zipped, columns=['LOSS', 'VAL_LOSS', 'AUC', 'VAL_AUC', ])
-        metricsdf.plot(title='Model performance', colormap='viridis')
-        plt.savefig(f"{args.save_dir}/plot.png", format='png')
+        make_plots(args.save_dir, training_auc_list, training_loss_list, validation_auc_list, validation_loss_list)
 
 
         # Evaluate on test set using model with best validation score
@@ -332,6 +337,7 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
             for task_name, test_score in zip(args.task_names, test_scores):
                 info(f'Model {model_idx} test {task_name} {args.metric} = {test_score:.6f}')
                 writer.add_scalar(f'test_{task_name}_{args.metric}', test_score, n_iter)
+
 
     # Evaluate ensemble on test set
     avg_test_preds = (sum_test_preds / args.ensemble_size).tolist()

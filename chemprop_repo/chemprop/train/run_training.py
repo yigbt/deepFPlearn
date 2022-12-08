@@ -24,7 +24,9 @@ from chemprop.nn_utils import param_count, param_count_all
 from chemprop.utils import build_optimizer, build_lr_scheduler, load_checkpoint, makedirs, \
     save_checkpoint, save_smiles_splits, load_frzn_model, multitask_mean
 import wandb
-from matplotlib import pyplot as plt
+import sys
+sys.path.insert(0, "dfpl")
+from utils import make_plots
 
 def run_training(args: TrainArgs,
                  data: MoleculeDataset,
@@ -248,7 +250,8 @@ def run_training(args: TrainArgs,
     )
 
     if args.class_balance:
-        debug(f'With class_balance, effective train size = {train_data_loader.iter_size:,}')
+        pass
+        # debug(f'With class_balance, effective train size = {train_data_loader.iter_size:,}')
 
     # Train ensemble of models
     for model_idx in range(args.ensemble_size):
@@ -273,7 +276,7 @@ def run_training(args: TrainArgs,
             debug(f'Loading and freezing parameters from {args.checkpoint_frzn}.')
             model = load_frzn_model(model=model,path=args.checkpoint_frzn, current_args=args, logger=logger)     
         
-        debug(model)
+        # debug(model)
         
         if args.checkpoint_frzn is not None:
             debug(f'Number of unfrozen parameters = {param_count(model):,}')
@@ -307,7 +310,7 @@ def run_training(args: TrainArgs,
 
         for epoch in trange(args.epochs):
             debug(f'Epoch {epoch}')
-            n_iter, training_loss = train(
+            n_iter, training_loss_ = train(
                 model=model,
                 data_loader=train_data_loader,
                 loss_func=loss_func,
@@ -353,28 +356,23 @@ def run_training(args: TrainArgs,
                 logger=logger
             )
 
-            if args.wabTracking == "True":
-                wandb.log({
-                    "epochs": args.epochs,
-                    "batch_size": args.batch_size})
-
-
             for metric, scores in val_scores.items():
                 # Average validation score\
                 mean_val_score = multitask_mean(scores, metric=metric)
                 validation_auc_list.append(mean_val_score)
-
 
                 if args.wabTracking == "True":
                     wandb.log({
                         "Validation_auc": mean_val_score})
                 debug(f'Validation {metric} = {mean_val_score:.6f}')
                 writer.add_scalar(f'validation_{metric}', mean_val_score, n_iter)
-
-                if args.show_individual_scores:
+                if args.show_individual_scores == "True":
                     for task_name, val_score in zip(args.task_names, scores):
+                        if args.wabTracking == "True":
+                            wandb.log({f'Validation {task_name} {metric}': val_score})
                         debug(f'Validation {task_name} {metric} = {val_score:.6f}')
                         writer.add_scalar(f'validation_{task_name}_{metric}', val_score, n_iter)
+
 
             for metric_, scores_ in training_score.items():
 
@@ -382,26 +380,30 @@ def run_training(args: TrainArgs,
                 training_auc_list.append(mean_train_score)
 
                 if args.wabTracking == "True":
-                    wandb.log({
-                        "Training_auc": mean_train_score})
+                    wandb.log({"Training_auc": mean_train_score})
+                if args.show_individual_scores == "True":
+                    for task_name2, t_score in zip(args.task_names, scores_):
+                        if args.wabTracking == "True":
+                            wandb.log({f'Training {task_name2} {metric_}': t_score})
+                        debug(f'Training {task_name2} {metric_} = {t_score:.6f}')
+                        writer.add_scalar(f'Training_{task_name2}_{metric_}', t_score, n_iter)
 
-
-
-            training_loss = np.nanmean(training_loss)
-            if args.wabTracking == "True":
-                wandb.log({"training_loss": training_loss})
+            training_loss = np.nanmean(training_loss_)
             training_loss_list.append(training_loss)
-
 
             validation_loss = np.nanmean(validation_loss)
             if str(validation_loss) != 'nan':
-                if args.wabTracking == "True":
-                    wandb.log({"validation_loss": validation_loss})
                 validation_loss_list.append(validation_loss)
             else:
-                if args.wabTracking == "True":
-                    wandb.log({"validation_loss": 0})
-                validation_loss_list.append(0)
+                validation_loss = 0
+                validation_loss_list.append(validation_loss)
+
+            if args.wabTracking == "True":
+                wandb.log({
+                    "epochs": epoch,
+                    "batch_size": args.batch_size,
+                    "training_loss": training_loss,
+                    "validation_loss": validation_loss})
 
 
 
@@ -414,11 +416,7 @@ def run_training(args: TrainArgs,
                 save_checkpoint(os.path.join(save_dir, MODEL_FILE_NAME), model, scaler, features_scaler,
                                 atom_descriptor_scaler, bond_feature_scaler, args)
 
-        zipped = list(zip(training_loss_list, validation_loss_list, training_auc_list, validation_auc_list))
-        metricsdf = pd.DataFrame(zipped, columns=['LOSS', 'VAL_LOSS', 'AUC', 'VAL_AUC', ])
-        metricsdf.plot(title='Model performance', colormap='viridis')
-        plt.savefig(f"{args.save_dir}/plot.png", format='png')
-
+        make_plots(args.save_dir, training_auc_list, training_loss_list, validation_auc_list, validation_loss_list)
 
 
         # Evaluate on test set using model with best validation score
@@ -453,7 +451,7 @@ def run_training(args: TrainArgs,
                 info(f'Model {model_idx} test {metric} = {avg_test_score:.6f}')
                 writer.add_scalar(f'test_{metric}', avg_test_score, 0)
 
-                if args.show_individual_scores and args.dataset_type != 'spectra':
+                if args.show_individual_scores == "True" and args.dataset_type != 'spectra':
                     # Individual test scores
                     for task_name, test_score in zip(args.task_names, scores):
                         info(f'Model {model_idx} test {task_name} {metric} = {test_score:.6f}')
@@ -485,7 +483,7 @@ def run_training(args: TrainArgs,
         info(f'Ensemble test {metric} = {mean_ensemble_test_score:.6f}')
 
         # Individual ensemble scores
-        if args.show_individual_scores:
+        if args.show_individual_scores == "True":
             for task_name, ensemble_score in zip(args.task_names, scores):
                 info(f'Ensemble test {task_name} {metric} = {ensemble_score:.6f}')
 

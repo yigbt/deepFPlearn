@@ -291,7 +291,7 @@ class TrainArgs(CommonArgs):
     """Skip non-essential print statements."""
     log_frequency: int = 10
     """The number of batches between each logging of the training loss."""
-    show_individual_scores: bool = False
+    show_individual_scores: str = "False"
     """Show all scores for individual targets, not just average, at the end."""
     cache_cutoff: float = 10000
     """

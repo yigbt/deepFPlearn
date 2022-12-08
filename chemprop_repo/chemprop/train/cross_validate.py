@@ -140,7 +140,7 @@ def cross_validate(args: TrainArgs,
             else:
                 pass
 
-            if args.show_individual_scores:
+            if args.show_individual_scores == "True":
                 for task_name, score in zip(args.task_names, scores[fold_num]):
                     info(f'\t\tSeed {init_seed + fold_num} ==> test {task_name} {metric} = {score:.6f}')
                     if np.isnan(score):
@@ -170,7 +170,7 @@ def cross_validate(args: TrainArgs,
         mean_score, std_score = np.mean(avg_scores), np.std(avg_scores)
         info(f'Overall test {metric} = {mean_score:.6f} +/- {std_score:.6f}')
 
-        if args.show_individual_scores:
+        if args.show_individual_scores == "True":
             for task_num, task_name in enumerate(args.task_names):
                 info(f'\tOverall test {task_name} {metric} = '
                      f'{np.mean(scores[:, task_num]):.6f} +/- {np.std(scores[:, task_num]):.6f}')
