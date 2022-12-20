@@ -6,7 +6,7 @@ from typing import List, Optional
 from typing_extensions import Literal
 from packaging import version
 from warnings import warn
-
+import random
 import torch
 from tap import Tap  # pip install typed-argument-parser (https://github.com/swansonk14/typed-argument-parser)
 import numpy as np
@@ -265,7 +265,8 @@ class TrainArgs(CommonArgs):
     """Directory in which to find cross validation index files."""
     crossval_index_file: str = None
     """Indices of files to use as train/val/test. Overrides :code:`--num_folds` and :code:`--seed`."""
-    seed: int = 0
+    seed: int = random.randint(1, 1000000000)
+
     """
     Random seed to use when splitting data into train/val/test sets.
     When :code`num_folds > 1`, the first fold uses this seed and all subsequent folds add 1 to the seed.

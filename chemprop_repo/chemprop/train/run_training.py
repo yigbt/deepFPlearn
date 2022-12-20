@@ -26,7 +26,7 @@ from chemprop.utils import build_optimizer, build_lr_scheduler, load_checkpoint,
 import wandb
 import sys
 sys.path.insert(0, "dfpl")
-from utils import make_plots
+from utils import makePlots
 
 def run_training(args: TrainArgs,
                  data: MoleculeDataset,
@@ -46,10 +46,10 @@ def run_training(args: TrainArgs,
     else:
         debug = info = print
     if args.wabTracking == "True":
-        wandb.init(project="dmpnn", config=args)
-
+        wandb.init(project = 'chemprop_scaf_tox21' , config = args)
     # Set pytorch seed for random initial weights
-    torch.manual_seed(args.pytorch_seed)
+    torch.random.seed()
+    # torch.manual_seed(args.pytorch_seed)
 
     # Split data
     debug(f'Splitting data with seed {args.seed}')
@@ -360,17 +360,16 @@ def run_training(args: TrainArgs,
                 # Average validation score\
                 mean_val_score = multitask_mean(scores, metric=metric)
                 validation_auc_list.append(mean_val_score)
-
-                if args.wabTracking == "True":
-                    wandb.log({
-                        "Validation_auc": mean_val_score})
-                debug(f'Validation {metric} = {mean_val_score:.6f}')
+                # if args.wabTracking == "True":
+                #     wandb.log(
+                #         {"Validation_auc": mean_val_score})
+                debug(f'validation {metric} = {mean_val_score:.6f}')
                 writer.add_scalar(f'validation_{metric}', mean_val_score, n_iter)
                 if args.show_individual_scores == "True":
                     for task_name, val_score in zip(args.task_names, scores):
                         if args.wabTracking == "True":
-                            wandb.log({f'Validation {task_name} {metric}': val_score})
-                        debug(f'Validation {task_name} {metric} = {val_score:.6f}')
+                            wandb.log({f'validation {task_name} {metric}': val_score})
+                        debug(f'validation {task_name} {metric} = {val_score:.6f}')
                         writer.add_scalar(f'validation_{task_name}_{metric}', val_score, n_iter)
 
 
@@ -378,9 +377,9 @@ def run_training(args: TrainArgs,
 
                 mean_train_score = multitask_mean(scores_, metric=metric_)
                 training_auc_list.append(mean_train_score)
-
-                if args.wabTracking == "True":
-                    wandb.log({"Training_auc": mean_train_score})
+                # if args.wabTracking == "True":
+                #     wandb.log(
+                #         {"Training_auc": mean_train_score})
                 if args.show_individual_scores == "True":
                     for task_name2, t_score in zip(args.task_names, scores_):
                         if args.wabTracking == "True":
@@ -403,7 +402,9 @@ def run_training(args: TrainArgs,
                     "epochs": epoch,
                     "batch_size": args.batch_size,
                     "training_loss": training_loss,
-                    "validation_loss": validation_loss})
+                    "validation_loss": validation_loss,
+                    "training_auc":mean_train_score,
+                    "validation_auc":mean_val_score})
 
 
 
@@ -416,7 +417,7 @@ def run_training(args: TrainArgs,
                 save_checkpoint(os.path.join(save_dir, MODEL_FILE_NAME), model, scaler, features_scaler,
                                 atom_descriptor_scaler, bond_feature_scaler, args)
 
-        make_plots(args.save_dir, training_auc_list, training_loss_list, validation_auc_list, validation_loss_list)
+        makePlots(args.save_dir, training_auc_list, training_loss_list, validation_auc_list, validation_loss_list)
 
 
         # Evaluate on test set using model with best validation score

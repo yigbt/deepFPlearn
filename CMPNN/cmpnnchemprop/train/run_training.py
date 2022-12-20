@@ -14,7 +14,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 import sys
 sys.path.insert(0, "dfpl")
 import options
-from utils import make_plots
+from utils import makePlots
 from .evaluate import evaluate, evaluate_predictions
 from .predict import predict
 from .train import train
@@ -38,7 +38,7 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
     """
     # print(args)
     if args.wabTracking == "True":
-        wandb.init(project="cmpnn", config=args)
+        wandb.init(project= 'CMPNN-only',name = 'sider-scaf', config = args)
 
     if logger is not None:
         debug, info = logger.debug, logger.info
@@ -301,8 +301,8 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                     not args.minimize_score and avg_val_score > best_score:
                 best_score, best_epoch = avg_val_score, epoch
                 save_checkpoint(os.path.join(save_dir, 'model.pt'), model, scaler, features_scaler, args)
-
-        make_plots(args.save_dir, training_auc_list, training_loss_list, validation_auc_list, validation_loss_list)
+        
+        makePlots(args.save_dir, training_auc_list, training_loss_list, validation_auc_list, validation_loss_list)
 
 
         # Evaluate on test set using model with best validation score

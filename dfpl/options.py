@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import jsonpickle
 import argparse
 from pathlib import Path
+import random
 # from argparse import ArgumentParser, Namespace
 # import json
 # import os
@@ -27,7 +28,7 @@ class Options:
     """
     Dataclass for all options necessary for training the neural nets
     """
-    configFile: str = ""
+    configFile: str = "./example/train.json"
     inputFile: str = "/deepFPlearn/CMPNN/data/tox21.csv"
     outputDir: str = "."
     outputFile: str = ""
@@ -128,8 +129,9 @@ class GnnOptions:
     total_epochs: int = 30
     save: bool = True
     save_dir: str = ""
+    configFile: str = "./example/traingnn.json"
     data_path: str = "./CMPNN/data/tox21.csv"
-    seed: int = 42
+    seed: int = random.randint(1,1000000000)
     gpu: int = None
     use_compound_names: bool = False
     max_data_size: int = 5000
@@ -160,7 +162,7 @@ class GnnOptions:
     no_cuda: bool = True
     show_individual_scores: bool = False
     no_cache: bool = False
-    config_path: str = ""
+    config_path: str = "" 
     warmup_epochs: int = 10
     init_lr: float = 0.0001
     max_lr: float = 0.001
@@ -191,7 +193,7 @@ class GnnOptions:
     data_weights_path: str = None
     target_weights: float = None
     split_key_molecule: int = 0
-    pytorch_seed: int = 0
+    pytorch_seed: int = random.randint(1,10000000000)
     checkpoint_frzn: str = ""
     cache_cutoff: float = 10000
     save_preds: bool = False
@@ -249,19 +251,20 @@ class GnnOptions:
         """
         result = GnnOptions()
         if "configFile" in vars(args).keys():
-            jsonFile = Path(makePathAbsolute(args.configFile))
-            if jsonFile.exists() and jsonFile.is_file():
-                with jsonFile.open() as f:
+          # if ".json" in vars(args).values():
+          jsonFile = Path(makePathAbsolute(args.configFile))
+          if jsonFile.exists() and jsonFile.is_file():
+               with jsonFile.open() as f:
                     content = f.read()
                     result = jsonpickle.decode(content)
-            else:
+          else:
                 raise ValueError("Could not find JSON input file")
-
-        # for key, value in vars(args).items():
-        #     # The args dict will contain a "method" key from the subparser.
-        #     # We don't use this.
-        #     if key != "method":
-        #         result.__setattr__(key, value)
+     #    for key, value in vars(args).items():
+     #        # The args dict will contain a "method" key from the subparser.
+     #        # We don't use this.
+     #        if key != "method":
+     #            result.__setattr__(key, value)
+          
         return result
     @classmethod
     def fromJson(cls, file: str) -> GnnOptions:

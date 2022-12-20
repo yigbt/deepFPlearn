@@ -23,9 +23,21 @@ def makePlots(save_path: str, training_auc: list, training_loss: list, validatio
 
     all_data = [training_auc, training_loss, validation_auc, validation_loss]
     zipped = list(zip(training_loss, validation_loss, training_auc, validation_auc))
-    metricsdf = pd.DataFrame(zipped, columns=['LOSS', 'VAL_LOSS', 'AUC', 'VAL_AUC', ])
+
+    metricsdf = pd.DataFrame(zipped, columns=['LOSS', 'VAL_LOSS', 'AUC', 'VAL_AUC'])
+    metricsdf.to_csv(f"{save_path}/metrics.csv")
+
     metricsdf.plot(title='Model performance')
     plt.savefig(f"{save_path}/plot.png", format='png')
+
+    lossesdf = pd.DataFrame(list(zip(training_loss,validation_loss)), columns=['LOSS', 'VAL_LOSS'])
+    lossesdf.plot(title='Loss')
+    plt.savefig(f"{save_path}/loss.png", format='png')
+
+    aucdf = pd.DataFrame(list(zip(training_auc,validation_auc)), columns=['AUC', 'VAL_AUC'])
+    aucdf.plot(title='AUC')
+    plt.savefig(f"{save_path}/auc.png", format='png')
+
 
 def createArgsFromJson(in_json: str, ignore_elements: list, return_json_object: bool):
     arguments = []

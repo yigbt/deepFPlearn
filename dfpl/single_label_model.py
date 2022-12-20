@@ -357,14 +357,14 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     # find target columns
     names_y = [c for c in df.columns if c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
 
-    if opts.wabTracking:
-        # For W&B tracking, we only train one target that's specified as wabTarget "ER".
-        # In case it's not there, we use the first one available
-        if opts.wabTarget in names_y:
-            names_y = [opts.wabTarget]
-        else:
-            logging.error(f"The specified wabTarget for Weights & Biases tracking does not exist: {opts.wabTarget}")
-            names_y = [names_y[0]]
+    # if opts.wabTracking:
+    #     # For W&B tracking, we only train one target that's specified as wabTarget "ER".
+    #     # In case it's not there, we use the first one available
+    #     if opts.wabTarget in names_y:
+    #         names_y = [opts.wabTarget]
+    #     else:
+    #         logging.error(f"The specified wabTarget for Weights & Biases tracking does not exist: {opts.wabTarget}")
+    #         names_y = [names_y[0]]
 
     # Collect metrics for each fold and target
     performance_list = []

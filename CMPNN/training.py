@@ -5,6 +5,7 @@ RDLogger.DisableLog('rdApp.*')
 import os.path
 from os.path import basename
 import math
+import wandb
 import numpy as np
 import pandas as pd
 import logging
@@ -36,19 +37,21 @@ def cross_validate(opts = options.GnnOptions, logger: Logger = None) -> Tuple[fl
 
     # Initialize relevant variables
     init_seed = opts.seed
-    save_dir = opts.save_dir
+    save_dir = opts.save_dir 
     task_names = get_task_names(opts.data_path)
     # Run training on different random seeds for each fold
     all_scores = []
     save_path = opts.save_dir
     for fold_num in range(opts.num_folds):
+        # Set the name of the experiment and the project
+        # if opts.wabTracking == "True":
+        #     wandb.init(name=f"{opts.gnn_type}-{opts.data_path}-{opts.split_type}_split", config = opts)
         info(f'Fold {fold_num}')
         opts.seed = init_seed + fold_num
         opts.save_dir = os.path.join(save_dir, f'fold_{fold_num}')
         makedirs(opts.save_dir)
         model_scores = run_training(opts, logger)
         all_scores.append(model_scores)
-
 
     all_scores = np.array(all_scores)
     # Report results
