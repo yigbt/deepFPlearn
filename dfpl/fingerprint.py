@@ -112,7 +112,7 @@ def importDataFile(
         return pd.read_pickle(file_name)
 
     df = import_function(file_name)
-
+    # TODO add CircularFP column
     # disable the rdkit logger. We know that some inchis will fail and we took care of it. No use to spam the console
     RDLogger.DisableLog("rdApp.*")
     n_cores = multiprocessing.cpu_count()
@@ -124,7 +124,9 @@ def importDataFile(
         pool.join()
     return df
 
+def smile2circfp(df):
 
+    return df
 def importSmilesCSV(csvfilename: str) -> pd.DataFrame:
     return pd.read_csv(csvfilename)
 

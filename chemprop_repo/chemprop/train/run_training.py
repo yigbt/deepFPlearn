@@ -346,7 +346,7 @@ def run_training(args: TrainArgs,
                 logger=logger
             )
 
-            training_score = evaluate(
+            training_scores = evaluate(
                 model=model,
                 data_loader=train_data_loader_auc,
                 num_tasks=args.num_tasks,
@@ -371,9 +371,24 @@ def run_training(args: TrainArgs,
                             wandb.log({f'validation {task_name} {metric}': val_score})
                         debug(f'validation {task_name} {metric} = {val_score:.6f}')
                         writer.add_scalar(f'validation_{task_name}_{metric}', val_score, n_iter)
+            for metric, scores in val_scores.items():
+                    # Average validation score\
+                    mean_val_score = multitask_mean(scores, metric=metric)
+                    validation_auc_list.append(mean_val_score)
+                    # if args.wabTracking == "True":
+                    #     wandb.log(
+                    #         {"Validation_auc": mean_val_score})
+                    debug(f'validation {metric} = {mean_val_score:.6f}')
+                    writer.add_scalar(f'validation_{metric}', mean_val_score, n_iter)
+                    if args.show_individual_scores == "True":
 
+                        for task_name, validation_loss in zip(args.task_names, validation_loss):
+                            if args.wabTracking == "True":
+                                wandb.log({f'validation {task_name} {metric}': validation_loss})
+                            debug(f'validation {task_name} {metric} = {validation_loss:.6f}')
+                            writer.add_scalar(f'validation_{task_name}_{metric}', validation_loss, n_iter)
 
-            for metric_, scores_ in training_score.items():
+            for metric_, scores_ in training_scores.items():
 
                 mean_train_score = multitask_mean(scores_, metric=metric_)
                 training_auc_list.append(mean_train_score)
@@ -386,6 +401,11 @@ def run_training(args: TrainArgs,
                             wandb.log({f'Training {task_name2} {metric_}': t_score})
                         debug(f'Training {task_name2} {metric_} = {t_score:.6f}')
                         writer.add_scalar(f'Training_{task_name2}_{metric_}', t_score, n_iter)
+            for task_name, training_loss_ in zip(args.task_names, training_loss_):
+                if args.wabTracking == "True":
+                    wandb.log({f'training {task_name} {metric}': training_loss_})
+                debug(f'training {task_name} {metric} = {training_loss_:.6f}')
+                writer.add_scalar(f'training_{task_name}_{metric}', training_loss_, n_iter)
 
             training_loss = np.nanmean(training_loss_)
             training_loss_list.append(training_loss)

@@ -9,6 +9,6 @@
   "split_type": "random",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
-  "wabTracking": "False",
-  "show_individual_scores": false
+  "wabTracking": "True",
+  "show_individual_scores": true
 }
