@@ -437,24 +437,22 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                              "It must be 1 or smaller than 1 hundredth of the number of samples.")
                 sys.exit("Number of folds out of range")
 
-
     # For each individual target train a model
     elif opts.split_type == "scaffold":
         logging.info(f"Splitting train/test data with Murcko scaffolds")
         scaffoldsplitter = dc.splits.ScaffoldSplitter()
-        loader = dc.data.CSVLoader(tasks=names_y, feature_field="smiles", featurizer=dc.feat.CircularFingerprint(size=2048))
-        dataset = loader.create_dataset(opts.inputFile)
-        x = dataset.X
         if opts.kFolds == 1:
-            for idx, task in enumerate(names_y):
+            for idx,task in enumerate(opts.tasks):
+                loader = dc.data.CSVLoader(tasks=[opts.tasks[idx]], feature_field="smiles", featurizer=dc.feat.CircularFingerprint(size=2048))
+                dataset = loader.create_dataset(opts.inputFile)
+                x = dataset.X
                 train, test = scaffoldsplitter.train_test_split(dataset=dataset)
                 x_train = train.X
                 x_test = test.X
-                y_train = train.y[:, idx]
-                y_test = test.y[:, idx]
-
+                y_train = train.y.flatten()
+                y_test = test.y.flatten()
                 performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
-                                                     fold=0, target=task, opts=opts)
+                                    fold=0, target=task, opts=opts)
                 performance_list.append(performance)
                 # save complete model
                 trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
@@ -463,11 +461,15 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
         elif 1 < opts.kFolds < 1000:
             for idx, task in enumerate(opts.tasks):
+                loader = dc.data.CSVLoader(tasks=[opts.tasks[idx]], feature_field="smiles",
+                                           featurizer=dc.feat.CircularFingerprint(size=2048))
+                dataset = loader.create_dataset(opts.inputFile)
+                x = dataset.X
                 train, test = scaffoldsplitter.train_test_split(dataset=dataset)
                 x_train = train.X
                 x_test = test.X
-                y_train = train.y[:, idx]
-                y_test = test.y[:, idx]
+                y_train = train.y.flatten()
+                y_test = test.y.flatten()
                 for i in range(opts.kFolds):
                     performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                          fold=i, target=task, opts=opts)
@@ -476,6 +478,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     trained_model = define_single_label_model(input_size=len(x[0]), opts=opts)
                     # trained_model.load_weights(path.join(opts.outputDir, f"{task}_single-labeled_Fold-0.model.weights.hdf5"))
                     trained_model.save(filepath=path.join(opts.outputDir, f"{task}_scaf_saved_model"))
+
             # select and copy best model - how to define the best model?
             best_fold = (
                 pd

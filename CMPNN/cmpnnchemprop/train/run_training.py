@@ -287,6 +287,11 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                         wandb.log({f'Validation {task_name} {args.metric}': val_score})
                     debug(f'Validation {task_name} {args.metric} = {val_score:.6f}')
                     writer.add_scalar(f'validation_{task_name}_{args.metric}', val_score, n_iter)
+                for task_name, val_loss in zip(args.task_names, validation_loss):
+                    if args.wabTracking == "True":
+                        wandb.log({f'validation {task_name} loss': val_loss})
+                    debug(f'validation {task_name} loss = {val_loss:.6f}')
+                    writer.add_scalar(f'validation_{task_name}_loss', val_loss, n_iter)                        
 
 
                 for task_name2, t_score in zip(args.task_names, training_score_):
@@ -294,7 +299,12 @@ def run_training(args: options.GnnOptions, logger: Logger = None) -> List[float]
                         wandb.log({f'Training {task_name2} {args.metric}': t_score})
                     debug(f'Training {task_name2} {args.metric} = {t_score:.6f}')
                     writer.add_scalar(f'Training_{task_name2}_{args.metric}', t_score, n_iter)
-
+                for task_name2,train_loss in zip(args.task_names,training_loss):
+                    if args.wabTracking == "True":
+                        wandb.log({f'Training {task_name2} loss': train_loss})
+                    debug(f'Training {task_name2} loss = {train_loss:.6f}')
+                    writer.add_scalar(f'Training_{task_name2}_loss', train_loss, n_iter)        
+   
 
             # Save model checkpoint if improved validation score
             if args.minimize_score and avg_val_score < best_score or \

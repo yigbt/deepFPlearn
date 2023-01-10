@@ -70,6 +70,7 @@ class Options:
     snnWidth = 50
     wabTracking: bool = False  # Wand & Biases tracking
     wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
+    tasks: str = ""
 
     def saveToFile(self, file: str) -> None:
         """
@@ -383,6 +384,10 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         metavar='INT',
                         type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
+                        default=argparse.SUPPRESS)
+    parser.add_argument("-tsk", "--tasks",
+                        nargs='*',
+                        help='Name of tasks',
                         default=argparse.SUPPRESS)
     parser.add_argument("-e", "--epochs",
                         metavar='INT', type=int,
