@@ -1,15 +1,16 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "data_path": "CMPNN/data/tox21.csv",
+  "data_path": "CMPNN/data/S_dataset-Arom.csv",
   "gnn_type": "dmpnn",
-  "save_dir": "dmpnn_tox21/",
-  "epochs": 30,
-  "num_folds": 5,
-  "extra_metrics": "f1",
-  "split_type": "scaffold_balanced",
+  "save_dir": "Arom_random_check/",
+  "epochs": 3,
+  "num_folds": 2,
+  "extra_metrics": "auc,f1",
+  "metric": "binary_cross_entropy",
+  "split_type": "random",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
   "wabTracking": "True",
-  "show_individual_scores": true,
-  "gpu":0
+  "show_individual_scores":false,
+  "gpu":1
 }

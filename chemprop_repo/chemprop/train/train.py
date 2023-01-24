@@ -145,18 +145,14 @@ def train(
             loss_sum = iter_count = 0
             loss_plot.append(loss_avg)
             lrs_str = ", ".join(f"lr_{i} = {lr:.4e}" for i, lr in enumerate(lrs))
-            # debug(f"Loss = {loss_avg:.4e}, PNorm = {pnorm:.4f}, GNorm = {gnorm:.4f}, {lrs_str}")
-            if args.wabTracking == "True":
-                wandb.log({
-                    "pnorm": pnorm,
-                    "gnorm": gnorm})
-                for i, lr in enumerate(lrs):
-                    wandb.log({"lr": lr})
+            debug(f"Loss = {loss_avg:.4e}, PNorm = {pnorm:.4f}, GNorm = {gnorm:.4f}, {lrs_str}")
+            # for i, lr in enumerate(lrs):
+            #     wandb.log({"lr": lr})
             if writer is not None:
                 writer.add_scalar("train_loss", loss_avg, n_iter)
                 writer.add_scalar("param_norm", pnorm, n_iter)
                 writer.add_scalar("gradient_norm", gnorm, n_iter)
                 for i, lr in enumerate(lrs):
                     writer.add_scalar(f"learning_rate_{i}", lr, n_iter)
+    return n_iter
 
-    return n_iter, loss_plot

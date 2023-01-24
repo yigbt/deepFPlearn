@@ -12,7 +12,7 @@ import wandb
 from cmpnnchemprop.data import MoleculeDataset
 from cmpnnchemprop.nn_utils import compute_gnorm, compute_pnorm, NoamLR
 
-
+    
 def train(model: nn.Module,
           data: Union[MoleculeDataset, List[MoleculeDataset]],
           loss_func: Callable,
@@ -23,20 +23,21 @@ def train(model: nn.Module,
           logger: logging.Logger = None,
           writer: SummaryWriter = None) -> int:
     """
-    Trains a model for an epoch.
+        Trains a model for an epoch.
 
-    :param model: Model.
-    :param data: A MoleculeDataset (or a list of MoleculeDatasets if using moe).
-    :param loss_func: Loss function.
-    :param optimizer: An Optimizer.
-    :param scheduler: A learning rate scheduler.
-    :param args: Arguments.
-    :param n_iter: The number of iterations (training examples) trained on so far.
-    :param logger: A logger for printing intermediate results.
-    :param writer: A tensorboardX SummaryWriter.
-    :return: The total number of iterations (training examples) trained on so far.
-    """
+        :param model: Model.
+        :param data: A MoleculeDataset (or a list of MoleculeDatasets if using moe).
+        :param loss_func: Loss function.
+        :param optimizer: An Optimizer.
+        :param scheduler: A learning rate scheduler.
+        :param args: Arguments.
+        :param n_iter: The number of iterations (training examples) trained on so far.
+        :param logger: A logger for printing intermediate results.
+        :param writer: A tensorboardX SummaryWriter.
+        :return: The total number of iterations (training examples) trained on so far.
+        """
     debug = logger.debug if logger is not None else print
+    
     model.train()
     
     data.shuffle()
@@ -75,6 +76,7 @@ def train(model: nn.Module,
         else:
             loss = loss_func(preds, targets) * class_weights * mask
         loss = loss.sum() / mask.sum()
+        
         loss_sum += loss.item()
         iter_count += len(mol_batch)
 
@@ -98,12 +100,6 @@ def train(model: nn.Module,
 #             lrs_str = ', '.join(f'lr_{i} = {lr:.4e}' for i, lr in enumerate(lrs))
 #             debug(f'Loss = {loss_avg:.4e}, PNorm = {pnorm:.4f}, GNorm = {gnorm:.4f}, {lrs_str}')
 # =============================================================================
-            if args.wabTracking == "True":
-                wandb.log({
-                    "pnorm": pnorm,
-                    "gnorm": gnorm})
-                for i, lr in enumerate(lrs):
-                    wandb.log({"lr": lr})
 
             if writer is not None:
                 writer.add_scalar('train_loss', loss_avg, n_iter)
@@ -112,4 +108,4 @@ def train(model: nn.Module,
                 for i, lr in enumerate(lrs):
                     writer.add_scalar(f'learning_rate_{i}', lr, n_iter)
 
-    return n_iter, loss_plot
+    return n_iter

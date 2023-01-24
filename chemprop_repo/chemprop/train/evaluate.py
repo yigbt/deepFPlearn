@@ -6,7 +6,7 @@ from .predict import predict
 from chemprop.data import MoleculeDataLoader, StandardScaler
 from chemprop.models import MoleculeModel
 from chemprop.train import get_metric_func
-
+import wandb
 
 def evaluate_predictions(preds: List[List[float]],
                          targets: List[List[float]],
@@ -54,7 +54,7 @@ def evaluate_predictions(preds: List[List[float]],
             results[metric].append(metric_func(preds, targets))
     else:
         for i in range(num_tasks):
-            # # Skip if all targets or preds are identical, otherwise we'll crash during classification
+            # Skip if all targets or preds are identical, otherwise we'll crash during classification
             if dataset_type == 'classification':
                 nan = False
                 if all(target == 0 for target in valid_targets[i]) or all(target == 1 for target in valid_targets[i]):
@@ -80,6 +80,8 @@ def evaluate_predictions(preds: List[List[float]],
                     results[metric].append(metric_func(valid_targets[i], valid_preds[i], gt_targets[i], lt_targets[i]))
                 else:
                     results[metric].append(metric_func(valid_targets[i], valid_preds[i]))
+    
+    wandb.log({"roc" : wandb.plot.roc_curve(valid_targets, valid_preds,labels=None, classes_to_plot=None)})
 
     results = dict(results)
 

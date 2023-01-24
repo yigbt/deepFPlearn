@@ -1,5 +1,6 @@
 import logging
-from typing import Callable, List
+from typing import Callable,Dict, List
+from collections import defaultdict
 
 import torch.nn as nn
 
@@ -40,7 +41,7 @@ def evaluate_predictions(preds: List[List[float]],
                 valid_targets[i].append(targets[j][i])
 
     # Compute metric
-    results = []
+    results = defaultdict(list)
     for i in range(num_tasks):
         # # Skip if all targets or preds are identical, otherwise we'll crash during classification
         if dataset_type == 'classification':
@@ -53,7 +54,8 @@ def evaluate_predictions(preds: List[List[float]],
                 info('Warning: Found a task with predictions all 0s or all 1s')
 
             if nan:
-                results.append(float('nan'))
+                for metric in metric_func:
+                    results[metric].append(float('nan'))
                 continue
 
         if len(valid_targets[i]) == 0:
@@ -62,7 +64,7 @@ def evaluate_predictions(preds: List[List[float]],
         if dataset_type == 'multiclass':
             results.append(metric_func(valid_targets[i], valid_preds[i], labels=list(range(len(valid_preds[i][0])))))
         else:
-            results.append(metric_func(valid_targets[i], valid_preds[i]))
+            results[metric].append(metric_func(valid_targets[i], valid_preds[i]))
 
     return results
 

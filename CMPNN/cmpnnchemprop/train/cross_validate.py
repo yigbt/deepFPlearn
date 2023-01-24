@@ -2,9 +2,10 @@ from argparse import Namespace
 from logging import Logger
 import os
 from typing import Tuple
-
+import matplotlib.pyplot as plt
 import numpy as np
-
+import csv
+from typing import Callable, Dict, List, Tuple
 from .run_training import run_training
 from cmpnnchemprop.data.utils import get_task_names
 from cmpnnchemprop.utils import makedirs
@@ -26,8 +27,22 @@ def cross_validate(args: Namespace, logger: Logger = None) -> Tuple[float, float
         args.seed = init_seed + fold_num
         args.save_dir = os.path.join(save_dir, f'fold_{fold_num}')
         makedirs(args.save_dir)
-        model_scores = run_training(args, logger)
+        model_scores, scores_and_metrics = run_training(args, logger)
         all_scores.append(model_scores)
+        with open(os.path.join(args.save_dir, 'scores.csv'), 'w') as f:
+            csv_writer = csv.writer(f)
+            csv_writer.writerow(["set", "metric", "score", "epoch"])
+            csv_writer.writerows(scores_and_metrics)
+        scoresdf = pd.read_csv(f"{args.save_dir}/scores.csv")
+        grouped = scoresdf.groupby(["metric", "set"])
+        plt.clf()
+            # Iterate through the groups and create a line plot for each
+        for (metric, set), group in grouped:
+            plt.plot(group["epoch"], group["score"], label=f"{set} {metric}")
+            plt.xlabel("epoch")
+            plt.ylabel("score")
+            plt.legend()
+            plt.savefig(f"{args.save_dir}/scores_and_metrics.png") 
     all_scores = np.array(all_scores)
 
     # Report results

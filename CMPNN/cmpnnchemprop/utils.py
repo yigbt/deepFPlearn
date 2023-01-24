@@ -3,13 +3,14 @@ import math
 import os
 from typing import Callable, List, Tuple, Union
 from argparse import Namespace
-
+import numpy as np
 from sklearn.metrics import auc, mean_absolute_error, mean_squared_error, precision_recall_curve, r2_score,\
     roc_auc_score, accuracy_score, log_loss
 import torch
 import torch.nn as nn
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
+from scipy.stats.mstats import gmean
 
 from cmpnnchemprop.data import StandardScaler
 from cmpnnchemprop.models import build_model, MoleculeModel
@@ -251,7 +252,7 @@ def get_metric_func(metric: str) -> Callable[[Union[List[int], List[float]], Lis
     if metric == 'accuracy':
         return accuracy
     
-    if metric == 'cross_entropy':
+    if metric == 'binary_cross_entropy':
         return log_loss
 
     raise ValueError(f'Metric "{metric}" not supported.')
@@ -327,3 +328,38 @@ def create_logger(name: str, save_dir: str = None, quiet: bool = False) -> loggi
         logger.addHandler(fh_q)
 
     return logger
+def multitask_mean(
+    scores: np.ndarray,
+    metric: str,
+    axis: int = None,
+) -> float:
+    """
+    A function for combining the metric scores across different
+    model tasks into a single score. When the metric being used
+    is one that varies with the magnitude of the task (such as RMSE),
+    a geometric mean is used, otherwise a more typical arithmetic mean
+    is used. This prevents a task with a larger magnitude from dominating
+    over one with a smaller magnitude (e.g., temperature and pressure).
+
+    :param scores: The scores from different tasks for a single metric.
+    :param metric: The metric used to generate the scores.
+    :axis: The axis along which to take the mean.
+    :return: The combined score across the tasks.
+    """
+    scale_dependent_metrics = ["rmse", "mae", "mse", "bounded_rmse", "bounded_mae", "bounded_mse"]
+    nonscale_dependent_metrics = [
+        "auc", "prc-auc", "r2", "accuracy", "cross_entropy",
+        "binary_cross_entropy", "sid", "wasserstein", "f1", "mcc",
+    ]
+
+    if metric in scale_dependent_metrics:
+        return gmean(scores, axis=axis)
+    elif metric in nonscale_dependent_metrics:
+        return np.mean(scores, axis=axis)
+    else:
+        raise NotImplementedError(
+            f"The metric used, {metric}, has not been added to the list of\
+                metrics that are scale-dependent or not scale-dependent.\
+                This metric must be added to the appropriate list in the multitask_mean\
+                function in `chemprop/utils.py` in order to be used."
+        )

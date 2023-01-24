@@ -1,8 +1,9 @@
 import json
+import csv
 from logging import Logger
 import os
 from typing import Dict, List
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tensorboardX import SummaryWriter
@@ -13,7 +14,6 @@ from torch.optim.lr_scheduler import ExponentialLR
 from .evaluate import evaluate, evaluate_predictions
 from .predict import predict
 from .train import train
-from .val_loss_count import train2
 from .loss_functions import get_loss_func
 from chemprop.spectra_utils import normalize_spectra, load_phase_mask
 from chemprop.args import TrainArgs
@@ -41,12 +41,14 @@ def run_training(args: TrainArgs,
     :return: A dictionary mapping each metric in :code:`args.metrics` to a list of values for each task.
 
     """
+
+    splits = os.path.split(args.data_path)
     if logger is not None:
         debug, info = logger.debug, logger.info
     else:
         debug = info = print
-    if args.wabTracking == "True":
-        wandb.init(project = 'dmpnn-tox-scaf' , config = args)
+    # if args.wabTracking == "True":
+    #     wandb.init(project = f'dmpnn-{args.split_type}-{splits[1]}' , config = args)
     # Set pytorch seed for random initial weights
     torch.random.seed()
     # torch.manual_seed(args.pytorch_seed)
@@ -226,22 +228,11 @@ def run_training(args: TrainArgs,
     )
 
 
-
     val_data_loader = MoleculeDataLoader(
         dataset=val_data,
         batch_size=args.batch_size,
         num_workers=num_workers
     )
-
-    val_data_loader_loss = MoleculeDataLoader(
-        dataset=val_data,
-        batch_size=args.batch_size,
-        num_workers=num_workers,
-        class_balance=args.class_balance,
-        shuffle=True,
-        seed=args.seed
-    )
-
 
     test_data_loader = MoleculeDataLoader(
         dataset=test_data,
@@ -250,8 +241,7 @@ def run_training(args: TrainArgs,
     )
 
     if args.class_balance:
-        pass
-        # debug(f'With class_balance, effective train size = {train_data_loader.iter_size:,}')
+        debug(f'With class_balance, effective train size = {train_data_loader.iter_size:,}')
 
     # Train ensemble of models
     for model_idx in range(args.ensemble_size):
@@ -276,7 +266,7 @@ def run_training(args: TrainArgs,
             debug(f'Loading and freezing parameters from {args.checkpoint_frzn}.')
             model = load_frzn_model(model=model,path=args.checkpoint_frzn, current_args=args, logger=logger)     
         
-        # debug(model)
+        debug(model)
         
         if args.checkpoint_frzn is not None:
             debug(f'Number of unfrozen parameters = {param_count(model):,}')
@@ -303,14 +293,10 @@ def run_training(args: TrainArgs,
         best_epoch, n_iter = 0, 0
         n_iter_ = 0
 
-        training_auc_list = []
-        training_loss_list = []
-        validation_auc_list = []
-        validation_loss_list = []
-
+        scores_and_metrics = []
         for epoch in trange(args.epochs):
             debug(f'Epoch {epoch}')
-            n_iter, training_loss_ = train(
+            n_iter = train(
                 model=model,
                 data_loader=train_data_loader,
                 loss_func=loss_func,
@@ -322,20 +308,18 @@ def run_training(args: TrainArgs,
                 writer=writer
             )
 
-            n_iter_, validation_loss = train2(
-                model=model,
-                data_loader=val_data_loader_loss,
-                loss_func=loss_func,
-                optimizer=optimizer,
-                scheduler=scheduler,
-                args=args,
-                n_iter=n_iter_,
-                logger=logger,
-                writer=writer
-            )
             if isinstance(scheduler, ExponentialLR):
                 scheduler.step()
 
+            training_scores = evaluate(
+                model=model,
+                data_loader=train_data_loader_auc,
+                num_tasks=args.num_tasks,
+                metrics=args.metrics,
+                dataset_type=args.dataset_type,
+                scaler=scaler,
+                logger=logger
+            )
             val_scores = evaluate(
                 model=model,
                 data_loader=val_data_loader,
@@ -346,77 +330,44 @@ def run_training(args: TrainArgs,
                 logger=logger
             )
 
-            training_score = evaluate(
-                model=model,
-                data_loader=train_data_loader_auc,
-                num_tasks=args.num_tasks,
-                metrics=args.metrics,
-                dataset_type=args.dataset_type,
-                scaler=scaler,
-                logger=logger
-            )
 
             for metric, scores in val_scores.items():
                 # Average validation score\
                 mean_val_score = multitask_mean(scores, metric=metric)
-                validation_auc_list.append(mean_val_score)
-                # if args.wabTracking == "True":
-                #     wandb.log(
-                #         {"Validation_auc": mean_val_score})
-                debug(f'validation {metric} = {mean_val_score:.6f}')
+                if args.wabTracking == "True":
+                    wandb.log({
+                        "epochs": epoch,   
+                        f"validation_{metric}":mean_val_score,
+                        "style":"solid"})
+                debug(f'Validation {metric} = {mean_val_score:.6f}')
                 writer.add_scalar(f'validation_{metric}', mean_val_score, n_iter)
+                scores_and_metrics.append(["validation",metric, mean_val_score, epoch])
                 if args.show_individual_scores == "True":
-                    for task_name, val_score,  in zip(args.task_names, scores):
+                    for task_name, val_score  in zip(args.task_names, scores):
                         if args.wabTracking == "True":
-                            wandb.log({f'validation {task_name} {metric}': val_score})
+                            wandb.log({f'validation {task_name} {metric}': val_score,
+                                       f'Epoch': epoch})
                         debug(f'validation {task_name} {metric} = {val_score:.6f}')
-                        writer.add_scalar(f'validation_{task_name}_{metric}', val_score, n_iter)
-                    for task_name, val_loss in zip(args.task_names, validation_loss):
-                        if args.wabTracking == "True":
-                            wandb.log({f'validation {task_name} loss': val_loss})
-                        debug(f'validation {task_name} loss = {val_loss:.6f}')
-                        writer.add_scalar(f'validation_{task_name}_loss', val_loss, n_iter)    
+                        writer.add_scalar(f'validation_{task_name}_{metric}', val_score, n_iter_)                                
 
-            for metric_, scores_ in training_score.items():
+            for metric_, scores_ in training_scores.items():
 
                 mean_train_score = multitask_mean(scores_, metric=metric_)
-                training_auc_list.append(mean_train_score)
-                # if args.wabTracking == "True":
-                #     wandb.log(
-                #         {"Training_auc": mean_train_score})
+                if args.wabTracking == "True":
+                    wandb.log({
+                        "epochs": epoch,
+                        f"training_{metric_}":mean_train_score,
+                        "style":"dotted"})
+                debug(f'Training {metric_} = {mean_train_score:.6f}')
+                writer.add_scalar(f'Training_{metric_}', mean_train_score, n_iter)
+                scores_and_metrics.append(["training",metric_, mean_train_score, epoch])
                 if args.show_individual_scores == "True":
-                    for task_name2, t_score in zip(args.task_names, scores_):
+                    for task_name, t_score in zip(args.task_names, scores_):
                         if args.wabTracking == "True":
-                            wandb.log({f'Training {task_name2} {metric_}': t_score})
-                        debug(f'Training {task_name2} {metric_} = {t_score:.6f}')
-                        writer.add_scalar(f'Training_{task_name2}_{metric_}', t_score, n_iter)
-                    for task_name2,train_loss in zip(args.task_names,training_loss_):
-                        if args.wabTracking == "True":
-                            wandb.log({f'Training {task_name2} loss': train_loss})
-                        debug(f'Training {task_name2} loss = {train_loss:.6f}')
-                        writer.add_scalar(f'Training_{task_name2}_loss', train_loss, n_iter)        
-   
-            training_loss = np.nanmean(training_loss_)
-            training_loss_list.append(training_loss)
-
-            validation_loss = np.nanmean(validation_loss)
-            if str(validation_loss) != 'nan':
-                validation_loss_list.append(validation_loss)
-            else:
-                validation_loss = 0
-                validation_loss_list.append(validation_loss)
-
-            if args.wabTracking == "True":
-                wandb.log({
-                    "epochs": epoch,
-                    "batch_size": args.batch_size,
-                    "training_loss": training_loss,
-                    "validation_loss": validation_loss,
-                    "training_auc":mean_train_score,
-                    "validation_auc":mean_val_score})
-
-
-
+                            wandb.log({f'Training {task_name} {metric_}': t_score,
+                                       f'Epoch': epoch})
+                        debug(f'Training {task_name} {metric_} = {t_score:.6f}')
+                        writer.add_scalar(f'Training_{task_name}_{metric_}', t_score, n_iter)
 
             # Save model checkpoint if improved validation score
             mean_val_score = multitask_mean(val_scores[args.metric], metric=args.metric)
@@ -425,9 +376,6 @@ def run_training(args: TrainArgs,
                 best_score, best_epoch = mean_val_score, epoch
                 save_checkpoint(os.path.join(save_dir, MODEL_FILE_NAME), model, scaler, features_scaler,
                                 atom_descriptor_scaler, bond_feature_scaler, args)
-
-        makePlots(args.save_dir, training_auc_list, training_loss_list, validation_auc_list, validation_loss_list)
-
 
         # Evaluate on test set using model with best validation score
         info(f'Model {model_idx} best validation {args.metric} = {best_score:.6f} on epoch {best_epoch}')
@@ -461,7 +409,7 @@ def run_training(args: TrainArgs,
                 info(f'Model {model_idx} test {metric} = {avg_test_score:.6f}')
                 writer.add_scalar(f'test_{metric}', avg_test_score, 0)
 
-                if args.show_individual_scores == "True" and args.dataset_type != 'spectra':
+                if args.show_individual_scores and args.dataset_type != 'spectra':
                     # Individual test scores
                     for task_name, test_score in zip(args.task_names, scores):
                         info(f'Model {model_idx} test {task_name} {metric} = {test_score:.6f}')
@@ -493,7 +441,7 @@ def run_training(args: TrainArgs,
         info(f'Ensemble test {metric} = {mean_ensemble_test_score:.6f}')
 
         # Individual ensemble scores
-        if args.show_individual_scores == "True":
+        if args.show_individual_scores:
             for task_name, ensemble_score in zip(args.task_names, scores):
                 info(f'Ensemble test {task_name} {metric} = {ensemble_score:.6f}')
 
@@ -510,4 +458,4 @@ def run_training(args: TrainArgs,
 
         test_preds_dataframe.to_csv(os.path.join(args.save_dir, 'test_preds.csv'), index=False)
 
-    return ensemble_scores
+    return ensemble_scores, scores_and_metrics
