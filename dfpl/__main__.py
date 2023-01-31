@@ -17,11 +17,11 @@ from dfpl import single_label_model as sl
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
-    inputFile=f'{project_directory}/input_datasets/S_dataset_regression_ARR.csv',
+    inputFile=f'{project_directory}/input_datasets/toxcast_regression_AR.csv',
     outputDir=f'{project_directory}/output_data/console_test',
-    ecWeightsFile=f'{project_directory}/output_data/case_regression_01/AE_S/ae_S.encoder.hdf5',
-    ecModelDir=f'{project_directory}/output_data/case_regression_01/AE_S/saved_model',
-    type='smiles',
+    ecWeightsFile=f'{project_directory}/output_data/case_regression_01/AR/ae.encoder.hdf5',
+    ecModelDir=f'{project_directory}/output_data/case_regression_01/AR/saved_model',
+    type='inchi',
     fpType='topological',
     epochs=100,
     batchSize=1024,
@@ -29,16 +29,17 @@ test_train_opts = options.Options(
     encFPSize=256,
     enableMultiLabel=False,
     testSize=0.2,
-    kFolds=2,
+    kFolds=1,
     verbose=2,
     trainAC=False,
     trainFNN=True,
     compressFeatures=False,
-    useRegressionModel=True,
     activationFunction="selu",
     lossFunction='mae',
     optimizer='Adam',
-    fnnType='REG'  # todo: replace useRegressionModel with fnnType variable
+    fnnType='REG',  # todo: replace useRegressionModel with fnnType variable
+    wabTarget='AR',
+    wabTracking=True
 )
 
 test_pred_opts = options.Options(
@@ -59,10 +60,11 @@ def train(opts: options.Options):
     """
 
     if opts.wabTracking:
-        wandb.init(project=f"dfpl-training-{opts.wabTarget}", config=vars(opts))
+        wandb.init(project=f"dfpl-reg-training-{opts.wabTarget}", entity="dfpl_regression", config=vars(opts))
         # opts = wandb.config
 
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(opts.inputFile, import_function=fp.importCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)  # why? we just created that directory in the function before??

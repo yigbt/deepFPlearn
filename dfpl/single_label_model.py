@@ -4,9 +4,7 @@ import shutil
 import sys
 from os import path
 from time import time
-from typing import Union
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import auc
@@ -14,7 +12,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow.keras import metrics
@@ -23,7 +21,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError, MeanAbsoluteError, Loss
+from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError, MeanAbsoluteError
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -31,110 +29,78 @@ from dfpl import plot as pl
 from dfpl import settings
 
 
+def sample_down_data(opts: options.Options, df: pd.DataFrame, target: str, column: str) -> (np.ndarray,
+                                                                                            np.ndarray):
+    assert 0.0 < opts.sampleFractionOnes < 1.0
+    logging.info(f"Using fractional sampling {opts.sampleFractionOnes}")
+    # how many ones
+    counts = df[target].value_counts()
+    logging.info(f"Number of sampling values: {counts.to_dict()}")
+    # add sample of 0s to df of 1s
+    df_x = pd.concat([
+        df[df[target] == 1],
+        df[df[target] == 0].sample(int(min(counts[0], counts[1] / opts.sampleFractionOnes)))
+    ])
+    x = np.array(
+        df_x[column].to_list(),
+        dtype=settings.nn_fp_compressed_numpy_type if opts.compressFeatures else settings.nn_fp_numpy_type,
+        copy=settings.numpy_copy_values
+
+    )
+    y = np.array(
+        df_x[target].to_list(),
+        dtype=settings.nn_target_numpy_type,
+        copy=settings.numpy_copy_values
+    )
+
+    return x, y
+
+
 def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Options) -> (np.ndarray,
                                                                                        np.ndarray):
-    # check the value counts and abort if too imbalanced
-    allowed_imbalance = 0.1
+    # default minimal imbalance that is accepted
+    allowed_min_imbalance = 0.1
 
-    if not opts.useRegressionModel:
-        if opts.compressFeatures:
-            vc = df[df[target].notna() & df["fpcompressed"].notnull()][target].value_counts()
-        else:
-            vc = df[df[target].notna() & df["fp"].notnull()][target].value_counts()
-        if min(vc) < max(vc) * allowed_imbalance:
+    fp_col = "fpcompressed" if opts.compressFeatures else "fp"
+    df_train = df[df[target].notna() & df[fp_col].notnull()][[target, fp_col]]
+
+    if opts.fnnType == "REG":
+        # extract X and y
+        x = np.array(
+            df_train[fp_col].to_list(),
+            dtype=settings.nn_fp_compressed_numpy_type if opts.compressFeatures else settings.nn_fp_numpy_type,
+            copy=settings.numpy_copy_values
+        )
+        y = np.array(
+            df_train[target].to_list(),
+            dtype=settings.nn_target_numpy_type_regression,
+            copy=settings.numpy_copy_values
+        )
+    else:
+        # check for imbalance
+        vc = df_train[target].value_counts()
+        if min(vc) < max(vc) * allowed_min_imbalance:
             logging.info(
                 f" Your training data is extremely unbalanced ({target}): 0 - {vc[0]}, and 1 - {vc[1]} values.")
             if opts.sampleDown:
                 logging.info(f" I will down-sample your data")
-                opts.sampleFractionOnes = allowed_imbalance
+                if not opts.sampleFractionOnes:
+                    opts.sampleFractionOnes = allowed_min_imbalance
+                return sample_down_data(opts=opts, target=target, df=df_train, column=fp_col)
             else:
                 logging.info(f" I will not down-sample your data automatically.")
                 logging.info(f" Consider to enable down sampling of the 0 values with --sampleDown option.")
 
-    logging.info("Preparing training data matrices")
-    if opts.compressFeatures:
-        logging.info("Using compressed fingerprints")
-        df_fpc = df[df[target].notna() & df["fpcompressed"].notnull()]
-        logging.info(f"DataSet has {df_fpc.shape[0]} valid entries in fpcompressed and {target}")
-        if opts.sampleDown:
-            assert 0.0 < opts.sampleFractionOnes < 1.0
-            logging.info(f"Using fractional sampling {opts.sampleFractionOnes}")
-            # how many ones
-            counts = df_fpc[target].value_counts()
-            logging.info(f"Number of sampling values: {counts.to_dict()}")
-
-            # add sample of 0s to df of 1s
-            dfX = df_fpc[df_fpc[target] == 1].append(
-                df_fpc[df_fpc[target] == 0].sample(
-                    int(min(counts[0], counts[1] / opts.sampleFractionOnes))
-                )
-            )
-            x = np.array(
-                dfX["fpcompressed"].to_list(),
-                dtype=settings.nn_fp_compressed_numpy_type,
-                copy=settings.numpy_copy_values
-            )
-            y = np.array(
-                dfX[target].to_list(),
-                dtype=settings.nn_target_numpy_type,
-                copy=settings.numpy_copy_values
-            )
-        else:
-            logging.info("Fraction sampling is OFF")
-
         x = np.array(
-            df_fpc["fpcompressed"].to_list(),
-            dtype=settings.nn_fp_compressed_numpy_type,
+            df_train[fp_col].to_list(),
+            dtype=settings.nn_fp_compressed_numpy_type if opts.compressFeatures else settings.nn_fp_numpy_type,
             copy=settings.numpy_copy_values
         )
-        if opts.useRegressionModel:
-            y = np.array(
-                df_fpc[target].to_list(),
-                dtype=settings.nn_target_numpy_type_regression,
-                copy=settings.numpy_copy_values
-            )
-        else:
-            # how many ones, how many zeros
-            counts = df_fpc[target].value_counts()
-            logging.info(f"Number of sampling values: {counts.to_dict()}")
-            y = np.array(
-                df_fpc[target].to_list(),
-                dtype=settings.nn_target_numpy_type,
-                copy=settings.numpy_copy_values
-            )
-    else:
-        logging.info("Using uncompressed fingerprints")
-        df_fp = df[df[target].notna() & df["fp"].notnull()]
-        logging.info(f"DataSet has {df_fp.shape[0]} valid entries in fpcompressed and {target}")
-        if opts.sampleDown:
-            logging.info(f"Using fractional sampling {opts.sampleFractionOnes}")
-            counts = df_fp[target].value_counts()
-            logging.info(f"Number of sampling values: {counts.to_dict()}")
-
-            dfX = df_fp[df_fp[target] == 1.0].append(
-                df_fp[df_fp[target] == 0.0].sample(
-                    int(min(counts[0], counts[1] / opts.sampleFractionOnes)))
-            )
-            x = np.array(dfX["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
-            if opts.useRegressionModel:
-                y = np.array(dfX[target].to_list(), dtype=settings.nn_target_numpy_type_regression,
-                             copy=settings.numpy_copy_values)
-            else:
-                y = np.array(dfX[target].to_list(), dtype=settings.nn_target_numpy_type,
-                             copy=settings.numpy_copy_values)
-        else:
-            logging.info("Fraction sampling is OFF")
-            # how many ones, how many zeros
-            counts = df_fp[target].value_counts()
-            logging.info(f"Number of sampling values: {counts.to_dict()}")
-
-            x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
-            if opts.useRegressionModel:
-                y = np.array(df_fp[target].to_list(), dtype=settings.nn_target_numpy_type_regression,
-                             copy=settings.numpy_copy_values)
-            else:
-                y = np.array(df_fp[target].to_list(), dtype=settings.nn_target_numpy_type,
-                             copy=settings.numpy_copy_values)
+        y = np.array(
+            df_train[target].to_list(),
+            dtype=settings.nn_target_numpy_type,
+            copy=settings.numpy_copy_values
+        )
 
     return x, y
 
@@ -280,13 +246,13 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
     elif opts.fnnType == "REG":
         model = build_regression_network(input_size, opts, output_bias)
     else:
-        raise ValueError(f"Option FNN Type is not \"FNN\" or \"SNN\", but {opts.fnnType}.")
+        raise ValueError(f"Option FNN Type is not \"FNN\", \"SNN\", or \"REG\", but {opts.fnnType}.")
     logging.info(f"Network type: {opts.fnnType}")
     model.summary(print_fn=logging.info)
 
     if opts.fnnType == "REG":
         model.compile(loss=loss_function,
-                      optimizer=my_optimizer #,
+                      optimizer=my_optimizer  # ,
                       # metrics=[metrics.MeanAbsoluteError, 'loss', 'val_loss']
                       )
     else:
@@ -300,14 +266,70 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
     return model
 
 
-def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, model: Model,
-                   target: str, fold: int) -> pd.DataFrame:
+def acper(y_true, y_pred, t: float = 0.02):
+    """
+    This function calculates Almost Correct Predictions Error Rate (ACPER)
+    :param t: value to define 'almost' correctness
+    :param y_true: list of real numbers, true values
+    :param y_pred: list of real numbers, predicted values
+    :returns: acper score
+    """
+    # threshold = 0.02
+    for yt, yp in zip(y_true, y_pred):
+        lower_bound = yt - (t * yt)
+        upper_bound = yt + (t * yt)
+        if (yp >= lower_bound) & (yp <= upper_bound):
+            yield True
+        else:
+            yield False
+
+
+def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, model: Model,
+                              target: str, fold: int, threshold: float = 0.05) -> pd.DataFrame:
+    """
+    This function returns the values of performance metrics for the regression model.
+    It covers Mean Squared Error (MSE), Mean Absolute Error (MAE), Median Absolute Error (MdAE),
+    Almost Correct Predictions Error Rate (ACPER), Mean Absolute Percentage Error (MAPE), and
+    Root Mean Squared Error (RMSE).
+    See https://towardsdatascience.com/assessing-model-performance-for-regression-7568db6b2da0 for detailed
+    explanations of the error metrics.
+
+    :param threshold: The threshold value for ACPER score
+    :param x_test: Holdout data
+    :param y_test: Target values for holdout data
+    :param file_prefix: Selected model file path prefix
+    :param model: Selected model
+    :param target: Target of concern
+    :param fold: Fold of concern
+    :return: Dataframe containing the metric values (in rows)
+    """
+
     name = path.basename(file_prefix).replace("_", " ")
     logging.info(f"Evaluating trained model '{name}' on test data")
 
+    y_predict = model.predict(x_test).flatten()
+
+    error = np.array(y_predict) - np.array(y_test)
+    abs_error = abs(error)
+
+    regression_metrics = ['MSE', 'MAE', 'MdAE', 'ACPER', 'MAPE', 'RMSE']
+    metric_values = [
+        np.mean(abs_error ** 2, axis=0),
+        np.mean(abs_error, axis=0),
+        np.median(abs_error, axis=0),
+        sum(list(acper(y_true=y_test, y_pred=y_predict, t=threshold))) / len(y_test),
+        np.mean(abs_error / np.array(y_test), axis=0),
+        np.sqrt(np.mean(abs_error ** 2, axis=0))
+    ]
+
+    return pd.DataFrame({'metric': regression_metrics, 'value': metric_values, 'fold': fold, 'target': target})
+
+
+def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, model: Model,
+                   target: str, fold: int, threshold: float = 0.5) -> pd.DataFrame:
+    logging.info(f"Evaluating trained model '{file_prefix}' on test data")
+
     # predict test set to compute MCC, AUC, ROC curve, etc. (see below)
-    # TODO: Introduce thresholds different from 0.5!
-    threshold = 0.5
     y_predict = model.predict(x_test).flatten()
     y_predict_int = (y_predict >= threshold).astype(np.short)
     y_test_int = y_test.astype(np.short)
@@ -335,20 +357,20 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
     logging.info(f"Precision: {round(precision, 4)}")
     logging.info(f"Recall: {round(recall, 4)}")
 
-    MCC = matthews_corrcoef(y_test_int, y_predict_int)
-    logging.info(f"MCC: {round(MCC, 4)}")
+    mcc = matthews_corrcoef(y_test_int, y_predict_int)
+    logging.info(f"MCC: {round(mcc, 4)}")
 
     # generate the AUC-ROC curve data from the validation data
-    FPR, TPR, thresholds_keras = roc_curve(y_true=y_test_int,
+    fpr, tpr, thresholds_keras = roc_curve(y_true=y_test_int,
                                            y_score=y_predict,
                                            drop_intermediate=False)
-    AUC = auc(FPR, TPR)
+    auc_val = auc(fpr, tpr)
     # save AUC data to csv
-    pd.DataFrame(list(zip(FPR, TPR, [AUC] * len(FPR), [target] * len(FPR), [fold] * len(FPR))),
+    pd.DataFrame(list(zip(fpr, tpr, [auc_val] * len(fpr), [target] * len(fpr), [fold] * len(fpr))),
                  columns=['fpr', 'tpr', 'auc_value', 'target', 'fold']). \
         to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.aucdata.csv")
 
-    pl.plot_auc(fpr=FPR, tpr=TPR, target=target, auc_value=AUC,
+    pl.plot_auc(fpr=fpr, tpr=tpr, target=target, auc_value=auc_val,
                 filename=f"{file_prefix}.predicted.testdata.aucdata.svg")
 
     # [[tn, fp]
@@ -359,18 +381,17 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
     logging.info(f"TP/FP: {cfm[1][1]}/{cfm[0][1]}")
     logging.info(f"TN/FN: {cfm[0][0]}/{cfm[1][0]}")
 
-    return pd.DataFrame.from_dict({'p_0': prf['0']['precision'],
-                                   'r_0': prf['0']['recall'],
-                                   'f1_0': prf['0']['f1-score'],
-                                   'p_1': prf['1']['precision'],
-                                   'r_1': prf['1']['recall'],
-                                   'f1_1': prf['1']['f1-score'],
-                                   'loss': loss,
-                                   'accuracy': acc,
-                                   'MCC': MCC,
-                                   'AUC': AUC,
-                                   'target': target,
-                                   'fold': fold}, orient='index').T
+    classification_metrics = ['Precision_0', 'Recall_0', 'F1_0',
+                              'Precision_1', 'Recall_1', 'F1_1',
+                              'Loss', 'Accuracy', 'MCC', 'AUC',
+                              'TN', 'FN', 'FP', 'TP']
+    metric_values = [prf['0']['precision'], prf['0']['recall'], prf['0']['f1-score'],
+                     prf['1']['precision'], prf['1']['recall'], prf['1']['f1-score'],
+                     loss, acc, mcc, auc_val,
+                     cfm[0][0], cfm[1][0], cfm[0][1], cfm[1][1]
+                     ]
+
+    return pd.DataFrame({'metric': classification_metrics, 'value': metric_values, 'fold': fold, 'target': target})
 
 
 def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray,
@@ -381,17 +402,17 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
 
     model_file_prefix = path.join(opts.outputDir, f"{target}_single-labeled_Fold-{fold}")
 
-    ids, counts = np.unique(y_train, return_counts=True)
-    count_dict = dict(zip(ids, counts))
-    if count_dict[0] == 0:
+    if opts.fnnType == 'REG':
         initial_bias = None
-        logging.info("No zeroes in training labels. Setting initial_bias to None.")
     else:
-        if opts.useRegressionModel:
-            initial_bias = np.log([(y_train.__len__() - count_dict[0.0]) / count_dict[0.0]])
+        ids, counts = np.unique(y_train, return_counts=True)
+        count_dict = dict(zip(ids, counts))
+        if count_dict[0] == 0:
+            logging.info("No zeroes in training labels. Setting initial_bias to None.")
+            initial_bias = None
         else:
             initial_bias = np.log([count_dict[1] / count_dict[0]])
-        logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
+            logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
 
     model = define_single_label_model(input_size=x_train.shape[1], opts=opts, output_bias=initial_bias)
 
@@ -408,20 +429,24 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
                      verbose=opts.verbose,
                      validation_data=(x_test, y_test)
                      )
-    trainTime = str(round((time() - start) / 60, ndigits=2))
-    logging.info(f"Computation time for training the single-label model for {target}: {trainTime} min")
+    train_time = str(round((time() - start) / 60, ndigits=2))
+    logging.info(f"Computation time for training the single-label model for {target}: {train_time} min")
 
     # save and plot history
     pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
+
+    # use callback model for evaluation
+    callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
+    callback_model.load_weights(filepath=checkpoint_model_weights_path)
+
     if opts.fnnType == 'REG':
         pl.plot_loss(hist=hist, file=f"{model_file_prefix}.history.jpg")
-        # todo: model evaluation
+        performance = evaluate_regression_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix,
+                                                model=callback_model,
+                                                target=target, fold=fold)
+
     else:
         pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
-
-        # evaluate callback model
-        callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
-        callback_model.load_weights(filepath=checkpoint_model_weights_path)
         performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
                                      target=target, fold=fold)
 
@@ -456,7 +481,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
     # For each individual target train a model
     for target in names_y:  # [:1]:
-        # target=names_y[1] # --> only for testing the code
+        # target=names_y[0] # --> only for testing the code
         x, y = prepare_nn_training_data(df, target, opts)
         if x is None:
             continue
@@ -465,19 +490,16 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
 
         if opts.kFolds == 1:
+            split_random_state = 1 if opts.wabTracking else None
             # for single 'folds' and when sweeping on W&B, we fix the random state
-            if opts.wabTracking:
-                x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y,
-                                                                    test_size=opts.testSize, random_state=1)
-                logging.info(f"Splitting train/test data with fixed random initializer")
-            else:
-                if opts.useRegressionModel:
-                    x_train, x_test, y_train, y_test = train_test_split(x, y, shuffle=True, stratify=None,
-                                                                        test_size=opts.testSize)
-                else:
-                    x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=opts.testSize)
+            split_stratify = None if opts.fnnType == 'REG' else y
+            x_train, x_test, y_train, y_test = train_test_split(x, y,
+                                                                stratify=split_stratify,
+                                                                test_size=opts.testSize,
+                                                                random_state=split_random_state)
 
-            performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
+            performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test,
+                                                 y_train=y_train, y_test=y_test,
                                                  fold=0, target=target, opts=opts)
             performance_list.append(performance)
 
@@ -487,8 +509,11 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             trained_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
 
         elif 1 < opts.kFolds < int(x.shape[0] / 100):
-            # do a kfold cross-validation
-            kfold_c_validator = StratifiedKFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
+            # do a k-fold cross-validation
+            if opts.fnnType != 'REG':
+                kfold_c_validator = StratifiedKFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
+            else:
+                kfold_c_validator = KFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
             fold_no = 1
             # split the data
             for train, test in kfold_c_validator.split(x, y):
@@ -502,33 +527,33 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 fold_no += 1
                 # now next fold
 
-            # select and copy best model - how to define the best model?
-            best_fold = (
-                pd
-                .concat(performance_list, ignore_index=True)
-                .sort_values(
-                    by=['p_1', 'r_1', 'MCC'],
-                    ascending=False,
-                    ignore_index=True)['fold'][0]
-            )
+        # select and copy best model - how to define the best model?
+        best_fold = (
+            pd
+            .concat(performance_list, ignore_index=True)
+            .sort_values(
+                by=['p_1', 'r_1', 'MCC'],
+                ascending=False,
+                ignore_index=True)['fold'][0]
+        )
 
-            # copy checkpoint model weights
-            shutil.copy(
-                src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"),
-                dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
-            # save complete model
-            best_model = define_single_label_model(input_size=len(x[0]), opts=opts)
-            best_model.load_weights(path.join(opts.outputDir,
-                                              f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
-            # create output directory and store complete model
-            best_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
-        else:
-            logging.info("Your selected number of folds for Cross validation is out of range. "
-                         "It must be 1 or smaller than 1 hundredth of the number of samples.")
-            sys.exit("Number of folds out of range")
+        # copy checkpoint model weights
+        shutil.copy(
+            src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"),
+            dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
+        # save complete model
+        best_model = define_single_label_model(input_size=len(x[0]), opts=opts)
+        best_model.load_weights(path.join(opts.outputDir,
+                                          f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
+        # create output directory and store complete model
+        best_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
+        # # else:
+        # logging.info("Your selected number of folds for Cross validation is out of range. "
+        #              "It must be 1 or smaller than 1 hundredth of the number of samples.")
+        # sys.exit("Number of folds out of range")
 
-    # store the evaluation data of all trained models (all targets, all folds)
-    (pd
-     .concat(performance_list, ignore_index=True)
-     .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_model.evaluation.csv'))
-     )
+        # store the evaluation data of all trained models (all targets, all folds)
+        (pd
+         .concat(performance_list, ignore_index=True)
+         .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_model.evaluation.csv'))
+         )

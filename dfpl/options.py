@@ -34,7 +34,6 @@ class Options:
     compressFeatures: bool = True
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
-    useRegressionModel: bool = False
 
     aeEpochs: int = 3000
     aeBatchSize: int = 512
@@ -52,8 +51,8 @@ class Options:
     dropout: float = 0.2
     snnDepth = 8
     snnWidth = 50
-    wabTracking: bool = False  # Wand & Biases tracking
-    wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
+    wabTracking: bool = True  # Wand & Biases tracking
+    wabTarget: str = "ARR"  # Wand & Biases target used for showing training progress
 
     def saveToFile(self, file: str) -> None:
         """
@@ -176,10 +175,11 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                              'autoencoder model will be trained using the input compounds (see further options for '
                              'details).',
                         default=argparse.SUPPRESS)
-    parser.add_argument('-r', "--useRegressionModel",
-                        metavar='BOOL',
-                        type=bool,
-                        help='Use the regression model instead of the (default) classification model for the FNN.',
+    parser.add_argument("--fnnType",
+                        metavar='STR',
+                        type=str,
+                        choices=['FNN', 'SNN', 'REG'],
+                        help='Define the DL model architecture 2B used.',
                         default=argparse.SUPPRESS)
     parser.add_argument('-a', "--ecWeightsFile",
                         type=str,

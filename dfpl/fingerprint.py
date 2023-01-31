@@ -129,6 +129,10 @@ def importSmilesCSV(csvfilename: str) -> pd.DataFrame:
     return pd.read_csv(csvfilename)
 
 
+def importCSV(csvfilename: str) -> pd.DataFrame:
+    return pd.read_csv(csvfilename)
+
+
 def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
     return pd.read_table(tsvfilename, names=["toxid", "inchi", "key"])
 
@@ -139,7 +143,10 @@ conversion_rules = {
     # "D_dataset.tsv": importDstoxTSV,
     # "train_data.csv": importSmilesCSV,
     # "predict_data.csv": importDstoxTSV,
-    "B_data_ER.csv": importDstoxTSV
+    # "B_data_ER.csv": importDstoxTSV
+    "toxcast_regression.csv": importCSV,
+    "toxcast_regression_ER.csv": importCSV,
+    "toxcast_regression_AR.csv": importCSV,
 }
 
 
