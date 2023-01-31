@@ -168,7 +168,7 @@ script and providing the commandline arguments there.
 
 # Please note that:
 
-This work has been submitted in a research paper and is currently under review.
-You may read the preprint @bioRxiv: https://doi.org/10.1101/2021.06.24.449697
+This work has been published in Briefings in Bioinformatics: https://doi.org/10.1093/bib/bbac257 
+(without the regression part)
 
-For questions, comments please contact me: jana.schor@ufz.de
+For questions, comments please reach out: jana.schor@ufz.de
