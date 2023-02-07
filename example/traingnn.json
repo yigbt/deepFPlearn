@@ -1,16 +1,14 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "data_path": "CMPNN/data/S_dataset-Arom.csv",
-  "gnn_type": "dmpnn",
-  "save_dir": "Arom_random_check/",
-  "epochs": 3,
+  "data_path": "CMPNN/data/S_dataset-AR.csv",
+  "gnn_type": "cmpnn",
+  "save_dir": "Arom_randomar/",
+  "epochs": 1,
   "num_folds": 2,
-  "extra_metrics": "auc,f1",
-  "metric": "binary_cross_entropy",
-  "split_type": "random",
+  "metric": "auc",
+  "split_type": "scaffold_balanced",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
   "wabTracking": "True",
-  "show_individual_scores":false,
-  "gpu":1
+  "show_individual_scores":false
 }

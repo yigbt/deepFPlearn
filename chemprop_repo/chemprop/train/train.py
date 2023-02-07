@@ -44,7 +44,7 @@ def train(
 
     model.train()
     loss_sum = iter_count = 0
-    loss_plot = []
+
     for batch in tqdm(data_loader, total=len(data_loader), leave=False):
         # Prepare batch
         batch: MoleculeDataset
@@ -143,11 +143,10 @@ def train(
             gnorm = compute_gnorm(model)
             loss_avg = loss_sum / iter_count
             loss_sum = iter_count = 0
-            loss_plot.append(loss_avg)
+
             lrs_str = ", ".join(f"lr_{i} = {lr:.4e}" for i, lr in enumerate(lrs))
             debug(f"Loss = {loss_avg:.4e}, PNorm = {pnorm:.4f}, GNorm = {gnorm:.4f}, {lrs_str}")
-            # for i, lr in enumerate(lrs):
-            #     wandb.log({"lr": lr})
+
             if writer is not None:
                 writer.add_scalar("train_loss", loss_avg, n_iter)
                 writer.add_scalar("param_norm", pnorm, n_iter)

@@ -1,5 +1,5 @@
 import array
-
+import wandb
 import matplotlib.pyplot as plt
 import pandas as pd
 # for NN model functions
@@ -107,7 +107,7 @@ def plot_history(history: History, file: str) -> None:
     plt.close()
 
 
-def plotTrainHistory(hist, target, file_accuracy, file_loss):
+def plot_train_history(hist, target, file_accuracy, file_loss):
     """
     Plot the training performance in terms of accuracy and loss values for each epoch.
     :param hist: The history returned by model.fit function
@@ -151,12 +151,12 @@ def plot_history_vis(hist: History, model_hist_plot_path: str, model_hist_csv_pa
     histDF.to_csv(model_hist_csv_path)
 
     # plot accuracy and loss for the training and validation during training
-    plotTrainHistory(hist=hist, target=target,
-                     file_accuracy=model_hist_plot_path_a,
-                     file_loss=model_hist_plot_path_l)
+    plot_train_history(hist=hist, target=target,
+                       file_accuracy=model_hist_plot_path_a,
+                       file_loss=model_hist_plot_path_l)
 
 
-def plot_auc(fpr: array, tpr: array, auc_value: float, target: str, filename: str) -> None:
+def plot_auc(fpr: array, tpr: array, auc_value: float, target: str, filename: str, wandb_logging=False) -> None:
     """
     Plot the area under the curve to the provided file
 
@@ -174,5 +174,7 @@ def plot_auc(fpr: array, tpr: array, auc_value: float, target: str, filename: st
     plt.ylabel('True positive rate')
     plt.title('ROC curve ' + target)
     plt.legend(loc='best')
-    plt.savefig(fname=filename, format='svg')
+    plt.savefig(fname=filename, format='png')
+    if wandb_logging:
+        wandb.log({"roc_plot": plt})
     plt.close()

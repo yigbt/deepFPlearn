@@ -1,0 +1,4 @@
+name: dfpl_env
+channels:
+  - defaults
+prefix: /home/soulios/anaconda3/envs/dfpl_env/envs/dfpl_env

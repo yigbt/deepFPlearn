@@ -4,13 +4,18 @@ from tqdm import trange
 import torch
 import numpy as np
 import torch.nn as nn
-
+import matplotlib.pyplot as plt
+import wandb
 from sklearn.metrics import auc, mean_absolute_error, mean_squared_error, precision_recall_curve, r2_score,\
-    roc_auc_score, accuracy_score, log_loss, f1_score, matthews_corrcoef
-
+    roc_auc_score, accuracy_score, log_loss, f1_score, matthews_corrcoef,roc_curve
+import sys
+sys.path.insert(0, "dfpl")
+from dfpl.plot import plot_auc
+import os
+from chemprop.args import TrainArgs
 
 def get_metric_func(metric: str) -> Callable[[Union[List[int], List[float]], List[float]], float]:
-    r"""
+    """
     Gets the metric function corresponding to a given metric name.
 
     Supports:
@@ -20,7 +25,7 @@ def get_metric_func(metric: str) -> Callable[[Union[List[int], List[float]], Lis
     * :code:`rmse`: Root mean squared error
     * :code:`mse`: Mean squared error
     * :code:`mae`: Mean absolute error
-    * :code:`r2`: Coefficient of determination R\ :superscript:`2`
+    * :code:`r2`: Coefficient of determination R :superscript:`2`
     * :code:`accuracy`: Accuracy (using a threshold to binarize predictions)
     * :code:`cross_entropy`: Cross entropy
     * :code:`binary_cross_entropy`: Binary cross entropy
@@ -36,6 +41,9 @@ def get_metric_func(metric: str) -> Callable[[Union[List[int], List[float]], Lis
     if metric == 'prc-auc':
         return prc_auc
 
+    if metric == 'roc-auc':
+        return roc_auc
+        
     if metric == 'rmse':
         return rmse
 
@@ -89,8 +97,15 @@ def prc_auc(targets: List[int], preds: List[float]) -> float:
     :param preds: A list of prediction probabilities.
     :return: The computed prc-auc.
     """
+
     precision, recall, _ = precision_recall_curve(targets, preds)
     return auc(recall, precision)
+
+#write a function to calculate the roc_auc
+def roc_auc(targets: List[int], preds: List[float]) -> float:
+    fpr, tpr, _ = roc_curve(targets, preds)
+    auc_value = auc(fpr, tpr)
+    return auc_value
 
 
 def bce(targets: List[int], preds: List[float]) -> float:

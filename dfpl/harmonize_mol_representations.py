@@ -10,19 +10,23 @@ import pandas as pd
 from rdkit import Chem, DataStructs
 from simple_parsing import ArgumentParser, choice
 from simple_parsing.helpers import Serializable
+import sys
+import logging
 
 
 # Use this conda env:
-#mamba create - n tidyChem - c conda - forge r - base r - tidyverse r - stringdist python rdkit numpy pandas simple - parsing
+# mamba create - n tidyChem - c conda - forge r - base r - tidyverse r - stringdist python rdkit numpy pandas simple - parsing
 
 @dataclass
 class ProgramConfig(Serializable):
     """
     Configuration options for running the program
     """
-    input_file: str = "/home/soulios/git-soulios/DEEPFPLEARN/dfpl_DBN/data/D_fragment.csv.tsv"  # file containing SMILES or InChikeys 2B harmonized
-    output_file: str = "/home/soulios/git-soulios/DEEPFPLEARN/dfpl_DBN/data/D_dataset.harmonized.csv"  # file containing the input and additional columns for the harmonized molecular representations, tanimoto similarity and levenstein distance
-    input_column: str = choice("smiles","inchikey",default = "inchikey")
+    # file containing SMILES or InChikeys 2B harmonized
+    input_file: str = "/home/soulios/git-soulios/DEEPFPLEARN/dfpl_DBN/data/D_fragment.csv.tsv"
+    # file containing the input for the harmonized molecular representations, tanimoto similarity and levenstein distance
+    output_file: str = "/home/soulios/git-soulios/DEEPFPLEARN/dfpl_DBN/data/D_dataset.harmonized.csv"
+    input_column: str = choice("smiles", "inchikey", default="inchikey")
     # column name of the column that contains the molecular representation to harmonize
     input_type: str = choice("smiles", "inchikey",
                              default="inchikey")  # the type of molecular representation of the input
@@ -114,6 +118,7 @@ def getHarmonizedSmiles(smiles: str = "CC(C)C=CCCCCC(=O)NCc1ccc(c(c1)OC)O") -> s
 
     return sh
 
+
 def getHarmonizedSmilesfrominchis(inchikey: str = "CUWVNOSSZYUJAE-UHFFFAOYSA-N") -> str:
     link = f"https://cactus.nci.nih.gov/chemical/structure/{urllib.parse.quote(inchikey)}/smiles"
     try:
@@ -124,6 +129,7 @@ def getHarmonizedSmilesfrominchis(inchikey: str = "CUWVNOSSZYUJAE-UHFFFAOYSA-N")
         sh = None
 
     return sh
+
 
 if __name__ == '__main__':
 

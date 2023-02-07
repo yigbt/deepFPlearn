@@ -1,11 +1,9 @@
 {
   "py/object": "dfpl.options.GnnOptions",
   "gnn_type": "cmpnn",
-  "test_path": "CMPNN/data/tox21.csv",
-  "checkpoint_paths": ["trained_cmpnn_sample/fold_0/model_0/model.pt", "trained_cmpnn_sample/fold_1/model_0/model.pt"],
+  "test_path": "CMPNN/data/S_dataset-AR.csv",
+  "checkpoint_paths": ["example/model.pt"],
   "save_dir": "output_cmpnn",
   "saving_name": "test.csv",
-
-
-  "checkpoint_dir": "trained_dmpnn_sample"
+  "checkpoint_dir": "example"
 }

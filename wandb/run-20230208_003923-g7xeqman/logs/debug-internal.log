@@ -1,0 +1,248 @@
+2023-02-08 00:39:23,012 INFO    StreamThr :25576 [internal.py:wandb_internal():87] W&B internal server running at pid: 25576, started at: 2023-02-08 00:39:23.012442
+2023-02-08 00:39:23,015 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: status
+2023-02-08 00:39:23,016 INFO    WriterThread:25576 [datastore.py:open_for_write():85] open: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/run-g7xeqman.wandb
+2023-02-08 00:39:23,016 DEBUG   SenderThread:25576 [sender.py:send():334] send: header
+2023-02-08 00:39:23,035 DEBUG   SenderThread:25576 [sender.py:send():334] send: run
+2023-02-08 00:39:23,605 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: check_version
+2023-02-08 00:39:23,608 INFO    SenderThread:25576 [dir_watcher.py:__init__():216] watching files in: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files
+2023-02-08 00:39:23,609 INFO    SenderThread:25576 [sender.py:_start_run_threads():1065] run started: g7xeqman with start time 1675813163.011936
+2023-02-08 00:39:23,609 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:23,610 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:23,610 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: check_version
+2023-02-08 00:39:23,739 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: run_start
+2023-02-08 00:39:23,802 ERROR   HandlerThread:25576 [gpu.py:is_available():351] Error initializing NVML: Driver Not Loaded
+2023-02-08 00:39:23,804 DEBUG   HandlerThread:25576 [system_info.py:__init__():31] System info init
+2023-02-08 00:39:23,804 DEBUG   HandlerThread:25576 [system_info.py:__init__():46] System info init done
+2023-02-08 00:39:23,804 INFO    HandlerThread:25576 [system_monitor.py:start():151] Starting system monitor
+2023-02-08 00:39:23,804 INFO    SystemMonitor:25576 [system_monitor.py:_start():116] Starting system asset monitoring threads
+2023-02-08 00:39:23,805 INFO    HandlerThread:25576 [system_monitor.py:probe():172] Collecting system info
+2023-02-08 00:39:23,806 INFO    SystemMonitor:25576 [interfaces.py:start():168] Started cpu
+2023-02-08 00:39:23,809 INFO    SystemMonitor:25576 [interfaces.py:start():168] Started disk
+2023-02-08 00:39:23,809 INFO    SystemMonitor:25576 [interfaces.py:start():168] Started memory
+2023-02-08 00:39:23,812 INFO    SystemMonitor:25576 [interfaces.py:start():168] Started network
+2023-02-08 00:39:23,837 DEBUG   HandlerThread:25576 [system_info.py:probe():195] Probing system
+2023-02-08 00:39:23,843 DEBUG   HandlerThread:25576 [system_info.py:_probe_git():180] Probing git
+2023-02-08 00:39:23,859 DEBUG   HandlerThread:25576 [system_info.py:_probe_git():188] Probing git done
+2023-02-08 00:39:23,860 DEBUG   HandlerThread:25576 [system_info.py:probe():241] Probing system done
+2023-02-08 00:39:23,860 DEBUG   HandlerThread:25576 [system_monitor.py:probe():181] {'os': 'Linux-5.15.0-58-generic-x86_64-with-glibc2.31', 'python': '3.9.15', 'heartbeatAt': '2023-02-07T23:39:23.837456', 'startedAt': '2023-02-07T23:39:23.006069', 'docker': None, 'cuda': None, 'args': ('traingnn', '-f', 'example/traingnn.json'), 'state': 'running', 'program': '-m dfpl.__main__', 'git': {'remote': 'https://git.ufz.de/deepfplearn/deepfplearn_exai.git', 'commit': '8410c5e4a53bf5b1e9f4aea3303a5c76efe0239d'}, 'email': 'kyriakos.soulios@ufz.de', 'root': '/home/soulios/git-soulios/deepFPlearn', 'host': 'ufz542459', 'username': 'soulios', 'executable': '/home/soulios/anaconda3/envs/dfpl_env/bin/python', 'cpu_count': 4, 'cpu_count_logical': 8, 'cpu_freq': {'current': 2279.8561250000002, 'min': 400.0, 'max': 4900.0}, 'cpu_freq_per_core': [{'current': 2138.849, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}], 'disk': {'total': 214.24963760375977, 'used': 188.09886169433594}, 'memory': {'total': 15.296627044677734}}
+2023-02-08 00:39:23,860 INFO    HandlerThread:25576 [system_monitor.py:probe():182] Finished collecting system info
+2023-02-08 00:39:23,860 INFO    HandlerThread:25576 [system_monitor.py:probe():185] Publishing system info
+2023-02-08 00:39:23,860 DEBUG   HandlerThread:25576 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-02-08 00:39:23,861 DEBUG   HandlerThread:25576 [system_info.py:_save_pip():67] Saving pip packages done
+2023-02-08 00:39:23,861 DEBUG   HandlerThread:25576 [system_info.py:_save_conda():74] Saving list of conda packages installed into the current environment
+2023-02-08 00:39:24,404 DEBUG   HandlerThread:25576 [system_info.py:_save_conda():86] Saving conda packages done
+2023-02-08 00:39:24,404 INFO    HandlerThread:25576 [system_monitor.py:probe():187] Finished publishing system info
+2023-02-08 00:39:24,410 DEBUG   SenderThread:25576 [sender.py:send():334] send: files
+2023-02-08 00:39:24,410 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-metadata.json with policy now
+2023-02-08 00:39:24,414 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: stop_status
+2023-02-08 00:39:24,414 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: stop_status
+2023-02-08 00:39:24,609 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/requirements.txt
+2023-02-08 00:39:24,609 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-summary.json
+2023-02-08 00:39:24,609 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/conda-environment.yaml
+2023-02-08 00:39:24,610 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-metadata.json
+2023-02-08 00:39:24,703 DEBUG   SenderThread:25576 [sender.py:send():334] send: telemetry
+2023-02-08 00:39:25,089 INFO    Thread-16 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/98sjr5ug-wandb-metadata.json
+2023-02-08 00:39:25,609 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:27,610 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:28,047 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:39:29,611 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:31,611 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:33,151 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:39:33,612 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:35,613 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:36,233 DEBUG   SenderThread:25576 [sender.py:send():334] send: files
+2023-02-08 00:39:36,233 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:36,233 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_0_f27afb94d4fba36f6498.plotly.json with policy now
+2023-02-08 00:39:36,235 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:36,235 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:36,235 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:36,621 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-summary.json
+2023-02-08 00:39:36,621 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_0_f27afb94d4fba36f6498.plotly.json
+2023-02-08 00:39:36,621 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media
+2023-02-08 00:39:36,621 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly
+2023-02-08 00:39:36,889 INFO    Thread-17 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/vegwfthc-media/plotly/roc_plot_0_f27afb94d4fba36f6498.plotly.json
+2023-02-08 00:39:37,215 DEBUG   SenderThread:25576 [sender.py:send():334] send: files
+2023-02-08 00:39:37,215 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_1_1a76d3a270f90e504059.plotly.json with policy now
+2023-02-08 00:39:37,215 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:37,216 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:37,217 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:37,217 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:37,218 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:37,218 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:37,219 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:37,220 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:37,220 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:37,220 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:37,223 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:37,223 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:37,223 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:37,224 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:37,224 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:37,224 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:37,224 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:37,224 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:37,225 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:37,225 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:37,602 INFO    Thread-18 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/sh7yg613-media/plotly/roc_plot_0_f27afb94d4fba36f6498.plotly.json
+2023-02-08 00:39:37,621 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:37,622 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-summary.json
+2023-02-08 00:39:37,622 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_1_1a76d3a270f90e504059.plotly.json
+2023-02-08 00:39:37,622 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly
+2023-02-08 00:39:37,940 INFO    Thread-19 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/3jxh99hb-media/plotly/roc_plot_1_1a76d3a270f90e504059.plotly.json
+2023-02-08 00:39:38,252 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:38,253 DEBUG   SenderThread:25576 [sender.py:send():334] send: files
+2023-02-08 00:39:38,253 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_6_275677e01dfb08f5254b.plotly.json with policy now
+2023-02-08 00:39:38,254 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:38,254 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:39:38,254 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:38,255 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:38,394 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:39:38,394 DEBUG   SenderThread:25576 [sender.py:send():334] send: files
+2023-02-08 00:39:38,394 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_7_275677e01dfb08f5254b.plotly.json with policy now
+2023-02-08 00:39:38,395 DEBUG   SenderThread:25576 [sender.py:send():334] send: history
+2023-02-08 00:39:38,395 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:39:38,396 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:38,622 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-summary.json
+2023-02-08 00:39:38,622 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_6_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:38,623 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_7_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:38,623 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly
+2023-02-08 00:39:38,650 INFO    Thread-20 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/peyrg072-media/plotly/roc_plot_1_1a76d3a270f90e504059.plotly.json
+2023-02-08 00:39:38,875 INFO    Thread-21 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/n9sdzr58-media/plotly/roc_plot_6_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:38,960 DEBUG   SenderThread:25576 [sender.py:send():334] send: telemetry
+2023-02-08 00:39:38,961 DEBUG   SenderThread:25576 [sender.py:send():334] send: exit
+2023-02-08 00:39:38,961 INFO    SenderThread:25576 [sender.py:send_exit():557] handling exit code: 0
+2023-02-08 00:39:38,961 INFO    SenderThread:25576 [sender.py:send_exit():559] handling runtime: 15
+2023-02-08 00:39:38,961 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:38,961 INFO    SenderThread:25576 [sender.py:send_exit():565] send defer
+2023-02-08 00:39:38,961 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:38,961 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 0
+2023-02-08 00:39:38,962 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:38,962 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 0
+2023-02-08 00:39:38,962 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 1
+2023-02-08 00:39:38,962 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:38,962 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 1
+2023-02-08 00:39:38,962 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:38,962 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 1
+2023-02-08 00:39:38,962 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 2
+2023-02-08 00:39:38,962 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:38,962 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 2
+2023-02-08 00:39:38,962 INFO    HandlerThread:25576 [system_monitor.py:finish():161] Stopping system monitor
+2023-02-08 00:39:38,963 DEBUG   SystemMonitor:25576 [system_monitor.py:_start():130] Starting system metrics aggregation loop
+2023-02-08 00:39:38,963 DEBUG   SystemMonitor:25576 [system_monitor.py:_start():137] Finished system metrics aggregation loop
+2023-02-08 00:39:38,963 DEBUG   SystemMonitor:25576 [system_monitor.py:_start():141] Publishing last batch of metrics
+2023-02-08 00:39:38,963 INFO    HandlerThread:25576 [interfaces.py:finish():175] Joined cpu
+2023-02-08 00:39:38,963 INFO    HandlerThread:25576 [interfaces.py:finish():175] Joined disk
+2023-02-08 00:39:38,963 INFO    HandlerThread:25576 [interfaces.py:finish():175] Joined memory
+2023-02-08 00:39:38,963 INFO    HandlerThread:25576 [interfaces.py:finish():175] Joined network
+2023-02-08 00:39:38,964 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:38,964 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 2
+2023-02-08 00:39:38,964 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 3
+2023-02-08 00:39:38,964 DEBUG   SenderThread:25576 [sender.py:send():334] send: stats
+2023-02-08 00:39:38,964 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:38,964 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 3
+2023-02-08 00:39:38,964 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:38,964 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 3
+2023-02-08 00:39:38,964 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 4
+2023-02-08 00:39:38,965 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:38,965 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 4
+2023-02-08 00:39:38,965 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:38,965 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 4
+2023-02-08 00:39:38,965 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 5
+2023-02-08 00:39:38,965 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:38,965 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 5
+2023-02-08 00:39:38,965 DEBUG   SenderThread:25576 [sender.py:send():334] send: summary
+2023-02-08 00:39:38,966 INFO    SenderThread:25576 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:39:38,966 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:38,966 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 5
+2023-02-08 00:39:38,966 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 6
+2023-02-08 00:39:38,966 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:38,966 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 6
+2023-02-08 00:39:38,966 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:38,966 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 6
+2023-02-08 00:39:38,969 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:39:39,029 INFO    Thread-22 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/xnytycuf-media/plotly/roc_plot_7_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:39,341 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 7
+2023-02-08 00:39:39,342 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:39,342 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 7
+2023-02-08 00:39:39,343 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:39,343 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 7
+2023-02-08 00:39:39,624 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/config.yaml
+2023-02-08 00:39:39,624 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:39,625 INFO    Thread-13 :25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-summary.json
+2023-02-08 00:39:39,962 INFO    Thread-23 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/tfvbygxr-media/plotly/roc_plot_6_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:39,963 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:39:40,665 INFO    Thread-24 :25576 [upload_job.py:push():143] Uploaded file /tmp/tmpitp3kvsowandb/jh59e1h5-media/plotly/roc_plot_7_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:40,759 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 8
+2023-02-08 00:39:40,760 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:39:40,761 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:40,761 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 8
+2023-02-08 00:39:40,762 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:40,762 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 8
+2023-02-08 00:39:40,763 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 9
+2023-02-08 00:39:40,763 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:40,763 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 9
+2023-02-08 00:39:40,764 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:40,764 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 9
+2023-02-08 00:39:40,764 INFO    SenderThread:25576 [dir_watcher.py:finish():362] shutting down directory watcher
+2023-02-08 00:39:40,963 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:39:41,627 INFO    SenderThread:25576 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:41,628 INFO    SenderThread:25576 [dir_watcher.py:finish():392] scan: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files
+2023-02-08 00:39:41,628 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/requirements.txt requirements.txt
+2023-02-08 00:39:41,629 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-metadata.json wandb-metadata.json
+2023-02-08 00:39:41,629 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log output.log
+2023-02-08 00:39:41,637 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/config.yaml config.yaml
+2023-02-08 00:39:41,637 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/conda-environment.yaml conda-environment.yaml
+2023-02-08 00:39:41,637 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-summary.json wandb-summary.json
+2023-02-08 00:39:41,654 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_6_275677e01dfb08f5254b.plotly.json media/plotly/roc_plot_6_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:41,655 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_7_275677e01dfb08f5254b.plotly.json media/plotly/roc_plot_7_275677e01dfb08f5254b.plotly.json
+2023-02-08 00:39:41,655 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_0_f27afb94d4fba36f6498.plotly.json media/plotly/roc_plot_0_f27afb94d4fba36f6498.plotly.json
+2023-02-08 00:39:41,655 INFO    SenderThread:25576 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/media/plotly/roc_plot_1_1a76d3a270f90e504059.plotly.json media/plotly/roc_plot_1_1a76d3a270f90e504059.plotly.json
+2023-02-08 00:39:41,655 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 10
+2023-02-08 00:39:41,655 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:39:41,656 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:41,657 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 10
+2023-02-08 00:39:41,657 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:41,657 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 10
+2023-02-08 00:39:41,658 INFO    SenderThread:25576 [file_pusher.py:finish():160] shutting down file pusher
+2023-02-08 00:39:41,963 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:39:41,964 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:39:42,335 INFO    Thread-29 :25576 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/wandb-summary.json
+2023-02-08 00:39:42,337 INFO    Thread-27 :25576 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/config.yaml
+2023-02-08 00:39:42,339 INFO    Thread-25 :25576 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/requirements.txt
+2023-02-08 00:39:42,343 INFO    Thread-28 :25576 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/conda-environment.yaml
+2023-02-08 00:39:42,344 INFO    Thread-26 :25576 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/files/output.log
+2023-02-08 00:39:42,545 INFO    Thread-12 :25576 [sender.py:transition_state():585] send defer: 11
+2023-02-08 00:39:42,545 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:42,545 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 11
+2023-02-08 00:39:42,546 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:42,546 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 11
+2023-02-08 00:39:42,546 INFO    SenderThread:25576 [file_pusher.py:join():165] waiting for file pusher
+2023-02-08 00:39:42,546 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 12
+2023-02-08 00:39:42,546 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:42,546 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 12
+2023-02-08 00:39:42,546 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:42,547 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 12
+2023-02-08 00:39:42,713 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 13
+2023-02-08 00:39:42,713 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:42,713 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 13
+2023-02-08 00:39:42,714 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:42,714 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 13
+2023-02-08 00:39:42,715 INFO    SenderThread:25576 [sender.py:transition_state():585] send defer: 14
+2023-02-08 00:39:42,716 DEBUG   SenderThread:25576 [sender.py:send():334] send: final
+2023-02-08 00:39:42,716 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:39:42,716 DEBUG   SenderThread:25576 [sender.py:send():334] send: footer
+2023-02-08 00:39:42,717 INFO    HandlerThread:25576 [handler.py:handle_request_defer():170] handle defer: 14
+2023-02-08 00:39:42,718 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:39:42,718 INFO    SenderThread:25576 [sender.py:send_request_defer():581] handle sender defer: 14
+2023-02-08 00:39:42,720 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:39:42,721 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:39:42,723 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: server_info
+2023-02-08 00:39:42,723 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: get_summary
+2023-02-08 00:39:42,724 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: sampled_history
+2023-02-08 00:39:42,726 DEBUG   SenderThread:25576 [sender.py:send_request():361] send_request: server_info
+2023-02-08 00:39:43,206 DEBUG   HandlerThread:25576 [handler.py:handle_request():144] handle_request: shutdown
+2023-02-08 00:39:43,207 INFO    HandlerThread:25576 [handler.py:finish():841] shutting down handler
+2023-02-08 00:39:43,726 INFO    WriterThread:25576 [datastore.py:close():299] close: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_003923-g7xeqman/run-g7xeqman.wandb
+2023-02-08 00:39:44,205 INFO    SenderThread:25576 [sender.py:finish():1491] shutting down sender
+2023-02-08 00:39:44,205 INFO    SenderThread:25576 [file_pusher.py:finish():160] shutting down file pusher
+2023-02-08 00:39:44,205 INFO    SenderThread:25576 [file_pusher.py:join():165] waiting for file pusher

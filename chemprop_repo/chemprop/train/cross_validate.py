@@ -7,6 +7,8 @@ import sys
 from typing import Callable, Dict, List, Tuple
 import subprocess
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+import itertools
 import numpy as np
 import pandas as pd
 import wandb
@@ -99,20 +101,20 @@ def cross_validate(args: TrainArgs,
 
     # Run training on different random seeds for each fold
     all_scores = defaultdict(list)
-    save_path = args.save_dir
     splits = os.path.split(args.save_dir)
     for fold_num in range(args.num_folds):
         info(f'Fold {fold_num}')
-        if args.wabTracking:
+        if args.wabTracking == "True":
             wandb.init(project=f"{splits[0]}", name =f'fold_{fold_num}',reinit = True)
 
         args.seed = init_seed + fold_num
-        args.save_dir = os.path.join(save_dir, f'fold_{fold_num}')
-        makedirs(args.save_dir)
+        args.auc_dir = os.path.join(args.save_dir, f'fold_{fold_num}')
+        makedirs(args.auc_dir)
+        makedirs(save_dir)
         data.reset_features_and_targets()
 
         # If resuming experiment, load results from trained models
-        test_scores_path = os.path.join(args.save_dir, 'test_scores.json')
+        test_scores_path = os.path.join(save_dir, 'test_scores.json')
         if args.resume_experiment and os.path.exists(test_scores_path):
             print('Loading scores')
             with open(test_scores_path) as f:
@@ -125,26 +127,22 @@ def cross_validate(args: TrainArgs,
 
         for metric, scores in model_scores.items():
             all_scores[metric].append(scores)
-        # # Save the dataframe to a csv file
-        # scores_and_metrics_df.to_csv("scores_and_metrics.csv")
-
-        # # Log the dataframe to wandb
-        # wandb.log({"scores_and_metrics": wandb.Table(dataframe=scores_and_metrics_df)})
-
-        # # Save the csv file to wandb artifacts
-        # wandb.save("scores_and_metrics.csv")
-
         # Save the training and validation scores in the current fold's folder
         with open(os.path.join(args.save_dir, 'scores.csv'), 'w') as f:
             csv_writer = csv.writer(f)
-            csv_writer.writerow(["set", "metric", "score", "epoch"])
+            csv_writer.writerow(["set_", "metric", "score", "epoch"])
             csv_writer.writerows(scores_and_metrics)
         scoresdf = pd.read_csv(f"{args.save_dir}/scores.csv")
-        grouped = scoresdf.groupby(["metric", "set"])
+        grouped = scoresdf.groupby(["metric", "set_"])
         plt.clf()
-            # Iterate through the groups and create a line plot for each
-        for (metric, set), group in grouped:
-            plt.plot(group["epoch"], group["score"], label=f"{set} {metric}")
+        line_styles = {'training': 'dotted', 'validation': 'solid'}
+        colors_list = ['red', 'blue', 'green', 'purple', 'yellow', 'orange', 'black', 'pink']
+        color_dict = {}
+        metrics = set(scoresdf['metric'])
+        for i, metric in enumerate(metrics):
+            color_dict[metric] = colors_list[i % len(colors_list)]
+        for (metric, set_), group in grouped:
+            plt.plot(group["epoch"], group["score"], label=f"{set_} {metric}", linestyle=line_styles[set_], color=color_dict[metric])
             plt.xlabel("epoch")
             plt.ylabel("score")
             plt.legend()
@@ -160,12 +158,11 @@ def cross_validate(args: TrainArgs,
 
     # Report scores for each fold
     contains_nan_scores = False
-
     for fold_num in range(args.num_folds):
         for metric, scores in all_scores.items():
-            info(f'\tSeed {fold_num} ==> test {metric} = {multitask_mean(scores[fold_num], metric):.6f}')
+            info(f'\tSeed {init_seed + fold_num} ==> test {metric} = {multitask_mean(scores[fold_num], metric):.6f}')
 
-            if args.show_individual_scores == "True":
+            if args.show_individual_scores:
                 for task_name, score in zip(args.task_names, scores[fold_num]):
                     info(f'\t\tSeed {init_seed + fold_num} ==> test {task_name} {metric} = {score:.6f}')
                     if np.isnan(score):
@@ -190,7 +187,7 @@ def cross_validate(args: TrainArgs,
             Before v1.5.1, the default behavior was to ignore nan values in individual folds or tasks \
             and still return an overall average for the remaining folds or tasks. The behavior now \
             is to include them in the average, converting overall average metrics to 'nan' as well.")
-            #plots                        
+
     # Save scores
     with open(os.path.join(save_dir, TEST_SCORES_FILE_NAME), 'w') as f:
         writer = csv.writer(f)

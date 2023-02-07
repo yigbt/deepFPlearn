@@ -1,0 +1,85 @@
+Splitting data with seed 719322460
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 5919/5919 [00:00<00:00, 8555.01it/s]
+Total scaffolds = 1,775 | train scaffolds = 1,189 | val scaffolds = 268 | test scaffolds = 318
+Label averages per scaffold, in decreasing order of scaffold frequency,capped at 10 scaffolds and 20 labels:
+Scaffold 0
+Task 0: count = 1,414 | target average = 0.048091
+Scaffold 1
+Task 0: count = 1,164 | target average = 0.103952
+Scaffold 2
+Task 0: count = 80 | target average = 0.025000
+Scaffold 3
+Task 0: count = 54 | target average = 0.037037
+Scaffold 4
+Task 0: count = 53 | target average = 0.169811
+Scaffold 5
+Task 0: count = 44 | target average = 0.295455
+Scaffold 6
+Task 0: count = 37 | target average = 1.000000
+Scaffold 7
+Task 0: count = 36 | target average = 1.000000
+Scaffold 8
+Task 0: count = 33 | target average = 0.333333
+Scaffold 9
+Task 0: count = 30 | target average = 0.266667
+Class sizes
+AR 0: 82.11%, 1: 17.89%
+Total size = 5,919 | train size = 4,735 | val size = 591 | test size = 593
+Building model 0
+MoleculeModel(
+  (sigmoid): Sigmoid()
+  (encoder): MPN(
+    (encoder): ModuleList(
+      (0): MPNEncoder(
+        (dropout_layer): Dropout(p=0.0, inplace=False)
+        (act_func): ReLU()
+        (W_i): Linear(in_features=147, out_features=300, bias=False)
+        (W_h): Linear(in_features=300, out_features=300, bias=False)
+        (W_o): Linear(in_features=433, out_features=300, bias=True)
+      )
+    )
+  )
+  (ffn): Sequential(
+    (0): Dropout(p=0.0, inplace=False)
+    (1): Linear(in_features=300, out_features=300, bias=True)
+    (2): ReLU()
+    (3): Dropout(p=0.0, inplace=False)
+    (4): Linear(in_features=300, out_features=1, bias=True)
+  )
+)
+Number of parameters = 355,201
+  0%|                                                                                                                                                                                                    | 0/1 [00:00<?, ?it/s]Epoch 0
+  9%|█████████████████▋                                                                                                                                                                         | 9/95 [00:01<00:11,  7.71it/s]Loss = 4.5925e-01, PNorm = 34.0180, GNorm = 0.2745, lr_0 = 2.0053e-04
+ 20%|█████████████████████████████████████▏                                                                                                                                                    | 19/95 [00:02<00:09,  8.36it/s]
+ 31%|████████████████████████████████████████████████████████▊                                                                                                                                 | 29/95 [00:03<00:05, 11.54it/s]Loss = 4.0005e-01, PNorm = 34.0314, GNorm = 0.2201, lr_0 = 2.9628e-04
+ 41%|████████████████████████████████████████████████████████████████████████████▎                                                                                                             | 39/95 [00:04<00:04, 11.90it/s]Loss = 4.6653e-01, PNorm = 34.0369, GNorm = 0.4179, lr_0 = 3.4415e-04
+ 52%|███████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                          | 49/95 [00:04<00:03, 12.59it/s]Loss = 3.8106e-01, PNorm = 34.0499, GNorm = 0.7233, lr_0 = 3.9202e-04
+ 62%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                      | 59/95 [00:06<00:04,  8.11it/s]
+ 72%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                    | 68/95 [00:07<00:02,  9.81it/s]Loss = 4.2262e-01, PNorm = 34.0746, GNorm = 1.2502, lr_0 = 4.8777e-04
+ 82%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                 | 78/95 [00:08<00:01, 11.58it/s]Loss = 3.6974e-01, PNorm = 34.0927, GNorm = 0.6664, lr_0 = 5.3564e-04
+ 93%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎             | 88/95 [00:08<00:00, 11.80it/s]
+
+
+Validation prc-auc = 0.801538
+Training binary_cross_entropy = 0.383317
+Training prc-auc = 0.741112
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:13<00:00, 13.81s/it]
+Model 0 best validation binary_cross_entropy = 0.464927 on epoch 0
+Loading pretrained parameter "encoder.encoder.0.cached_zero_vector".
+Loading pretrained parameter "encoder.encoder.0.W_i.weight".
+Loading pretrained parameter "encoder.encoder.0.W_h.weight".
+Loading pretrained parameter "encoder.encoder.0.W_o.weight".
+Loading pretrained parameter "encoder.encoder.0.W_o.bias".
+Loading pretrained parameter "ffn.1.weight".
+Loading pretrained parameter "ffn.1.bias".
+Loading pretrained parameter "ffn.4.weight".
+Loading pretrained parameter "ffn.4.bias".
+Model 0 test binary_cross_entropy = 0.602263
+Model 0 test AR binary_cross_entropy = 0.602263
+Model 0 test prc-auc = 0.718085
+Model 0 test AR prc-auc = 0.718085
+Ensemble test binary_cross_entropy = 0.602263
+Ensemble test AR binary_cross_entropy = 0.602263
+Ensemble test prc-auc = 0.718085
+Ensemble test AR prc-auc = 0.718085
+Fold 1

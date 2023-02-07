@@ -1,16 +1,22 @@
 from collections import defaultdict
 import logging
 from typing import Dict, List
-
+import numpy as np
 from .predict import predict
 from chemprop.data import MoleculeDataLoader, StandardScaler
 from chemprop.models import MoleculeModel
 from chemprop.train import get_metric_func
-import wandb
+from sklearn.metrics import auc,roc_curve
+import sys
+import os
+import pandas as pd
+sys.path.insert(0, "dfpl")
+from dfpl.plot import plot_auc
 
 def evaluate_predictions(preds: List[List[float]],
                          targets: List[List[float]],
                          num_tasks: int,
+                         dir_path: str,
                          metrics: List[str],
                          dataset_type: str,
                          gt_targets: List[List[bool]] = None,
@@ -49,12 +55,14 @@ def evaluate_predictions(preds: List[List[float]],
 
     # Compute metric. Spectra loss calculated for all tasks together, others calculated for tasks individually.
     results = defaultdict(list)
+    plot_data = defaultdict(list)
+
     if dataset_type == 'spectra':
         for metric, metric_func in metric_to_func.items():
             results[metric].append(metric_func(preds, targets))
     else:
         for i in range(num_tasks):
-            # Skip if all targets or preds are identical, otherwise we'll crash during classification
+            # # Skip if all targets or preds are identical, otherwise we'll crash during classification
             if dataset_type == 'classification':
                 nan = False
                 if all(target == 0 for target in valid_targets[i]) or all(target == 1 for target in valid_targets[i]):
@@ -78,11 +86,19 @@ def evaluate_predictions(preds: List[List[float]],
                                                     labels=list(range(len(valid_preds[i][0])))))
                 elif metric in ['bounded_rmse', 'bounded_mse', 'bounded_mae']:
                     results[metric].append(metric_func(valid_targets[i], valid_preds[i], gt_targets[i], lt_targets[i]))
+                elif metric == 'prc-auc':
+                    fpr, tpr, _ = roc_curve(valid_targets[i], valid_preds[i])
+                    fpr = fpr.tolist()
+                    tpr = tpr.tolist()
+                    auc_value = auc(fpr, tpr)
+                    results[metric].append(auc_value)
+                    plot_data = pd.DataFrame({"fpr": fpr, "tpr": tpr, "auc_value": auc_value})
+                    plot_data.to_csv(os.path.join(dir_path,f"roc_curve_{i}.csv"), index=False)
+                    plot_auc(fpr, tpr, auc_value, target=f"Task {i}", filename=os.path.join(dir_path, f"roc_curve_{i}.png"), wandb_logging=True)
                 else:
                     results[metric].append(metric_func(valid_targets[i], valid_preds[i]))
-    
-    wandb.log({"roc" : wandb.plot.roc_curve(valid_targets, valid_preds,labels=None, classes_to_plot=None)})
 
+         
     results = dict(results)
 
     return results
@@ -91,6 +107,7 @@ def evaluate_predictions(preds: List[List[float]],
 def evaluate(model: MoleculeModel,
              data_loader: MoleculeDataLoader,
              num_tasks: int,
+             dir_path: str,
              metrics: List[str],
              dataset_type: str,
              scaler: StandardScaler = None,
@@ -126,6 +143,7 @@ def evaluate(model: MoleculeModel,
         preds=preds,
         targets=data_loader.targets,
         num_tasks=num_tasks,
+        dir_path="",
         metrics=metrics,
         dataset_type=dataset_type,
         logger=logger,

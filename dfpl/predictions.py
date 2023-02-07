@@ -14,7 +14,6 @@ def predict_values(df: pd.DataFrame,
 
     :param df:
     :param opts:
-    :param use_compressed:
     :return:
     """
 

@@ -13,7 +13,7 @@ import pickle
 from torch.optim.lr_scheduler import ExponentialLR
 import sys
 sys.path.insert(0, "dfpl")
-import options
+from dfpl import options
 from utils import makePlots
 from .evaluate import evaluate, evaluate_predictions
 from .predict import predict

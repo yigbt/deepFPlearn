@@ -4,18 +4,15 @@ import pandas as pd
 import logging
 import tensorflow as tf
 import numpy as np
-from tensorflow.keras import layers
 from tensorflow.keras import Model
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import math
-from wandb.keras import WandbCallback
-
 
 from dfpl import callbacks
 from dfpl import options
 from dfpl import history as ht
 from dfpl import settings
+
 
 class RBMLayer(tf.keras.layers.Layer):
     def __init__(self, input_size, output_size, name="RBMLayer", **kwargs):
@@ -24,6 +21,7 @@ class RBMLayer(tf.keras.layers.Layer):
         self._output_size = output_size
         self._name = name
         # self._activation_function = activation_function
+
     def build(self, input_shape):
         self.w = self.add_weight(
             shape=(input_shape[-1], self._output_size),
@@ -35,7 +33,7 @@ class RBMLayer(tf.keras.layers.Layer):
         )
         self.vb = self.add_weight(
             shape=(input_shape[-1],), initializer="random_normal", trainable=True, name=f"vb_{self._name}"
-            )
+        )
 
     def __prob_h_given_v(self, visible, w, hb):
         return tf.nn.sigmoid(tf.matmul(visible, w) + hb)
@@ -73,22 +71,28 @@ class RBM(tf.keras.Model):
         # encoding layers
         self.rbm_encoder_layers = []
         self.rbm_decoder_layers = []
-        self.rbm_encoder1 = RBMLayer(self._input_size, int(self._input_size//2), name="encoder_0")
+        self.rbm_encoder1 = RBMLayer(self._input_size, int(self._input_size // 2), name="encoder_0")
 
         if self.n_layer > 1:
             for i in range(1, self.n_layer):
                 factor_units = 2 ** (i + 1)
-                self.rbm_encoder_layers.append(RBMLayer(int(self._input_size // factor_units) * 2 , int(self._input_size // factor_units), name=f"encoder_{i}"))
+                self.rbm_encoder_layers.append(
+                    RBMLayer(int(self._input_size // factor_units) * 2, int(self._input_size // factor_units),
+                             name=f"encoder_{i}"))
 
             # decoding layers
             factor_units = 2 ** (self.n_layer - 1)
-            self.rbm_decoder1 = RBMLayer(int(input_size // factor_units)//2, int(input_size // factor_units), name="decoder_0")
+            self.rbm_decoder1 = RBMLayer(int(input_size // factor_units) // 2, int(input_size // factor_units),
+                                         name="decoder_0")
 
-            for layer_num,i in enumerate(range(self.n_layer - 2, 0, -1)):
+            for layer_num, i in enumerate(range(self.n_layer - 2, 0, -1)):
                 factor_units = 2 ** i
-                self.rbm_decoder_layers.append(RBMLayer(int(input_size // (factor_units * 2)), int(input_size // factor_units), name=f"decoder_{layer_num+1}"))
+                self.rbm_decoder_layers.append(
+                    RBMLayer(int(input_size // (factor_units * 2)), int(input_size // factor_units),
+                             name=f"decoder_{layer_num + 1}"))
 
-            self.rbm_decoder_layers.append(RBMLayer(int(input_size // 2), int(input_size), name=f"decoder_{self.n_layer-1}"))
+            self.rbm_decoder_layers.append(
+                RBMLayer(int(input_size // 2), int(input_size), name=f"decoder_{self.n_layer - 1}"))
 
     def call(self, X, training=None):
         outs = {}
@@ -97,13 +101,13 @@ class RBM(tf.keras.Model):
         outs[f'encoder_{0}'] = (out, visibleGen, hiddenGen, h1)
         for i, layer in enumerate(self.rbm_encoder_layers):
             out, visibleGen, hiddenGen, h1 = layer(hiddenGen)
-            outs[f'encoder_{i+1}'] = (out, visibleGen, hiddenGen, h1)
+            outs[f'encoder_{i + 1}'] = (out, visibleGen, hiddenGen, h1)
 
         out, visibleGen, hiddenGen, h1 = self.rbm_decoder1(hiddenGen)
         outs[f'decoder_{0}'] = (out, visibleGen, hiddenGen, h1)
         for j, layer in enumerate(self.rbm_decoder_layers):
             out, visibleGen, hiddenGen, h1 = layer(hiddenGen)
-            outs[f'decoder_{j+1}'] = (out, visibleGen, hiddenGen, h1)
+            outs[f'decoder_{j + 1}'] = (out, visibleGen, hiddenGen, h1)
         return out, visibleGen, hiddenGen, h1, outs
 
     def train_step(self, data):
@@ -126,9 +130,11 @@ class RBM(tf.keras.Model):
             # update the weights of the model based on the loss and LR.
             curr_layer = weights_dict[key]
             curr_layer.weights[0].assign(curr_layer.weights[0] + learning_rate * \
-                (positive_grad - negative_grad) / tf.cast(tf.shape(last_out)[0], dtype=tf.float32))
-            curr_layer.weights[1].assign(curr_layer.weights[1] +  learning_rate * tf.math.reduce_mean(hiddenGen - h1, 0))
-            curr_layer.weights[2].assign(curr_layer.weights[2] +  learning_rate * tf.math.reduce_mean(last_out - visibleGen, 0))
+                                         (positive_grad - negative_grad) / tf.cast(tf.shape(last_out)[0],
+                                                                                   dtype=tf.float32))
+            curr_layer.weights[1].assign(curr_layer.weights[1] + learning_rate * tf.math.reduce_mean(hiddenGen - h1, 0))
+            curr_layer.weights[2].assign(
+                curr_layer.weights[2] + learning_rate * tf.math.reduce_mean(last_out - visibleGen, 0))
 
             last_out = hiddenGen
         return {m.name: m.result() for m in self.metrics}
@@ -146,12 +152,13 @@ class RBM(tf.keras.Model):
         # Note that it will include the loss (tracked in self.metrics).
         return {m.name: m.result() for m in self.metrics}
 
+
 def define_rbm_model(opts: options.Options,
-        input_size: int = 2048,
-        encoding_dim: int = 128,
-        my_loss: str = "binary_crossentropy",
-        my_lr: float = 0.0288,
-        my_decay: float = 0.0504) -> (Model):
+                     input_size: int = 2048,
+                     encoding_dim: int = 128,
+                     my_loss: str = "binary_crossentropy",
+                     my_lr: float = 0.0288,
+                     my_decay: float = 0.0504) -> (Model):
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -163,43 +170,16 @@ def define_rbm_model(opts: options.Options,
     :return: a tuple of autoencoder and encoder models
     """
     if opts.aeOptimizer == "Adam":
-        ac_optimizer = tf.keras.optimizers.Adam(learning_rate=opts.aeLearningRate,decay=opts.aeLearningRateDecay)
+        ac_optimizer = tf.keras.optimizers.Adam(learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay)
     elif opts.aeOptimizer == "SGD":
-        ac_optimizer = tf.keras.optimizers.SGD(learning_rate=opts.aeLearningRate,decay=opts.aeLearningRateDecay)
+        ac_optimizer = tf.keras.optimizers.SGD(learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay)
 
     rbm_model = RBM(input_size=input_size,
-                  output_size=encoding_dim)
+                    output_size=encoding_dim)
     rbm_model.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
 
     return rbm_model
 
-
-
-# def rbm_callback(checkpoint_path: str) -> list:
-#     """
-#     Callbacks for fitting the autoencoder
-#
-#     :param checkpoint_path: The output directory to store the checkpoint weight files
-#     :return: List of ModelCheckpoint and EarlyStopping class.
-#     """
-#
-#     # enable this checkpoint to restore the weights of the best performing model
-#     checkpoint = ModelCheckpoint(checkpoint_path,
-#                                  verbose=1,
-#                                  save_freq=settings.ac_train_check_period,
-#                                  monitor='val_loss',
-#                                  save_best_only=True,
-#                                  mode='min',
-#                                  save_weights_only=True)
-#
-#     # enable early stopping if val_loss is not improving anymore
-#     early_stop = EarlyStopping(patience=settings.ac_train_patience,
-#                                min_delta=settings.ac_train_min_delta,
-#                                verbose=1,
-#                                restore_best_weights=True)
-#     #wandb_callback = WandbCallback( log_weights=True, log_evaluation=True)
-#
-#     return [checkpoint, early_stop]#,wandb_callback]
 
 def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     """
@@ -212,16 +192,17 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     """
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    encoder = define_rbm_model(opts, input_size=opts.fpSize,
-                  encoding_dim=opts.encFPSize)
+    rbm = define_rbm_model(opts, input_size=opts.fpSize,
+                               encoding_dim=opts.encFPSize)
     # callback_list = callbacks.autoencoder_callback(checkpoint_path=rbm_weights_file, opts=opts)
 
     # define output file for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
         logging.info("No RBM encoder weights file specified")
         base_file_name = os.path.splitext(basename(opts.inputFile))[0]
-        logging.info(f"RBM weights will be saved in {base_file_name}.[auto]rbm256.hdf5")
-        rbm_weights_file = os.path.join(opts.outputDir, base_file_name + ".dbn256.hdf5")
+        logging.info(f"RBM weights will be saved in {base_file_name}.rbm{opts.encFPSize}.hdf5")
+        rbm_weights_file = os.path.join(opts.outputDir, base_file_name + f".rbm{opts.encFPSize}.hdf5")
+        ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".rbm_encoder.weights.hdf5")
     else:
         logging.info(f"RBM encoder will be saved in {opts.ecWeightsFile}")
         base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
@@ -246,21 +227,21 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     logging.info(f"RBM train data shape {x_train.shape} with type {x_train.dtype}")
     logging.info(f"RBM test data shape {x_test.shape} with type {x_test.dtype}")
 
-    auto_hist = encoder.fit(x=x_train, y=x_train,
-                                callbacks=callback_list,
-                                epochs=opts.aeEpochs,
-                                batch_size=opts.aeBatchSize,
-                                verbose=opts.verbose,
-                                validation_data=(x_test, x_test))
-    encoder.summary(print_fn=logging.info)
-    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".DBN"),
+    auto_hist = rbm.fit(x=x_train, y=x_train,
+                            callbacks=callback_list,
+                            epochs=opts.aeEpochs,
+                            batch_size=opts.aeBatchSize,
+                            verbose=opts.verbose,
+                            validation_data=(x_test, x_test))
+    rbm.summary(print_fn=logging.info)
+    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".RBM"),
                               hist=auto_hist)
-    encoder.save_weights(rbm_weights_file)
+    rbm.save_weights(rbm_weights_file)
 
     # tf.saved_model.save(encoder,'/home/soulios/deepFPlearn-master/example/results_train/')
-    logging.info(f"Encoder weights stored in file: {rbm_weights_file}")
+    logging.info(f"RBM weights stored in file: {rbm_weights_file}")
 
-    return encoder
+    return rbm
 
 
 def compress_fingerprints(dataframe: pd.DataFrame,

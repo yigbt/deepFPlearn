@@ -1,0 +1,251 @@
+2023-02-08 00:26:58,077 INFO    StreamThr :23016 [internal.py:wandb_internal():87] W&B internal server running at pid: 23016, started at: 2023-02-08 00:26:58.076871
+2023-02-08 00:26:58,080 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: status
+2023-02-08 00:26:58,084 INFO    WriterThread:23016 [datastore.py:open_for_write():85] open: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/run-sk6j8048.wandb
+2023-02-08 00:26:58,085 DEBUG   SenderThread:23016 [sender.py:send():334] send: header
+2023-02-08 00:26:58,106 DEBUG   SenderThread:23016 [sender.py:send():334] send: run
+2023-02-08 00:26:58,636 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: check_version
+2023-02-08 00:26:58,640 INFO    SenderThread:23016 [dir_watcher.py:__init__():216] watching files in: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files
+2023-02-08 00:26:58,641 INFO    SenderThread:23016 [sender.py:_start_run_threads():1065] run started: sk6j8048 with start time 1675812418.076722
+2023-02-08 00:26:58,641 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:26:58,642 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:26:58,642 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: check_version
+2023-02-08 00:26:58,795 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: run_start
+2023-02-08 00:26:58,858 ERROR   HandlerThread:23016 [gpu.py:is_available():351] Error initializing NVML: Driver Not Loaded
+2023-02-08 00:26:58,858 DEBUG   HandlerThread:23016 [system_info.py:__init__():31] System info init
+2023-02-08 00:26:58,858 DEBUG   HandlerThread:23016 [system_info.py:__init__():46] System info init done
+2023-02-08 00:26:58,859 INFO    HandlerThread:23016 [system_monitor.py:start():151] Starting system monitor
+2023-02-08 00:26:58,860 INFO    SystemMonitor:23016 [system_monitor.py:_start():116] Starting system asset monitoring threads
+2023-02-08 00:26:58,860 INFO    HandlerThread:23016 [system_monitor.py:probe():172] Collecting system info
+2023-02-08 00:26:58,860 INFO    SystemMonitor:23016 [interfaces.py:start():168] Started cpu
+2023-02-08 00:26:58,861 INFO    SystemMonitor:23016 [interfaces.py:start():168] Started disk
+2023-02-08 00:26:58,862 INFO    SystemMonitor:23016 [interfaces.py:start():168] Started memory
+2023-02-08 00:26:58,862 INFO    SystemMonitor:23016 [interfaces.py:start():168] Started network
+2023-02-08 00:26:58,884 DEBUG   HandlerThread:23016 [system_info.py:probe():195] Probing system
+2023-02-08 00:26:58,889 DEBUG   HandlerThread:23016 [system_info.py:_probe_git():180] Probing git
+2023-02-08 00:26:58,904 DEBUG   HandlerThread:23016 [system_info.py:_probe_git():188] Probing git done
+2023-02-08 00:26:58,904 DEBUG   HandlerThread:23016 [system_info.py:probe():241] Probing system done
+2023-02-08 00:26:58,905 DEBUG   HandlerThread:23016 [system_monitor.py:probe():181] {'os': 'Linux-5.15.0-58-generic-x86_64-with-glibc2.31', 'python': '3.9.15', 'heartbeatAt': '2023-02-07T23:26:58.884287', 'startedAt': '2023-02-07T23:26:58.054101', 'docker': None, 'cuda': None, 'args': ('traingnn', '-f', './example/traingnn.json'), 'state': 'running', 'program': '-m dfpl.__main__', 'git': {'remote': 'https://git.ufz.de/deepfplearn/deepfplearn_exai.git', 'commit': '8410c5e4a53bf5b1e9f4aea3303a5c76efe0239d'}, 'email': 'kyriakos.soulios@ufz.de', 'root': '/home/soulios/git-soulios/deepFPlearn', 'host': 'ufz542459', 'username': 'soulios', 'executable': '/home/soulios/anaconda3/envs/dfpl_env/bin/python', 'cpu_count': 4, 'cpu_count_logical': 8, 'cpu_freq': {'current': 2675.000875, 'min': 400.0, 'max': 4900.0}, 'cpu_freq_per_core': [{'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 3299.994, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}, {'current': 3300.001, 'min': 400.0, 'max': 4900.0}, {'current': 2300.0, 'min': 400.0, 'max': 4900.0}], 'disk': {'total': 214.24963760375977, 'used': 188.0885353088379}, 'memory': {'total': 15.296627044677734}}
+2023-02-08 00:26:58,905 INFO    HandlerThread:23016 [system_monitor.py:probe():182] Finished collecting system info
+2023-02-08 00:26:58,905 INFO    HandlerThread:23016 [system_monitor.py:probe():185] Publishing system info
+2023-02-08 00:26:58,905 DEBUG   HandlerThread:23016 [system_info.py:_save_pip():51] Saving list of pip packages installed into the current environment
+2023-02-08 00:26:58,905 DEBUG   HandlerThread:23016 [system_info.py:_save_pip():67] Saving pip packages done
+2023-02-08 00:26:58,905 DEBUG   HandlerThread:23016 [system_info.py:_save_conda():74] Saving list of conda packages installed into the current environment
+2023-02-08 00:26:59,476 DEBUG   HandlerThread:23016 [system_info.py:_save_conda():86] Saving conda packages done
+2023-02-08 00:26:59,477 INFO    HandlerThread:23016 [system_monitor.py:probe():187] Finished publishing system info
+2023-02-08 00:26:59,484 DEBUG   SenderThread:23016 [sender.py:send():334] send: files
+2023-02-08 00:26:59,484 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-metadata.json with policy now
+2023-02-08 00:26:59,489 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: stop_status
+2023-02-08 00:26:59,489 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: stop_status
+2023-02-08 00:26:59,641 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-metadata.json
+2023-02-08 00:26:59,641 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/requirements.txt
+2023-02-08 00:26:59,641 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/conda-environment.yaml
+2023-02-08 00:26:59,642 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-summary.json
+2023-02-08 00:26:59,706 DEBUG   SenderThread:23016 [sender.py:send():334] send: telemetry
+2023-02-08 00:27:00,164 INFO    Thread-16 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/sxzvjwbg-wandb-metadata.json
+2023-02-08 00:27:00,641 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:02,642 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:03,141 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:27:04,644 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:06,645 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:08,155 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:27:08,645 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:10,647 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:12,648 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:13,165 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:13,165 DEBUG   SenderThread:23016 [sender.py:send():334] send: files
+2023-02-08 00:27:13,166 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_0_cfbba623cc606a2c1087.plotly.json with policy now
+2023-02-08 00:27:13,166 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:13,166 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:13,166 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:27:13,167 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:13,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-summary.json
+2023-02-08 00:27:13,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_0_cfbba623cc606a2c1087.plotly.json
+2023-02-08 00:27:13,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly
+2023-02-08 00:27:13,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media
+2023-02-08 00:27:14,025 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:14,025 DEBUG   SenderThread:23016 [sender.py:send():334] send: files
+2023-02-08 00:27:14,026 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:14,026 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_1_83cdb33aa01986b2fd4b.plotly.json with policy now
+2023-02-08 00:27:14,027 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:14,027 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:14,028 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:14,028 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:14,029 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:14,029 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:14,029 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:14,029 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:14,037 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:14,037 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:14,038 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:14,038 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:14,038 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:14,038 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:14,038 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:14,039 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:14,039 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:14,039 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:14,504 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: keepalive
+2023-02-08 00:27:14,528 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: keepalive
+2023-02-08 00:27:14,634 INFO    Thread-17 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/jktrqnag-media/plotly/roc_plot_0_cfbba623cc606a2c1087.plotly.json
+2023-02-08 00:27:14,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:14,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-summary.json
+2023-02-08 00:27:14,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_1_83cdb33aa01986b2fd4b.plotly.json
+2023-02-08 00:27:14,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly
+2023-02-08 00:27:15,213 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:15,213 DEBUG   SenderThread:23016 [sender.py:send():334] send: files
+2023-02-08 00:27:15,214 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_6_a8aaad2d4cf206112574.plotly.json with policy now
+2023-02-08 00:27:15,216 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:15,216 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:15,216 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:15,224 INFO    Thread-18 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/e3hoq3y8-media/plotly/roc_plot_1_83cdb33aa01986b2fd4b.plotly.json
+2023-02-08 00:27:15,322 DEBUG   SenderThread:23016 [sender.py:send():334] send: files
+2023-02-08 00:27:15,322 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-08 00:27:15,322 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file media/plotly/roc_plot_7_a8aaad2d4cf206112574.plotly.json with policy now
+2023-02-08 00:27:15,324 DEBUG   SenderThread:23016 [sender.py:send():334] send: history
+2023-02-08 00:27:15,324 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: summary_record
+2023-02-08 00:27:15,324 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:15,649 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-summary.json
+2023-02-08 00:27:15,650 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_7_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:15,650 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_created():275] file/dir created: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_6_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:15,650 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly
+2023-02-08 00:27:15,761 INFO    Thread-19 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/v3uz3qdj-media/plotly/roc_plot_0_cfbba623cc606a2c1087.plotly.json
+2023-02-08 00:27:16,061 DEBUG   SenderThread:23016 [sender.py:send():334] send: telemetry
+2023-02-08 00:27:16,061 DEBUG   SenderThread:23016 [sender.py:send():334] send: exit
+2023-02-08 00:27:16,062 INFO    SenderThread:23016 [sender.py:send_exit():557] handling exit code: 0
+2023-02-08 00:27:16,062 INFO    SenderThread:23016 [sender.py:send_exit():559] handling runtime: 17
+2023-02-08 00:27:16,062 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:16,062 INFO    SenderThread:23016 [sender.py:send_exit():565] send defer
+2023-02-08 00:27:16,062 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,062 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 0
+2023-02-08 00:27:16,062 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,062 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 0
+2023-02-08 00:27:16,063 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 1
+2023-02-08 00:27:16,063 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,063 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 1
+2023-02-08 00:27:16,063 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,063 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 1
+2023-02-08 00:27:16,063 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 2
+2023-02-08 00:27:16,063 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,063 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 2
+2023-02-08 00:27:16,063 INFO    HandlerThread:23016 [system_monitor.py:finish():161] Stopping system monitor
+2023-02-08 00:27:16,063 DEBUG   SystemMonitor:23016 [system_monitor.py:_start():130] Starting system metrics aggregation loop
+2023-02-08 00:27:16,064 DEBUG   SystemMonitor:23016 [system_monitor.py:_start():137] Finished system metrics aggregation loop
+2023-02-08 00:27:16,064 DEBUG   SystemMonitor:23016 [system_monitor.py:_start():141] Publishing last batch of metrics
+2023-02-08 00:27:16,064 INFO    HandlerThread:23016 [interfaces.py:finish():175] Joined cpu
+2023-02-08 00:27:16,064 INFO    HandlerThread:23016 [interfaces.py:finish():175] Joined disk
+2023-02-08 00:27:16,064 INFO    HandlerThread:23016 [interfaces.py:finish():175] Joined memory
+2023-02-08 00:27:16,064 INFO    HandlerThread:23016 [interfaces.py:finish():175] Joined network
+2023-02-08 00:27:16,065 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,065 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 2
+2023-02-08 00:27:16,065 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 3
+2023-02-08 00:27:16,065 DEBUG   SenderThread:23016 [sender.py:send():334] send: stats
+2023-02-08 00:27:16,065 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,065 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 3
+2023-02-08 00:27:16,065 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,065 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 3
+2023-02-08 00:27:16,066 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 4
+2023-02-08 00:27:16,066 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,066 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 4
+2023-02-08 00:27:16,066 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,066 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 4
+2023-02-08 00:27:16,066 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 5
+2023-02-08 00:27:16,066 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,066 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 5
+2023-02-08 00:27:16,067 DEBUG   SenderThread:23016 [sender.py:send():334] send: summary
+2023-02-08 00:27:16,067 INFO    SenderThread:23016 [sender.py:_save_file():1319] saving file wandb-summary.json with policy end
+2023-02-08 00:27:16,067 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,067 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 5
+2023-02-08 00:27:16,067 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 6
+2023-02-08 00:27:16,067 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,067 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 6
+2023-02-08 00:27:16,067 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,068 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 6
+2023-02-08 00:27:16,071 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: status_report
+2023-02-08 00:27:16,152 INFO    Thread-20 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/ps94rkdd-media/plotly/roc_plot_6_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:16,196 INFO    Thread-21 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/c2ufgfzy-media/plotly/roc_plot_1_83cdb33aa01986b2fd4b.plotly.json
+2023-02-08 00:27:16,318 INFO    Thread-22 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/5l46674h-media/plotly/roc_plot_7_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:16,344 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 7
+2023-02-08 00:27:16,345 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:16,345 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 7
+2023-02-08 00:27:16,346 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:16,346 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 7
+2023-02-08 00:27:16,651 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:16,651 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/config.yaml
+2023-02-08 00:27:16,652 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-summary.json
+2023-02-08 00:27:16,905 INFO    Thread-23 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/2qh03kol-media/plotly/roc_plot_6_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:17,063 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:27:17,278 INFO    Thread-24 :23016 [upload_job.py:push():143] Uploaded file /tmp/tmp_gvp2_trwandb/9x7c2h3a-media/plotly/roc_plot_7_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:17,764 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 8
+2023-02-08 00:27:17,764 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:27:17,765 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:17,765 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 8
+2023-02-08 00:27:17,765 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:17,765 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 8
+2023-02-08 00:27:17,766 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 9
+2023-02-08 00:27:17,766 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:17,766 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 9
+2023-02-08 00:27:17,766 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:17,766 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 9
+2023-02-08 00:27:17,766 INFO    SenderThread:23016 [dir_watcher.py:finish():362] shutting down directory watcher
+2023-02-08 00:27:18,064 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:27:18,652 INFO    Thread-13 :23016 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:18,653 INFO    SenderThread:23016 [dir_watcher.py:finish():392] scan: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files
+2023-02-08 00:27:18,653 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/requirements.txt requirements.txt
+2023-02-08 00:27:18,653 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-metadata.json wandb-metadata.json
+2023-02-08 00:27:18,656 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log output.log
+2023-02-08 00:27:18,656 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/config.yaml config.yaml
+2023-02-08 00:27:18,656 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/conda-environment.yaml conda-environment.yaml
+2023-02-08 00:27:18,656 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-summary.json wandb-summary.json
+2023-02-08 00:27:18,664 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_6_a8aaad2d4cf206112574.plotly.json media/plotly/roc_plot_6_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:18,666 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_7_a8aaad2d4cf206112574.plotly.json media/plotly/roc_plot_7_a8aaad2d4cf206112574.plotly.json
+2023-02-08 00:27:18,666 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_0_cfbba623cc606a2c1087.plotly.json media/plotly/roc_plot_0_cfbba623cc606a2c1087.plotly.json
+2023-02-08 00:27:18,666 INFO    SenderThread:23016 [dir_watcher.py:finish():406] scan save: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/media/plotly/roc_plot_1_83cdb33aa01986b2fd4b.plotly.json media/plotly/roc_plot_1_83cdb33aa01986b2fd4b.plotly.json
+2023-02-08 00:27:18,666 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 10
+2023-02-08 00:27:18,666 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:27:18,667 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:18,667 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 10
+2023-02-08 00:27:18,667 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:18,667 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 10
+2023-02-08 00:27:18,667 INFO    SenderThread:23016 [file_pusher.py:finish():160] shutting down file pusher
+2023-02-08 00:27:19,065 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:27:19,067 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:27:19,360 INFO    Thread-26 :23016 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/output.log
+2023-02-08 00:27:19,375 INFO    Thread-27 :23016 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/config.yaml
+2023-02-08 00:27:19,416 INFO    Thread-28 :23016 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/conda-environment.yaml
+2023-02-08 00:27:19,420 INFO    Thread-25 :23016 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/requirements.txt
+2023-02-08 00:27:19,423 INFO    Thread-29 :23016 [upload_job.py:push():143] Uploaded file /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/files/wandb-summary.json
+2023-02-08 00:27:19,624 INFO    Thread-12 :23016 [sender.py:transition_state():585] send defer: 11
+2023-02-08 00:27:19,625 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:19,625 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 11
+2023-02-08 00:27:19,626 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:19,627 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 11
+2023-02-08 00:27:19,627 INFO    SenderThread:23016 [file_pusher.py:join():165] waiting for file pusher
+2023-02-08 00:27:19,627 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 12
+2023-02-08 00:27:19,627 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:19,627 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 12
+2023-02-08 00:27:19,628 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:19,628 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 12
+2023-02-08 00:27:19,793 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 13
+2023-02-08 00:27:19,794 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:19,794 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 13
+2023-02-08 00:27:19,794 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:19,794 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 13
+2023-02-08 00:27:19,795 INFO    SenderThread:23016 [sender.py:transition_state():585] send defer: 14
+2023-02-08 00:27:19,795 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: defer
+2023-02-08 00:27:19,795 INFO    HandlerThread:23016 [handler.py:handle_request_defer():170] handle defer: 14
+2023-02-08 00:27:19,796 DEBUG   SenderThread:23016 [sender.py:send():334] send: final
+2023-02-08 00:27:19,796 DEBUG   SenderThread:23016 [sender.py:send():334] send: footer
+2023-02-08 00:27:19,796 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: defer
+2023-02-08 00:27:19,796 INFO    SenderThread:23016 [sender.py:send_request_defer():581] handle sender defer: 14
+2023-02-08 00:27:19,798 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-08 00:27:19,798 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: poll_exit
+2023-02-08 00:27:19,799 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: server_info
+2023-02-08 00:27:19,799 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: get_summary
+2023-02-08 00:27:19,800 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: sampled_history
+2023-02-08 00:27:19,801 DEBUG   SenderThread:23016 [sender.py:send_request():361] send_request: server_info
+2023-02-08 00:27:20,304 DEBUG   HandlerThread:23016 [handler.py:handle_request():144] handle_request: shutdown
+2023-02-08 00:27:20,304 INFO    HandlerThread:23016 [handler.py:finish():841] shutting down handler
+2023-02-08 00:27:20,801 INFO    WriterThread:23016 [datastore.py:close():299] close: /home/soulios/git-soulios/deepFPlearn/wandb/run-20230208_002658-sk6j8048/run-sk6j8048.wandb
+2023-02-08 00:27:21,302 INFO    SenderThread:23016 [sender.py:finish():1491] shutting down sender
+2023-02-08 00:27:21,302 INFO    SenderThread:23016 [file_pusher.py:finish():160] shutting down file pusher
+2023-02-08 00:27:21,303 INFO    SenderThread:23016 [file_pusher.py:join():165] waiting for file pusher

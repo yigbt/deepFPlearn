@@ -42,16 +42,16 @@ def run_training(args: TrainArgs,
 
     """
 
-    splits = os.path.split(args.data_path)
     if logger is not None:
         debug, info = logger.debug, logger.info
     else:
         debug = info = print
+    # splits = os.path.split(args.data_path)
+     
     # if args.wabTracking == "True":
     #     wandb.init(project = f'dmpnn-{args.split_type}-{splits[1]}' , config = args)
     # Set pytorch seed for random initial weights
-    torch.random.seed()
-    # torch.manual_seed(args.pytorch_seed)
+    torch.manual_seed(args.pytorch_seed)
 
     # Split data
     debug(f'Splitting data with seed {args.seed}')
@@ -315,6 +315,7 @@ def run_training(args: TrainArgs,
                 model=model,
                 data_loader=train_data_loader_auc,
                 num_tasks=args.num_tasks,
+                dir_path=args.auc_dir,
                 metrics=args.metrics,
                 dataset_type=args.dataset_type,
                 scaler=scaler,
@@ -324,6 +325,7 @@ def run_training(args: TrainArgs,
                 model=model,
                 data_loader=val_data_loader,
                 num_tasks=args.num_tasks,
+                dir_path=args.auc_dir,
                 metrics=args.metrics,
                 dataset_type=args.dataset_type,
                 scaler=scaler,
@@ -390,6 +392,7 @@ def run_training(args: TrainArgs,
                 scaler=scaler
             )
             test_scores = evaluate_predictions(
+                dir_path=args.auc_dir,
                 preds=test_preds,
                 targets=test_targets,
                 num_tasks=args.num_tasks,
@@ -425,6 +428,7 @@ def run_training(args: TrainArgs,
         avg_test_preds = (sum_test_preds / args.ensemble_size).tolist()
 
         ensemble_scores = evaluate_predictions(
+            dir_path=args.auc_dir,
             preds=avg_test_preds,
             targets=test_targets,
             num_tasks=args.num_tasks,

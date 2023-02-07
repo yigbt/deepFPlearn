@@ -1,26 +1,12 @@
 from __future__ import annotations
-
-import sys
-# from chemprop.features import get_available_features_generators
 from dfpl.utils import makePathAbsolute
 from dataclasses import dataclass
 import jsonpickle
 import argparse
 from pathlib import Path
 import random
-# from argparse import ArgumentParser, Namespace
-# import json
-# import os
-# from tempfile import TemporaryDirectory
-# import pickle
-# from sklearn import ensemble, multiclass
+
 import torch
-import sys
-# sys.path.insert(0, "CMPNN")
-
-
-# from CMPNN import cmpnnchemprop
-# from chemprop.utils import makedirs
 
 
 @dataclass
@@ -68,9 +54,8 @@ class Options:
     dropout: float = 0.2
     snnDepth = 8
     snnWidth = 50
-    wabTracking: bool = False  # Wand & Biases tracking
+    wabTracking: str = ""  # Wand & Biases tracking
     wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
-    tasks: str = ""
 
     def saveToFile(self, file: str) -> None:
         """
@@ -131,7 +116,7 @@ class GnnOptions:
     save_dir: str = ""
     configFile: str = "./example/traingnn.json"
     data_path: str = "./CMPNN/data/tox21.csv"
-    seed: int = random.randint(1,1000000000)
+    seed: int = random.randint(1, 1000000000)
     gpu: int = None
     use_compound_names: bool = False
     max_data_size: int = 5000
@@ -162,7 +147,7 @@ class GnnOptions:
     no_cuda: bool = True
     show_individual_scores: bool = False
     no_cache: bool = False
-    config_path: str = "" 
+    config_path: str = ""
     warmup_epochs: int = 10
     init_lr: float = 0.0001
     max_lr: float = 0.001
@@ -193,7 +178,7 @@ class GnnOptions:
     data_weights_path: str = None
     target_weights: float = None
     split_key_molecule: int = 0
-    pytorch_seed: int = random.randint(1,10000000000)
+    pytorch_seed: int = random.randint(1, 10000000000)
     checkpoint_frzn: str = ""
     cache_cutoff: float = 10000
     save_preds: bool = False
@@ -251,21 +236,16 @@ class GnnOptions:
         """
         result = GnnOptions()
         if "configFile" in vars(args).keys():
-          # if ".json" in vars(args).values():
-          jsonFile = Path(makePathAbsolute(args.configFile))
-          if jsonFile.exists() and jsonFile.is_file():
-               with jsonFile.open() as f:
+            jsonFile = Path(makePathAbsolute(args.configFile))
+            if jsonFile.exists() and jsonFile.is_file():
+                with jsonFile.open() as f:
                     content = f.read()
                     result = jsonpickle.decode(content)
-          else:
+            else:
                 raise ValueError("Could not find JSON input file")
-     #    for key, value in vars(args).items():
-     #        # The args dict will contain a "method" key from the subparser.
-     #        # We don't use this.
-     #        if key != "method":
-     #            result.__setattr__(key, value)
-          
+
         return result
+
     @classmethod
     def fromJson(cls, file: str) -> GnnOptions:
         """
@@ -277,6 +257,7 @@ class GnnOptions:
                 content = f.read()
                 return jsonpickle.decode(content)
         raise ValueError("JSON file does not exist or is not readable")
+
 
 def createCommandlineParser() -> argparse.ArgumentParser:
     """
@@ -314,7 +295,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     :return: A namespace object built up from attributes parsed out of the cmd line.
     """
     #     parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
-    #                                         'target(s). Trained models are saved to disk including fitted weights and '
+    #                                       'target(s). Trained models are saved to disk including fitted weights and '
     #                                         'can be used in the deepFPlearn-Predict.py tool to make predictions.')
     parser.add_argument("-f", "--configFile",
                         metavar='FILE',
@@ -340,7 +321,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--split_type",
                         metavar='STR',
                         type=str,
-                        choices=['scaffold', 'random', 'kfold'],
+                        choices=['scaffold_balanced', 'random'],
                         help='Set how the data is going to be split',
                         default=argparse.SUPPRESS)
     parser.add_argument('-t', "--type",
@@ -384,10 +365,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         metavar='INT',
                         type=int,
                         help='Size of encoded fingerprint (z-layer of autoencoder).',
-                        default=argparse.SUPPRESS)
-    parser.add_argument("-tsk", "--tasks",
-                        nargs='*',
-                        help='Name of tasks',
                         default=argparse.SUPPRESS)
     parser.add_argument("-e", "--epochs",
                         metavar='INT', type=int,
@@ -510,15 +487,15 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         help="The fraction of data that is dropped out in each dropout layer.",
                         default=argparse.SUPPRESS)
     parser.add_argument('--wabTracking',
-                        metavar="BOOL",
-                        type=bool,
+                        metavar="STRING",
+                        type=str,
                         help="Track training performance via Weights & Biases, see https://wandb.ai.",
                         default=argparse.SUPPRESS)
     parser.add_argument('--wabTarget',
                         metavar="STRING",
                         type=str,
                         choices=["AR", "ER", "ED", "GR", "TR", "PPARg", "Aromatase"],
-                        help="Which target to use for tracking training performance via Weights & Biases, see https://wandb.ai.",
+                        help="Which target to use for tracking performance via Weights & Biases, see https://wandb.ai.",
                         default=argparse.SUPPRESS)
 
 
@@ -716,6 +693,7 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
                         help="Define GNN Model",
                         default=argparse.SUPPRESS)
 
+
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     """
     Parse the input arguments.
@@ -780,6 +758,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                              'Provide a full path here.',
                         default=argparse.SUPPRESS)
 
+
 def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("-f", "--configFile",
                         metavar='FILE',
@@ -806,7 +785,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
                         default='./ckpt')
     parser.add_argument('--checkpoint_path', type=str,
                         help='Path to model checkpoint (.pt file)')
-    parser.add_argument('--checkpoint_paths', type=str,nargs='*',
+    parser.add_argument('--checkpoint_paths', type=str, nargs='*',
                         help='Path to model checkpoint (.pt file)')
     parser.add_argument('--batch_size', type=int, default=50,
                         help='Batch size')
@@ -822,9 +801,11 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--max_data_size', type=int,
                         help='Maximum number of data points to load')
     parser.add_argument('--smiles_columns', type=str,
-                        help='List of names of the columns containing SMILES strings.By default, uses the first number_of_molecules columns.')
+                        help='List of names of the columns containing SMILES strings.By default, uses the first\
+                             number_of_molecules columns.')
     parser.add_argument('--number_of_molecules', type=int,
-                        help='Number of molecules in each input to the model.This must equal the length of smiles_columns if not None')
+                        help='Number of molecules in each input to the model.This must equal the length of\
+                             smiles_columns if not None')
     parser.add_argument('--num_workers', type=int,
                         help='Number of workers for the parallel data loading 0 means sequential')
     parser.add_argument('--atom_descriptors', type=str,
@@ -832,13 +813,16 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--atom_descriptors_path', type=str,
                         help='Path to the extra atom descriptors.')
     parser.add_argument('--bond_features_path', type=str,
-                        help='Path to the extra bond descriptors that will be used as bond features to featurize a given molecule')
+                        help='Path to the extra bond descriptors that will be used as bond features to featurize a\
+                             given molecule')
     parser.add_argument('--no_cache', type=bool, default=False,
                         help='Turn off caching mol2graph computation')
-    parser.add_argument('--no_cache_mol', type=bool,default=False,
-                        help='Whether to not cache the RDKit molecule for each SMILES string to reduce memory usage cached by default')
+    parser.add_argument('--no_cache_mol', type=bool, default=False,
+                        help='Whether to not cache the RDKit molecule for each SMILES string to reduce memory\
+                             usage cached by default')
     parser.add_argument('--empty_cache', type=bool,
-                        help='Whether to empty all caches before training or predicting. This is necessary if multiple jobs are run within a single script and the atom or bond features change')
+                        help='Whether to empty all caches before training or predicting. This is necessary if\
+                             multiple jobs are run within a single script and the atom or bond features change')
     parser.add_argument("-gt", "--gnn_type",
                         metavar='STR',
                         choices=['cmpnn', 'dmpnn'],
