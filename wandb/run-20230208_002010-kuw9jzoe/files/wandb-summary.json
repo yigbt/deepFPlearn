@@ -1,1 +1,0 @@
-{"epochs": 2, "validation_binary_cross_entropy": 0.4601196050643921, "style": "dotted", "_timestamp": 1675812049.7115028, "_runtime": 38.897817850112915, "_step": 11, "validation_prc-auc": 0.790795902285264, "training_binary_cross_entropy": 0.334060937166214, "training_prc-auc": 0.8374411157675825, "_wandb": {"runtime": 39}}
