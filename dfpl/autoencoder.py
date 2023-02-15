@@ -192,7 +192,8 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     if opts.testSize > 0.0:
         (callback_autoencoder, callback_encoder) = define_ac_model(opts)
         # callback_autoencoder.load_weights(filepath=ac_weights_file)
-        callback_encoder.save_weights(filepath=ec_weights_file)
+
+        callback_encoder.save(filepath=opts.ecModelDir)
     else:
         encoder.save(filepath=opts.ecModelDir)
     return encoder

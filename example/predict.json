@@ -3,11 +3,11 @@
   "inputFile": "example/data/predict_data.csv",
   "outputDir": "example/results_predict",
   "outputFile": "predict_data_AR.csv",
-  "ecModelDir": "example/results_train",
-  "ecWeightsFile": "S_dataset-AR.rbm256.hdf5",
+  "ecModelDir": "example/new_models",
+  "ecWeightsFile": "",
   "fnnModelDir": "example/models/AR_saved_model",
   "compressFeatures": true,
-  "useRBM": true,
-  "trainAC": false,
-  "trainFNN": false
+  "useRBM": false,
+  "trainAC": true,
+  "trainFNN": true
 }

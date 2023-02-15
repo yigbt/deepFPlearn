@@ -155,10 +155,10 @@ class RBM(tf.keras.Model):
 
 def define_rbm_model(opts: options.Options,
                      input_size: int = 2048,
-                     encoding_dim: int = 128,
+                     encoding_dim: int = 256,
                      my_loss: str = "binary_crossentropy",
                      my_lr: float = 0.0288,
-                     my_decay: float = 0.0504) -> (Model):
+                     my_decay: float = 0.0504) -> Model:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -177,6 +177,24 @@ def define_rbm_model(opts: options.Options,
     rbm_model = RBM(input_size=input_size,
                     output_size=encoding_dim)
     rbm_model.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
+    # encoder = RBM(input_size=input_size, output_size=encoding_dim)
+    # decoder = RBM(input_size=encoding_dim, output_size=input_size)
+    #
+    # # Compile the models
+    # encoder.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
+    # decoder.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
+    #
+    # # Define the input layer for the models
+    # input_layer = tf.keras.Input(shape=(input_size,))
+    #
+    # # Define the encoder and decoder parts of the model
+    # encoded = encoder(input_layer)
+    # decoded = decoder(encoded)
+    #
+    # # Define the full autoencoder model
+    # autoencoder = Model(input_layer, decoded)
+    #
+    # return autoencoder, encoder
 
     return rbm_model
 
@@ -237,7 +255,7 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".RBM"),
                               hist=auto_hist)
     rbm.save_weights(rbm_weights_file)
-
+    rbm.save(opts.ecModelDir)
     # tf.saved_model.save(encoder,'/home/soulios/deepFPlearn-master/example/results_train/')
     logging.info(f"RBM weights stored in file: {rbm_weights_file}")
 

@@ -2,8 +2,8 @@
   "py/object": "dfpl.options.Options",
   "inputFile": "CMPNN/data/S_dataset-AR.csv",
   "outputDir": "example/results_train/",
-  "ecWeightsFile": "S_dataset-AR.rbm256.hdf5",
-  "ecModelDir": "example/models/",
+  "ecWeightsFile": "",
+  "ecModelDir": "example/new_models/",
   "verbose": 2,
 
   "type": "smiles",
@@ -15,9 +15,9 @@
   "sampleDown": false,
 
 
-  "trainAC": false,
+  "trainAC": true,
   "trainRBM": false,
-  "useRBM": true,
+  "useRBM": false,
   "compressFeatures": true,
   "encFPSize": 256,
   "aeEpochs": 5,

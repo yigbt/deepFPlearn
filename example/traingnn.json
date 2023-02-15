@@ -3,12 +3,13 @@
   "data_path": "CMPNN/data/S_dataset-AR.csv",
   "gnn_type": "cmpnn",
   "save_dir": "Arom_randomar/",
-  "epochs": 1,
+  "epochs": 2,
   "num_folds": 2,
-  "metric": "auc",
+  "metric": "binary_cross_entropy",
+  "extra_metrics": "auc",
   "split_type": "scaffold_balanced",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
-  "wabTracking": "True",
+  "wabTracking": "False",
   "show_individual_scores":false
 }
