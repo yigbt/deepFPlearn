@@ -2,6 +2,7 @@ import array
 import wandb
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 # for NN model functions
 from tensorflow.keras.callbacks import History
 from matplotlib.axes import Axes
@@ -15,6 +16,26 @@ def get_max_validation_accuracy(history: History) -> str:
     y_max = max(validation)
     return 'Max validation accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
 
+def get_max_training_balanced_accuracy(history: History) -> str:
+    precision = smooth_curve(history.history['precision'])
+    recall = smooth_curve(history.history['recall'])
+    training_balanced_accuracy = (precision + recall) / 2
+    y_max = max(training_balanced_accuracy)
+    return 'Validation balanced accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+def get_max_validation_balanced_accuracy(history: History) -> str:
+    validation_precision = smooth_curve(history.history['val_precision'])
+    validation_recall = smooth_curve(history.history['val_recall'])
+    val_balanced_accuracy = (validation_precision + validation_recall) / 2
+    y_max = max(val_balanced_accuracy)
+    return 'Validation balanced accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+def get_max_training_auc(history: History) -> str:
+    training_auc = smooth_curve(history.history['auc'])
+    y_max = max(training_auc)
+    return 'Validation AUC ≈ ' + str(round(y_max, 3) * 100) + '%'
+def get_max_validation_auc(history: History) -> str:
+    validation_auc = smooth_curve(history.history['val_auc'])
+    y_max = max(validation_auc)
+    return 'Validation AUC ≈ ' + str(round(y_max, 3) * 100) + '%'
 
 def get_max_training_accuracy(history: History) -> str:
     training = smooth_curve(history.history['accuracy'])
@@ -156,7 +177,8 @@ def plot_history_vis(hist: History, model_hist_plot_path: str, model_hist_csv_pa
                        file_loss=model_hist_plot_path_l)
 
 
-def plot_auc(fpr: array, tpr: array, auc_value: float, target: str, filename: str, wandb_logging=False) -> None:
+def plot_auc(fpr: np.ndarray, tpr: np.ndarray, auc_value: float, target: str, filename: str,
+             wandb_logging: bool = False) -> None:
     """
     Plot the area under the curve to the provided file
 
@@ -165,11 +187,19 @@ def plot_auc(fpr: array, tpr: array, auc_value: float, target: str, filename: st
     :param auc_value: The value of the area under the curve
     :param target: The name of the training target
     :param filename: The filename to which the plot should be stored
+    :param wandb_logging: Whether to log the plot to wandb
     :rtype: None
     """
+    # Create a boolean mask to filter out zero values
+    nonzero_mask = fpr != 0.0
+
+    # Filter out zero values from fpr and tpr using the mask
+    fpr_filtered = fpr[nonzero_mask]
+    tpr_filtered = tpr[nonzero_mask]
+
     plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
-    plt.plot(fpr, tpr, label='Keras (area = {:.3f})'.format(auc_value))
+    plt.plot(fpr_filtered, tpr_filtered, label='Keras (area = {:.3f})'.format(auc_value))
     plt.xlabel('False positive rate')
     plt.ylabel('True positive rate')
     plt.title('ROC curve ' + target)

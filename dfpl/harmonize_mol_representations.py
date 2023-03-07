@@ -14,8 +14,8 @@ import sys
 import logging
 
 
-# Use this conda env:
-# mamba create - n tidyChem - c conda - forge r - base r - tidyverse r - stringdist python rdkit numpy pandas simple - parsing
+# Use this conda env: mamba create - n tidyChem - c conda - forge r - base r - tidyverse r - stringdist python rdkit
+# numpy pandas simple - parsing
 
 @dataclass
 class ProgramConfig(Serializable):
@@ -24,7 +24,7 @@ class ProgramConfig(Serializable):
     """
     # file containing SMILES or InChikeys 2B harmonized
     input_file: str = "/home/soulios/git-soulios/DEEPFPLEARN/dfpl_DBN/data/D_fragment.csv.tsv"
-    # file containing the input for the harmonized molecular representations, tanimoto similarity and levenstein distance
+    # file containing the input for the harmonized molecular representations,tanimoto similarity and levenstein distance
     output_file: str = "/home/soulios/git-soulios/DEEPFPLEARN/dfpl_DBN/data/D_dataset.harmonized.csv"
     input_column: str = choice("smiles", "inchikey", default="inchikey")
     # column name of the column that contains the molecular representation to harmonize

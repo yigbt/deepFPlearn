@@ -3,29 +3,21 @@ from os.path import basename
 import math
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
-from umap import UMAP
 from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
+from wandb.keras import WandbCallback
+from umap import UMAP
 from sklearn.cluster import KMeans
-# import sys
-# sys.path.append("/chemprop_repo")
-# from chemprop_repo.chemprop.data import MoleculeDataset,MoleculeDatapoint
-# from chemprop_repo.chemprop.data.scaffold import scaffold_split, scaffold_to_indices, generate_scaffold
-# from chemprop_repo.chemprop.data.utils import get_data_from_smiles, split_data
-# from chemprop_repo.chemprop.data import MoleculeDatapoint
 from dfpl.utils import *
-from rdkit import Chem
-from rdkit.Chem import AllChem
 import numpy as np
 import pandas as pd
 import logging
 import wandb
-from wandb.keras import WandbCallback
 import tensorflow.keras.metrics as metrics
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras import optimizers, losses, initializers
-from tensorflow.keras.optimizers.legacy import Adam
+from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 
 from dfpl import options
@@ -45,7 +37,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
     """
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    ac_optimizer = Adam(learning_rate=opts.aeLearningRate,
+    ac_optimizer = optimizers.Adam(learning_rate=opts.aeLearningRate,
                                    decay=opts.aeLearningRateDecay)
 
     if output_bias is not None:
@@ -124,45 +116,48 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
 
 def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     """
-    Train an autoencoder on the given feature matrix X. Response matrix is only used to
-    split meaningfully in test and train data set.
+    Trains an autoencoder on the given feature matrix X. The response matrix is only used to
+    split the data into meaningful test and train sets.
 
     :param opts: Command line arguments as defined in options.py
-    :param df: Pandas dataframe that contains the smiles/inchi data for training the autoencoder
+    :param df: Pandas dataframe that contains the SMILES/InChI data for training the autoencoder
     :return: The encoder model of the trained autoencoder
     """
-    if opts.aeWabTracking and opts.wabTracking==False:
+
+    # If wandb tracking is enabled for autoencoder weights but not for the main program, initialize a new wandb run
+    if opts.aeWabTracking and  not opts.wabTracking:
         wandb.init(project=f"AE_{opts.aeSplitType}", config=opts)
-    # define output file for autoencoder and encoder weights
+
+    # Define output files for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
+        # If no encoder weights file is specified, use the input file name to generate a default file name
         logging.info("No AE encoder weights file specified")
-        base_file_name = os.path.splitext(basename(opts.inputFile))[0]
-        logging.info(f"(auto)encoder weights will be saved in {base_file_name}.[auto]encoder.hdf5")
+        base_file_name = os.path.splitext(basename(opts.inputFile))[0] + opts.aeSplitType
+        logging.info(f"(auto)encoder weights will be saved in {base_file_name}.autoencoder.hdf5")
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
         ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.weights.hdf5")
     else:
+        # If an encoder weights file is specified, use it as the encoder weights file name
         logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
-        base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
+        base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0] + opts.aeSplitType
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
         ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
-    # collect the callbacks for training
+    # Collect the callbacks for training
     callback_list = callbacks.autoencoder_callback(checkpoint_path=ac_weights_file, opts=opts)
 
-    # Select all fps that are valid and turn them into a numpy array
-    # This step is crucial for speed!!!
+    # Select all fingerprints that are valid and turn them into a numpy array
     fp_matrix = np.array(df[df["fp"].notnull()]["fp"].to_list(),
                          dtype=settings.ac_fp_numpy_type,
                          copy=settings.numpy_copy_values)
     logging.info(f"Training AC on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
 
-    # When training the final AE, we don't want any test data. We want to train it on the all available
-    # fingerprints.
-    assert(0.0 <= opts.testSize <= 0.5)
+    # When training the final AE, we don't want any test data. We want to train it on all available fingerprints.
+    assert (0.0 <= opts.testSize <= 0.5)
     if opts.aeSplitType == "random":
         logging.info("Training autoencoder using random split")
         if opts.testSize > 0.0:
-            # split data into test and training data
+            # Split data into test and training data
             if opts.aeWabTracking:
                 x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize, random_state=42)
             else:
@@ -177,7 +172,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
             if opts.aeWabTracking:
                 train_data, val_data, test_data = scaffold_split(df, sizes=(1-opts.testSize,0.0, opts.testSize), balanced=True,seed=42)
             else:
-                train_data, val_data, test_data = scaffold_split(df, sizes=(1-opts.testSize,0.0, opts.testSize), balanced=True)    
+                train_data, val_data, test_data = scaffold_split(df, sizes=(1-opts.testSize,0.0, opts.testSize), balanced=True)
             x_train = np.array(train_data[train_data["fp"].notnull()]["fp"].to_list(),
                              dtype=settings.ac_fp_numpy_type,
                              copy=settings.numpy_copy_values)
@@ -186,13 +181,13 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
                            copy=settings.numpy_copy_values)
             x_val = None
         else:
-            x_test = None    
+            x_test = None
             x_val = None
             x_train = fp_matrix
- 
+
     else:
         raise ValueError(f"Invalid split type: {opts.split_type}")
-    
+
 
     # Calculate the initial bias aka the log ratio between 1's and 0'1 in all fingerprints
     ids, counts = np.unique(x_train.flatten(), return_counts=True)
@@ -204,6 +199,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         initial_bias = np.log([count_dict[1]/count_dict[0]])
         logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
 
+    # Check if we're doing training/testing mode or full training mode
     if opts.testSize > 0.0:
         logging.info(f"AE training/testing mode with train- and test-samples")
         logging.info(f"AC train data shape {x_train.shape} with type {x_train.dtype}")
@@ -215,6 +211,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = define_ac_model(opts, output_bias=initial_bias)
 
+    # Train the autoencoder on the training data
     auto_hist = autoencoder.fit(x_train, x_train,
                                 callbacks=callback_list,
                                 epochs=opts.aeEpochs,
@@ -223,8 +220,9 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
                                 validation_data=(x_test, x_test) if opts.testSize > 0.0 else None
                                 )
     logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
-    
-    if opts.aeWabTracking and opts.wabTracking==False:
+
+    # Log the autoencoder training metrics to W&B if enabled
+    if opts.aeWabTracking and not opts.wabTracking:
         wandb.log({
             "AE_loss": auto_hist.history['loss'][-1],
             "AE_val_loss": auto_hist.history['val_loss'][-1],
@@ -237,20 +235,21 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
             "num_epochs": len(auto_hist.history['loss'])
         })
 
-    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name +f"_{opts.split_type}" ".AC"),
+    # Store the autoencoder training history and plot the metrics
+    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
                               hist=auto_hist)
-    # encoder.save_weights(ec_weights_file) # these are the wrong weights! we need those from the callback model
-    # logging.info(f"Encoder weights stored is file: {ec_weights_file}")
-    # save AE callback model
-    save_path = os.path.join(opts.ecModelDir, "autoencoder")
+
+    # Save the autoencoder callback model to disk
+    save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_autoencoder.h5")
     if opts.testSize > 0.0:
         (callback_autoencoder, callback_encoder) = define_ac_model(opts)
-        # callback_autoencoder.load_weights(filepath=ac_weights_file)
-
         callback_encoder.save(filepath=save_path)
     else:
         encoder.save(filepath=save_path)
+
+    # Return the encoder model of the trained autoencoder
     return encoder
+
 
 
 def compress_fingerprints(dataframe: pd.DataFrame,

@@ -932,7 +932,7 @@ def prepareDataSet(y: pd.DataFrame, x: pd.DataFrame, t: str) -> tuple:
 #     histDF.to_csv(model_hist_csv_path)
 #
 #     # plot accuracy and loss for the training and validation during training
-#     plot_train_history(hist=hist, target=target,
+#     plotTrainHistory(hist=hist, target=target,
 #                      file_accuracy=model_hist_plot_path_a,
 #                      file_loss=model_hist_plot_path_l)
 #

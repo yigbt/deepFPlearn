@@ -1,14 +1,14 @@
 from __future__ import annotations
+import sys
+sys.path.append("./chemprop_repo")
+import torch
+from chemprop_repo.chemprop.args import TrainArgs
 from dfpl.utils import makePathAbsolute
 from dataclasses import dataclass
 import jsonpickle
 import argparse
 from pathlib import Path
-import random
-import sys
-sys.path.append("./chemprop_repo")
-import torch
-from chemprop_repo.chemprop.args import CommonArgs, TrainArgs
+
 
 
 @dataclass
@@ -131,6 +131,7 @@ class GnnOptions(TrainArgs):
     gnn_type: str = "cmpnn"
     preds_path: str = "./tox21dmpnn.csv"
     test_path: str = ""
+
     # Prediction
     # trainAC: bool = True
     # trainFNN: bool = True
