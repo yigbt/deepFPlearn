@@ -1,16 +1,31 @@
 import os.path
 from os.path import basename
 import math
-
+from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
+from umap import UMAP
+from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+# import sys
+# sys.path.append("/chemprop_repo")
+# from chemprop_repo.chemprop.data import MoleculeDataset,MoleculeDatapoint
+# from chemprop_repo.chemprop.data.scaffold import scaffold_split, scaffold_to_indices, generate_scaffold
+# from chemprop_repo.chemprop.data.utils import get_data_from_smiles, split_data
+# from chemprop_repo.chemprop.data import MoleculeDatapoint
+from dfpl.utils import *
+from rdkit import Chem
+from rdkit.Chem import AllChem
 import numpy as np
 import pandas as pd
 import logging
-
+import wandb
+from wandb.keras import WandbCallback
 import tensorflow.keras.metrics as metrics
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras import optimizers, losses, initializers
-
+from tensorflow.keras.optimizers.legacy import Adam
 from sklearn.model_selection import train_test_split
 
 from dfpl import options
@@ -30,7 +45,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
     """
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    ac_optimizer = optimizers.Adam(learning_rate=opts.aeLearningRate,
+    ac_optimizer = Adam(learning_rate=opts.aeLearningRate,
                                    decay=opts.aeLearningRateDecay)
 
     if output_bias is not None:
@@ -116,7 +131,8 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     :param df: Pandas dataframe that contains the smiles/inchi data for training the autoencoder
     :return: The encoder model of the trained autoencoder
     """
-
+    if opts.aeWabTracking and opts.wabTracking==False:
+        wandb.init(project=f"AE_{opts.aeSplitType}", config=opts)
     # define output file for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
         logging.info("No AE encoder weights file specified")
@@ -143,15 +159,40 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     # When training the final AE, we don't want any test data. We want to train it on the all available
     # fingerprints.
     assert(0.0 <= opts.testSize <= 0.5)
-    if opts.testSize > 0.0:
-        # split data into test and training data
-        if opts.wabTracking:
-            x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize, random_state=42)
+    if opts.aeSplitType == "random":
+        logging.info("Training autoencoder using random split")
+        if opts.testSize > 0.0:
+            # split data into test and training data
+            if opts.aeWabTracking:
+                x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize, random_state=42)
+            else:
+                x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize)
         else:
-            x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize)
+            x_train = fp_matrix
+            x_test = None
+    # Split the data into train and test sets using scaffold split
+    elif opts.aeSplitType == "scaffold_balanced":
+        logging.info("Training autoencoder using scaffold split")
+        if opts.testSize > 0.0:
+            if opts.aeWabTracking:
+                train_data, val_data, test_data = scaffold_split(df, sizes=(1-opts.testSize,0.0, opts.testSize), balanced=True,seed=42)
+            else:
+                train_data, val_data, test_data = scaffold_split(df, sizes=(1-opts.testSize,0.0, opts.testSize), balanced=True)    
+            x_train = np.array(train_data[train_data["fp"].notnull()]["fp"].to_list(),
+                             dtype=settings.ac_fp_numpy_type,
+                             copy=settings.numpy_copy_values)
+            x_test = np.array(test_data[test_data["fp"].notnull()]["fp"].to_list(),
+                           dtype=settings.ac_fp_numpy_type,
+                           copy=settings.numpy_copy_values)
+            x_val = None
+        else:
+            x_test = None    
+            x_val = None
+            x_train = fp_matrix
+ 
     else:
-        x_train = fp_matrix
-        x_test = None
+        raise ValueError(f"Invalid split type: {opts.split_type}")
+    
 
     # Calculate the initial bias aka the log ratio between 1's and 0'1 in all fingerprints
     ids, counts = np.unique(x_train.flatten(), return_counts=True)
@@ -182,20 +223,33 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
                                 validation_data=(x_test, x_test) if opts.testSize > 0.0 else None
                                 )
     logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
+    
+    if opts.aeWabTracking and opts.wabTracking==False:
+        wandb.log({
+            "AE_loss": auto_hist.history['loss'][-1],
+            "AE_val_loss": auto_hist.history['val_loss'][-1],
+            "AE_auc": auto_hist.history['auc'][-1],
+            "AE_val_auc": auto_hist.history['val_auc'][-1],
+            "AE_precision": auto_hist.history['precision'][-1],
+            "AE_val_precision": auto_hist.history['val_precision'][-1],
+            "AE_recall": auto_hist.history['recall'][-1],
+            "AE_val_recall": auto_hist.history['val_recall'][-1],
+            "num_epochs": len(auto_hist.history['loss'])
+        })
 
-    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
+    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name +f"_{opts.split_type}" ".AC"),
                               hist=auto_hist)
-
     # encoder.save_weights(ec_weights_file) # these are the wrong weights! we need those from the callback model
-    # logging.info(f"Encoder weights stored in file: {ec_weights_file}")
+    # logging.info(f"Encoder weights stored is file: {ec_weights_file}")
     # save AE callback model
+    save_path = os.path.join(opts.ecModelDir, "autoencoder")
     if opts.testSize > 0.0:
         (callback_autoencoder, callback_encoder) = define_ac_model(opts)
         # callback_autoencoder.load_weights(filepath=ac_weights_file)
 
-        callback_encoder.save(filepath=opts.ecModelDir)
+        callback_encoder.save(filepath=save_path)
     else:
-        encoder.save(filepath=opts.ecModelDir)
+        encoder.save(filepath=save_path)
     return encoder
 
 
@@ -218,3 +272,65 @@ def compress_fingerprints(dataframe: pd.DataFrame,
     dataframe['fpcompressed'] = pd.DataFrame({'fpcompressed': [s for s in encoder.predict(fp_matrix)]}, idx)
 
     return dataframe
+
+def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, output_dir: str, opts:options.Options):    
+    # Convert the boolean values in the before_col column to floats
+    df[before_col] = df[before_col].apply(lambda x: np.array(x, dtype=float))
+
+    # Get the fingerprints before and after compression
+    before_fingerprints = np.array(df[before_col].to_list())
+    after_fingerprints = np.array(df[after_col].to_list())
+    
+    # Create UMAP and t-SNE embeddings for the fingerprints before and after compression
+    before_umap_embedding = UMAP(n_components=2, n_neighbors=10, min_dist=0.1, random_state=42).fit_transform(before_fingerprints)
+    after_umap_embedding = UMAP(n_components=2, n_neighbors=10, min_dist=0.1, random_state=42).fit_transform(after_fingerprints)
+    # before_tsne_embedding = TSNE().fit_transform(before_fingerprints)
+    # after_tsne_embedding = TSNE().fit_transform(after_fingerprints)
+
+    # Apply the elbow method to find the best number of clusters for k-means
+    # wcss = []
+    # max_clusters = 10
+    # for k in range(1, max_clusters):
+    #     kmeans = KMeans(n_clusters=k)
+    #     kmeans.fit(before_umap_embedding)
+    #     wcss.append(kmeans.inertia_)
+    # plt.plot(range(1, max_clusters), wcss)
+    # plt.title('Elbow Method')
+    # plt.xlabel('Number of clusters')
+    # plt.ylabel('WCSS')
+    # plt.savefig(os.path.join(output_dir, f'wcss_plot_{opts.split_type}.png'))
+    # plt.show()
+    # 3 or 4 clusters seem like a good choice
+
+    # Use silhouette score to choose number of clusters
+    # max_clusters = 5
+    # before_umap_scores = []
+    # for n_clusters in range(2, max_clusters+1):
+    #     labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_umap_embedding)
+    #     score = silhouette_score(before_umap_embedding, labels)
+    #     before_umap_scores.append(score)
+    # optimal_n_clusters = np.argmax(before_umap_scores) + 2
+    # print(f"Optimal number of clusters for before (UMAP) is {optimal_n_clusters}")
+
+    # Apply k-means clustering to the embeddings
+    n_clusters = 4 # optimal_n_clusters= 3 based on silhouette score but 4 was previously used
+    before_umap_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_umap_embedding)
+    after_umap_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(after_umap_embedding)
+    # before_tsne_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_tsne_embedding)
+    # after_tsne_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(after_tsne_embedding)
+    # Assign same colormap to all plots
+    cmap = plt.get_cmap('rainbow', n_clusters)
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
+    fig.suptitle('Dimensionality reduction and clustering of fingerprints')
+    before_umap_scatter = axes[0].scatter(before_umap_embedding[:, 0], before_umap_embedding[:, 1], c=before_umap_labels, s=5, cmap=cmap)
+    axes[0].set_title('Before compression (UMAP)')
+    after_umap_scatter = axes[1].scatter(after_umap_embedding[:, 0], after_umap_embedding[:, 1], c=after_umap_labels, s=5, cmap=cmap)
+    axes[1].set_title('After compression (UMAP)')
+    # before_tsne_scatter = axes[1, 0].scatter(before_tsne_embedding[:, 0], before_tsne_embedding[:, 1], c=before_tsne_labels, s=5, cmap=cmap)
+    # axes[1, 0].set_title('Before compression (t-SNE)')
+    # after_tsne_scatter = axes[1, 1].scatter(after_tsne_embedding[:, 0], after_tsne_embedding[:, 1], c=after_tsne_labels, s=5, cmap=cmap)
+    # axes[1, 1].set_title('After compression (t-SNE)')
+    plt.subplots_adjust(wspace=0.2)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, f'fingerprints_{opts.split_type}.png'), dpi=300, bbox_inches='tight')
+    plt.close(fig)

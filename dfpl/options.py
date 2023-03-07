@@ -5,8 +5,10 @@ import jsonpickle
 import argparse
 from pathlib import Path
 import random
-
+import sys
+sys.path.append("./chemprop_repo")
 import torch
+from chemprop_repo.chemprop.args import CommonArgs, TrainArgs
 
 
 @dataclass
@@ -36,6 +38,7 @@ class Options:
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
     split_type: str = 'random'
+    aeSplitType: str = 'random'
     aeEpochs: int = 3000
     aeBatchSize: int = 512
     aeLearningRate: float = 0.001
@@ -54,7 +57,8 @@ class Options:
     dropout: float = 0.2
     snnDepth = 8
     snnWidth = 50
-    wabTracking: str = ""  # Wand & Biases tracking
+    aeWabTracking: str = ""  # Wand & Biases autoencoder tracking
+    wabTracking: str = ""  # Wand & Biases FNN tracking
     wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
 
     def saveToFile(self, file: str) -> None:
@@ -106,124 +110,31 @@ class Options:
 
 @dataclass
 # class GnnOptions(Options):
-class GnnOptions:
+class GnnOptions(TrainArgs):
     """
-    Dataclass to hold all options used for prediction
+    Dataclass to hold all options used for training the graph models
     """
-    batch_size: int = 32
     total_epochs: int = 30
     save: bool = True
-    save_dir: str = ""
     configFile: str = "./example/traingnn.json"
     data_path: str = "./CMPNN/data/tox21.csv"
-    seed: int = random.randint(1, 1000000000)
-    gpu: int = None
     use_compound_names: bool = False
-    max_data_size: int = 5000
-    test: bool = False
-    features_only: bool = False
-    features_generator: str = ""
-    features_path: str = ""
-    save_smiles_splits: bool = False
-    checkpoint_dir: str = ""
-    checkpoint_path: str = ""
-    dataset_type: str = ""
-    multiclass_num_classes: int = None
-    separate_val_path: str = ""
-    separate_val_features_path: str = ""
-    separate_test_path: str = ""
-    separate_test_features_path: str = ""
-    split_sizes: float = 0.8, 0.1, 0.1
-    split_type: str = 'random'
-    num_folds: int = 10
-    folds_file: str = ""
-    val_fold_index: int = None
-    test_fold_index: int = None
-    crossval_index_dir: str = ""
-    crossval_index_file: str = ""
-    metric: str = "auc"
-    quiet: bool = False
-    log_frequency: int = 10
-    no_cuda: bool = True
-    show_individual_scores: bool = False
     no_cache: bool = False
-    config_path: str = ""
-    warmup_epochs: int = 10
-    init_lr: float = 0.0001
-    max_lr: float = 0.001
-    final_lr: float = 0.0001
-    no_features_scaling: bool = False
-    ensemble_size: int = 1
-    hidden_size: int = 300
-    bias: bool = False
-    depth: int = 3
-    activation: str = 'ReLU'
-    undirected: bool = False
-    ffn_hidden_size: int = 2
-    ffn_num_layers: int = 2
-    atom_messages: bool = False
     features_scaling: bool = True
-    checkpoint_paths: str = None
     use_input_features: str = ""
     cuda: bool = False
     num_lrs: int = 2
     minimize_score: bool = False
-    smiles_columns: str = ''
-    target_columns: str = ''
-    ignore_columns: str = ''
     num_tasks: int = 12
-    extra_metrics: str = ""
-    loss_function: str = None
-    spectra_phase_mask_path: str = ""
-    data_weights_path: str = None
-    target_weights: float = None
-    split_key_molecule: int = 0
-    pytorch_seed: int = random.randint(1, 10000000000)
-    checkpoint_frzn: str = ""
-    cache_cutoff: float = 10000
-    save_preds: bool = False
-    class_balance: bool = True
     # Model arguments
-    mpn_shared: bool = False
-    separate_val_phase_features_path: str = ""
-    separate_test_phase_features_path: str = ""
-    separate_val_atom_descriptors_path: str = ""
-    separate_test_atom_descriptors_path: str = ""
-    separate_val_bond_features_path: str = ""
-    separate_test_bond_features_path: str = ""
-    aggregation: str = ""
-    aggregation_norm: int = 100
-    explicit_h: bool = False
-    adding_h: bool = False
     # Training arguments
-    grad_clip: float = 0.1
-    epochs: int = 10
-    spectra_target_floor: float = 1e-8
-    evidential_regularization: float = 0
-    overwrite_default_atom_features: bool = False
-    no_atom_descriptor_scaling: bool = False
-    overwrite_default_bond_features: bool = False
-    no_bond_features_scaling: bool = False
-    frzn_ffn_layers: int = 0
-    freeze_first_only: bool = False
-    spectra_activation: str = ""
     gnn_type: str = "cmpnn"
     preds_path: str = "./tox21dmpnn.csv"
     test_path: str = ""
-    no_cache_mol: bool = False
-    dropout: float = 0.2
-    reaction: bool = False
-    reaction_solvent: bool = False
-    phase_features_path: str = None
-    atom_descriptors_path: str = None
-    bond_features_path: str = None
-    atom_descriptors: str = None
-    resume_experiment: bool = False
-    wabTracking: str = ""
     # Prediction
-    trainAC: bool = True
-    trainFNN: bool = True
-    saving_name: str = "samplecmpnn.csv"
+    # trainAC: bool = True
+    # trainFNN: bool = True
+    # saving_name: str = "samplecmpnn.csv"
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> GnnOptions:
@@ -322,7 +233,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         metavar='STR',
                         type=str,
                         choices=['scaffold_balanced', 'random'],
-                        help='Set how the data is going to be split',
+                        help='Set how the data is going to be split for the feedforward neural network',
+                        default=argparse.SUPPRESS)
+    parser.add_argument("--aeSplitType",
+                        metavar='STR',
+                        type=str,
+                        choices=['scaffold_balanced', 'random'],
+                        help='Set how the data is going to be split for the autoencoder',
                         default=argparse.SUPPRESS)
     parser.add_argument('-t', "--type",
                         metavar='STR',
@@ -489,7 +406,12 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--wabTracking',
                         metavar="STRING",
                         type=str,
-                        help="Track training performance via Weights & Biases, see https://wandb.ai.",
+                        help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
+                        default=argparse.SUPPRESS)
+    parser.add_argument('--aeWabTracking',
+                        metavar="STRING",
+                        type=str,
+                        help="Track autoencoder performance via Weights & Biases, see https://wandb.ai.",
                         default=argparse.SUPPRESS)
     parser.add_argument('--wabTarget',
                         metavar="STRING",
@@ -671,8 +593,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument("--separate_val_atom_descriptors_path", type=str)
     parser.add_argument("--separate_test_atom_descriptors_path", type=str)
-    parser.add_argument("--separate_val_bond_features_path", type=str)
-    parser.add_argument("--separate_test_bond_features_path", type=str)
     parser.add_argument("--aggregation", choices=['mean', 'sum', 'norm'])
     parser.add_argument("--aggregation_norm", type=int)
     parser.add_argument("--explicit_h", type=bool)
@@ -684,7 +604,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--overwrite_default_atom_features", type=bool)
     parser.add_argument("--no_atom_descriptor_scaling", type=bool)
     parser.add_argument("--overwrite_default_bond_features", type=bool)
-    parser.add_argument("--no_bond_features_scaling", type=bool)
     parser.add_argument("--frzn_ffn_layers", type=int)
     parser.add_argument("--freeze_first_only", type=bool)
     parser.add_argument("-gt", "--gnn_type",
@@ -812,8 +731,8 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
                         help='Custom extra atom descriptors')
     parser.add_argument('--atom_descriptors_path', type=str,
                         help='Path to the extra atom descriptors.')
-    parser.add_argument('--bond_features_path', type=str,
-                        help='Path to the extra bond descriptors that will be used as bond features to featurize a\
+    parser.add_argument('--bond_features_size', type=str,
+                        help='Size of the extra bond descriptors that will be used as bond features to featurize a\
                              given molecule')
     parser.add_argument('--no_cache', type=bool, default=False,
                         help='Turn off caching mol2graph computation')

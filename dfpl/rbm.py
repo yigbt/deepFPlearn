@@ -255,7 +255,8 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".RBM"),
                               hist=auto_hist)
     rbm.save_weights(rbm_weights_file)
-    rbm.save(opts.ecModelDir)
+    save_path = os.path.join(opts.ecModelDir, "rbm_model")
+    rbm.save(save_path)
     # tf.saved_model.save(encoder,'/home/soulios/deepFPlearn-master/example/results_train/')
     logging.info(f"RBM weights stored in file: {rbm_weights_file}")
 
@@ -271,16 +272,16 @@ def compress_fingerprints(dataframe: pd.DataFrame,
     :param encoder: The trained autoencoder that is used for compressing the fingerprints
     :return: The input dataframe extended by a column containing the compressed version of the fingerprints
     """
-    logging.info("Adding compressed fingerprints")
+    logging.info("Adding rbm compressed fingerprints")
     idx = dataframe[dataframe["fp"].notnull()].index
     fp_matrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list(),
                          dtype=settings.ac_fp_numpy_type,
                          copy=settings.numpy_copy_values)
     logging.info(f"Using input matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
-    logging.info("Compressed fingerprints are added to input dataframe.")
+    logging.info("Compressed fingerprints from rbm are added to input dataframe.")
     fp_matrix = tf.cast(tf.where(fp_matrix, 1, 0), tf.float32)
     out, visibleGen, hiddenGen, h1, out_dict = encoder.predict(fp_matrix)
-    out, visibleGen, hiddenGen, h1 = out_dict[f'encoder_{layer_num}']
+    out, visibleGen, hiddenGen, h1 = out_dict[f'encoder_{layer_num-1}']
     dataframe['fpcompressed'] = pd.DataFrame({'fpcompressed': [s for s in hiddenGen]}, idx)
 
     return dataframe

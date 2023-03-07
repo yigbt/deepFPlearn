@@ -1,14 +1,14 @@
 import os.path
 import sys
-
+import cProfile
 sys.path.append("./chemprop_repo")
 from chemprop_repo import chemprop
 from chemprop_repo.chemprop import args, train
 
-sys.path.append("./CMPNN")
-from CMPNN.cmpnnchemprop.train import *
-from CMPNN.cmpnnchemprop.utils import create_logger
-from CMPNN.training import cross_validate
+# sys.path.append("./CMPNN")
+# from CMPNN.cmpnnchemprop.train import *
+# from CMPNN.cmpnnchemprop.utils import create_logger
+# from CMPNN.training import cross_validate
 
 import pandas as pd
 from argparse import Namespace
@@ -134,6 +134,7 @@ def train(opts: options.Options):
                 # encoder = keras.models.load_model(opts.ecModelDir)
                 (_, encoder) = ac.define_ac_model(opts=options.Options)
                 encoder.load_weights(os.path.join(opts.outputDir, opts.ecWeightsFile))
+
         else:
             if not opts.trainRBM:
                 # load trained model for autoencoder
@@ -146,12 +147,13 @@ def train(opts: options.Options):
         # compress the fingerprints using the autoencoder
         if not opts.useRBM:
             df = ac.compress_fingerprints(df, encoder)
+            # ac.visualize_fingerprints(df, before_col = "fp", after_col = "fpcompressed",output_dir=opts.outputDir,opts=opts)
+
         else:
             layer_out = round(math.log2(opts.fpSize / opts.encFPSize))
             df = rbm.compress_fingerprints(df, rbm_model, layer_out - 1)
     if opts.trainFNN:
         # train single label models
-        # fNN.train_single_label_models(df=df, opts=opts)
         sl.train_single_label_models(df=df, opts=opts)
 
     # train multi-label models
