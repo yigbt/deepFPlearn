@@ -134,8 +134,10 @@ def train(opts: options.Options):
     :param opts: Options defining the details of the training
     """
     # import data from file and create DataFrame
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
-
+    if "csv" in opts.inputFile:
+        df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    if "tsv" in opts.inputFile:
+        df = fp.importDataFile(opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize)
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)
 

@@ -99,22 +99,39 @@ def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
 
     return mol
 
-
 def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = False) -> str:
     """
-    Computes the Bemis-Murcko scaffold for a SMILES string.
+    Computes the Bemis-Murcko scaffold for a SMILES string, an RDKit molecule, or an InChI string or InChIKey.
 
-    :param mol: A SMILES or an RDKit molecule.
-    :param include_chirality: Whether to include chirality in the computed scaffold..
+    :param mol: A SMILES, RDKit molecule, InChI string, or InChIKey string.
+    :param include_chirality: Whether to include chirality in the computed scaffold.
     :return: The Bemis-Murcko scaffold for the molecule.
     """
     if isinstance(mol, str):
-        mol = make_mol(mol, keep_h=False, add_h=False, keep_atom_map=False)
-    if isinstance(mol, tuple):
+        if mol.startswith('InChI='):
+            mol = inchi_to_mol(mol)
+        else:
+            mol = make_mol(mol, keep_h=False, add_h=False, keep_atom_map=False)
+    elif isinstance(mol, tuple):
         mol = mol[0]
     scaffold = MurckoScaffold.MurckoScaffoldSmiles(
         mol=mol, includeChirality=include_chirality)
     return scaffold
+# def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = False) -> str:
+#     """
+#     Computes the Bemis-Murcko scaffold for a SMILES string.
+#
+#     :param mol: A SMILES or an RDKit molecule.
+#     :param include_chirality: Whether to include chirality in the computed scaffold..
+#     :return: The Bemis-Murcko scaffold for the molecule.
+#     """
+#     if isinstance(mol, str):
+#         mol = make_mol(mol, keep_h=False, add_h=False, keep_atom_map=False)
+#     if isinstance(mol, tuple):
+#         mol = mol[0]
+#     scaffold = MurckoScaffold.MurckoScaffoldSmiles(
+#         mol=mol, includeChirality=include_chirality)
+#     return scaffold
 
 
 def scaffold_to_smiles(mols: List[str], use_indices: bool = False) -> Dict[str, Union[Set[str], Set[int]]]:
@@ -135,7 +152,8 @@ def scaffold_to_smiles(mols: List[str], use_indices: bool = False) -> Dict[str, 
 
     return scaffolds
 
-
+def inchi_to_mol(inchi: str) -> Chem.Mol:
+    return Chem.inchi.MolFromInchi(inchi)
 def scaffold_split(data: pd.DataFrame,
                    sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
                    balanced: bool = False,
@@ -160,7 +178,12 @@ def scaffold_split(data: pd.DataFrame,
     train_scaffold_count, val_scaffold_count, test_scaffold_count = 0, 0, 0
 
     # Map from scaffold to index in the data
-    key_mols = data.iloc[:, key_molecule_index]
+    key_colnames = data.columns
+    if 'inchi' in key_colnames:
+        key_molecule_index = next((i for i, colname in enumerate(data.columns) if 'inchi' in colname.lower()), None)
+        key_mols = data.iloc[:, key_molecule_index].apply(inchi_to_mol).dropna()
+    else:
+        key_mols = data.iloc[:, key_molecule_index]
     scaffold_to_indices = scaffold_to_smiles(
         key_mols.tolist(), use_indices=True)
     # Seed randomness

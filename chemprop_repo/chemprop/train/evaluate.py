@@ -8,7 +8,10 @@ from .predict import predict
 from chemprop.data import MoleculeDataLoader, StandardScaler, AtomBondScaler
 from chemprop.models import MoleculeModel
 from chemprop.train import get_metric_func
-
+from sklearn.metrics import auc,roc_curve
+import sys
+sys.path.insert(0, "dfpl")
+from dfpl.plot import plot_auc
 
 def evaluate_predictions(preds: List[List[float]],
                          targets: List[List[float]],
@@ -95,6 +98,15 @@ def evaluate_predictions(preds: List[List[float]],
                                                     labels=list(range(len(valid_preds[i][0])))))
                 elif metric in ['bounded_rmse', 'bounded_mse', 'bounded_mae']:
                     results[metric].append(metric_func(valid_targets[i], valid_preds[i], gt_targets[i], lt_targets[i]))
+                elif metric == 'roc-auc':
+                    fpr, tpr, _ = roc_curve(valid_targets[i], valid_preds[i])
+                    fpr = fpr.tolist()
+                    tpr = tpr.tolist()
+                    auc_value = auc(fpr, tpr)
+                    results[metric].append(auc_value)
+                    # plot_data = pd.DataFrame({"fpr": fpr, "tpr": tpr, "auc_value": auc_value})
+                    # plot_data.to_csv(os.path.join(args.save_dir,f"roc_curve_{i}.csv"), index=False)
+                    plot_auc(fpr, tpr, auc_value, target=f"Task {i}", filename=f"roc_curve_{i}.png", wandb_logging=True)
                 else:
                     results[metric].append(metric_func(valid_targets[i], valid_preds[i]))
 

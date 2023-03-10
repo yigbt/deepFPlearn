@@ -1,9 +1,9 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "gnn_type": "cmpnn",
-  "test_path": "CMPNN/data/S_dataset-AR.csv",
-  "checkpoint_paths": ["example/model.pt"],
-  "save_dir": "output_cmpnn",
-  "saving_name": "test.csv",
-  "checkpoint_dir": "example"
+  "gnn_type": "dmpnn",
+  "test_path": "example/data/sample.csv",
+  "checkpoint_paths": ["example/S_random/model_0/model.pt"],
+  "save_dir": "output_dmpnn",
+  "saving_name": "DMPNN_random_S_sample_pred.csv",
+  "checkpoint_dir": "./example/"
 }
