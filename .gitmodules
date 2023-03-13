@@ -1,3 +1,3 @@
 [submodule "chemprop"]
-	path = chemprop
+	path = chemprop_repo
 	url = https://github.com/soulios/chemprop.git
