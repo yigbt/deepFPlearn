@@ -1,6 +1,6 @@
 from __future__ import annotations
 import sys
-sys.path.append("./chemprop_repo")
+sys.path.append("./chemprop")
 import torch
 from chemprop_repo.chemprop.args import TrainArgs
 from dfpl.utils import makePathAbsolute
