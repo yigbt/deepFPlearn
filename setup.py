@@ -24,7 +24,7 @@ setup(
         "pandas==1.4.2",
         "rdkit-pypi==2022.03.1",
         "scikit-learn==1.0.2",
-        "keras==2.6.0",
+        "keras==2.9.0",
         "tensorflow-gpu==2.9.3",
         "wandb~=0.12",
     ],
