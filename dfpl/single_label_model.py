@@ -4,25 +4,17 @@ import shutil
 import sys
 from os import path
 from time import time
-from typing import Union
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import auc
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import matthews_corrcoef
-from sklearn.metrics import roc_curve
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import train_test_split
 import tensorflow as tf
-from tensorflow.keras import metrics
-from tensorflow.keras import optimizers
-from tensorflow.keras import regularizers
-from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
-from tensorflow.keras.models import Model
-from tensorflow.keras.models import Sequential
+from sklearn.metrics import (auc, classification_report, confusion_matrix,
+                             matthews_corrcoef, roc_curve)
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from tensorflow.keras import metrics, optimizers, regularizers
+from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
 from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
+from tensorflow.keras.models import Model, Sequential
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -232,8 +224,7 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
     y_predict_int = (y_predict >= threshold).astype(np.short)
     y_test_int = y_test.astype(np.short)
 
-    (pd
-     .DataFrame({
+    (pd.DataFrame({
         "y_true": y_test_int,
         "y_predicted": y_predict,
         "y_predicted_int": y_predict_int,
@@ -307,7 +298,7 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
         initial_bias = None
         logging.info("No zeroes in training labels. Setting initial_bias to None.")
     else:
-        initial_bias = np.log([count_dict[1]/count_dict[0]])
+        initial_bias = np.log([count_dict[1] / count_dict[0]])
         logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
 
     model = define_single_label_model(input_size=x_train.shape[1], opts=opts, output_bias=initial_bias)
@@ -414,8 +405,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             # select and copy best model - how to define the best model?
             best_fold = (
                 pd
-                    .concat(performance_list, ignore_index=True)
-                    .sort_values(
+                .concat(performance_list, ignore_index=True)
+                .sort_values(
                     by=['p_1', 'r_1', 'MCC'],
                     ascending=False,
                     ignore_index=True)['fold'][0]

@@ -1,10 +1,10 @@
-import tensorflow.keras.models
-import pandas as pd
-import numpy as np
 import logging
 
-from dfpl import options
-from dfpl import settings
+import numpy as np
+import pandas as pd
+import tensorflow.keras.models
+
+from dfpl import options, settings
 
 
 def predict_values(df: pd.DataFrame,

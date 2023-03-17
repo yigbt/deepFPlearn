@@ -1,21 +1,17 @@
-import sys
 import argparse
 import os
 import re
-import pandas as pd
-import numpy as np
-
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
-
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
-
+import sys
 from time import time
 
-from dfpl import dfplmodule as dfpl
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import GridSearchCV, train_test_split
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
+from dfpl import dfplmodule as dfpl
 
 # ------------------------------------------------------------------------------------- #
 
@@ -64,22 +60,21 @@ def parseInput():
                         help="Space separated list of optimizers for the DNN model "
                              "that should be tested."
                              "Available optimizers are listed here: https://keras.io/optimizers/ ."
-                             "Example: --optimizers 'Adadelta' 'Adam' 'Adamax'"
-                             )
+                             "Example: --optimizers 'Adadelta' 'Adam' 'Adamax'")
     parser.add_argument('--activations', metavar='STR', type=str, nargs='+',
                         required=False, default=['relu'],
                         help="Space separated list of activation fucntions for the DNN model "
                              "that should be tested."
                              "Available functions are listed here: https://keras.io/activations/ ."
-                             "Example: --activations 'sigmoid' 'relu'"
-                             )
+                             "Example: --activations 'sigmoid' 'relu'")
 
     return parser.parse_args()
 
-# ----------------------------------------------------------------------------- #
 
-# model for tuning epochs and batchsizes only
 def c_model(dropout=0.2):
+    """
+    model for tuning epochs and batchsizes only
+    """
     model = Sequential()
     model.add(Dense(1024, activation='relu'))
     model.add(Dropout(dropout))
@@ -93,10 +88,11 @@ def c_model(dropout=0.2):
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
-# ----------------------------------------------------------------------------- #
 
-# model for tuning optmizer, activation functions and initialization of hidden layers
 def tuning_model(optimizer, activation, init, dropout=0.2):
+    """
+    model for tuning optmizer, activation functions and initialization of hidden layers
+    """
     model = Sequential()
     model.add(Dense(1024, activation=activation, init=init))
     model.add(Dropout(dropout))
@@ -120,35 +116,34 @@ if __name__ == '__main__':
     # get all arguments
     args = parseInput()
 
-    #print(args)
-    #exit(1)
+    # print(args)
+    # exit(1)
 
     # this stores the best performing parameters for each model for each target
     results = pd.DataFrame()
 
     np.random.seed(0)
 
-    #filepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.fingerprints.csv"
-    #outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(filepath))
-    #dataset = pd.read_csv(filepath)
+    # filepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.fingerprints.csv"
+    # outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(filepath))
+    # dataset = pd.read_csv(filepath)
 
     dataset = pd.read_csv(args.i[0])
 
-    #le = LabelEncoder()
+    # le = LabelEncoder()
 
-    ## which target column to use? put this in a loop later for all targets
-    ## here we need a for loop
+    # which target column to use? put this in a loop later for all targets
+    # here we need a for loop
 
     for target in args.t:
         target = 'ER'
         print(target)
-        #outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(filepath))
+        # outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(filepath))
         outfilepath = args.p[0] + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(args.i[0]))
 
-
-        if(target in dataset.columns):
-            #modelfilepathW = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.weights.h5'
-            #modelfilepathM = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.json'
+        if target in dataset.columns:
+            # modelfilepathW = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.weights.h5'
+            # modelfilepathM = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.json'
             modelfilepathW = args.p[0] + '/model.' + target + '.weights.h5'
             modelfilepathM = args.p[0] + '/model.' + target + '.json'
 
@@ -156,7 +151,7 @@ if __name__ == '__main__':
             Y = np.asarray(tmp)
             naRows = np.isnan(Y)
 
-            d = dataset[~naRows] # d is a copy!
+            d = dataset[~naRows]  # d is a copy!
 
             # generate X from fingerprints
             # split all fingerprints into vectors
@@ -177,25 +172,25 @@ if __name__ == '__main__':
                 X[i] = np.array(list(fp), dtype='int')
 
             # generate y vector(s)
-            #y = to_categorical(np.array(d[target]), num_classes=2)
+            # y = to_categorical(np.array(d[target]), num_classes=2)
             y = d[target]
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
             start = time()
 
-            ### find best performing parameters
+            # find best performing parameters
             sys.stdout.write("# --------------------------------------------------------------------------- #\n")
             sys.stdout.write("#target = %s\n" % target)
 
             # Start optimizing epochs and batchsizes (if more than one provided)
 
-            #batchSizes = args.batchSizes
+            # batchSizes = args.batchSizes
             batchSizes = [64, 128, 256]
             epochs = args.epochs  # epochs = [5, 10]
 
             if (batchSizes.__len__() > 1):
 
-                #model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
+                # model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel)
 
                 parameters = {'batch_size': batchSizes}
@@ -229,11 +224,11 @@ if __name__ == '__main__':
 
             # Hypertune optimizers
             optimizers = ['SGD', 'Adam']
-            #optimizers = args.optimizers
+            # optimizers = args.optimizers
 
             if optimizers.__len__() > 1:
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel, epochs=selected_epochs, batch_size=selected_bs)
-                parameters = {'optimizer': optimizers} #['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']}
+                parameters = {'optimizer': optimizers}  # ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']}
                 clf = GridSearchCV(model, parameters, verbose=0)
                 clf.fit(X_train, y_train)
 
@@ -260,7 +255,7 @@ if __name__ == '__main__':
                 selected_optimizer = optimizers[0]
 
             # Hypertune activation functions
-            activations = args.activations #'sigmoid', 'tanh', 'relu'
+            activations = args.activations  # 'sigmoid', 'tanh', 'relu'
 
             if activations.__len__() > 1:
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel, epochs=selected_epochs, batch_size=selected_bs)
@@ -293,14 +288,13 @@ if __name__ == '__main__':
                 selected_activation = activations[0]
 
             # Maybe also optimize weight initializations??
-            #inits = ['glorot_uniform', 'normal', 'uniform']
+            # inits = ['glorot_uniform', 'normal', 'uniform']
 
-
-            ### find best performing parameters
-            sys.stdout.write("Calculation time: %s min\n\n" % str(round((time()-start)/60, ndigits=2)))
+            # find best performing parameters
+            sys.stdout.write("Calculation time: %s min\n\n" % str(round((time() - start) / 60, ndigits=2)))
 
         else:
-            sys.stderr.write("ERROR: the target that you provide (%s) "
-                  "is not contained in your data file (%s)" %
-                  (target, args.i[0]))
-
+            sys.stderr.write(
+                f"ERROR: the target that you provide ({target}) "
+                "is not contained in your data file ({args.i[0]}%s)"
+            )

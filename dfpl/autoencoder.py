@@ -1,22 +1,19 @@
+import logging
+import math
 import os.path
 from os.path import basename
-import math
 
 import numpy as np
 import pandas as pd
-import logging
-
 import tensorflow.keras.metrics as metrics
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense
-from tensorflow.keras import optimizers, losses, initializers
-
 from sklearn.model_selection import train_test_split
+from tensorflow.keras import initializers, losses, optimizers
+from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.models import Model
 
-from dfpl import options
 from dfpl import callbacks
 from dfpl import history as ht
-from dfpl import settings
+from dfpl import options, settings
 
 
 def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
@@ -123,12 +120,12 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         base_file_name = os.path.splitext(basename(opts.inputFile))[0]
         logging.info(f"(auto)encoder weights will be saved in {base_file_name}.[auto]encoder.hdf5")
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
-        ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.weights.hdf5")
+        # ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.weights.hdf5")
     else:
         logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
         base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
         ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
-        ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
+        # ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # collect the callbacks for training
     callback_list = callbacks.autoencoder_callback(checkpoint_path=ac_weights_file, opts=opts)
@@ -142,7 +139,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # When training the final AE, we don't want any test data. We want to train it on the all available
     # fingerprints.
-    assert(0.0 <= opts.testSize <= 0.5)
+    assert 0.0 <= opts.testSize <= 0.5
     if opts.testSize > 0.0:
         # split data into test and training data
         if opts.wabTracking:
@@ -160,7 +157,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         initial_bias = None
         logging.info("No zeroes in training labels. Setting initial_bias to None.")
     else:
-        initial_bias = np.log([count_dict[1]/count_dict[0]])
+        initial_bias = np.log([count_dict[1] / count_dict[0]])
         logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
 
     if opts.testSize > 0.0:

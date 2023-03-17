@@ -1,51 +1,29 @@
-import argparse
+"""
+Python module for deepFPlearn tools
+"""
 
-# Python module for deepFPlearn tools
-import re
-import math
+import argparse
 import csv
+import math
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import shutil
-import matplotlib.pyplot as plt
-import matplotlib
-# matplotlib.use('Agg')
-import matplotlib.patches as mpatches
-from matplotlib.colors import LinearSegmentedColormap
-# %matplotlib inline
-# for drawing the heatmaps
-import seaborn as sns
-
-# for fingerprint generation
-from rdkit import Chem
-from rdkit import DataStructs
+import seaborn as sns  # for drawing the heatmaps
+from rdkit import Chem, DataStructs  # for fingerprint generation
 from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
-
-# for NN model functions
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Input, Dense, Dropout
-from tensorflow.keras.models import Model
-from tensorflow.keras import regularizers
-from tensorflow.keras import optimizers
-from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.callbacks import ReduceLROnPlateau
-import sklearn
+from rdkit.Chem.AtomPairs import Pairs, Torsions
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_curve
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import auc
-from sklearn.metrics import matthews_corrcoef
-from sklearn.model_selection import KFold
+from tensorflow.keras import optimizers, regularizers
+from tensorflow.keras.callbacks import (EarlyStopping, ModelCheckpoint,
+                                        ReduceLROnPlateau)
+from tensorflow.keras.layers import Dense, Dropout, Input
+# for NN model functions
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.optimizers import SGD
 
-from time import time
-
-
-###############################################################################
 # GENERAL FUNCTIONS --------------------------------------------------------- #
+
 
 def gather(df, key, value, cols):
     """
@@ -63,8 +41,6 @@ def gather(df, key, value, cols):
     value_name = value
     return pd.melt(df, id_vars, id_values, var_name, value_name)
 
-
-# ------------------------------------------------------------------------------------- #
 
 def shuffleDataPriorToTraining(x, y):
     """
@@ -85,8 +61,6 @@ def shuffleDataPriorToTraining(x, y):
     #             cols=y.columns)
 
 
-# ------------------------------------------------------------------------------------- #
-
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -97,8 +71,6 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-
-# ------------------------------------------------------------------------------------- #
 
 def smi2fp(smile, fptype, size=2048):
     """
@@ -118,7 +90,7 @@ def smi2fp(smile, fptype, size=2048):
     # first transform to canoncial smiles
     try:
         cs = Chem.CanonSmiles(smile)
-    except:
+    except Exception:
         print(f'[WARNING]: Not able to transform your smile to a canonical version of it: {smile}')
     if not cs:
         return None
@@ -126,7 +98,7 @@ def smi2fp(smile, fptype, size=2048):
     mol = None
     try:
         mol = Chem.MolFromSmiles(cs)
-    except:
+    except Exception:
         print(
             f'[WARNING]: Not able to extract molecule from (canonically transformed) SMILES: {cs}\n          Original SMILE: {smile}')
     if not mol:
@@ -145,7 +117,7 @@ def smi2fp(smile, fptype, size=2048):
         try:
             # fp = Chem.RDKFingerprint(mol, fpSize=size)
             return (Chem.RDKFingerprint(mol, fpSize=size))
-        except:
+        except Exception:
             print('SMILES not convertable to topological fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
@@ -161,7 +133,7 @@ def smi2fp(smile, fptype, size=2048):
         try:
             # fp = MACCSkeys.GenMACCSKeys(mol)
             return (MACCSkeys.GenMACCSKeys(mol))
-        except:
+        except Exception:
             print('SMILES not convertable to MACSS fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
@@ -178,7 +150,7 @@ def smi2fp(smile, fptype, size=2048):
             return (Pairs.GetAtomPairFingerprintAsBitVect(mol))
             # counts if features also possible here! needs to be parsed differently
             # fps.update({i:Pairs.GetAtomPairFingerprintAsIntVect(mols[i])})
-        except:
+        except Exception:
             print('SMILES not convertable to atompairs fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
@@ -193,14 +165,12 @@ def smi2fp(smile, fptype, size=2048):
         try:
             # fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
             return (Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol))
-        except:
+        except Exception:
             print('SMILES not convertable to torsions fingerprint:')
             assert isinstance(smile, object)
             print('SMILES: ' + smile)
             return (None)
 
-
-# ------------------------------------------------------------------------------------- #
 
 def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = False,
                    size: int = 2048, verbose: int = 2, returnY: bool = True) -> tuple:
@@ -223,7 +193,7 @@ def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = Fa
     df = pd.read_csv(csvfilename)
     cnames = df.columns
 
-    if not rtype in cnames:
+    if rtype not in cnames:
         print(f'[ERROR:] There is no column named {rtype} in your input training set file')
         exit(0)
 
@@ -252,8 +222,6 @@ def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = Fa
     return (dfX, dfY)
 
 
-# ------------------------------------------------------------------------------------- #
-
 def TrainingDataHeatmap(x, y):
     x['ID'] = x.index
     y['ID'] = y.index
@@ -272,7 +240,6 @@ def TrainingDataHeatmap(x, y):
     return 1
 
 
-# ------------------------------------------------------------------------------------- #
 def removeDuplicates(x, y):
     """
     Remove duplicated feature - outcome pairs from feature matrix and outcome vector combination.
@@ -295,8 +262,6 @@ def removeDuplicates(x, y):
 
     return (x[fpstrings_unique[1]], y[fpstrings_unique[1]])
 
-
-# ------------------------------------------------------------------------------------- #
 
 def defineCallbacks(checkpointpath: str, patience: int, rlrop: bool = False,
                     rlropfactor: float = 0.1, rlroppatience: int = 50) -> list:
@@ -331,8 +296,6 @@ def defineCallbacks(checkpointpath: str, patience: int, rlrop: bool = False,
     # Return list of callbacks - collect the callbacks for training
     return (callbacks)
 
-
-# ------------------------------------------------------------------------------------- #
 
 def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2,
                        activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
@@ -372,8 +335,6 @@ def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2
 
     return model
 
-
-# ------------------------------------------------------------------------------------- #
 
 def defineNNmodel(inputSize: int = 2048, l2reg: float = 0.001, dropout: float = 0.2,
                   activation: str = 'relu', optimizer: str = 'Adam', lr: float = 0.001,
@@ -429,8 +390,6 @@ def defineNNmodel(inputSize: int = 2048, l2reg: float = 0.001, dropout: float = 
 
     return model
 
-
-# ------------------------------------------------------------------------------------- #
 
 def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: object = 'binary_crossentropy',
                      mylr: float = 0.001, mydecay: float = 0.01) -> tuple:
@@ -497,8 +456,6 @@ def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: ob
     return (autoencoder, encoder)
 
 
-# ------------------------------------------------------------------------------------- #
-
 # def predict_values(ac_model_file_path, model_file_path, pdx):
 #     """
 #     Predict a set of chemicals using a selected model.
@@ -548,8 +505,6 @@ def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: ob
 #     return (df)
 
 
-# ------------------------------------------------------------------------------------- #
-
 def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs: int = 0,
                 encdim: int = 256, checkpointpath: str = None, verbose: int = 0) -> Model:
     """
@@ -571,7 +526,7 @@ def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs
     (autoencoder, encoder) = autoencoderModel(input_size=X.shape[1], encoding_dim=encdim)
 
     if useweights:  # don't train, use existing weights file and load it into AC model
-        #autoencoder.load_weights(useweights)
+        # autoencoder.load_weights(useweights)
         encoder.load_weights(useweights)
     else:
         # collect the callbacks for training
@@ -612,7 +567,6 @@ def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs
     # use encode() of train data as input for DL model to associate to chemical
     return encoder
 
-# ------------------------------------------------------------------------------------- #
 
 def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     """
@@ -651,8 +605,6 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     plt.close()
 
 
-# ------------------------------------------------------------------------------------- #
-
 def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
@@ -664,8 +616,6 @@ def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.savefig(fname=filename, format='svg')
     plt.close()
 
-
-# ------------------------------------------------------------------------------------- #
 
 def plotHeatmap(matrix, filename, title=""):
     plt.figure()
@@ -783,8 +733,6 @@ def plotHeatmap(matrix, filename, title=""):
 #     plt.savefig(fname=file, format='svg')
 #     plt.close()
 #
-
-# ------------------------------------------------------------------------------------- #
 
 def drawHeatmap(data, anno):
     # (data=pd.DataFrame(Xt), anno = pd.DataFrame(Yt.astype(int)))
@@ -1331,5 +1279,3 @@ def smilesSet2fpSet(csvfilename, outfilename, fptype):
                 writer.writerow({'fp': DataStructs.BitVectToText(fp)})
 
     return
-
-

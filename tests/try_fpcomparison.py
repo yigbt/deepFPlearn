@@ -1,15 +1,12 @@
-import dfpl.fingerprint as fp
-from rdkit import Chem
-from rdkit import DataStructs
+import numpy as np
+import pandas as pd
+from rdkit import Chem, DataStructs
 from rdkit.Chem import Draw
 
-import pandas as pd
-import numpy as np
-
+import dfpl.fingerprint as fp
 from dfpl import autoencoder as ac
-from dfpl import feedforwardNN as fNN
-from dfpl import predictions
 from dfpl import options as opt
+from dfpl import predictions
 
 # read both datasets
 dfS = fp.importDataFile("data/S_dataset_extended.pkl", import_function=fp.importSmilesCSV, fp_size=2048)
