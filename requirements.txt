@@ -1,3 +1,4 @@
+flake8
 pip==22.0.4
 pytest==7.1.1
 
