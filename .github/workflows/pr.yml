@@ -10,22 +10,24 @@ jobs:
         python-version: ['3.8']
     steps:
     - uses: actions/checkout@v1
-    - uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Cache .cache/pip
-      uses: actions/cache@v3
-      id: cache-pip
-      with:
-        path: ~/.cache/pip
-        key: pip_cache_py_${{ matrix.python-version }}
-    - name: install pytest
-      run: pip install pytest
-    - name: install package
-      run: pip install -r requirements.txt
-    - uses: ricardochaves/python-lint@v1.4.0
-      with:
-        python-root-list: "dfpl tests"
+#     - uses: actions/setup-python@v4
+#       with:
+#         python-version: ${{ matrix.python-version }}
+#     - name: Cache .cache/pip
+#       uses: actions/cache@v3
+#       id: cache-pip
+#       with:
+#         path: ~/.cache/pip
+#         key: pip_cache_py_${{ matrix.python-version }}
+#     - name: install pytest
+#       run: pip install pytest
+#     - name: install package
+#       run: pip install -r requirements.txt
+#     - uses: ricardochaves/python-lint@v1.4.0
+#       with:
+#         python-root-list: "dfpl tests"
+    - uses: psf/black@stable
+    - uses: isort/isort-action@master
   test:
     runs-on: ubuntu-latest
     strategy:
