@@ -2,10 +2,9 @@ import array
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib.axes import Axes
 # for NN model functions
 from tensorflow.keras.callbacks import History
-from matplotlib.axes import Axes
-
 
 # for testing in Weights & Biases
 

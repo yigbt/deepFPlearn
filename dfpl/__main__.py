@@ -1,19 +1,18 @@
-from argparse import Namespace
+import dataclasses
 import logging
 import pathlib
-import dataclasses
+from argparse import Namespace
 from os import path
 
-from tensorflow import keras
 import wandb
+from tensorflow import keras
 
-from dfpl.utils import makePathAbsolute, createDirectory
-from dfpl import options
-from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
-from dfpl import predictions
+from dfpl import fingerprint as fp
+from dfpl import options, predictions
 from dfpl import single_label_model as sl
+from dfpl.utils import createDirectory, makePathAbsolute
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(

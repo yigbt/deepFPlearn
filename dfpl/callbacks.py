@@ -1,10 +1,9 @@
 # for NN model functions
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 # for testing in Weights & Biases
 from wandb.keras import WandbCallback
 
-from dfpl import options
-from dfpl import settings
+from dfpl import options, settings
 
 
 def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:

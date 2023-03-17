@@ -1,16 +1,13 @@
-import pandas as pd
-import numpy as np
-
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
-
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
-
 from time import time
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import LabelEncoder
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
 
 def tuning_model(optimizer, activation, init, dropout=0.2):
@@ -55,7 +52,7 @@ le = LabelEncoder()
 # which target column to use? put this in a loop later for all targets
 # here we need a for loop
 for target in dataset.columns[1:7]:
-    #target = dataset.columns[1] # 'AR'
+    # target = dataset.columns[1] # 'AR'
 
     modelfilepathW = str(modelfilepathprefix) + '/model.' + target + '.weights.h5'
     modelfilepathM = str(modelfilepathprefix) + '/model.' + target + '.json'
@@ -72,7 +69,6 @@ for target in dataset.columns[1:7]:
     Ncols = d['fp'][0].__len__()
     # Store all fingerprints in numpy array
     X = np.empty((Nrows, Ncols), int)
-
 
     # keep old indexes of this subset of arrays
     d['oldIdx'] = d.index.values
@@ -113,12 +109,10 @@ for target in dataset.columns[1:7]:
     clf_results.best_estimator_.model.save(filepath=modelfilepathM)
     clf_results.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
-    ### find best performing parameters
+    # find best performing parameters
     file = open(outfilepath, "a")
     file.write("# --------------------------------------------------------------------------- #\n")
     file.write("### Results for %s target ###\n" % target)
     file.write("Best: %f using %s\n" % (clf_results.best_score_, clf_results.best_params_))
-    file.write("Calculation time: %s min\n\n" % str(round((time()-start)/60, ndigits=2)))
+    file.write("Calculation time: %s min\n\n" % str(round((time() - start) / 60, ndigits=2)))
     file.close()
-
-

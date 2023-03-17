@@ -1,8 +1,10 @@
 from __future__ import annotations
-from dataclasses import dataclass
-import jsonpickle
+
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
+
+import jsonpickle
 
 from dfpl.utils import makePathAbsolute
 
@@ -217,7 +219,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         metavar='INT',
                         type=int,
                         choices=[0, 1, 2],
-                        help="Verbosity level. O: No additional output, " +
+                        help="Verbosity level. O: No additional output, "
                              "1: Some additional output, 2: full additional output",
                         default=argparse.SUPPRESS)
     parser.add_argument('--trainAC',
