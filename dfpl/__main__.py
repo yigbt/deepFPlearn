@@ -8,7 +8,7 @@ from chemprop_repo.chemprop import args, train
 # from CMPNN.cmpnnchemprop.train import *
 # from CMPNN.cmpnnchemprop.utils import create_logger
 # from CMPNN.training import cross_validate
-
+from keras.models import load_model
 import pandas as pd
 from argparse import Namespace
 import logging
@@ -133,11 +133,17 @@ def train(opts: options.Options):
     Run the main training procedure
     :param opts: Options defining the details of the training
     """
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = f"{opts.gpu}"
+
     # import data from file and create DataFrame
     if "csv" in opts.inputFile:
         df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
     if "tsv" in opts.inputFile:
         df = fp.importDataFile(opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize)
+    if "pkl" in opts.inputFile:
+        df = fp.importDataFile(opts.inputFile, import_function=fp.load_pickle_file, fp_size=opts.fpSize)
+
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)
 
@@ -178,19 +184,32 @@ def train(opts: options.Options):
 
             # if an autoencoder was not trained, load the trained model and weights
             if not opts.trainAC:
-                (_, encoder) = ac.define_ac_model(opts=options.Options)
-                encoder.load_weights(opts.ecWeightsFile)
-                # encoder.load_weights(os.path.join(opts.outputDir, opts.ecWeightsFile))
+                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+                # autoencoder = load_model(opts.ecModelDir)
+                if "generic" in opts.ecWeightsFile:
+                    encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
+                if "scaffold" in opts.ecWeightsFile:
+                    autoencoder = autoencoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
+                if "molecular_weight" in opts.ecWeightsFile:
+                    autoencoder = autoencoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
+            total_weights_0 = total_weights_1 = 0
+            for layer in encoder.layers:
+                weights = layer.get_weights()
+                if len(weights) > 0:
+                    total_weights_0 += tf.reduce_sum(weights[0]).numpy()
+                    total_weights_1 += tf.reduce_sum(weights[1]).numpy()
+            print(f"The encoder has {total_weights_0} + {total_weights_1} non-zero weights.")
+
 
             # compress the fingerprints using the autoencoder
             df = ac.compress_fingerprints(df, encoder)
-
+            # ac.visualize_fingerprints(df,before_col='fp',after_col='fpcompressed',save_as=os.path.join(opts.outputDir, f"{opts.inputFile}_{opts.split_type}_fingerprints.png"))
     # train single label models if requested
-    if opts.trainFNN:
+    if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
 
     # train multi-label models if requested
-    if opts.enableMultiLabel:
+    if opts.trainFNN and opts.enableMultiLabel:
         fNN.train_nn_models_multi(df=df, opts=opts)
 
 
@@ -200,14 +219,17 @@ def predict(opts: options.Options) -> None:
     :param opts: Options defining the details of the prediction
     """
     # Import the input data file using the specified function and fingerprint size
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
-
+    if "csv" in opts.inputFile:
+        df = fp.importDataFile(opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize)
+    if "tsv" in opts.inputFile:
+        df = fp.importDataFile(opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize)
     # Create output directory if it doesn't already exist
     createDirectory(opts.outputDir)
 
     if opts.compressFeatures:
         # Load trained model for autoencoder
-        encoder = load_model(opts.ecModelDir)
+        (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+        encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
 
         if opts.useRBM:
             # Compress the fingerprints using the RBM model
@@ -257,6 +279,7 @@ def main():
     """
     Main function that runs training/prediction defined by command line arguments
     """
+
     parser = options.createCommandlineParser()
     prog_args: Namespace = parser.parse_args()
     try:
@@ -331,84 +354,7 @@ def main():
     except AttributeError as e:
         print(e)
         parser.print_usage()
-def main():
-    """
-    Main function that runs training/prediction defined by command line arguments
-    """
-    parser = options.createCommandlineParser()
-    prog_args: Namespace = parser.parse_args()
-    try:
-        if prog_args.method == "convert":
-            directory = makePathAbsolute(prog_args.f)
-            if path.isdir(directory):
-                createLogger(path.join(directory, "convert.log"))
-                logging.info(f"Convert all data files in {directory}")
-                fp.convert_all(directory)
-            else:
-                raise ValueError("Input directory is not a directory")
-        elif prog_args.method == "traingnn":
-            traingnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                traingnn_opts,
-                # inputFile=makePathAbsolute(traingnn_opts.data_path),
-                # outputDir=makePathAbsolute(traingnn_opts.save_dir)
-            )
 
-            # if traingnn_opts.gnn_type == "cmpnn":
-            #     createDirectory(fixed_opts.save_dir)
-            #     traincmpnn(fixed_opts)
-            if traingnn_opts.gnn_type == "dmpnn":
-                traindmpnn(fixed_opts)
-
-        elif prog_args.method == "predictgnn":
-            predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                predictgnn_opts,
-                checkpoint_dir=makePathAbsolute(predictgnn_opts.checkpoint_dir),
-                test_path=makePathAbsolute(predictgnn_opts.test_path),
-                preds_path=makePathAbsolute(predictgnn_opts.preds_path),
-                trainAC=False,
-                trainFNN=False
-            )
-
-            createLogger(path.join(fixed_opts.save_dir, "predictgnn.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
-            # if predictgnn_opts.gnn_type == "cmpnn":
-            #     createDirectory(fixed_opts.save_dir)
-            #     predictcmpnn(fixed_opts)
-            if predictgnn_opts.gnn_type == "dmpnn":
-                predictdmpnn(fixed_opts, prog_args.configFile)
-
-        elif prog_args.method == "train":
-            train_opts = options.Options.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                train_opts,
-                inputFile=makePathAbsolute(train_opts.inputFile),
-                outputDir=makePathAbsolute(train_opts.outputDir)
-            )
-            createDirectory(fixed_opts.outputDir)
-            createLogger(path.join(fixed_opts.outputDir, "train.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{fixed_opts}")
-            train(fixed_opts)
-        elif prog_args.method == "predict":
-            predict_opts = options.Options.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                predict_opts,
-                inputFile=makePathAbsolute(predict_opts.inputFile),
-                outputDir=makePathAbsolute(predict_opts.outputDir),
-                outputFile=makePathAbsolute(path.join(predict_opts.outputDir, predict_opts.outputFile)),
-                ecModelDir=makePathAbsolute(predict_opts.ecModelDir),
-                fnnModelDir=makePathAbsolute(predict_opts.fnnModelDir),
-                trainAC=False,
-                trainFNN=False
-            )
-            createDirectory(fixed_opts.outputDir)
-            createLogger(path.join(fixed_opts.outputDir, "predict.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
-            predict(fixed_opts)
-    except AttributeError as e:
-        print(e)
-        parser.print_usage()
 
 
 if __name__ == '__main__':

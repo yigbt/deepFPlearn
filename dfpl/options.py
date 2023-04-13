@@ -55,6 +55,8 @@ class Options:
     activationFunction: str = "relu"
     l2reg: float = 0.001
     dropout: float = 0.2
+    threshold: float = 0.5
+    gpu: int = 0
     snnDepth = 8
     snnWidth = 50
     aeWabTracking: str = ""  # Wand & Biases autoencoder tracking
@@ -233,13 +235,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--split_type",
                         metavar='STR',
                         type=str,
-                        choices=['scaffold_balanced', 'random'],
+                        choices=['scaffold_balanced', 'random','molecular_weight'],
                         help='Set how the data is going to be split for the feedforward neural network',
                         default=argparse.SUPPRESS)
     parser.add_argument("--aeSplitType",
                         metavar='STR',
                         type=str,
-                        choices=['scaffold_balanced', 'random'],
+                        choices=['scaffold_balanced', 'random','molecular_weight'],
                         help='Set how the data is going to be split for the autoencoder',
                         default=argparse.SUPPRESS)
     parser.add_argument('-t', "--type",
@@ -247,6 +249,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         type=str,
                         choices=['fp', 'smiles'],
                         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
+                        default=argparse.SUPPRESS)
+    parser.add_argument('-thr', "--threshold",
+                        type=float,
+                        help="Threshold for binary classification.",
+                        default=argparse.SUPPRESS)
+    parser.add_argument('-gpu', "--gpu",
+                        type=int,
+                        help="Select which gpu to use",
                         default=argparse.SUPPRESS)
     parser.add_argument('-k', "--fpType",
                         metavar='STR',

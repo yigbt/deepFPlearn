@@ -1,6 +1,7 @@
 import logging
 import math
 import sys
+import os
 from os import path
 from time import time
 import numpy as np
@@ -19,14 +20,12 @@ from dfpl import callbacks as cb
 from dfpl import options
 from dfpl import plot as pl
 from dfpl import settings
-from dfpl.utils import scaffold_split
+from dfpl.utils import scaffold_split,weight_split
 import wandb
 
 
-def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Options) -> (np.ndarray, np.ndarray):
-    # Check the value counts and abort if too imbalanced
+def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Options, return_dataframe: bool = False) -> (np.ndarray, np.ndarray, pd.DataFrame):    # Check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
-
     # If feature compression is enabled, use compressed fingerprints
     if opts.compressFeatures:
         vc = df[df[target].notna() & df["fpcompressed"].notnull()][target].value_counts()
@@ -77,6 +76,9 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
                 dtype=settings.nn_target_numpy_type,
                 copy=settings.numpy_copy_values
             )
+            # Return the dataframe if specified
+            if return_dataframe:
+                return dfX
         else:
             logging.info("Fraction sampling is OFF")
             # How many ones and zeros are in the dataset
@@ -94,6 +96,9 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
                 dtype=settings.nn_target_numpy_type,
                 copy=settings.numpy_copy_values
             )
+            if return_dataframe:
+                return df_fpc
+
     # If feature compression is not enabled, use uncompressed fingerprints
     else:
         logging.info("Using uncompressed fingerprints")
@@ -115,6 +120,8 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
             x = np.array(dfX["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
             # convert target values to numpy array
             y = np.array(dfX[target].to_list(), dtype=settings.nn_target_numpy_type, copy=settings.numpy_copy_values)
+            if return_dataframe:
+                return dfX
         else:
             logging.info("Fraction sampling is OFF")
             # count number of each class value
@@ -124,9 +131,10 @@ def prepare_nn_training_data(df: pd.DataFrame, target: str, opts: options.Option
             x = np.array(df_fp["fp"].to_list(), dtype=settings.ac_fp_numpy_type, copy=settings.numpy_copy_values)
             # convert target values to numpy array
             y = np.array(df_fp[target].to_list(), dtype=settings.nn_target_numpy_type, copy=settings.numpy_copy_values)
+            if return_dataframe:
+                return df_fp
         # return the numpy arrays of fingerprints and targets
-        return x, y
-
+    return x, y
 
 
 # This function defines a feedforward neural network (FNN) with the given input size, options, and output bias
@@ -304,11 +312,11 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
     # Save the predictions to a CSV file
     (pd
      .DataFrame({
-         "y_true": y_test_int,
-         "y_predicted": y_predict,
-         "y_predicted_int": y_predict_int,
-         "target": target,
-         "fold": fold})
+        "y_true": y_test_int,
+        "y_predicted": y_predict,
+        "y_predicted_int": y_predict_int,
+        "target": target,
+        "fold": fold})
      .to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.csv")
      )
 
@@ -341,15 +349,19 @@ def evaluate_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, mod
     FPR, TPR, thresholds_keras = roc_curve(y_true=y_test_int, y_score=y_predict,
                                            drop_intermediate=False)
     AUC = auc(FPR, TPR)
+    nonzero_mask = (FPR != 0) | (TPR != 0)
+    FPR_filtered = FPR[nonzero_mask]
+    TPR_filtered = TPR[nonzero_mask]
 
     # Save AUC data to CSV file
-    pd.DataFrame(list(zip(FPR, TPR, [AUC] * len(FPR), [target] * len(FPR), [fold] * len(FPR))),
-                 columns=['fpr', 'tpr', 'auc_value', 'target', 'fold']). \
+    pd.DataFrame(list(zip(FPR_filtered, TPR_filtered, [AUC] * len(FPR_filtered), [target] * len(FPR_filtered),
+                          [fold] * len(FPR_filtered))), columns=['fpr', 'tpr', 'auc_value', 'target', 'fold']). \
         to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.aucdata.csv")
-
+    # pd.DataFrame({'auc_value': [AUC], 'target': [target], 'fold': [fold]}). \
+    #     to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.aucdata.csv", index=False)
     # Generate and save AUC-ROC curve plot
     pl.plot_auc(fpr=FPR, tpr=TPR, target=target, auc_value=AUC,
-                filename=f"{file_prefix}.predicted.testdata.aucdata.svg", wandb_logging=False)
+                filename=f"{file_prefix}_auc_data.png", wandb_logging=False)
 
     # Return a DataFrame containing the computed metrics
     return pd.DataFrame.from_dict({'p_0': prf['0']['precision'],
@@ -374,7 +386,7 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
 
     # Define file name prefix for saving models
     model_file_prefix = path.join(
-        opts.outputDir, f"{target}_single-labeled_Fold-{fold}")
+        opts.outputDir, f"{target}_{opts.split_type}_single-labeled_Fold-{fold}")
 
     # Compute class imbalance
     ids, counts = np.unique(y_train, return_counts=True)
@@ -423,49 +435,43 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
     return performance
 
 
-
-def preprocess_dataframe(df: pd.DataFrame, opts: options.Options) -> Tuple[pd.DataFrame, Set[str]]:
-    # Find all the target columns in the dataframe
-    targets = set(df.columns) - set(['cid', 'ID', 'id','mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed'])
-    targets = list(targets)
-
-    # Create a new dataframe with the expanded fingerprints
-    if opts.compressFeatures:
-        new_df = pd.DataFrame([{x: y for x, y in enumerate(item)} for item in df['fpcompressed'].values.tolist()], index=df.index)
-    else:
-        new_df = pd.DataFrame([{x: y for x, y in enumerate(item)} for item in df['fp'].values.tolist()], index=df.index)
-
-    # Join the new dataframe to the original dataframe and drop the old fingerprint column
-    df = df.join(new_df).drop(columns=['fp'])
-
-    # Find all the irrelevant columns (i.e. not target columns)
-    irrelevant_columns = set(df.columns) - set(targets)
-
-    return df, irrelevant_columns
-
+# def preprocess_dataframe(df: pd.DataFrame, opts: options.Options) -> Tuple[pd.DataFrame, Set[str]]:
+#     # Find all the target columns in the dataframe
+#     targets = set(df.columns) - set(['cid', 'ID', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed'])
+#     targets = list(targets)
+#     # Create a new dataframe with the expanded fingerprints
+#     if opts.compressFeatures:
+#         new_df = pd.DataFrame([{x: y for x, y in enumerate(item)} for item in df['fpcompressed'].values.tolist()],
+#                               index=df.index)
+#     else:
+#         new_df = pd.DataFrame([{x: y for x, y in enumerate(item)} for item in df['fp'].values.tolist()], index=df.index)
+#
+#     # Join the new dataframe to the original dataframe and drop the old fingerprint column
+#     df = df.join(new_df).drop(columns=['fp'])
+#
+#     # Find all the irrelevant columns (i.e. not target columns)
+#     irrelevant_columns = set(df.columns) - set(targets)
+#
+#     return df, irrelevant_columns
 
 
 def get_x_y(df: pd.DataFrame, target: str, train_set: pd.DataFrame, test_set: pd.DataFrame, opts: options.Options):
     train_indices = train_set.index
     test_indices = test_set.index
     if opts.compressFeatures:
-        x_train = df.iloc[train_indices, 1:(opts.encFPSize+1)].values
-        y_train = df.iloc[train_indices][target].values
-        x_test = df.iloc[test_indices, 1:(opts.encFPSize+1)].values
-        y_test = df.iloc[test_indices][target].values
+        accessor = "fpcompressed"
     else:
-        x_train = df.iloc[train_indices, 1:(opts.fpSize+1)].values
-        y_train = df.iloc[train_indices][target].values
-        x_test = df.iloc[test_indices, 1:(opts.fpSize+1)].values
-        y_test = df.iloc[test_indices][target].values
+        accessor = "fp"
+    new_df = pd.DataFrame([{x: y for x, y in enumerate(item)} for item in df[accessor].values.tolist()], index=df.index)
+    x_train = new_df.iloc[train_indices, :].values
+    y_train = df.iloc[train_indices][target].values
+    x_test = new_df.iloc[test_indices, :].values
+    y_test = df.iloc[test_indices][target].values
     x_train = x_train.astype('float32')
     y_train = y_train.astype('float32')
     x_test = x_test.astype('float32')
     y_test = y_test.astype('float32')
-    print(x_train.shape, x_test.shape, y_train.shape, y_test.shape)
     return x_train, y_train, x_test, y_test
-
-
 
 
 def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
@@ -483,9 +489,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     targets = [c for c in df.columns if c in [
         "AR", "ER", "ED", "TR", "GR", "PPARg", "Aromatase"]]
     # targets = [c for c in df.columns if c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
-    # Create an empty DataFrame to collect the performance metrics
-    all_fold_results = pd.DataFrame(
-        columns=['target', 'fold', 'p_1', 'r_1', 'roc_auc', 'prc_auc', 'MCC'])
     if opts.wabTracking and opts.wabTarget != "":
         # For W&B tracking, we only train one target that's specified as wabTarget "ER".
         # In case it's not there, we use the first one available
@@ -503,7 +506,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     if opts.split_type == 'random':
         for target in targets:  # [:1]:
             # target=targets[1] # --> only for testing the code
-            x, y = prepare_nn_training_data(df, target, opts)
+            x, y = prepare_nn_training_data(df, target, opts, return_dataframe=False)
             if x is None:
                 continue
 
@@ -514,11 +517,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
             if opts.kFolds == 1:
                 # for single 'folds' and when sweeping on W&B, we fix the random state
-                if opts.wabTracking and opts.aeWabTracking==False:
+                if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(project=f"FFN_{opts.split_type}", group=f"{target}",
-                            name=f"{target}_single_fold")
+                               name=f"{target}_single_fold")
                 if opts.wabTracking and opts.aeWabTracking:
-                    wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}",name=f"{target}_single_fold", config=opts, group=f"{target}",reinit=True)
+                    wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}", name=f"{target}_single_fold",
+                               group=f"{target}", reinit=True)
                     x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y,
                                                                         test_size=opts.testSize, random_state=1)
                     logging.info(
@@ -530,7 +534,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                      fold=0, target=target, opts=opts)
                 performance_list.append(performance)
-                # all_fold_results = pd.concat([all_fold_results, performance], ignore_index=True)
                 # save complete model
                 trained_model = define_single_label_model(
                     input_size=len(x[0]), opts=opts)
@@ -540,31 +543,38 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 trained_model.save(filepath=path.join(
                     opts.outputDir, f"{target}_saved_model"))
 
-            elif 1 < opts.kFolds < int(x.shape[0] / 100):
+            elif 1 < opts.kFolds < 10: #int(x.shape[0] / 100):
                 # do a kfold cross-validation
                 kfold_c_validator = StratifiedKFold(
                     n_splits=opts.kFolds, shuffle=True, random_state=42)
                 fold_no = 1
                 # split the data
                 for train, test in kfold_c_validator.split(x, y):
-                    # for testing use one of the splits:
-                    # kf = kfold_c_validator.split(x, y)
-                    # train, test = next(kf)
-                    if opts.wabTracking and opts.aeWabTracking==False:
+                    if opts.wabTracking and not opts.aeWabTracking:
                         wandb.init(project=f"FNN_single_task_{opts.split_type}", group=f"{target}",
-                                name=f"{target}-{fold_no}",reinit=True)
+                                   name=f"{target}-{fold_no}", reinit=True)
                     if opts.wabTracking and opts.aeWabTracking:
-                        wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}",name=f"{target}-{fold_no}", config=opts, group=f"{target}",reinit=True)
+                        wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}", name=f"{target}-{fold_no}",
+                                  group=f"{target}", reinit=True)
 
                     performance = fit_and_evaluate_model(x_train=x[train], x_test=x[test],
                                                          y_train=y[train], y_test=y[test],
                                                          fold=fold_no, target=target, opts=opts)
                     performance_list.append(performance)
-                    # all_fold_results = pd.concat([all_fold_results, performance], ignore_index=True)
-                    wandb.finish()
+
+                    # save complete model
+                    trained_model = define_single_label_model(
+                        input_size=len(x[0]), opts=opts)
+                    # trained_model.load_weights(path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
+                    trained_model.save_weights(
+                        path.join(opts.outputDir, f"{target}_single-labeled_Fold-{fold_no}.model.weights.hdf5"))
+                    # create output directory and store complete model
+                    trained_model.save(filepath=path.join(
+                        opts.outputDir, f"{target}-{fold_no}_saved_model"))
+                    if opts.wabTracking:
+                        wandb.finish()
                     fold_no += 1
 
-                    # now next fold
                 # select and copy best model - how to define the best model?
                 best_fold = (
                     pd
@@ -574,119 +584,112 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                         ascending=False,
                         ignore_index=True)['fold'][0]
                 )
-                best_fold_filename = f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"
+                # rename the fold to best fold
+                src = os.path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5")
+                dst = os.path.join(opts.outputDir, f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5")
+                os.rename(src, dst)
 
-                # copy checkpoint model weights
-                # copy checkpoint model weights
-                shutil.copy(
-                    src=path.join(opts.outputDir, best_fold_filename),
-                    dst=path.join(opts.outputDir, best_fold_filename))
-                # shutil.copy(
-                # src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"),
-                # dst=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
-                # save complete model
-                best_model = define_single_label_model(
-                    input_size=len(x[0]), opts=opts)
-                best_model.save_weights(path.join(opts.outputDir, best_fold_filename))
+                src_dir = os.path.join(opts.outputDir, f"{target}-{best_fold}_saved_model")
+                dst_dir = os.path.join(opts.outputDir, f"{target}-{best_fold}_best_saved_model")
 
-                # best_model.save_weights(path.join(opts.outputDir,
-                #                                   f"{target}_single-labeled_Fold-{best_fold}.best.model.weights.hdf5"))
-                # best_model.load_weights(path.join(opts.outputDir,
-                #                                   f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"))
-                # create output directory and store complete model
-                best_model.save(filepath=path.join(
-                    opts.outputDir, f"{target}_saved_model"))
+                if path.isdir(dst_dir):
+                    shutil.rmtree(dst_dir)
+
+                # Rename source directory to destination directory
+                os.rename(src_dir, dst_dir)
+
                 # save complete model
             else:
                 logging.info("Your selected number of folds for Cross validation is out of range. "
                              "It must be 1 or smaller than 1 hundredth of the number of samples.")
                 sys.exit("Number of folds out of range")
-        # Save the DataFrame to a csv file
-        all_fold_results.to_csv(
-            f'all_folds_{opts.split_type}.csv', index=False)
+        (pd
+         .concat(performance_list, ignore_index=True)
+         .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_random_model.evaluation.csv'))
+         )
     # For each individual target train a model
     elif opts.split_type == "scaffold_balanced":
-        df, irrelevant_columns = preprocess_dataframe(df, opts)
+        # df, irrelevant_columns = preprocess_dataframe(df, opts)
         for idx, target in enumerate(targets):
-            relevant_cols = ["smiles"] + list(irrelevant_columns) + [target]
+            df = prepare_nn_training_data(df, target, opts, return_dataframe=True)
+            relevant_cols = ["smiles"] + ["fp"] + [target]  # list(irrelevant_columns)
+            if opts.compressFeatures:
+                relevant_cols = relevant_cols + ["fpcompressed"]
             df_task = df.loc[:, relevant_cols]
             # Drop rows with missing values in the target column
             df_task.dropna(subset=[target], inplace=True)
             df_task.reset_index(drop=True, inplace=True)
             if opts.kFolds == 1:
                 train_set, val_set, test_set = scaffold_split(df_task, sizes=(
-                    1-opts.testSize, 0.0, opts.testSize), balanced=False, seed=42)
+                    1 - opts.testSize, 0.0, opts.testSize), balanced=False, seed=42)
                 x_train, y_train, x_test, y_test = get_x_y(
                     df_task, target, train_set, test_set, opts)
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(project=f"FFN_{opts.split_type}", group=f"{target}",
-                            name=f"{target}_single_fold")
+                               name=f"{target}_single_fold")
                 elif opts.wabTracking and opts.aeWabTracking:
-                    wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}",name=f"{target}-{fold_no}", config=opts, group=f"{target}")
-        
+                    wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}", name=f"{target}-single-fold",
+                               group=f"{target}")
+
                 performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                      fold=0, target=target, opts=opts)
                 performance_list.append(performance)
-                # all_fold_results = pd.concat([all_fold_results, performance], ignore_index=True)
-
-                if opts.compressFeatures:
-                    trained_model = define_single_label_model(
-                        input_size=opts.encFPSize, opts=opts)
-                else:
-                    trained_model = define_single_label_model(
-                        input_size=opts.fpSize, opts=opts)
+                trained_model = define_single_label_model(
+                    input_size=len(x_train[0]), opts=opts)
                 trained_model.save_weights(
-                    path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
+                    path.join(opts.outputDir, f"{target}_scaffold_single-labeled_Fold-0.model.weights.hdf5"))
                 trained_model.save(filepath=path.join(
-                    opts.outputDir, f"{target}_saved_model"))
+                    opts.outputDir, f"{target}_scaffold_saved_model_0"))
             elif opts.kFolds > 1:
-                best_fold_dict = dict(p_0=0, r_0=0, f1_0=0, p_1=0, r_1=0, f1_1=0, loss=10, accuracy=0,
-                                      balanced_accuracy=0, MCC=0, AUC=0, fold=0)
                 for fold_no in range(1, opts.kFolds + 1):
                     print(f"Splitting data with seed {fold_no}")
                     train_set, val_set, test_set = scaffold_split(df_task, sizes=(
-                        1-opts.testSize, 0.0, opts.testSize), balanced=True, seed=fold_no)
+                        1 - opts.testSize, 0.0, opts.testSize), balanced=True, seed=fold_no)
                     x_train, y_train, x_test, y_test = get_x_y(
                         df_task, target, train_set, test_set, opts)
                     if opts.wabTracking and not opts.aeWabTracking:
-                        wandb.init(project=f"FFN_scaffoldAE_{opts.split_type}", group=f"{target}",
-                                name=f"{target}-{fold_no}",reinit=True)
+                        wandb.init(project=f"FFN_{opts.split_type}", group=f"{target}",
+                                   name=f"{target}-{fold_no}", reinit=True)
                     elif opts.wabTracking and opts.aeWabTracking:
-                        wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}",name=f"{target}-{fold_no}", config=opts, group=f"{target}",reinit=True)
+                        wandb.init(project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}", name=f"{target}-{fold_no}",
+                                 group=f"{target}", reinit=True)
                     performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
                                                          fold=fold_no, target=target, opts=opts)
                     performance_list.append(performance)
 
+
+                    trained_model = define_single_label_model(
+                        input_size=len(x_train[0]), opts=opts)
+                    trained_model.save_weights(
+                        path.join(opts.outputDir, f"{target}_scaffold_single-labeled_Fold-{fold_no}.model.weights.hdf5"))
+                    trained_model.save(filepath=path.join(
+                        opts.outputDir, f"{target}_scaffold_saved_model_{fold_no}"))
                     if opts.wabTracking:
                         wandb.finish()
-                    if opts.compressFeatures:
-                        trained_model = define_single_label_model(
-                            input_size=opts.encFPSize, opts=opts)
-                    else:
-                        trained_model = define_single_label_model(
-                            input_size=opts.fpSize, opts=opts)
-                    trained_model.save_weights(
-                        path.join(opts.outputDir, f"{target}_single-labeled_Fold-{fold_no}.scaf.model.weights.hdf5"))
-                    trained_model.save(filepath=path.join(
-                        opts.outputDir, f"{target}_scaf_saved_model_{fold_no}"))
+                    fold_no += 1
+                # find best fold
+                best_fold = (
+                    pd
+                    .concat(performance_list, ignore_index=True)
+                    .sort_values(
+                        by=['p_1', 'r_1', 'MCC'],
+                        ascending=False,
+                        ignore_index=True)['fold'][0]
+                )
+                # rename the fold to best fold
+                src = os.path.join(opts.outputDir, f"{target}_scaffold_single-labeled_Fold-{best_fold}.model.weights.hdf5")
+                dst = os.path.join(opts.outputDir, f"{target}_scaffold_single-labeled_BEST_Fold-{best_fold}.model.weights.hdf5")
+                os.rename(src, dst)
 
-                    if performance['f1_1'].iloc[0] > best_fold_dict['f1_1'] or performance['accuracy'].iloc[0] > \
-                            best_fold_dict["accuracy"]:
-                        best_fold_dict['fold_no'] = fold_no
+                src_dir = os.path.join(opts.outputDir, f"{target}_scaffold_saved_model_{best_fold}")
+                dst_dir = os.path.join(opts.outputDir, f"{target}_scaffold_saved_model_BEST_FOLD_{best_fold}")
 
-                # Save the best model
-                if fold_no == best_fold_dict['fold_no']:
-                    if opts.compressFeatures:
-                        best_model = define_single_label_model(
-                            input_size=opts.encFPSize, opts=opts)
-                    else:
-                        best_model = define_single_label_model(
-                            input_size=opts.fpSize, opts=opts)
-                    best_model.save_weights(
-                        path.join(opts.outputDir, f"{target}_single-labeled_best_fold-{fold_no}.scaf.model.weights.hdf5"))
-                    best_model.save(filepath=path.join(
-                        opts.outputDir, f"{target}_scaf_saved_model_best_fold"))
-                # Save the DataFrame to a csv file
+                if path.isdir(dst_dir):
+                    shutil.rmtree(dst_dir)
+
+                # Rename source directory to destination directory
+                os.rename(src_dir, dst_dir)
+
 
             else:
                 logging.info("Your selected number of folds for Cross validation is out of range. "
@@ -694,7 +697,91 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 sys.exit("Number of folds out of range")
         (pd
          .concat(performance_list, ignore_index=True)
-         .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_scaf_model.evaluation.csv'))
+         .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_scaffold_model.evaluation.csv'))
+         )
+    elif opts.split_type == "molecular_weight":
+        logging.info("You can use molecular_weight split once.")
+        for idx, target in enumerate(targets):
+            df = prepare_nn_training_data(df, target, opts, return_dataframe=True)
+            relevant_cols = ["smiles"] + ["fp"] + [target]
+            if opts.compressFeatures:
+                relevant_cols = relevant_cols + ["fpcompressed"]
+            df_task = df.loc[:, relevant_cols]
+            df_task.dropna(subset=[target], inplace=True)
+            df_task.reset_index(drop=True, inplace=True)
+            if opts.kFolds == 1:
+                train_set, val_set, test_set = weight_split(df_task, bias='small', sizes=(
+                    1 - opts.testSize, 0.0, opts.testSize))
+                x_train, y_train, x_test, y_test = get_x_y(
+                    df_task, target, train_set, test_set, opts)
+                if opts.wabTracking and not opts.aeWabTracking:
+                    wandb.init(project=f"FFN_weight_splitAE_{opts.split_type}", group=f"{target}",
+                               name=f"{target}_single_fold")
+                elif opts.wabTracking and opts.aeWabTracking:
+                    wandb.init(project=f"AE_{opts.aeSplitType}_FNN_weight_split_{opts.split_type}",
+                               name=f"{target}-single-fold",
+                               group=f"{target}")
+                performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
+                                                     fold=0, target=target, opts=opts)
+                performance_list.append(performance)
+                trained_model = define_single_label_model(input_size=len(x_train[0]), opts=opts)
+                trained_model.save_weights(
+                    path.join(opts.outputDir, f"{target}_weight_single-labeled_Fold-0.model.weights.hdf5"))
+                trained_model.save(filepath=path.join(
+                    opts.outputDir, f"{target}_weight_saved_model_0"))
+            elif opts.kFolds > 1:
+                raise Exception(f"Unsupported number of folds: {opts.kFolds} for {opts.split_type} split.\
+                                You CANNOT do multiple folds based on molecular_weight.")
+
+                # for fold_no in range(1, opts.kFolds + 1):
+                #     train_set, val_set, test_set = weight_split(df_task, bias='small', sizes=(
+                #         1 - opts.testSize, 0.0, opts.testSize))
+                #     x_train, y_train, x_test, y_test = get_x_y(
+                #         df_task, target, train_set, test_set, opts)
+                #     if opts.wabTracking and not opts.aeWabTracking:
+                #         wandb.init(project=f"FFN_weight_splitAE_{opts.split_type}", group=f"{target}",
+                #                    name=f"{target}-{fold_no}", reinit=True)
+                #     elif opts.wabTracking and opts.aeWabTracking:
+                #         wandb.init(project=f"AE_{opts.aeSplitType}_FNN_weight_split_{opts.split_type}",
+                #                    name=f"{target}-{fold_no}",
+                #                    group=f"{target}", reinit=True)
+                #     performance = fit_and_evaluate_model(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test,
+                #                                          fold=fold_no, target=target, opts=opts)
+                #     performance_list.append(performance)
+                #
+                #     trained_model = define_single_label_model(input_size=len(x_train[0]), opts=opts)
+                #     trained_model.save_weights(
+                #         path.join(opts.outputDir, f"{target}_MW_single-labeled_Fold-{fold_no}.model.weights.hdf5"))
+                #     trained_model.save(filepath=path.join(
+                #         opts.outputDir, f"{target}_MW_saved_model_{fold_no}"))
+                #     fold_no += 1
+                #
+                # # find best fold
+                # best_fold = (
+                #     pd
+                #     .concat(performance_list, ignore_index=True)
+                #     .sort_values(
+                #         by=['p_1', 'r_1', 'MCC'],
+                #         ascending=False,
+                #         ignore_index=True)['fold'][0]
+                # )
+                # # rename best fold's files to be distinguished
+                # src = os.path.join(opts.outputDir,
+                #                    f"{target}_MW_single-labeled_Fold-{best_fold}.model.weights.hdf5")
+                # dst = os.path.join(opts.outputDir, f"{target}_MW_single-labeled_BEST_Fold-{best_fold}.model.weights.hdf5")
+                # os.rename(src, dst)
+                #
+                # src_dir = os.path.join(opts.outputDir, f"{target}_MW_saved_model_{best_fold}")
+                # dst_dir = os.path.join(opts.outputDir, f"{target}_MW_saved_model_BEST_FOLD_{best_fold}")
+                #
+                # if path.isdir(dst_dir):
+                #     shutil.rmtree(dst_dir)
+                #
+                # # Rename source directory to destination directory
+                # os.rename(src_dir, dst_dir)
+        (pd
+         .concat(performance_list, ignore_index=True)
+         .to_csv(path_or_buf=path.join(opts.outputDir, 'single_label_molecular_weight_model.evaluation.csv'))
          )
     else:
         raise Exception(f"Unsupported split type: {opts.split_type}")

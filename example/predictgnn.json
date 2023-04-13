@@ -1,9 +1,8 @@
 {
   "py/object": "dfpl.options.GnnOptions",
   "gnn_type": "dmpnn",
-  "test_path": "example/data/sample.csv",
-  "checkpoint_paths": ["example/S_random/model_0/model.pt"],
+  "test_path": "example/data/B_data_ER.csv",
+  "checkpoint_path": "/home/soulios/git-soulios/deepFPlearn/example/dmpnn_trained_models/dmpnn-scaffold-ER/fold_0/model_0/model.pt",
   "save_dir": "output_dmpnn",
-  "saving_name": "DMPNN_random_S_sample_pred.csv",
-  "checkpoint_dir": "./example/"
+  "saving_name": "B_data_ER_scaffold_dmpnn_preds.csv"
 }

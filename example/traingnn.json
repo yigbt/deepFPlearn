@@ -1,13 +1,13 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "data_path": "example/data/S_dataset-AR.csv",
+  "data_path": "example/data/S_dataset-ED.csv",
   "gnn_type": "dmpnn",
-  "save_dir": "dmpnn/",
-  "epochs": 2,
-  "num_folds": 2,
+  "save_dir": "dmpnn-random-ED/",
+  "epochs": 50,
+  "num_folds": 5,
   "metric": "binary_cross_entropy",
   "extra_metrics": "auc",
-  "split_type": "scaffold_balanced",
+  "split_type": "random",
   "dataset_type": "classification",
   "smiles_columns": "smiles"
 }

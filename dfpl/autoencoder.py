@@ -184,7 +184,26 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
             x_test = None
             x_val = None
             x_train = fp_matrix
-
+    elif opts.aeSplitType == "molecular_weight":
+        logging.info("Training autoencoder using molecular weight split")
+        if opts.testSize > 0.0:
+            if opts.aeWabTracking:
+                train_data, val_data, test_data = weight_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                               bias='small')
+            else:
+                train_data, val_data, test_data = weight_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                               bias='small')
+            x_train = np.array(train_data[train_data["fp"].notnull()]["fp"].to_list(),
+                             dtype=settings.ac_fp_numpy_type,
+                             copy=settings.numpy_copy_values)
+            x_test = np.array(test_data[test_data["fp"].notnull()]["fp"].to_list(),
+                           dtype=settings.ac_fp_numpy_type,
+                           copy=settings.numpy_copy_values)
+            x_val = None
+        else:
+            x_test = None
+            x_val = None
+            x_train = fp_matrix
     else:
         raise ValueError(f"Invalid split type: {opts.split_type}")
 
@@ -221,19 +240,6 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
                                 )
     logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
-    # Log the autoencoder training metrics to W&B if enabled
-    if opts.aeWabTracking and not opts.wabTracking:
-        wandb.log({
-            "AE_loss": auto_hist.history['loss'][-1],
-            "AE_val_loss": auto_hist.history['val_loss'][-1],
-            "AE_auc": auto_hist.history['auc'][-1],
-            "AE_val_auc": auto_hist.history['val_auc'][-1],
-            "AE_precision": auto_hist.history['precision'][-1],
-            "AE_val_precision": auto_hist.history['val_precision'][-1],
-            "AE_recall": auto_hist.history['recall'][-1],
-            "AE_val_recall": auto_hist.history['val_recall'][-1],
-            "num_epochs": len(auto_hist.history['loss'])
-        })
 
     # Store the autoencoder training history and plot the metrics
     ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
@@ -272,7 +278,7 @@ def compress_fingerprints(dataframe: pd.DataFrame,
 
     return dataframe
 
-def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, output_dir: str, opts:options.Options):    
+def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, save_as: str):
     # Convert the boolean values in the before_col column to floats
     df[before_col] = df[before_col].apply(lambda x: np.array(x, dtype=float))
 
@@ -312,7 +318,7 @@ def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, ou
     # print(f"Optimal number of clusters for before (UMAP) is {optimal_n_clusters}")
 
     # Apply k-means clustering to the embeddings
-    n_clusters = 4 # optimal_n_clusters= 3 based on silhouette score but 4 was previously used
+    n_clusters = 3 # optimal_n_clusters= 3 based on silhouette score but 4 was previously used
     before_umap_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_umap_embedding)
     after_umap_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(after_umap_embedding)
     # before_tsne_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_tsne_embedding)
@@ -331,5 +337,5 @@ def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, ou
     # axes[1, 1].set_title('After compression (t-SNE)')
     plt.subplots_adjust(wspace=0.2)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, f'fingerprints_{opts.split_type}.png'), dpi=300, bbox_inches='tight')
+    plt.savefig((f'{save_as}.png'), dpi=300, bbox_inches='tight')
     plt.close(fig)

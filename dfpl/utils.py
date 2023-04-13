@@ -1,6 +1,7 @@
 import pathlib
 import os
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+import seaborn as sns
 import json
 import pandas as pd
 from sklearn.model_selection import KFold
@@ -16,7 +17,10 @@ from tqdm import tqdm
 import numpy as np
 import random
 from rdkit import RDLogger
+
 RDLogger.DisableLog('rdApp.*')
+from rdkit import Chem
+from rdkit.Chem import rdMolDescriptors
 
 
 def makePathAbsolute(p: str) -> str:
@@ -31,30 +35,6 @@ def createDirectory(directory: str):
     path = makePathAbsolute(directory)
     if not os.path.exists(path):
         os.makedirs(path)
-
-
-# def makePlots(save_path: str, training_auc: list, training_loss: list, validation_auc: list, validation_loss: list):
-#
-#     all_data = [training_auc, training_loss, validation_auc, validation_loss]
-#     zipped = list(zip(training_loss, validation_loss,
-#                   training_auc, validation_auc))
-#
-#     metricsdf = pd.DataFrame(
-#         zipped, columns=['LOSS', 'VAL_LOSS', 'AUC', 'VAL_AUC'])
-#     metricsdf.to_csv(f"{save_path}/metrics.csv")
-#
-#     metricsdf.plot(title='Model performance')
-#     plt.savefig(f"{save_path}/plot.png", format='png')
-#
-#     lossesdf = pd.DataFrame(
-#         list(zip(training_loss, validation_loss)), columns=['LOSS', 'VAL_LOSS'])
-#     lossesdf.plot(title='Loss')
-#     plt.savefig(f"{save_path}/loss.png", format='png')
-#
-#     aucdf = pd.DataFrame(
-#         list(zip(training_auc, validation_auc)), columns=['AUC', 'VAL_AUC'])
-#     aucdf.plot(title='AUC')
-#     plt.savefig(f"{save_path}/auc.png", format='png')
 
 
 def createArgsFromJson(in_json: str, ignore_elements: list, return_json_object: bool):
@@ -99,6 +79,7 @@ def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
 
     return mol
 
+
 def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = False) -> str:
     """
     Computes the Bemis-Murcko scaffold for a SMILES string, an RDKit molecule, or an InChI string or InChIKey.
@@ -117,21 +98,6 @@ def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], incl
     scaffold = MurckoScaffold.MurckoScaffoldSmiles(
         mol=mol, includeChirality=include_chirality)
     return scaffold
-# def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = False) -> str:
-#     """
-#     Computes the Bemis-Murcko scaffold for a SMILES string.
-#
-#     :param mol: A SMILES or an RDKit molecule.
-#     :param include_chirality: Whether to include chirality in the computed scaffold..
-#     :return: The Bemis-Murcko scaffold for the molecule.
-#     """
-#     if isinstance(mol, str):
-#         mol = make_mol(mol, keep_h=False, add_h=False, keep_atom_map=False)
-#     if isinstance(mol, tuple):
-#         mol = mol[0]
-#     scaffold = MurckoScaffold.MurckoScaffoldSmiles(
-#         mol=mol, includeChirality=include_chirality)
-#     return scaffold
 
 
 def scaffold_to_smiles(mols: List[str], use_indices: bool = False) -> Dict[str, Union[Set[str], Set[int]]]:
@@ -152,8 +118,22 @@ def scaffold_to_smiles(mols: List[str], use_indices: bool = False) -> Dict[str, 
 
     return scaffolds
 
+
+
+def smiles_to_mol(smiles: str) -> Chem.Mol:
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise ValueError(f"Could not convert SMILES to Mol: {smiles}")
+    return mol
+
+
 def inchi_to_mol(inchi: str) -> Chem.Mol:
-    return Chem.inchi.MolFromInchi(inchi)
+    mol = Chem.MolFromInchi(inchi)
+    if mol is None:
+        raise ValueError(f"Could not convert InChI to Mol: {inchi}")
+    return mol
+
+
 def scaffold_split(data: pd.DataFrame,
                    sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
                    balanced: bool = False,
@@ -173,7 +153,7 @@ def scaffold_split(data: pd.DataFrame,
 
     # Split
     train_size, val_size, test_size = sizes[0] * \
-        len(data), sizes[1] * len(data), sizes[2] * len(data)
+                                      len(data), sizes[1] * len(data), sizes[2] * len(data)
     train, val, test = [], [], []
     train_scaffold_count, val_scaffold_count, test_scaffold_count = 0, 0, 0
 
@@ -230,7 +210,6 @@ def scaffold_split(data: pd.DataFrame,
     return train_df, val_df, test_df
 
 
-
 def log_scaffold_stats(data: pd.DataFrame,
                        index_sets: List[Set[int]],
                        num_scaffolds: int = 10,
@@ -246,14 +225,14 @@ def log_scaffold_stats(data: pd.DataFrame,
     the first :code:num_scaffolds scaffolds, sorted in decreasing order of scaffold frequency.
     """
     logging.info('Label averages per scaffold, in decreasing order of scaffold frequency, '
-                     f'capped at {num_scaffolds} scaffolds and {num_labels} labels:')
+                 f'capped at {num_scaffolds} scaffolds and {num_labels} labels:')
 
     stats = []
     index_sets = sorted(
         index_sets, key=lambda idx_set: len(idx_set), reverse=True)
     for scaffold_num, index_set in enumerate(index_sets[:num_scaffolds]):
         data_set = data.iloc[list(index_set)]
-        targets = [ c for c in data.columns if c in ['AR', 'ER', 'ED', 'TR', 'GR','PPARg','Aromatase']]
+        targets = [c for c in data.columns if c in ['AR', 'ER', 'ED', 'TR', 'GR', 'PPARg', 'Aromatase']]
         # targets = data_set.iloc[:, 2:].values
         targets = data_set.loc[:, targets].values
 
@@ -270,3 +249,54 @@ def log_scaffold_stats(data: pd.DataFrame,
                 f'Task {task_num}: count = {count:,} | target average = {target_avg:.6f}')
         logging.info('\n')
     return stats
+
+def weight_split(data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float] = (0.8, 0, 0.2)) -> Tuple[
+    pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    if not (len(sizes) == 3 and np.isclose(sum(sizes), 1)):
+        raise ValueError(f"Invalid train/val/test splits! got: {sizes}")
+    train_size, val_size, test_size = sizes[0] * len(data), sizes[1] * len(data), sizes[2] * len(data)
+    if 'inchi' in [x.lower() for x in data.columns]:
+        data['mol'] = data['inchi'].apply(inchi_to_mol)
+    elif 'smiles' in [x.lower() for x in data.columns]:
+        data['mol'] = data['smiles'].apply(smiles_to_mol)
+    else:
+        print("Dataframe does not have a SMILES or InChi column")
+    data['mol_weight'] = data.apply(lambda row: rdMolDescriptors.CalcExactMolWt(row['mol']), axis=1)
+    # Plot histogram of weights with percentage labels
+    # Calculate median, 25th percentile, and 75th percentile of weights
+    median_weight = np.median(data['mol_weight'])
+    p25_weight = np.percentile(data['mol_weight'], 25)
+    p75_weight = np.percentile(data['mol_weight'], 75)
+
+    # Plot histogram of weights with median and quartile lines
+    # sns.histplot(data['mol_weight'], bins=30)
+    # plt.xlabel('Molecular Weight')
+    # plt.ylabel('Count')
+    # plt.axvline(x=median_weight, color='r', linestyle='--')
+    # plt.axvline(x=p25_weight, color='k', linestyle='--')
+    # plt.axvline(x=p75_weight, color='k', linestyle='--')
+    # plt.legend()
+    # # Add labels to percentile lines
+    # plt.text(p25_weight, plt.gca().get_ylim()[1] * 1.02, '25%', ha='center')
+    # plt.text(median_weight,plt.gca().get_ylim()[1] * 1.09, 'median', ha='center')
+    # plt.text(p75_weight, plt.gca().get_ylim()[1] * 1.02, '75%', ha='center')
+    #
+    # # Set y-axis limit to accommodate labels
+    # plt.ylim(0, plt.gca().get_ylim()[1] * 1.2)
+    # plt.savefig('weights_histograms.png')
+    if bias == 'big':
+        sorted_data = data.sort_values(by='mol_weight', ascending=False)
+    elif bias == 'small':
+        sorted_data = data.sort_values(by='mol_weight', ascending=True)
+    else:
+        print("Wrong bias, choose small or big")
+    indices = np.arange(len(sorted_data))
+    train_end_idx = int(train_size)
+    val_end_idx = int(train_size + val_size)
+    train_indices = indices[:train_end_idx]
+    val_indices = indices[train_end_idx:val_end_idx]
+    test_indices = indices[val_end_idx:]
+    train_df = sorted_data.iloc[train_indices].reset_index(drop=True)
+    val_df = sorted_data.iloc[val_indices].reset_index(drop=True)
+    test_df = sorted_data.iloc[test_indices].reset_index(drop=True)
+    return train_df, val_df, test_df

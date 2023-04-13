@@ -191,15 +191,9 @@ def plot_auc(fpr: np.ndarray, tpr: np.ndarray, auc_value: float, target: str, fi
     :rtype: None
     """
     # Create a boolean mask to filter out zero values
-    nonzero_mask = fpr != 0.0
-
-    # Filter out zero values from fpr and tpr using the mask
-    fpr_filtered = fpr[nonzero_mask]
-    tpr_filtered = tpr[nonzero_mask]
-
     plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
-    plt.plot(fpr_filtered, tpr_filtered, label='Keras (area = {:.3f})'.format(auc_value))
+    plt.plot(fpr, tpr, label='Keras (area = {:.3f})'.format(auc_value))
     plt.xlabel('False positive rate')
     plt.ylabel('True positive rate')
     plt.title('ROC curve ' + target)

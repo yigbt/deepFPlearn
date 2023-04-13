@@ -5,7 +5,8 @@ import re
 import shutil
 import sys
 from time import time
-
+import os
+from os import path
 import numpy as np
 import pandas as pd
 from tensorflow.keras import optimizers
@@ -252,13 +253,13 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
             # train, test = next(kf)
 
             (model_file_path_weights, model_file_path_json, model_hist_path,
+             model_hist_csv_path, model_predict_valset_csv_path,
              model_validation, model_auc_file,
              model_auc_file_data, out_file_path, checkpoint_path,
              model_heatmap_x, model_heatmap_z) = define_out_file_names(path_prefix=opts.outputDir,
                                                                        target="multi" + "_compressed-" + str(
                                                                            opts.compressFeatures),
                                                                        fold=fold_no)
-
             # use a dnn for multi-class prediction
             model = define_nn_model_multi(input_size=fpMatrix[train].shape[1],
                                           output_size=y.shape[1])

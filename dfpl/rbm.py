@@ -4,7 +4,7 @@ import pandas as pd
 import logging
 import tensorflow as tf
 import numpy as np
-from tensorflow.keras import Model
+from tensorflow.keras import Model, losses
 from sklearn.model_selection import train_test_split
 import math
 
@@ -12,7 +12,7 @@ from dfpl import callbacks
 from dfpl import options
 from dfpl import history as ht
 from dfpl import settings
-
+from dfpl.utils import *
 
 class RBMLayer(tf.keras.layers.Layer):
     def __init__(self, input_size, output_size, name="RBMLayer", **kwargs):
@@ -124,10 +124,8 @@ class RBM(tf.keras.Model):
             out, visibleGen, hiddenGen, h1 = value
             positive_grad = tf.matmul(tf.transpose(last_out), hiddenGen)
             negative_grad = tf.matmul(tf.transpose(visibleGen), h1)
-            # loss = tf.reduce_mean(tf.square(y, visibleGen))
-            # loss = self.compiled_loss(y, visibleGen)
 
-            # update the weights of the model based on the loss and LR.
+            # Update the weights of the model based on the loss and LR.
             curr_layer = weights_dict[key]
             curr_layer.weights[0].assign(curr_layer.weights[0] + learning_rate * \
                                          (positive_grad - negative_grad) / tf.cast(tf.shape(last_out)[0],
@@ -137,7 +135,15 @@ class RBM(tf.keras.Model):
                 curr_layer.weights[2] + learning_rate * tf.math.reduce_mean(last_out - visibleGen, 0))
 
             last_out = hiddenGen
-        return {m.name: m.result() for m in self.metrics}
+
+        # Calculate the loss using the output of the last decoder layer and the input
+        last_decoder_out = out_dict[f"decoder_{self.n_layer - 1}"][0]
+        loss = tf.reduce_mean(tf.keras.losses.binary_crossentropy(X, last_decoder_out))
+
+        # Update the metrics
+        self.compiled_metrics.update_state(y, out)
+
+        return {"loss": loss, **{m.name: m.result() for m in self.metrics}}
 
     def test_step(self, data):
         # Unpack the data
@@ -156,7 +162,7 @@ class RBM(tf.keras.Model):
 def define_rbm_model(opts: options.Options,
                      input_size: int = 2048,
                      encoding_dim: int = 256,
-                     my_loss: str = "binary_crossentropy",
+                     my_loss: str = "",
                      my_lr: float = 0.0288,
                      my_decay: float = 0.0504) -> Model:
     """
@@ -169,6 +175,7 @@ def define_rbm_model(opts: options.Options,
     :param my_decay:
     :return: a tuple of autoencoder and encoder models
     """
+    my_loss = tf.keras.losses.BinaryCrossentropy()
     if opts.aeOptimizer == "Adam":
         ac_optimizer = tf.keras.optimizers.Adam(learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay)
     elif opts.aeOptimizer == "SGD":
@@ -176,25 +183,8 @@ def define_rbm_model(opts: options.Options,
 
     rbm_model = RBM(input_size=input_size,
                     output_size=encoding_dim)
-    rbm_model.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
-    # encoder = RBM(input_size=input_size, output_size=encoding_dim)
-    # decoder = RBM(input_size=encoding_dim, output_size=input_size)
-    #
-    # # Compile the models
-    # encoder.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
-    # decoder.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
-    #
-    # # Define the input layer for the models
-    # input_layer = tf.keras.Input(shape=(input_size,))
-    #
-    # # Define the encoder and decoder parts of the model
-    # encoded = encoder(input_layer)
-    # decoded = decoder(encoded)
-    #
-    # # Define the full autoencoder model
-    # autoencoder = Model(input_layer, decoded)
-    #
-    # return autoencoder, encoder
+    rbm_model.compile(optimizer=ac_optimizer, loss=my_loss)# tf.keras.losses.MeanSquaredError())
+
 
     return rbm_model
 
@@ -235,11 +225,54 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
                          dtype=settings.ac_fp_numpy_type,
                          copy=settings.numpy_copy_values)
     logging.info(f"Training RBM on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
-
-    # split data into test and training data
-    x_train, x_test = train_test_split(fp_matrix,
-                                       test_size=0.2,
-                                       random_state=42)
+    if opts.aeSplitType == "random":
+        # split data into test and training data
+        x_train, x_test = train_test_split(fp_matrix,
+                                           test_size=0.2,
+                                           random_state=42)
+        # Split the data into train and test sets using scaffold split
+    elif opts.aeSplitType == "scaffold_balanced":
+        logging.info("Training autoencoder using scaffold split")
+        if opts.testSize > 0.0:
+            if opts.aeWabTracking:
+                train_data, val_data, test_data = scaffold_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                                 balanced=True, seed=42)
+            else:
+                train_data, val_data, test_data = scaffold_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                                 balanced=True)
+            x_train = np.array(train_data[train_data["fp"].notnull()]["fp"].to_list(),
+                               dtype=settings.ac_fp_numpy_type,
+                               copy=settings.numpy_copy_values)
+            x_test = np.array(test_data[test_data["fp"].notnull()]["fp"].to_list(),
+                              dtype=settings.ac_fp_numpy_type,
+                              copy=settings.numpy_copy_values)
+            x_val = None
+        else:
+            x_test = None
+            x_val = None
+            x_train = fp_matrix
+    elif opts.aeSplitType == "molecular_weight":
+        logging.info("Training Deep Belief Network using molecular weight split")
+        if opts.testSize > 0.0:
+            if opts.aeWabTracking:
+                train_data, val_data, test_data = weight_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                               bias='small')
+            else:
+                train_data, val_data, test_data = weight_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                               bias='small')
+            print(train_data)
+            x_train = np.array(train_data[train_data["fp"].notnull()]["fp"].to_list(),
+                               dtype=settings.ac_fp_numpy_type,
+                               copy=settings.numpy_copy_values)
+            x_test = np.array(test_data[test_data["fp"].notnull()]["fp"].to_list(),
+                              dtype=settings.ac_fp_numpy_type,
+                              copy=settings.numpy_copy_values)
+            x_val = None
+            print(x_train.shape)
+        else:
+            x_test = None
+            x_val = None
+            x_train = fp_matrix
     x_train = tf.cast(tf.where(x_train, 1, 0), tf.float32)
     x_test = tf.cast(tf.where(x_test, 1, 0), tf.float32)
     logging.info(f"RBM train data shape {x_train.shape} with type {x_train.dtype}")

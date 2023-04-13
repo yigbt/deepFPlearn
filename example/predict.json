@@ -1,13 +1,13 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "example/data/predict_data.csv",
-  "outputDir": "example/results_predict",
-  "outputFile": "predict_data_AR.csv",
-  "ecModelDir": "example/new_models",
+  "inputFile": "example/data/B_data_AR.csv",
+  "outputDir": "example/results_predict_weightAE",
+  "outputFile": "B_data_AR_preds_weightAE_weightFNN.csv",
+  "ecModelDir": "MW_ENCODER/",
   "ecWeightsFile": "",
-  "fnnModelDir": "example/models/AR_saved_model",
+  "fnnModelDir": "/home/soulios/git-soulios/deepFPlearn/example/encoders/mw_encoder/weightAE_weightFNN/AR_molecular_weight_single-labeled_Fold-0.model.weights.hdf5",
   "compressFeatures": true,
   "useRBM": false,
-  "trainAC": true,
-  "trainFNN": true
+  "trainAC": false,
+  "trainFNN": false
 }

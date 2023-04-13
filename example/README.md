@@ -1,6 +1,13 @@
 # Running deepFPlearn
 
-Here you will find example code for running deepFPlearn in all five modes: train, predict, traingnn, predictgnn, and convert. The input data for each of these modes can be found in the example/data folder.
+Here you will find example code for running deepFPlearn in all five modes: 
+ - train
+ - predict
+ - traingnn
+ - predictgnn
+ - convert
+
+The input data for each of these modes can be found in the example/data folder.
 
 The pre-computed output of the train mode can be found in the assets of the release, for the predict mode it is stored in the respective example/results_predict folder. Trained models that are used in the prediction mode are stored in the models folder.
 
@@ -64,18 +71,4 @@ The compounds are predicted with the graph neural network model and results are 
 
 ## Convert
 
-This mode is used to convert `.csv` or `.tsv` files into `.pkl` files for easy access in Python and to reduce memory on disk.
-The `.pkl` files then already contain the binary fingerprints and are ready to use for training oder predicting.
-
-**Note:** Train and Predict modes do not require their inputs to be in .pkl, .csv is also fine but a bit slower.
-
-```
-python -m dfpl convert -f example/data
-```
-The `.pkl` files are stored in the `examples/data` folder, next to their input files.
-
-If you do this with a custom file of a different file name, you have to edit the code like this:
-
-1. open file dfpl/fingerprint.py
-2. search for the conversation_rules
-3. add your filename in the same style
+The convert mode is used to convert .csv or .tsv files into .pkl files for easy access in Python and to reduce memory on disk. The .pkl files then already contain the binary
