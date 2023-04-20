@@ -1,5 +1,6 @@
 flake8
 pip==22.0.4
 pytest==7.1.1
+data-science-types==0.2.23
 
 -e .

@@ -267,7 +267,6 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
         )
 
     if opts.kFolds > 0:
-
         # do a kfold cross validation for the autoencoder training
         kfold_c_validator = KFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
 

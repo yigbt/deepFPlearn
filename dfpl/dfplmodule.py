@@ -513,7 +513,7 @@ def autoencoderModel(
 
         # decoding layers
         for i in range(nhl - 2, 0, -1):
-            factorunits = 2 ** i
+            factorunits = 2**i
             # print(f'{factorunits}: {int(input_size/factorunits)}')
             decoded = Dense(units=int(input_size / factorunits), activation="relu")(
                 decoded

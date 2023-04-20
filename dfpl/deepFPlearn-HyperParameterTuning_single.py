@@ -164,7 +164,6 @@ def tuning_model(optimizer, activation, init, dropout=0.2):
 # ===================================================================================== #
 
 if __name__ == "__main__":
-
     # get all arguments
     args = parseInput()
 
@@ -247,7 +246,6 @@ if __name__ == "__main__":
             epochs = args.epochs  # epochs = [5, 10]
 
             if batchSizes.__len__() > 1:
-
                 # model = KerasClassifier(build_fn=dfpl.defineNNmodel2)
                 model = KerasClassifier(build_fn=dfpl.defineNNmodel)
 

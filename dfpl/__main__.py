@@ -75,7 +75,6 @@ def train(opts: options.Options):
         encoder = ac.train_full_ac(df, opts)
 
     if opts.compressFeatures:
-
         if not opts.trainAC:
             # load trained model for autoencoder
             encoder = keras.models.load_model(opts.ecModelDir)

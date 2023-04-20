@@ -29,7 +29,6 @@ test_train_args = opt.Options(
 
 
 def run_single_label_training(opts: opt.Options) -> None:
-
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
 
