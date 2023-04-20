@@ -47,8 +47,11 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         npa = np.zeros((0,), dtype=np.bool)
         try:
             DataStructs.ConvertToNumpyArray(
-                AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(smile), 2, nBits=fp_size),
-                npa)
+                AllChem.GetMorganFingerprintAsBitVect(
+                    Chem.MolFromSmiles(smile), 2, nBits=fp_size
+                ),
+                npa,
+            )
             return npa
         except Exception:
             return None
@@ -71,7 +74,9 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         try:
             return np.array(
                 Chem.RDKFingerprint(Chem.MolFromInchi(inchi), fpSize=fp_size),
-                dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
+                dtype=settings.df_fp_numpy_type,
+                copy=settings.numpy_copy_values,
+            )
         except Exception:
             # Note: We don't need to log here since rdkit already logs
             return None
@@ -91,9 +96,10 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
 
 
 def importDataFile(
-        file_name: str,
-        import_function: Callable[[str], pd.DataFrame] = pd.read_csv,
-        fp_size: int = default_fp_size) -> pd.DataFrame:
+    file_name: str,
+    import_function: Callable[[str], pd.DataFrame] = pd.read_csv,
+    fp_size: int = default_fp_size,
+) -> pd.DataFrame:
     """
     Reads data as CSV or TSV and calculates fingerprints from the SMILES in the data.
     :param import_function:
@@ -115,8 +121,7 @@ def importDataFile(
     n_cores = multiprocessing.cpu_count()
     df_split = np.array_split(df, n_cores)
     with multiprocessing.Pool(n_cores) as pool:
-        df = pd.concat(
-            pool.map(partial(addFPColumn, fp_size=fp_size), df_split))
+        df = pd.concat(pool.map(partial(addFPColumn, fp_size=fp_size), df_split))
         pool.close()
         pool.join()
     return df
@@ -141,8 +146,12 @@ conversion_rules = {
 
 
 def convert_all(directory: str) -> List[str]:
-    files = [f for f in os.listdir(directory) for key, value in conversion_rules.items()
-             if isfile(join(directory, f)) and f in key]
+    files = [
+        f
+        for f in os.listdir(directory)
+        for key, value in conversion_rules.items()
+        if isfile(join(directory, f)) and f in key
+    ]
     logging.info(f"Found {len(files)} files to convert")
     for f in files:
         path = join(directory, f)
