@@ -24,7 +24,7 @@ jobs:
     - name: Flake8
       run: flake8
     - name: Black
-      uses: psf/black@stable
+      uses: psf/black@23.3.0
     - name: Check import order
       uses: isort/isort-action@master
     - name: Check typing
