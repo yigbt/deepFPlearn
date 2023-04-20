@@ -390,11 +390,7 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
         fold_no = all_scores.iloc[idx2]["fold_no"]
 
         model_name = (
-            "multi" +
-            "_compressed-" +
-            str(opts.compressFeatures) +
-            ".Fold-" +
-            str(fold_no)
+            "multi_compressed-" + str(opts.compressFeatures) + ".Fold-" + str(fold_no)
         )
         checkpoint_path = opts.outputDir + "/" + model_name + ".checkpoint.model.hdf5"
         best_model_file = checkpoint_path.replace(

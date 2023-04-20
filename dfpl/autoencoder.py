@@ -86,7 +86,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
 
         # decoding layers
         for i in range(hidden_layer_count - 2, 0, -1):
-            factor_units = 2**i
+            factor_units = 2 ** i
             # print(f'{factor_units}: {int(input_size/factor_units)}')
             if opts.aeActivationFunction != "selu":
                 decoded = Dense(
