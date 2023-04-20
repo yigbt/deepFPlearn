@@ -105,7 +105,7 @@ def smi2fp(smile, fptype, size=2048):
         return None
 
     # init fp, any better idea? e.g. calling a constructor?
-    fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
+    # fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
 
     if fptype == 'topological':  # 2048 bits
         # Topological Fingerprints:
