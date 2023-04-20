@@ -55,7 +55,7 @@ def shuffleDataPriorToTraining(x, y):
     # shuffle rows, drop NAs, reset index
     df1 = df0.sample(frac=1).dropna(axis=0).reset_index()
 
-    return (df1.iloc[:, 0 : x.shape[1]], df1.iloc[:, x.shape[1] :])
+    return (df1.iloc[:, 0: x.shape[1]], df1.iloc[:, x.shape[1]:])
 
     # return gather(df0, key="target", value="association",
     #             cols=y.columns)
