@@ -26,7 +26,10 @@ jobs:
     - name: Black
       uses: psf/black@23.3.0
     - name: Check import order
-      uses: isort/isort-action@master
+      uses: isort/isort-action@v1
+      with:
+        isort-versioin: 5.12.0
+        configuration: --check --diff --profile black
     - name: Check typing
       run: mypy dfpl tests
   test:
