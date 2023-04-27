@@ -19,7 +19,7 @@ jobs:
       with:
         path: ~/.cache/pip
         key: pip_cache_py_${{ matrix.python-version }}
-    - name: install package
+    - name: Install package
       run: pip install -r requirements.txt
     - name: Flake8
       run: flake8
@@ -46,20 +46,21 @@ jobs:
       with:
         path: ~/.cache/pip
         key: pip_cache_py_${{ matrix.python-version }}
-    - name: install pytest
+    - name: Install pytest
       run: pip install pytest
     - name: install package
       run: pip install -r requirements.txt
     - name: run pytests
       run: pytest tests
-    - uses: Jimver/cuda-toolkit@v0.2.10
-      id: cuda-toolkit
-      with:
-        cuda: '12.1.0'
 
-    - run: nvcc -V
+    - name: Install cuda-toolkit
+      run: |
+        sudo apt update
+        sudo apt install nvidia-cuda-toolkit
+        nvcc --version
+        echo $LD_LIBRARY_PATH
 
-    - name: run test CLI calls for example
+    - name: Run test CLI calls for example
       run: |
         set -e
         dfpl train -f example/train.json
