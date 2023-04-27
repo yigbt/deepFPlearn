@@ -4,26 +4,20 @@ on:
     branches:
       - main
       - master
+  release:
+    types: [released]
 
 jobs:
+  sync_to_hzdr:
 
-  gitlab-sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y build-essential\
-            git 
-          sudo apt-get clean
-        
+      - uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.repository.default_branch }}'
+          fetch-depth: 0
       - name: Push to GitLab
-        env:
-          ACCESS_TOKEN: ${{secrets.GITLAB_ACCESS_TOKEN}}
         run: |
-          set -x
-          git clone -b master https://Normo:$ACCESS_TOKEN@gitlab.hzdr.de/Normo/deepFPlearn.git/
-          cd deepFPlearn
-          git config --global user.name $GITHUB_ACTOR
-          git remote add github https://github.com/yigbt/deepFPlearn.git
-          git pull github master
-          git push --tags origin master 
+          git remote add hzdr https://SYNC_FROM_GITHUB:${{ secrets.HZDR_ACCESS_TOKEN }}@gitlab.hzdr.de/department-computational-biology/deepfplearn.git
+          git remote -v
+          git push --tags hzdr "${{ github.event.repository.default_branch }}"

@@ -22,7 +22,7 @@
 #
 #SBATCH --time=24:00:00
 module purge
-module load cuda
+module load cuda/11.0
 
 source /u/pscheibe/conda/etc/profile.d/conda.sh
 conda activate dfpl_env

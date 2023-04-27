@@ -2,7 +2,13 @@ import pytest
 import pandas as pd
 from rdkit import RDLogger
 
-import dfpl.fingerprint as fp
+import os, sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+from dfpl import fingerprint as fp
 
 correct_smiles = [
     "CC1(C)OC2CC3C4CC(F)C5=CC(=O)CCC5(C)C4C(O)CC3(C)C2(O1)C(=O)CO",

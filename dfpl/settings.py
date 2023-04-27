@@ -33,7 +33,7 @@ ac_fp_compressed_numpy_type = np.bool8
 
 nn_fp_numpy_type = np.float32
 nn_fp_compressed_numpy_type = np.float32
-nn_target_numpy_type = np.float32
+nn_target_numpy_type = np.short
 
 nn_multi_fp_numpy_type = np.float32
 nn_multi_fp_compressed_numpy_type = np.float32
@@ -42,11 +42,11 @@ nn_multi_target_numpy_type = np.float32
 # Training settings
 
 # Training settings of the AC that were magic numbers in the code before.
-ac_train_min_delta = 0.001
-ac_train_check_period = 20
-ac_train_patience = 20
+ac_train_min_delta = 0.0001
+ac_train_check_period = 5
+ac_train_patience = 5
 
 # Training settings of the FNN that were magic numbers in the code before.
-nn_train_min_delta = 0
+nn_train_min_delta = 0.0001
 nn_train_check_period = 10
 nn_train_patience = 20

@@ -1,18 +1,25 @@
 {
-  "py/object": "dfpl.options.TrainOptions",
+  "py/object": "dfpl.options.Options",
   "inputFile": "example/data/train_data.csv",
   "outputDir": "example/results_train/",
-  "ecWeightsFile": "encoder.hdf5",
-  "type": "smiles",
+  "ecModelDir": "example/models/generic_encoder/",
+   "type": "smiles",
   "fpType": "topological",
-  "epochs": 3000,
   "fpSize": 2048,
   "encFPSize": 256,
-  "kFolds": 5,
-  "testingFraction": 0.2,
   "enableMultiLabel": false,
   "verbose": 2,
-  "trainAC": true,
+  "trainAC": false,
   "trainFNN": true,
-  "compressFeatures": true
+  "compressFeatures": true,
+
+  "kFolds": 1,
+  "testSize": 0.2,
+  "optimizer": "Adam",
+  "lossFunction": "bce",
+  "epochs": 3000,
+  "batchSize": 128,
+  "activationFunction": "selu",
+  "dropout": 0.02382519002555714,
+  "learningRate": 0.00000783711232114358
 }
