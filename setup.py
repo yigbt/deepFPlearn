@@ -26,7 +26,7 @@ setup(
         "scikit-learn==1.0.2",
         "keras==2.9.0",
         "tensorflow-gpu==2.9.3",
-        "wandb~=0.12",
+        "wandb~=0.12.0",
     ],
     entry_points={"console_scripts": ["dfpl=dfpl.__main__:main"]},
 )
