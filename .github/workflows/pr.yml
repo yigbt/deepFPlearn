@@ -76,8 +76,8 @@ jobs:
           exit 1
         fi
         echo "result lines "$(wc -l example/results_predict/predict_data_AR.csv)
-        if [ $(cat example/results_predict/predict_data_AR.csv | wc -l) -gt "2000" ]; then
-          echo "predict result should have more than 2000 lines. But had only $(cat example/results_predict/predict_data_AR.csv | wc -l)" >&2 
+        if [ "$(cat example/results_predict/predict_data_AR.csv | wc -l)" -lt "2000" ]; then
+          echo "predict result should have at least 2000 lines. But had only $(cat example/results_predict/predict_data_AR.csv | wc -l)" >&2 
           exit 1
         fi
         tree example
