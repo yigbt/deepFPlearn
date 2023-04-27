@@ -18,7 +18,7 @@ setup(
     ],
     python_requires=">=3.6",
     install_requires=[
-        "jsonpickle~=2.1",
+        "jsonpickle~=2.1.0",
         "matplotlib==3.5.1",
         "numpy==1.22.0",
         "pandas==1.4.2",
