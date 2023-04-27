@@ -1,8 +1,13 @@
 name: Push changes to Gitlab
-on: [ push ]
+on:
+  push:
+    branches:
+      - main
+      - master
+
 jobs:
 
-  job1:
+  gitlab-sync:
     runs-on: ubuntu-latest
     steps:
       - name: Install Dependencies
@@ -21,4 +26,4 @@ jobs:
           git config --global user.name $GITHUB_ACTOR
           git remote add github https://github.com/yigbt/deepFPlearn.git
           git pull github master
-          git push -f --tags origin master 
+          git push --tags origin master 
