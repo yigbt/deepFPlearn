@@ -50,6 +50,18 @@ jobs:
       run: pip install pytest
     - name: install package
       run: pip install -r requirements.txt
-    - name: run tests
+    - name: run pytests
       run: pytest tests
-
+    - name: run test CLI calls for example
+      run: |
+        dfpl train -f example/train.json
+        if [ ! -d example/results_train/ ]; then
+          echo "training result directory missing" >&2 
+          exit 1
+        fi
+        dfpl predict -f example/predict.json
+        if [ ! -d example/results_predict/ ]; then
+          echo "predict result directory missing" >&2 
+          exit 1
+        fi
+        dfpl convert -f example/data
