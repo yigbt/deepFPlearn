@@ -52,8 +52,20 @@ jobs:
       run: pip install -r requirements.txt
     - name: run pytests
       run: pytest tests
+    - uses: Jimver/cuda-toolkit@v0.2.10
+      id: cuda-toolkit
+      with:
+        cuda: '12.1.0'
+
+    - run: echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
+
+    - run: echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
+
+    - run: nvcc -V
+
     - name: run test CLI calls for example
       run: |
+        set -e
         dfpl train -f example/train.json
         if [ ! -d example/results_train/ ]; then
           echo "training result directory missing" >&2 
