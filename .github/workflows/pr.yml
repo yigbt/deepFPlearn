@@ -68,7 +68,7 @@ jobs:
           echo "training result directory missing" >&2 
           exit 1
         fi
-        tree
+        tree example
 
         dfpl predict -f example/predict.json
         if [ ! -d example/results_predict/ ]; then
@@ -76,7 +76,10 @@ jobs:
           exit 1
         fi
         echo "result lines "$(wc -l example/results_predict/predict_data_AR.csv)
+        if [ $(cat example/results_predict/predict_data_AR.csv | wc -l) -ge "2000" ]; then
+          echo "predict result should have at least 2000 linesissing" >&2 
+          exit 1
+        fi
+        tree example
 
-
-        tree
         dfpl convert -f example/data
