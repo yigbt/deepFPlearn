@@ -1,22 +1,19 @@
+import logging
+import math
 import os.path
 from os.path import basename
-import math
 
 import numpy as np
 import pandas as pd
-import logging
-
 import tensorflow.keras.metrics as metrics
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense
-from tensorflow.keras import optimizers, losses, initializers
-
 from sklearn.model_selection import train_test_split
+from tensorflow.keras import initializers, losses, optimizers
+from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.models import Model
 
-from dfpl import options
 from dfpl import callbacks
 from dfpl import history as ht
-from dfpl import settings
+from dfpl import options, settings
 
 
 def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
@@ -30,8 +27,9 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
     """
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    ac_optimizer = optimizers.Adam(learning_rate=opts.aeLearningRate,
-                                   decay=opts.aeLearningRateDecay)
+    ac_optimizer = optimizers.Adam(
+        learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay
+    )
 
     if output_bias is not None:
         output_bias = initializers.Constant(output_bias)
@@ -45,11 +43,15 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
     # 1st hidden layer, that receives weights from input layer
     # equals bottleneck layer, if hidden_layer_count==1!
     if opts.aeActivationFunction != "selu":
-        encoded = Dense(units=int(input_size / 2), activation=opts.aeActivationFunction)(input_vec)
+        encoded = Dense(
+            units=int(input_size / 2), activation=opts.aeActivationFunction
+        )(input_vec)
     else:
-        encoded = Dense(units=int(input_size / 2),
-                        activation=opts.aeActivationFunction,
-                        kernel_initializer="lecun_normal")(input_vec)
+        encoded = Dense(
+            units=int(input_size / 2),
+            activation=opts.aeActivationFunction,
+            kernel_initializer="lecun_normal",
+        )(input_vec)
 
     if hidden_layer_count > 1:
         # encoding layers, incl. bottle-neck
@@ -57,53 +59,69 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
             factor_units = 2 ** (i + 1)
             # print(f'{factor_units}: {int(input_size / factor_units)}')
             if opts.aeActivationFunction != "selu":
-                encoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(encoded)
+                encoded = Dense(
+                    units=int(input_size / factor_units),
+                    activation=opts.aeActivationFunction,
+                )(encoded)
             else:
-                encoded = Dense(units=int(input_size / factor_units),
-                                activation=opts.aeActivationFunction,
-                                kernel_initializer="lecun_normal")(encoded)
+                encoded = Dense(
+                    units=int(input_size / factor_units),
+                    activation=opts.aeActivationFunction,
+                    kernel_initializer="lecun_normal",
+                )(encoded)
 
         # 1st decoding layer
         factor_units = 2 ** (hidden_layer_count - 1)
         if opts.aeActivationFunction != "selu":
-            decoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(encoded)
+            decoded = Dense(
+                units=int(input_size / factor_units),
+                activation=opts.aeActivationFunction,
+            )(encoded)
         else:
-            decoded = Dense(units=int(input_size / factor_units),
-                            activation=opts.aeActivationFunction,
-                            kernel_initializer="lecun_normal")(encoded)
+            decoded = Dense(
+                units=int(input_size / factor_units),
+                activation=opts.aeActivationFunction,
+                kernel_initializer="lecun_normal",
+            )(encoded)
 
         # decoding layers
         for i in range(hidden_layer_count - 2, 0, -1):
-            factor_units = 2 ** i
+            factor_units = 2**i
             # print(f'{factor_units}: {int(input_size/factor_units)}')
             if opts.aeActivationFunction != "selu":
-                decoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(decoded)
+                decoded = Dense(
+                    units=int(input_size / factor_units),
+                    activation=opts.aeActivationFunction,
+                )(decoded)
             else:
-                decoded = Dense(units=int(input_size / factor_units),
-                                activation=opts.aeActivationFunction,
-                                kernel_initializer="lecun_normal")(decoded)
+                decoded = Dense(
+                    units=int(input_size / factor_units),
+                    activation=opts.aeActivationFunction,
+                    kernel_initializer="lecun_normal",
+                )(decoded)
 
         # output layer
         # The output layer needs to predict the probability of an output which needs
         # to either 0 or 1 and hence we use sigmoid activation function.
-        decoded = Dense(units=input_size, activation='sigmoid', bias_initializer=output_bias)(decoded)
+        decoded = Dense(
+            units=input_size, activation="sigmoid", bias_initializer=output_bias
+        )(decoded)
 
     else:
         # output layer
-        decoded = Dense(units=input_size, activation='sigmoid', bias_initializer=output_bias)(encoded)
+        decoded = Dense(
+            units=input_size, activation="sigmoid", bias_initializer=output_bias
+        )(encoded)
 
     autoencoder = Model(input_vec, decoded)
     encoder = Model(input_vec, encoded)
     autoencoder.summary(print_fn=logging.info)
 
-    autoencoder.compile(optimizer=ac_optimizer,
-                        loss=losses.BinaryCrossentropy(),
-                        metrics=[
-                            metrics.AUC(),
-                            metrics.Precision(),
-                            metrics.Recall()
-                        ]
-                        )
+    autoencoder.compile(
+        optimizer=ac_optimizer,
+        loss=losses.BinaryCrossentropy(),
+        metrics=[metrics.AUC(), metrics.Precision(), metrics.Recall()],
+    )
     return autoencoder, encoder
 
 
@@ -121,32 +139,46 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     if opts.ecWeightsFile == "":
         logging.info("No AE encoder weights file specified")
         base_file_name = os.path.splitext(basename(opts.inputFile))[0]
-        logging.info(f"(auto)encoder weights will be saved in {base_file_name}.[auto]encoder.hdf5")
-        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
-        ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.weights.hdf5")
+        logging.info(
+            f"(auto)encoder weights will be saved in {base_file_name}.[auto]encoder.hdf5"
+        )
+        ac_weights_file = os.path.join(
+            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
+        )
+        # ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".encoder.weights.hdf5")
     else:
         logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
         base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
-        ac_weights_file = os.path.join(opts.outputDir, base_file_name + ".autoencoder.weights.hdf5")
-        ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
+        ac_weights_file = os.path.join(
+            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
+        )
+        # ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # collect the callbacks for training
-    callback_list = callbacks.autoencoder_callback(checkpoint_path=ac_weights_file, opts=opts)
+    callback_list = callbacks.autoencoder_callback(
+        checkpoint_path=ac_weights_file, opts=opts
+    )
 
     # Select all fps that are valid and turn them into a numpy array
     # This step is crucial for speed!!!
-    fp_matrix = np.array(df[df["fp"].notnull()]["fp"].to_list(),
-                         dtype=settings.ac_fp_numpy_type,
-                         copy=settings.numpy_copy_values)
-    logging.info(f"Training AC on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
+    fp_matrix = np.array(
+        df[df["fp"].notnull()]["fp"].to_list(),
+        dtype=settings.ac_fp_numpy_type,
+        copy=settings.numpy_copy_values,
+    )
+    logging.info(
+        f"Training AC on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}"
+    )
 
     # When training the final AE, we don't want any test data. We want to train it on the all available
     # fingerprints.
-    assert(0.0 <= opts.testSize <= 0.5)
+    assert 0.0 <= opts.testSize <= 0.5
     if opts.testSize > 0.0:
         # split data into test and training data
         if opts.wabTracking:
-            x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize, random_state=42)
+            x_train, x_test = train_test_split(
+                fp_matrix, test_size=opts.testSize, random_state=42
+            )
         else:
             x_train, x_test = train_test_split(fp_matrix, test_size=opts.testSize)
     else:
@@ -160,7 +192,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         initial_bias = None
         logging.info("No zeroes in training labels. Setting initial_bias to None.")
     else:
-        initial_bias = np.log([count_dict[1]/count_dict[0]])
+        initial_bias = np.log([count_dict[1] / count_dict[0]])
         logging.info(f"Initial bias for last sigmoid layer: {initial_bias[0]}")
 
     if opts.testSize > 0.0:
@@ -174,17 +206,21 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = define_ac_model(opts, output_bias=initial_bias)
 
-    auto_hist = autoencoder.fit(x_train, x_train,
-                                callbacks=callback_list,
-                                epochs=opts.aeEpochs,
-                                batch_size=opts.aeBatchSize,
-                                verbose=opts.verbose,
-                                validation_data=(x_test, x_test) if opts.testSize > 0.0 else None
-                                )
+    auto_hist = autoencoder.fit(
+        x_train,
+        x_train,
+        callbacks=callback_list,
+        epochs=opts.aeEpochs,
+        batch_size=opts.aeBatchSize,
+        verbose=opts.verbose,
+        validation_data=(x_test, x_test) if opts.testSize > 0.0 else None,
+    )
     logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
-    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
-                              hist=auto_hist)
+    ht.store_and_plot_history(
+        base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
+        hist=auto_hist,
+    )
 
     # encoder.save_weights(ec_weights_file) # these are the wrong weights! we need those from the callback model
     # logging.info(f"Encoder weights stored in file: {ec_weights_file}")
@@ -198,8 +234,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     return encoder
 
 
-def compress_fingerprints(dataframe: pd.DataFrame,
-                          encoder: Model) -> pd.DataFrame:
+def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFrame:
     """
     Adds a column of the compressed version of the fingerprints to the original dataframe.
 
@@ -209,11 +244,17 @@ def compress_fingerprints(dataframe: pd.DataFrame,
     """
     logging.info("Adding compressed fingerprints")
     idx = dataframe[dataframe["fp"].notnull()].index
-    fp_matrix = np.array(dataframe[dataframe["fp"].notnull()]["fp"].to_list(),
-                         dtype=settings.ac_fp_numpy_type,
-                         copy=settings.numpy_copy_values)
-    logging.info(f"Using input matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
+    fp_matrix = np.array(
+        dataframe[dataframe["fp"].notnull()]["fp"].to_list(),
+        dtype=settings.ac_fp_numpy_type,
+        copy=settings.numpy_copy_values,
+    )
+    logging.info(
+        f"Using input matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}"
+    )
     logging.info("Compressed fingerprints are added to input dataframe.")
-    dataframe['fpcompressed'] = pd.DataFrame({'fpcompressed': [s for s in encoder.predict(fp_matrix)]}, idx)
+    dataframe["fpcompressed"] = pd.DataFrame(
+        {"fpcompressed": [s for s in encoder.predict(fp_matrix)]}, idx
+    )
 
     return dataframe

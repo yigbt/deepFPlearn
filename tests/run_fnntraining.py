@@ -1,20 +1,22 @@
-import pathlib
 import logging
+import pathlib
 
-import dfpl.options as opt
-import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
+import dfpl.fingerprint as fp
+import dfpl.options as opt
 import dfpl.single_label_model as fNN
 import dfpl.utils as utils
 
 project_directory = pathlib.Path(__file__).parent.absolute()
 test_train_args = opt.Options(
     inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
-    ecModelDir=utils.makePathAbsolute(f"{project_directory}/output_data/fnnTrainingCompressed/modeltraining"),
+    ecModelDir=utils.makePathAbsolute(
+        f"{project_directory}/output_data/fnnTrainingCompressed/modeltraining"
+    ),
     outputDir=utils.makePathAbsolute(f"{project_directory}/output_data/fnnTraining"),
     ecWeightsFile="",
-    type='smiles',
-    fpType='topological',
+    type="smiles",
+    fpType="topological",
     epochs=10,
     fpSize=2048,
     encFPSize=256,
@@ -22,19 +24,22 @@ test_train_args = opt.Options(
     kFolds=1,
     verbose=2,
     trainAC=True,
-    trainFNN=True
+    trainFNN=True,
 )
 
 
 def run_single_label_training(opts: opt.Options) -> None:
-
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
 
-    opts.outputDir = utils.makePathAbsolute(f"{project_directory}/output_data/fnnTrainingCompressed")
+    opts.outputDir = utils.makePathAbsolute(
+        f"{project_directory}/output_data/fnnTrainingCompressed"
+    )
     utils.createDirectory(opts.outputDir)
 
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(
+        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+    )
 
     t = opts.ecWeightsFile
     opts.ecWeightsFile = opts.outputDir + t
@@ -56,7 +61,9 @@ def run_single_label_training(opts: opt.Options) -> None:
     fNN.train_single_label_models(df=df, opts=opts)
 
     # train FNNs with uncompressed features
-    opts.outputDir = utils.makePathAbsolute(f"{project_directory}/output_data/fnnTrainingUncompressed")
+    opts.outputDir = utils.makePathAbsolute(
+        f"{project_directory}/output_data/fnnTrainingUncompressed"
+    )
     utils.createDirectory(opts.outputDir)
     logging.info("Training the FNN using un-compressed input data.")
     opts.compressFeatures = False
@@ -65,5 +72,5 @@ def run_single_label_training(opts: opt.Options) -> None:
     logging.info("Done")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_single_label_training(test_train_args)

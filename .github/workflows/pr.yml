@@ -1,0 +1,85 @@
+name: Test Pull Request
+
+on: [pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8']
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Cache .cache/pip
+      uses: actions/cache@v3
+      id: cache-pip
+      with:
+        path: ~/.cache/pip
+        key: pip_cache_py_${{ matrix.python-version }}
+    - name: Install package
+      run: pip install -r requirements.txt
+    - name: Flake8
+      run: flake8
+    - name: Black
+      uses: psf/black@23.3.0
+    - name: Check import order
+      uses: isort/isort-action@v1
+      with:
+        isort-version: 5.12.0
+        configuration: --check --diff --profile black
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8']
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Cache .cache/pip
+      uses: actions/cache@v3
+      id: cache-pip
+      with:
+        path: ~/.cache/pip
+        key: pip_cache_py_${{ matrix.python-version }}
+    - name: Install pytest
+      run: pip install pytest
+    - name: install package
+      run: pip install -r requirements.txt
+    - name: run pytests
+      run: pytest tests
+
+    - name: Install cuda-toolkit
+      run: |
+        sudo apt update
+        sudo apt install nvidia-cuda-toolkit
+        nvcc --version
+        echo $LD_LIBRARY_PATH
+
+    - name: Run test CLI calls for example
+      run: |
+        set -e
+        dfpl train -f example/train.json
+        if [ ! -d example/results_train/ ]; then
+          echo "training result directory missing" >&2 
+          exit 1
+        fi
+        tree example
+
+        dfpl predict -f example/predict.json
+        if [ ! -d example/results_predict/ ]; then
+          echo "predict result directory missing" >&2 
+          exit 1
+        fi
+        echo "result lines "$(wc -l example/results_predict/predict_data_AR.csv)
+        if [ "$(cat example/results_predict/predict_data_AR.csv | wc -l)" -lt "2000" ]; then
+          echo "predict result should have at least 2000 lines. But had only $(cat example/results_predict/predict_data_AR.csv | wc -l)" >&2 
+          exit 1
+        fi
+        tree example
+
+        dfpl convert -f example/data

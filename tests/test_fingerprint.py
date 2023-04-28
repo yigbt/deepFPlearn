@@ -1,14 +1,15 @@
-import pytest
+import os
+import sys
+
 import pandas as pd
 from rdkit import RDLogger
 
-import os, sys
+from dfpl import fingerprint as fp
 
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-from dfpl import fingerprint as fp
 
 correct_smiles = [
     "CC1(C)OC2CC3C4CC(F)C5=CC(=O)CCC5(C)C4C(O)CC3(C)C2(O1)C(=O)CO",
@@ -18,7 +19,7 @@ correct_smiles = [
     "CC1CC2C3CC(F)C4=CC(=O)C=CC4(C)C3(F)C(O)CC2(C)C1(OC(=O)C)C(=O)COC(=O)C",
     "CC1CC2C3CCC(O)(C(=O)CO)C3(C)CC(O)C2C4(C)C=CC(=O)C=C14",
     "CC1CC2C3CCC4=CC(=O)C=CC4(C)C3(F)C(O)CC2(C)C1(O)C(=O)CO",
-    "CCC(=O)OC1(C(C)CC2C3CCC4=CC(=O)C=CC4(C)C3(F)C(O)CC12C)C(=O)CCl"
+    "CCC(=O)OC1(C(C)CC2C3CCC4=CC(=O)C=CC4(C)C3(F)C(O)CC12C)C(=O)CCl",
 ]
 
 incorrect_smiles = [
@@ -37,7 +38,7 @@ incorrect_smiles = [
     "Nc1ccccccc2c1",
     "Occc(cc1)C(=O)Oc2ccccc2",
     "[O][N+](=N1ccccc1)c2ccccc2",
-    "(cc1)c2ccc(cc2)c3ccccc3"
+    "(cc1)c2ccc(cc2)c3ccccc3",
 ]
 
 

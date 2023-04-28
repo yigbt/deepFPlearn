@@ -1,28 +1,27 @@
-from argparse import Namespace
+import dataclasses
 import logging
 import pathlib
-import dataclasses
+from argparse import Namespace
 from os import path
 
-from tensorflow import keras
 import wandb
+from tensorflow import keras
 
-from dfpl.utils import makePathAbsolute, createDirectory
-from dfpl import options
-from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
-from dfpl import predictions
+from dfpl import fingerprint as fp
+from dfpl import options, predictions
 from dfpl import single_label_model as sl
+from dfpl.utils import createDirectory, makePathAbsolute
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
-    inputFile=f'{project_directory}/input_datasets/S_dataset.pkl',
-    outputDir=f'{project_directory}/output_data/console_test',
-    ecWeightsFile=f'{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5',
-    ecModelDir=f'{project_directory}/output_data/case_00/AE_S/saved_model',
-    type='smiles',
-    fpType='topological',
+    inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
+    outputDir=f"{project_directory}/output_data/console_test",
+    ecWeightsFile=f"{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5",
+    ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
+    type="smiles",
+    fpType="topological",
     epochs=100,
     batchSize=1024,
     fpSize=2048,
@@ -35,9 +34,9 @@ test_train_opts = options.Options(
     trainFNN=True,
     compressFeatures=True,
     activationFunction="selu",
-    lossFunction='bce',
-    optimizer='Adam',
-    fnnType='FNN'
+    lossFunction="bce",
+    optimizer="Adam",
+    fnnType="FNN",
 )
 
 test_pred_opts = options.Options(
@@ -47,7 +46,7 @@ test_pred_opts = options.Options(
     ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
     fnnModelDir=f"{project_directory}/output_data/console_test/ER_saved_model",
     type="smiles",
-    fpType="topological"
+    fpType="topological",
 )
 
 
@@ -61,10 +60,14 @@ def train(opts: options.Options):
         wandb.init(project=f"dfpl-training-{opts.wabTarget}", config=vars(opts))
         # opts = wandb.config
 
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(
+        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+    )
 
     # Create output dir if it doesn't exist
-    createDirectory(opts.outputDir)  # why? we just created that directory in the function before??
+    createDirectory(
+        opts.outputDir
+    )  # why? we just created that directory in the function before??
 
     encoder = None
     if opts.trainAC:
@@ -72,7 +75,6 @@ def train(opts: options.Options):
         encoder = ac.train_full_ac(df, opts)
 
     if opts.compressFeatures:
-
         if not opts.trainAC:
             # load trained model for autoencoder
             encoder = keras.models.load_model(opts.ecModelDir)
@@ -95,7 +97,9 @@ def predict(opts: options.Options) -> None:
     Run prediction given specific options
     :param opts: Options defining the details of the prediction
     """
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(
+        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+    )
     # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
@@ -108,13 +112,14 @@ def predict(opts: options.Options) -> None:
         df = ac.compress_fingerprints(df, encoder)
 
     # predict
-    df2 = predictions.predict_values(df=df,
-                                     opts=opts)
+    df2 = predictions.predict_values(df=df, opts=opts)
 
-    names_columns = [c for c in df2.columns if c not in ['fp', 'fpcompressed']]
+    names_columns = [c for c in df2.columns if c not in ["fp", "fpcompressed"]]
 
     df2[names_columns].to_csv(path_or_buf=path.join(opts.outputDir, opts.outputFile))
-    logging.info(f"Prediction successful. Results written to '{path.join(opts.outputDir, opts.outputFile)}'")
+    logging.info(
+        f"Prediction successful. Results written to '{path.join(opts.outputDir, opts.outputFile)}'"
+    )
 
 
 def createLogger(filename: str) -> None:
@@ -131,8 +136,10 @@ def createLogger(filename: str) -> None:
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     # create formatter and add it to the handlers
-    formatterFile = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    formatterConsole = logging.Formatter('%(levelname)-8s %(message)s')
+    formatterFile = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    formatterConsole = logging.Formatter("%(levelname)-8s %(message)s")
     fh.setFormatter(formatterFile)
     ch.setFormatter(formatterConsole)
     # add the handlers to the logger
@@ -161,11 +168,13 @@ def main():
             fixed_opts = dataclasses.replace(
                 train_opts,
                 inputFile=makePathAbsolute(train_opts.inputFile),
-                outputDir=makePathAbsolute(train_opts.outputDir)
+                outputDir=makePathAbsolute(train_opts.outputDir),
             )
             createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "train.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{fixed_opts}")
+            logging.info(
+                f"The following arguments are received or filled with default values:\n{fixed_opts}"
+            )
             train(fixed_opts)
             exit(0)
         elif prog_args.method == "predict":
@@ -174,15 +183,19 @@ def main():
                 predict_opts,
                 inputFile=makePathAbsolute(predict_opts.inputFile),
                 outputDir=makePathAbsolute(predict_opts.outputDir),
-                outputFile=makePathAbsolute(path.join(predict_opts.outputDir, predict_opts.outputFile)),
+                outputFile=makePathAbsolute(
+                    path.join(predict_opts.outputDir, predict_opts.outputFile)
+                ),
                 ecModelDir=makePathAbsolute(predict_opts.ecModelDir),
                 fnnModelDir=makePathAbsolute(predict_opts.fnnModelDir),
                 trainAC=False,
-                trainFNN=False
+                trainFNN=False,
             )
             createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "predict.log"))
-            logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
+            logging.info(
+                f"The following arguments are received or filled with default values:\n{prog_args}"
+            )
             predict(fixed_opts)
             exit(0)
     except AttributeError as e:
@@ -190,5 +203,5 @@ def main():
         parser.print_usage()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
