@@ -1,9 +1,15 @@
 name: Push changes to Gitlab
 on:
+  push:
+    branches:
+      - main
+      - master
   release:
     types: [released]
+
 jobs:
   sync_to_hzdr:
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
