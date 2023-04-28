@@ -17,6 +17,8 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
+    # all packages need for the final usage
+    # for additional packages during development, use requirements.txt
     install_requires=[
         "jsonpickle~=2.1.0",
         "matplotlib==3.5.1",
