@@ -1,3 +1,4 @@
-[submodule "chemprop"]
-	path = chemprop_repo
-	url = https://github.com/soulios/chemprop.git
+[submodule "dfpl_chemprop"]
+	path = dfpl_chemprop
+	url = https://github.com/soulios/chemprop/
+	branch = dfpl_chemprop
