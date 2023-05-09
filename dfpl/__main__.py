@@ -1,14 +1,6 @@
-import os.path
-import sys
-sys.path.append("./chemprop_repo")
-from chemprop_repo import chemprop
-from chemprop_repo.chemprop import args, train
+from dfpl_chemprop import chemprop
+from dfpl_chemprop.chemprop import args, train
 
-# sys.path.append("./CMPNN")
-# from CMPNN.cmpnnchemprop.train import *
-# from CMPNN.cmpnnchemprop.utils import create_logger
-# from CMPNN.training import cross_validate
-from keras.models import load_model
 import pandas as pd
 from argparse import Namespace
 import logging
@@ -17,7 +9,7 @@ import dataclasses
 from os import path
 import tensorflow as tf
 import math
-from tensorflow import keras
+from keras.models import load_model
 
 from dfpl.utils import makePathAbsolute, createDirectory, createArgsFromJson
 from dfpl import options
@@ -27,7 +19,12 @@ from dfpl import feedforwardNN as fNN
 from dfpl import predictions
 from dfpl import single_label_model as sl
 from dfpl import rbm as rbm
-from keras.models import load_model
+from dfpl import vae as vae
+import os.path
+import sys
+
+sys.path.append("./dfpl_chemprop")
+
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
@@ -65,23 +62,6 @@ test_pred_opts = options.Options(
 )
 
 
-# def traincmpnn(opts: options.GnnOptions):
-#     logger = create_logger(name='traincmpnn')
-#     print("Training CMPNN...")
-#     mean_auc_score, std_auc_score = cross_validate(opts, logger)
-#     print(f'Results: {mean_auc_score:.5f} +/- {std_auc_score:.5f}')
-
-
-# def predictcmpnn(opts: options.GnnOptions) -> None:
-#     df = pd.read_csv(opts.test_path)
-#     # df = df.head(30)
-#     pred, smiles = make_predictions(opts, df.smiles.tolist())
-#     df = pd.DataFrame({'smiles': smiles})
-#     for i in range(len(pred[0])):
-#         df[f'pred_{i}'] = [item[i] for item in pred]
-#     df.to_csv(f'{opts.save_dir}/{opts.saving_name}', index=False)
-
-
 def traindmpnn(opts: options.GnnOptions):
     """
     Train a D-MPNN model using the given options.
@@ -90,6 +70,7 @@ def traindmpnn(opts: options.GnnOptions):
     Returns:
     - None
     """
+    os.environ["CUDA_VISIBLE_DEVICES"] = f"{opts.gpu}"
     ignore_elements = ["py/object", "gnn_type"]
     # Load options from a JSON file and replace the relevant attributes in `opts`
     arguments = createArgsFromJson(opts.configFile, ignore_elements, return_json_object=False)
@@ -100,7 +81,7 @@ def traindmpnn(opts: options.GnnOptions):
     print(f'Results: {mean_score:.5f} +/- {std_score:.5f}')
 
 
-def predictdmpnn(opts: options.GnnOptions, JSON_ARG_PATH) -> None:
+def predictdmpnn(opts: options.GnnOptions, json_arg_path: str) -> None:
     """
     Predict the values using a trained D-MPNN model with the given options.
     Args:
@@ -111,7 +92,7 @@ def predictdmpnn(opts: options.GnnOptions, JSON_ARG_PATH) -> None:
     """
     ignore_elements = ["py/object", "gnn_type", "checkpoint_paths", "save_dir", "saving_name"]
     # Load options and additional arguments from a JSON file
-    arguments, data = createArgsFromJson(JSON_ARG_PATH, ignore_elements, return_json_object=True)
+    arguments, data = createArgsFromJson(json_arg_path, ignore_elements, return_json_object=True)
     arguments.append("--preds_path")
     arguments.append("")
     save_dir = data.get("save_dir")
@@ -125,7 +106,7 @@ def predictdmpnn(opts: options.GnnOptions, JSON_ARG_PATH) -> None:
         my_list = [rows.smiles]
         smiles.append(my_list)
     # Make predictions and return the result
-    pred = chemprop.train.make_predictions(args=opts, smiles=smiles)
+    chemprop.train.make_predictions(args=opts, smiles=smiles)
 
 
 def train(opts: options.Options):
@@ -137,23 +118,20 @@ def train(opts: options.Options):
     os.environ["CUDA_VISIBLE_DEVICES"] = f"{opts.gpu}"
 
     # import data from file and create DataFrame
-    if "csv" in opts.inputFile:
-        df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
     if "tsv" in opts.inputFile:
         df = fp.importDataFile(opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize)
-    if "pkl" in opts.inputFile:
-        df = fp.importDataFile(opts.inputFile, import_function=fp.load_pickle_file, fp_size=opts.fpSize)
-
-    # Create output dir if it doesn't exist
-    createDirectory(opts.outputDir)
-
+    else:
+        df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
     # initialize encoders to None
     encoder = None
     rbm_model = None
-
-    # train an autoencoder on the full feature matrix if requested
     if opts.trainAC:
-        encoder = ac.train_full_ac(df, opts)
+        if opts.aeType == "deterministic":
+            encoder,train_indices,test_indices = ac.train_full_ac(df, opts)
+        elif opts.aeType == "variational":
+            encoder,train_indices,test_indices = vae.train_full_vae(df, opts)
+        else:
+            raise ValueError(f"Unknown autoencoder type: {opts.Type}")
 
     # train an RBM on the full feature matrix if requested
     if opts.trainRBM:
@@ -184,26 +162,17 @@ def train(opts: options.Options):
 
             # if an autoencoder was not trained, load the trained model and weights
             if not opts.trainAC:
-                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
-                # autoencoder = load_model(opts.ecModelDir)
-                if "generic" in opts.ecWeightsFile:
+                if opts.aeType == "deterministic":
+                    (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+                if opts.aeType == "variational":
+                    (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+                if opts.ecWeightsFile == '':
+                    encoder = load_model(opts.ecModelDir)
+                else:
                     encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
-                if "scaffold" in opts.ecWeightsFile:
-                    autoencoder = autoencoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
-                if "molecular_weight" in opts.ecWeightsFile:
-                    autoencoder = autoencoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
-            total_weights_0 = total_weights_1 = 0
-            for layer in encoder.layers:
-                weights = layer.get_weights()
-                if len(weights) > 0:
-                    total_weights_0 += tf.reduce_sum(weights[0]).numpy()
-                    total_weights_1 += tf.reduce_sum(weights[1]).numpy()
-            print(f"The encoder has {total_weights_0} + {total_weights_1} non-zero weights.")
-
-
             # compress the fingerprints using the autoencoder
             df = ac.compress_fingerprints(df, encoder)
-            # ac.visualize_fingerprints(df,before_col='fp',after_col='fpcompressed',save_as=os.path.join(opts.outputDir, f"{opts.inputFile}_{opts.split_type}_fingerprints.png"))
+            # ac.visualize_fingerprints(df,before_col='fp',after_col='fpcompressed',save_as=os.path.join(opts.outputDir, f"{opts.inputFile}_{opts.aeSplitType}_fingerprints"))
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
@@ -218,19 +187,26 @@ def predict(opts: options.Options) -> None:
     Run prediction given specific options
     :param opts: Options defining the details of the prediction
     """
-    # Import the input data file using the specified function and fingerprint size
-    if "csv" in opts.inputFile:
-        df = fp.importDataFile(opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize)
+    # import data from file and create DataFrame
     if "tsv" in opts.inputFile:
         df = fp.importDataFile(opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize)
-    # Create output directory if it doesn't already exist
-    createDirectory(opts.outputDir)
+    else:
+        df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     if opts.compressFeatures:
+        # load trained model for autoencoder
+        if opts.aeType == "deterministic":
+            if opts.ecWeightsFile == "":
+                encoder = keras.models.load_model(opts.ecModelDir)
+            else:
+                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+        if opts.aeType == "variational":
+            (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
         # Load trained model for autoencoder
-        (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
-        encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
-
+        if opts.ecWeightsFile == '':
+            encoder = load_model(opts.ecModelDir)
+        else:
+            encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
         if opts.useRBM:
             # Compress the fingerprints using the RBM model
             df = rbm.compress_fingerprints(df, encoder, layer_num=3)
@@ -249,7 +225,6 @@ def predict(opts: options.Options) -> None:
 
     # Log successful completion of prediction and the file path where the results were saved
     logging.info(f"Prediction successful. Results written to '{path.join(opts.outputDir, opts.outputFile)}'")
-
 
 
 def createLogger(filename: str) -> None:
@@ -293,34 +268,19 @@ def main():
                 raise ValueError("Input directory is not a directory")
         elif prog_args.method == "traingnn":
             traingnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                traingnn_opts,
-                # inputFile=makePathAbsolute(traingnn_opts.data_path),
-                # outputDir=makePathAbsolute(traingnn_opts.save_dir)
-            )
 
-            # if traingnn_opts.gnn_type == "cmpnn":
-            #     createDirectory(fixed_opts.save_dir)
-            #     traincmpnn(fixed_opts)
             if traingnn_opts.gnn_type == "dmpnn":
-                traindmpnn(fixed_opts)
+                traindmpnn(traingnn_opts)
 
         elif prog_args.method == "predictgnn":
             predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 predictgnn_opts,
-                checkpoint_dir=makePathAbsolute(predictgnn_opts.checkpoint_dir),
                 test_path=makePathAbsolute(predictgnn_opts.test_path),
-                preds_path=makePathAbsolute(predictgnn_opts.preds_path),
-                trainAC=False,
-                trainFNN=False
-            )
+                preds_path=makePathAbsolute(predictgnn_opts.preds_path))
 
-            createLogger(path.join(fixed_opts.save_dir, "predictgnn.log"))
             logging.info(f"The following arguments are received or filled with default values:\n{prog_args}")
-            # if predictgnn_opts.gnn_type == "cmpnn":
-            #     createDirectory(fixed_opts.save_dir)
-            #     predictcmpnn(fixed_opts)
+
             if predictgnn_opts.gnn_type == "dmpnn":
                 predictdmpnn(fixed_opts, prog_args.configFile)
 
@@ -354,7 +314,6 @@ def main():
     except AttributeError as e:
         print(e)
         parser.print_usage()
-
 
 
 if __name__ == '__main__':

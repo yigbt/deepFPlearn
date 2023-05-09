@@ -2,7 +2,6 @@ import tensorflow.keras.models
 import pandas as pd
 import numpy as np
 import logging
-import tensorflow.keras.metrics
 from dfpl import options
 from dfpl import settings
 
@@ -16,9 +15,7 @@ def predict_values(df: pd.DataFrame,
     :param opts:
     :return:
     """
-    model = tensorflow.keras.models.load_weights(opts.fnnModelDir)
-    # model = tensorflow.keras.models.load_model(opts.fnnModelDir,compile=False)
-    # model = tensorflow.keras.models.load_model('/home/soulios/git-soulios/deepFPlearn/example/results_train/AR_single-labeled_Fold-2.best.model.weights.h5')
+    model = tensorflow.keras.models.load_model(opts.fnnModelDir, compile=False)
     if opts.compressFeatures:
         sub_df = df[df['fpcompressed'].notnull()]
         x = np.array(

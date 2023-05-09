@@ -1,8 +1,8 @@
 from __future__ import annotations
 import sys
-sys.path.append("./chemprop_repo")
+sys.path.append("./dfpl_chemprop")
 import torch
-from chemprop_repo.chemprop.args import TrainArgs
+from dfpl_chemprop.chemprop.args import TrainArgs
 from dfpl.utils import makePathAbsolute
 from dataclasses import dataclass
 import jsonpickle
@@ -39,6 +39,7 @@ class Options:
     sampleDown: bool = False
     split_type: str = 'random'
     aeSplitType: str = 'random'
+    aeType: str = 'deterministic'
     aeEpochs: int = 3000
     aeBatchSize: int = 512
     aeLearningRate: float = 0.001
@@ -56,7 +57,7 @@ class Options:
     l2reg: float = 0.001
     dropout: float = 0.2
     threshold: float = 0.5
-    gpu: int = 0
+    gpu: str = ""
     snnDepth = 8
     snnWidth = 50
     aeWabTracking: str = ""  # Wand & Biases autoencoder tracking
@@ -238,6 +239,12 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         choices=['scaffold_balanced', 'random','molecular_weight'],
                         help='Set how the data is going to be split for the feedforward neural network',
                         default=argparse.SUPPRESS)
+    parser.add_argument("--aeType",
+                        metavar='STR',
+                        type=str,
+                        choices=['variational', 'deterministic'],
+                        help='Autoencoder type',
+                        default=argparse.SUPPRESS)
     parser.add_argument("--aeSplitType",
                         metavar='STR',
                         type=str,
@@ -255,7 +262,8 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         help="Threshold for binary classification.",
                         default=argparse.SUPPRESS)
     parser.add_argument('-gpu', "--gpu",
-                        type=int,
+                        metavar = 'STR',
+                        type=str,
                         help="Select which gpu to use",
                         default=argparse.SUPPRESS)
     parser.add_argument('-k', "--fpType",

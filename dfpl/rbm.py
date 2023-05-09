@@ -1,9 +1,6 @@
 import os.path
 from os.path import basename
-import pandas as pd
-import logging
 import tensorflow as tf
-import numpy as np
 from tensorflow.keras import Model, losses
 from sklearn.model_selection import train_test_split
 import math
@@ -17,6 +14,9 @@ from dfpl.utils import *
 class RBMLayer(tf.keras.layers.Layer):
     def __init__(self, input_size, output_size, name="RBMLayer", **kwargs):
         super(RBMLayer, self).__init__(name=name, **kwargs)
+        self.w = None
+        self.vb = None
+        self.hb = None
         self._input_size = input_size
         self._output_size = output_size
         self._name = name
@@ -35,11 +35,11 @@ class RBMLayer(tf.keras.layers.Layer):
             shape=(input_shape[-1],), initializer="random_normal", trainable=True, name=f"vb_{self._name}"
         )
 
-    def __prob_h_given_v(self, visible, w, hb):
-        return tf.nn.sigmoid(tf.matmul(visible, w) + hb)
-
     def __prob_v_given_h(self, hidden, w, vb):
         return tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(w)) + vb)
+
+    def __prob_h_given_v(self, visible, w, hb):
+        return tf.nn.sigmoid(tf.matmul(visible, w) + hb)
 
     def __sample_prob(self, probs):
         return tf.nn.relu(tf.sign(probs - tf.random.uniform(tf.shape(probs))))
@@ -116,8 +116,8 @@ class RBM(tf.keras.Model):
         learning_rate = self.optimizer._decayed_lr('float32')
         out, visibleGen, hiddenGen, h1, out_dict = self(X, training=True)
         weights_dict = {}
-        for l in self.layers:
-            weights_dict[l.name] = l
+        for lay in self.layers:
+            weights_dict[lay.name] = lay
 
         last_out = X
         for idx, (key, value) in enumerate(out_dict.items()):
@@ -127,7 +127,7 @@ class RBM(tf.keras.Model):
 
             # Update the weights of the model based on the loss and LR.
             curr_layer = weights_dict[key]
-            curr_layer.weights[0].assign(curr_layer.weights[0] + learning_rate * \
+            curr_layer.weights[0].assign(curr_layer.weights[0] + learning_rate *
                                          (positive_grad - negative_grad) / tf.cast(tf.shape(last_out)[0],
                                                                                    dtype=tf.float32))
             curr_layer.weights[1].assign(curr_layer.weights[1] + learning_rate * tf.math.reduce_mean(hiddenGen - h1, 0))
@@ -161,18 +161,13 @@ class RBM(tf.keras.Model):
 
 def define_rbm_model(opts: options.Options,
                      input_size: int = 2048,
-                     encoding_dim: int = 256,
-                     my_loss: str = "",
-                     my_lr: float = 0.0288,
-                     my_decay: float = 0.0504) -> Model:
+                     encoding_dim: int = 256) -> Model:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
     :param encoding_dim: Size of the compressed representation. Default: 85
     :param input_size: Size of the input. Default: 2048
-    :param my_loss: Loss function, see tensorflow.keras Loss functions for potential values. Default: binary_crossentropy
-    :param my_lr:
-    :param my_decay:
+    :param opts: options for the RBM model
     :return: a tuple of autoencoder and encoder models
     """
     my_loss = tf.keras.losses.BinaryCrossentropy()
@@ -180,11 +175,11 @@ def define_rbm_model(opts: options.Options,
         ac_optimizer = tf.keras.optimizers.Adam(learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay)
     elif opts.aeOptimizer == "SGD":
         ac_optimizer = tf.keras.optimizers.SGD(learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay)
-
+    else:
+        logging.info("Wrong optimizer")
     rbm_model = RBM(input_size=input_size,
                     output_size=encoding_dim)
-    rbm_model.compile(optimizer=ac_optimizer, loss=my_loss)# tf.keras.losses.MeanSquaredError())
-
+    rbm_model.compile(optimizer=ac_optimizer, loss=my_loss)  # tf.keras.losses.MeanSquaredError())
 
     return rbm_model
 
@@ -201,7 +196,7 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     rbm = define_rbm_model(opts, input_size=opts.fpSize,
-                               encoding_dim=opts.encFPSize)
+                           encoding_dim=opts.encFPSize)
     # callback_list = callbacks.autoencoder_callback(checkpoint_path=rbm_weights_file, opts=opts)
 
     # define output file for autoencoder and encoder weights
@@ -235,11 +230,11 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
         logging.info("Training autoencoder using scaffold split")
         if opts.testSize > 0.0:
             if opts.aeWabTracking:
-                train_data, val_data, test_data = scaffold_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
-                                                                 balanced=True, seed=42)
+                train_data, val_data, test_data = ae_scaffold_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                                    balanced=True, seed=42)
             else:
-                train_data, val_data, test_data = scaffold_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
-                                                                 balanced=True)
+                train_data, val_data, test_data = ae_scaffold_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                                                                    balanced=True)
             x_train = np.array(train_data[train_data["fp"].notnull()]["fp"].to_list(),
                                dtype=settings.ac_fp_numpy_type,
                                copy=settings.numpy_copy_values)
@@ -251,6 +246,7 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
             x_test = None
             x_val = None
             x_train = fp_matrix
+
     elif opts.aeSplitType == "molecular_weight":
         logging.info("Training Deep Belief Network using molecular weight split")
         if opts.testSize > 0.0:
@@ -260,7 +256,6 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
             else:
                 train_data, val_data, test_data = weight_split(df, sizes=(1 - opts.testSize, 0.0, opts.testSize),
                                                                bias='small')
-            print(train_data)
             x_train = np.array(train_data[train_data["fp"].notnull()]["fp"].to_list(),
                                dtype=settings.ac_fp_numpy_type,
                                copy=settings.numpy_copy_values)
@@ -268,7 +263,6 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
                               dtype=settings.ac_fp_numpy_type,
                               copy=settings.numpy_copy_values)
             x_val = None
-            print(x_train.shape)
         else:
             x_test = None
             x_val = None
@@ -279,11 +273,11 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     logging.info(f"RBM test data shape {x_test.shape} with type {x_test.dtype}")
 
     auto_hist = rbm.fit(x=x_train, y=x_train,
-                            callbacks=callback_list,
-                            epochs=opts.aeEpochs,
-                            batch_size=opts.aeBatchSize,
-                            verbose=opts.verbose,
-                            validation_data=(x_test, x_test))
+                        callbacks=callback_list,
+                        epochs=opts.aeEpochs,
+                        batch_size=opts.aeBatchSize,
+                        verbose=opts.verbose,
+                        validation_data=(x_test, x_test))
     rbm.summary(print_fn=logging.info)
     ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".RBM"),
                               hist=auto_hist)
@@ -302,6 +296,7 @@ def compress_fingerprints(dataframe: pd.DataFrame,
     Adds a column of the compressed version of the fingerprints to the original dataframe.
 
     :param dataframe: Dataframe containing a column named 'fp' with the fingerprints
+    :param layer_num: Number of layes
     :param encoder: The trained autoencoder that is used for compressing the fingerprints
     :return: The input dataframe extended by a column containing the compressed version of the fingerprints
     """
@@ -314,7 +309,7 @@ def compress_fingerprints(dataframe: pd.DataFrame,
     logging.info("Compressed fingerprints from rbm are added to input dataframe.")
     fp_matrix = tf.cast(tf.where(fp_matrix, 1, 0), tf.float32)
     out, visibleGen, hiddenGen, h1, out_dict = encoder.predict(fp_matrix)
-    out, visibleGen, hiddenGen, h1 = out_dict[f'encoder_{layer_num-1}']
+    out, visibleGen, hiddenGen, h1 = out_dict[f'encoder_{layer_num - 1}']
     dataframe['fpcompressed'] = pd.DataFrame({'fpcompressed': [s for s in hiddenGen]}, idx)
 
     return dataframe

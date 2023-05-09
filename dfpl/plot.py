@@ -8,34 +8,35 @@ from tensorflow.keras.callbacks import History
 from matplotlib.axes import Axes
 
 
-# for testing in Weights & Biases
-
-
 def get_max_validation_accuracy(history: History) -> str:
     validation = smooth_curve(history.history['val_accuracy'])
     y_max = max(validation)
     return 'Max validation accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
 
-def get_max_training_balanced_accuracy(history: History) -> str:
-    precision = smooth_curve(history.history['precision'])
-    recall = smooth_curve(history.history['recall'])
-    training_balanced_accuracy = (precision + recall) / 2
-    y_max = max(training_balanced_accuracy)
-    return 'Validation balanced accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+
 def get_max_validation_balanced_accuracy(history: History) -> str:
-    validation_precision = smooth_curve(history.history['val_precision'])
-    validation_recall = smooth_curve(history.history['val_recall'])
-    val_balanced_accuracy = (validation_precision + validation_recall) / 2
-    y_max = max(val_balanced_accuracy)
-    return 'Validation balanced accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+    validation_bal_acc = smooth_curve(history.history['val_balanced_accuracy'])
+    y_max = max(validation_bal_acc)
+    return 'Max validation balanced accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+
+
+def get_max_training_balanced_accuracy(history: History) -> str:
+    training_bal_acc = smooth_curve(history.history['balanced_accuracy'])
+    y_max = max(training_bal_acc)
+    return 'Training balanced accuracy ≈ ' + str(round(y_max, 3) * 100) + '%'
+
+
 def get_max_training_auc(history: History) -> str:
     training_auc = smooth_curve(history.history['auc'])
     y_max = max(training_auc)
     return 'Validation AUC ≈ ' + str(round(y_max, 3) * 100) + '%'
+
+
 def get_max_validation_auc(history: History) -> str:
     validation_auc = smooth_curve(history.history['val_auc'])
     y_max = max(validation_auc)
     return 'Validation AUC ≈ ' + str(round(y_max, 3) * 100) + '%'
+
 
 def get_max_training_accuracy(history: History) -> str:
     training = smooth_curve(history.history['accuracy'])
@@ -102,14 +103,14 @@ def plot_history(history: History, file: str) -> None:
     # max accuracy text
     plt.text(0.5,
              0.6,
-             get_max_validation_accuracy(history),
+             get_max_validation_balanced_accuracy(history),
              horizontalalignment='right',
              verticalalignment='top',
              transform=ax1.transAxes,
              fontsize=12)
     plt.text(0.5,
              0.8,
-             get_max_training_accuracy(history),
+             get_max_training_balanced_accuracy(history),
              horizontalalignment='right',
              verticalalignment='top',
              transform=ax1.transAxes,
