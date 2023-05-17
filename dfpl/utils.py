@@ -14,7 +14,7 @@ from tqdm import tqdm
 import numpy as np
 from rdkit import RDLogger
 
-RDLogger.DisableLog('rdApp.*')
+RDLogger.DisableLog("rdApp.*")
 
 
 def makePathAbsolute(p: str) -> str:
@@ -31,40 +31,18 @@ def createDirectory(directory: str):
         os.makedirs(path)
 
 
-# def makePlots(save_path: str, training_auc: list, training_loss: list, validation_auc: list, validation_loss: list):
-#
-#     all_data = [training_auc, training_loss, validation_auc, validation_loss]
-#     zipped = list(zip(training_loss, validation_loss,
-#                   training_auc, validation_auc))
-#
-#     metricsdf = pd.DataFrame(
-#         zipped, columns=['LOSS', 'VAL_LOSS', 'AUC', 'VAL_AUC'])
-#     metricsdf.to_csv(f"{save_path}/metrics.csv")
-#
-#     metricsdf.plot(title='Model performance')
-#     plt.savefig(f"{save_path}/plot.png", format='png')
-#
-#     lossesdf = pd.DataFrame(
-#         list(zip(training_loss, validation_loss)), columns=['LOSS', 'VAL_LOSS'])
-#     lossesdf.plot(title='Loss')
-#     plt.savefig(f"{save_path}/loss.png", format='png')
-#
-#     aucdf = pd.DataFrame(
-#         list(zip(training_auc, validation_auc)), columns=['AUC', 'VAL_AUC'])
-#     aucdf.plot(title='AUC')
-#     plt.savefig(f"{save_path}/auc.png", format='png')
-
-
 def createArgsFromJson(in_json: str, ignore_elements: list, return_json_object: bool):
     arguments = []
-    with open(in_json, 'r') as f:
+    with open(in_json, "r") as f:
         data = json.load(f)
-    for i, j in data.items():
-        if str(i) not in ignore_elements:
-            i = "--" + str(i)
-            j = str(j)
-            arguments.append(i)
-            arguments.append(j)
+    for key, value in data.items():
+        if key not in ignore_elements:
+            if key == "extra_metrics" and isinstance(value, list):
+                arguments.append("--extra_metrics")
+                arguments.extend(value)
+            else:
+                arguments.append("--" + str(key))
+                arguments.append(str(value))
     if return_json_object:
         return arguments, data
     return arguments
@@ -89,8 +67,7 @@ def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
         mol = Chem.AddHs(mol)
 
     if keep_atom_map:
-        atom_map_numbers = tuple(atom.GetAtomMapNum()
-                                 for atom in mol.GetAtoms())
+        atom_map_numbers = tuple(atom.GetAtomMapNum() for atom in mol.GetAtoms())
         for idx, map_num in enumerate(atom_map_numbers):
             if idx + 1 != map_num:
                 new_order = np.argsort(atom_map_numbers).tolist()
@@ -99,7 +76,9 @@ def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
     return mol
 
 
-def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = True) -> str:
+def generate_scaffold(
+    mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = True
+) -> str:
     """
     Computes the Bemis-Murcko scaffold for a SMILES string, an RDKit molecule, or an InChI string or InChIKey.
 
@@ -108,13 +87,15 @@ def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], incl
     :return: The Bemis-Murcko scaffold for the molecule.
     """
     if isinstance(mol, str):
-        if mol.startswith('InChI='):
+        if mol.startswith("InChI="):
             mol = inchi_to_mol(mol)
         else:
             mol = make_mol(mol, keep_h=False, add_h=False, keep_atom_map=False)
     elif isinstance(mol, tuple):
         mol = mol[0]
-    scaffold = MurckoScaffold.MurckoScaffoldSmiles(mol=mol, includeChirality=include_chirality)
+    scaffold = MurckoScaffold.MurckoScaffoldSmiles(
+        mol=mol, includeChirality=include_chirality
+    )
 
     return scaffold
 
@@ -136,7 +117,9 @@ def generate_scaffold(mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], incl
 #     return scaffold
 
 
-def scaffold_to_smiles(mols: List[str], use_indices: bool = False) -> Dict[str, Union[Set[str], Set[int]]]:
+def scaffold_to_smiles(
+    mols: List[str], use_indices: bool = False
+) -> Dict[str, Union[Set[str], Set[int]]]:
     """
     Computes the scaffold for each SMILES and returns a mapping from scaffolds to sets of smiles (or indices).
     :param mols: A list of SMILES.
@@ -173,32 +156,38 @@ def inchi_to_mol(inchi: str) -> Chem.Mol:
     return mol
 
 
-def weight_split(data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float] = (0.8, 0, 0.2), seed: int = None) \
-        -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    if seed is not None:
-        np.random.seed(seed)
+def weight_split(
+    data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float] = (0.8, 0, 0.2)
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if not (len(sizes) == 3 and np.isclose(sum(sizes), 1)):
         raise ValueError(f"Invalid train/val/test splits! got: {sizes}")
-    train_size, val_size, test_size = sizes[0] * len(data), sizes[1] * len(data), sizes[2] * len(data)
-    if 'inchi' in [x.lower() for x in data.columns]:
-        data['mol'] = data['inchi'].apply(inchi_to_mol)
-    elif 'smiles' in [x.lower() for x in data.columns]:
-        data['mol'] = data['smiles'].apply(smiles_to_mol)
+    initial_indices = data.index.to_numpy()
+    train_size, val_size, test_size = (
+        sizes[0] * len(data),
+        sizes[1] * len(data),
+        sizes[2] * len(data),
+    )
+    if "inchi" in [x.lower() for x in data.columns]:
+        data["mol"] = data["inchi"].apply(inchi_to_mol)
+    elif "smiles" in [x.lower() for x in data.columns]:
+        data["mol"] = data["smiles"].apply(smiles_to_mol)
     else:
-        print("Dataframe does not have a SMILES or InChi column")
-    none_mols = data['mol'].isnull().sum()
-    data.dropna(subset=['mol'], inplace=True)
-    data['mol_weight'] = data.apply(
-        lambda row: rdMolDescriptors.CalcExactMolWt(row['mol']) if row['mol'] is not None else None, axis=1)
+        logging.info("Dataframe does not have a SMILES or InChi column")
+    none_mols = data["mol"].isnull().sum()
+    logging.info(f"There are {none_mols} chemicals with no mol objects ")
+    data.dropna(subset=["mol"], inplace=True)
+    data["mol_weight"] = data.apply(
+        lambda row: rdMolDescriptors.CalcExactMolWt(row["mol"])
+        if row["mol"] is not None
+        else None,
+        axis=1,
+    )
     # data = data.drop(columns=['mol','fp','inchi','toxid','key'], axis=1)
-
-    sorted_data = data.sort_values(by='mol_weight', ascending=True)
-    sorted_data.to_csv('molecular_weight.csv')
-
-    if bias == 'big':
-        sorted_data = data.sort_values(by='mol_weight', ascending=False)
-    elif bias == 'small':
-        sorted_data = data.sort_values(by='mol_weight', ascending=True)
+    sorted_data = data.copy()
+    if bias == "big":
+        sorted_data = data.sort_values(by="mol_weight", ascending=False)
+    elif bias == "small":
+        sorted_data = data.sort_values(by="mol_weight", ascending=True)
     else:
         print("Wrong bias, choose small or big")
     indices = np.arange(len(sorted_data))
@@ -210,15 +199,18 @@ def weight_split(data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float
     train_df = sorted_data.iloc[train_indices].reset_index(drop=True)
     val_df = sorted_data.iloc[val_indices].reset_index(drop=True)
     test_df = sorted_data.iloc[test_indices].reset_index(drop=True)
+
     return train_df, val_df, test_df
 
 
-def scaffold_split(data: pd.DataFrame,
-                   labels: pd.Series,
-                   sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
-                   balanced: bool = False,
-                   key_molecule_index: int = 0,
-                   seed: int = 0) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def scaffold_split(
+    data: pd.DataFrame,
+    labels: pd.Series,
+    sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
+    balanced: bool = False,
+    key_molecule_index: int = 0,
+    seed: int = 0,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Splits a pandas DataFrame by scaffold so that no molecules sharing a scaffold are in different splits.
     :param data: A pandas DataFrame containing SMILES strings and molecule properties.
@@ -232,24 +224,31 @@ def scaffold_split(data: pd.DataFrame,
         raise ValueError(f"Invalid train/val/test splits! got: {sizes}")
 
     # Split
-    train_size, val_size, test_size = sizes[0] * \
-                                      len(data), sizes[1] * len(data), sizes[2] * len(data)
+    train_size, val_size, test_size = (
+        sizes[0] * len(data),
+        sizes[1] * len(data),
+        sizes[2] * len(data),
+    )
     train, val, test = [], [], []
     train_scaffold_count, val_scaffold_count, test_scaffold_count = 0, 0, 0
 
     # Map from scaffold to index in the data
     key_colnames = data.columns
-    if 'inchi' in key_colnames:
-        key_molecule_index = next((i for i, colname in enumerate(data.columns) if 'inchi' in colname.lower()), None)
+    if "inchi" in key_colnames:
+        key_molecule_index = next(
+            (i for i, colname in enumerate(data.columns) if "inchi" in colname.lower()),
+            None,
+        )
         key_mols = data.iloc[:, key_molecule_index].apply(inchi_to_mol).dropna()
     else:
         key_mols = data.iloc[:, key_molecule_index]
-    scaffold_to_indices = scaffold_to_smiles(
-        key_mols.tolist(), use_indices=True)
+    scaffold_to_indices = scaffold_to_smiles(key_mols.tolist(), use_indices=True)
     # Seed randomness
     random = Random(seed)
 
-    if balanced:  # Put stuff that's bigger than half the val/test size into train, rest just order randomly
+    if (
+        balanced
+    ):  # Put stuff that's bigger than half the val/test size into train, rest just order randomly
         index_sets = list(scaffold_to_indices.values())
         big_index_sets = []
         small_index_sets = []
@@ -263,9 +262,11 @@ def scaffold_split(data: pd.DataFrame,
         random.shuffle(small_index_sets)
         index_sets = big_index_sets + small_index_sets
     else:  # Sort from largest to smallest scaffold sets
-        index_sets = sorted(list(scaffold_to_indices.values()),
-                            key=lambda index_set: len(index_set),
-                            reverse=True)
+        index_sets = sorted(
+            list(scaffold_to_indices.values()),
+            key=lambda index_set: len(index_set),
+            reverse=True,
+        )
     for index_set in index_sets:
         if len(test) + len(index_set) <= test_size:
             test += index_set
@@ -276,10 +277,12 @@ def scaffold_split(data: pd.DataFrame,
         else:
             val += index_set
             val_scaffold_count += 1
-    logging.info(f'Total scaffolds = {len(scaffold_to_indices):,} | '
-                 f'train scaffolds = {train_scaffold_count:,} | '
-                 f'val scaffolds = {val_scaffold_count:,} | '
-                 f'test scaffolds = {test_scaffold_count:,}')
+    logging.info(
+        f"Total scaffolds = {len(scaffold_to_indices):,} | "
+        f"train scaffolds = {train_scaffold_count:,} | "
+        f"val scaffolds = {val_scaffold_count:,} | "
+        f"test scaffolds = {test_scaffold_count:,}"
+    )
 
     log_scaffold_stats(data, index_sets)
     # Map from indices to data
@@ -303,29 +306,45 @@ def scaffold_split(data: pd.DataFrame,
     val_df = data.iloc[val_indices]
     test_df = data.iloc[test_indices]
     # Check label distribution before and after stratification
-    logging.info(f"Label distribution in original data:\n{labels.value_counts(normalize=True)}")
-    logging.info(f"Label distribution in train data:\n{train_labels.value_counts(normalize=True)}")
-    logging.info(f"Label distribution in validation data:\n{val_labels.value_counts(normalize=True)}")
-    logging.info(f"Label distribution in test data:\n{test_labels.value_counts(normalize=True)}")
+    logging.info(
+        f"Label distribution in original data:\n{labels.value_counts(normalize=True)}"
+    )
+    logging.info(
+        f"Label distribution in train data:\n{train_labels.value_counts(normalize=True)}"
+    )
+    logging.info(
+        f"Label distribution in validation data:\n{val_labels.value_counts(normalize=True)}"
+    )
+    logging.info(
+        f"Label distribution in test data:\n{test_labels.value_counts(normalize=True)}"
+    )
     # Export label distributions to CSV files
     labels_vc = labels.value_counts(normalize=True)
     train_labels_vc = train_labels.value_counts(normalize=True)
     val_labels_vc = val_labels.value_counts(normalize=True)
     test_labels_vc = test_labels.value_counts(normalize=True)
 
-    label_distributions = pd.concat([labels_vc, train_labels_vc, val_labels_vc, test_labels_vc], axis=1)
-    label_distributions.columns = ["percentage_original", "percentage_train", "percentage_validation",
-                                   "percentage_test"]
+    label_distributions = pd.concat(
+        [labels_vc, train_labels_vc, val_labels_vc, test_labels_vc], axis=1
+    )
+    label_distributions.columns = [
+        "percentage_original",
+        "percentage_train",
+        "percentage_validation",
+        "percentage_test",
+    ]
     label_distributions.to_csv(f"label_distributions{seed}.csv")
 
     return train_df, val_df, test_df
 
 
-def ae_scaffold_split(data: pd.DataFrame,
-                      sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
-                      balanced: bool = False,
-                      key_molecule_index: int = 0,
-                      seed: int = 0) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def ae_scaffold_split(
+    data: pd.DataFrame,
+    sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
+    balanced: bool = False,
+    key_molecule_index: int = 0,
+    seed: int = 0,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Splits a pandas DataFrame by scaffold so that no molecules sharing a scaffold are in different splits.
     :param data: A pandas DataFrame containing SMILES strings and molecule properties.
@@ -339,15 +358,21 @@ def ae_scaffold_split(data: pd.DataFrame,
         raise ValueError(f"Invalid train/val/test splits! got: {sizes}")
 
     # Split
-    train_size, val_size, test_size = sizes[0] * \
-                                      len(data), sizes[1] * len(data), sizes[2] * len(data)
+    train_size, val_size, test_size = (
+        sizes[0] * len(data),
+        sizes[1] * len(data),
+        sizes[2] * len(data),
+    )
     train, val, test = [], [], []
     train_scaffold_count, val_scaffold_count, test_scaffold_count = 0, 0, 0
 
     # Map from scaffold to index in the data
     key_colnames = data.columns
-    if 'inchi' in key_colnames:
-        key_molecule_index = next((i for i, colname in enumerate(data.columns) if 'inchi' in colname.lower()), None)
+    if "inchi" in key_colnames:
+        key_molecule_index = next(
+            (i for i, colname in enumerate(data.columns) if "inchi" in colname.lower()),
+            None,
+        )
         key_mols = data.iloc[:, key_molecule_index].apply(inchi_to_mol).dropna()
     else:
         key_mols = data.iloc[:, key_molecule_index]
@@ -355,7 +380,9 @@ def ae_scaffold_split(data: pd.DataFrame,
     # Seed randomness
     random = Random(seed)
 
-    if balanced:  # Put stuff that's bigger than half the val/test size into train, rest just order randomly
+    if (
+        balanced
+    ):  # Put stuff that's bigger than half the val/test size into train, rest just order randomly
         index_sets = list(scaffold_to_indices.values())
         big_index_sets = []
         small_index_sets = []
@@ -369,9 +396,11 @@ def ae_scaffold_split(data: pd.DataFrame,
         random.shuffle(small_index_sets)
         index_sets = big_index_sets + small_index_sets
     else:  # Sort from largest to smallest scaffold sets
-        index_sets = sorted(list(scaffold_to_indices.values()),
-                            key=lambda index_set: len(index_set),
-                            reverse=True)
+        index_sets = sorted(
+            list(scaffold_to_indices.values()),
+            key=lambda index_set: len(index_set),
+            reverse=True,
+        )
     for index_set in index_sets:
         if len(test) + len(index_set) <= test_size:
             test += index_set
@@ -382,10 +411,12 @@ def ae_scaffold_split(data: pd.DataFrame,
         else:
             val += index_set
             val_scaffold_count += 1
-    logging.info(f'Total scaffolds = {len(scaffold_to_indices):,} | '
-                 f'train scaffolds = {train_scaffold_count:,} | '
-                 f'val scaffolds = {val_scaffold_count:,} | '
-                 f'test scaffolds = {test_scaffold_count:,}')
+    logging.info(
+        f"Total scaffolds = {len(scaffold_to_indices):,} | "
+        f"train scaffolds = {train_scaffold_count:,} | "
+        f"val scaffolds = {val_scaffold_count:,} | "
+        f"test scaffolds = {test_scaffold_count:,}"
+    )
 
     log_scaffold_stats(data, index_sets)
     # Map from indices to data
@@ -396,10 +427,12 @@ def ae_scaffold_split(data: pd.DataFrame,
     return train_df, val_df, test_df
 
 
-def log_scaffold_stats(data: pd.DataFrame,
-                       index_sets: List[Set[int]],
-                       num_scaffolds: int = 10,
-                       num_labels: int = 20) -> List[Tuple[List[float], List[int]]]:
+def log_scaffold_stats(
+    data: pd.DataFrame,
+    index_sets: List[Set[int]],
+    num_scaffolds: int = 10,
+    num_labels: int = 20,
+) -> List[Tuple[List[float], List[int]]]:
     """
     Logs and returns statistics about counts and average target values in molecular scaffolds.
     :param data: A pandas DataFrame containing SMILES strings and molecule properties.
@@ -410,28 +443,34 @@ def log_scaffold_stats(data: pd.DataFrame,
     across the first :code:num_labels labels and a list of the number of non-zero values for
     the first :code:num_scaffolds scaffolds, sorted in decreasing order of scaffold frequency.
     """
-    logging.info('Label averages per scaffold, in decreasing order of scaffold frequency, '
-                 f'capped at {num_scaffolds} scaffolds and {num_labels} labels:')
+    logging.info(
+        "Label averages per scaffold, in decreasing order of scaffold frequency, "
+        f"capped at {num_scaffolds} scaffolds and {num_labels} labels:"
+    )
 
     stats = []
-    index_sets = sorted(
-        index_sets, key=lambda idx_set: len(idx_set), reverse=True)
+    index_sets = sorted(index_sets, key=lambda idx_set: len(idx_set), reverse=True)
     for scaffold_num, index_set in enumerate(index_sets[:num_scaffolds]):
         data_set = data.iloc[list(index_set)]
-        targets = [c for c in data.columns if c in ['AR', 'ER', 'ED', 'TR', 'GR', 'PPARg', 'Aromatase']]
+        targets = [
+            c
+            for c in data.columns
+            if c in ["AR", "ER", "ED", "TR", "GR", "PPARg", "Aromatase"]
+        ]
         # targets = data_set.iloc[:, 2:].values
         targets = data_set.loc[:, targets].values
 
         with warnings.catch_warnings():  # Likely warning of empty slice of target has no values besides NaN
-            warnings.simplefilter('ignore', category=RuntimeWarning)
+            warnings.simplefilter("ignore", category=RuntimeWarning)
             target_avgs = np.nanmean(targets, axis=0)[:num_labels]
 
         counts = np.count_nonzero(~np.isnan(targets), axis=0)[:num_labels]
         stats.append((target_avgs, counts))
 
-        logging.info(f'Scaffold {scaffold_num}')
+        logging.info(f"Scaffold {scaffold_num}")
         for task_num, (target_avg, count) in enumerate(zip(target_avgs, counts)):
             logging.info(
-                f'Task {task_num}: count = {count:,} | target average = {target_avg:.6f}')
-        logging.info('\n')
+                f"Task {task_num}: count = {count:,} | target average = {target_avg:.6f}"
+            )
+        logging.info("\n")
     return stats

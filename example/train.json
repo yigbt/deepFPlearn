@@ -1,9 +1,9 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "example/data/S_dataset.csv",
-  "outputDir": "example/resultsfnn/",
-  "ecModelDir": "example/results/",
-  "ecWeightsFile": "",
+  "outputDir": "example/figures/",
+  "ecModelDir": "example/Dencoders/",
+  "ecWeightsFile": "D_datasetdeterministicrandom.autoencoder.weights.hdf5",
   "verbose": 2,
 
   "trainAC": true,
@@ -12,13 +12,14 @@
   "compressFeatures": true,
   "encFPSize": 256,
 
-  "aeSplitType": "scaffold_balanced",
-  "aeEpochs":3,
+  "aeSplitType": "random",
+  "aeEpochs":1,
   "aeBatchSize": 256,
   "aeOptimizer": "Adam",
   "aeActivationFunction": "relu",
-  "aeLearningRate": 0.001,
-  "aeLearningRateDecay": 0.01,
+  "aeLearningRate": 0.000000001,
+  "aeLearningRateDecay": 0.000000001,
+  "aeType": "deterministic",
 
   "type": "smiles",
   "fpType": "topological",

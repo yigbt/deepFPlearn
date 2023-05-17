@@ -2,6 +2,7 @@ import pathlib
 import logging
 import os
 import sys
+
 # Add the parent directory of the tests directory to the module search path
 tests_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(tests_dir)
@@ -18,8 +19,8 @@ test_train_args = opt.Options(
     ecModelDir=utils.makePathAbsolute(f"{project_directory}/output_data/modeltraining"),
     outputDir=utils.makePathAbsolute(f"{project_directory}/output_data"),
     ecWeightsFile="",
-    type='smiles',
-    fpType='topological',
+    type="smiles",
+    fpType="topological",
     aeEpochs=2,
     fpSize=2048,
     encFPSize=256,
@@ -32,7 +33,7 @@ test_train_args = opt.Options(
     trainAC=True,
     trainRBM=True,
     useRBM=True,
-    gpu=""
+    gpu="",
 )
 
 
@@ -42,13 +43,15 @@ def runDBN(opts: opt.Options) -> None:
     """
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     logging.info("Adding fingerprint to dataset")
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(
+        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+    )
     logging.info("Training DBN")
     rbm.train_full_rbm(df, opts)
     logging.info("Done")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
     utils.createDirectory(test_train_args.outputDir)
     runDBN(test_train_args)
