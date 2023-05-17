@@ -1,32 +1,26 @@
 import array
 import logging
 import math
+import os
 import re
 import shutil
 import sys
-from time import time
-import os
 from os import path
+from time import time
+
 import numpy as np
 import pandas as pd
-from tensorflow.keras import optimizers
-from tensorflow.keras import metrics
-from tensorflow.keras import regularizers
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.models import Model
-
-# for NN model functions
-from tensorflow.keras.models import Sequential
 from sklearn.metrics import f1_score
-from sklearn.model_selection import KFold
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold, train_test_split
+from tensorflow.keras import metrics, optimizers, regularizers
+from tensorflow.keras.layers import Dense, Dropout
+# for NN model functions
+from tensorflow.keras.models import Model, Sequential
 from wandb.keras import WandbCallback
-
 
 from dfpl import callbacks as cb
 from dfpl import history as ht
-from dfpl import options
-from dfpl import settings
+from dfpl import options, settings
 
 
 def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tuple:

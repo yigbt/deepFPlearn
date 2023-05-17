@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import logging
+import sys
+import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.error
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -10,9 +12,6 @@ import pandas as pd
 from rdkit import Chem, DataStructs
 from simple_parsing import ArgumentParser, choice
 from simple_parsing.helpers import Serializable
-import sys
-import logging
-
 
 # Use this conda env: mamba create - n tidyChem - c conda - forge r - base r - tidyverse r - stringdist python rdkit
 # numpy pandas simple - parsing

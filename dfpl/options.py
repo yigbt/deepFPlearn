@@ -1,14 +1,17 @@
 from __future__ import annotations
+
 import sys
 
 sys.path.append("./dfpl_chemprop")
+import argparse
+from dataclasses import dataclass
+from pathlib import Path
+
+import jsonpickle
 import torch
 from dfpl_chemprop.chemprop.args import TrainArgs
+
 from dfpl.utils import makePathAbsolute
-from dataclasses import dataclass
-import jsonpickle
-import argparse
-from pathlib import Path
 
 
 @dataclass

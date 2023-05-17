@@ -1,22 +1,20 @@
-import unittest
-import os
-import shutil
-import pathlib
+import json
 import logging
 import os
+import pathlib
+import shutil
 import sys
-import json
+import unittest
 
 # Add the parent directory of the tests directory to the module search path
 tests_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(tests_dir)
 sys.path.insert(0, parent_dir)
 sys.path.insert(0, "./dfpl_chemprop")
+from dfpl import __main__ as main
+from dfpl import options
 from dfpl_chemprop import chemprop
 from dfpl_chemprop.chemprop import args
-from dfpl import __main__ as main
-
-from dfpl import options
 
 
 class TestTrainDMPNN(unittest.TestCase):

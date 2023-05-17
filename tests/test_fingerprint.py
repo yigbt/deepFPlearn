@@ -1,8 +1,9 @@
-import pytest
-import pandas as pd
-from rdkit import RDLogger
+import os
+import sys
 
-import os, sys
+import pandas as pd
+import pytest
+from rdkit import RDLogger
 
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)

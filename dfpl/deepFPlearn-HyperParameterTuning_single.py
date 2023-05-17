@@ -1,21 +1,17 @@
-import sys
 import argparse
 import os
 import re
-import pandas as pd
-import numpy as np
-
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
-
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
-
+import sys
 from time import time
 
-from dfpl import dfplmodule as dfpl
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import GridSearchCV, train_test_split
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
+from dfpl import dfplmodule as dfpl
 
 # ------------------------------------------------------------------------------------- #
 

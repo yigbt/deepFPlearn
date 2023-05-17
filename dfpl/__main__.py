@@ -2,29 +2,27 @@ import os.path
 import sys
 
 sys.path.append("./dfpl_chemprop")
-from dfpl_chemprop import chemprop
-from dfpl_chemprop.chemprop import args, train
+import dataclasses
+import logging
+import math
+import pathlib
+from argparse import Namespace
+from os import path
 
 import pandas as pd
-from argparse import Namespace
-import logging
-import pathlib
-import dataclasses
-from os import path
 import tensorflow as tf
-import math
 from keras.models import load_model
 
-from dfpl.utils import makePathAbsolute, createDirectory, createArgsFromJson
-from dfpl import options
-from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
-from dfpl import predictions
-from dfpl import single_label_model as sl
+from dfpl import fingerprint as fp
+from dfpl import options, predictions
 from dfpl import rbm as rbm
+from dfpl import single_label_model as sl
 from dfpl import vae as vae
-
+from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
+from dfpl_chemprop import chemprop
+from dfpl_chemprop.chemprop import args, train
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(

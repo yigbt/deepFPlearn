@@ -1,14 +1,14 @@
+import math
 import os.path
 from os.path import basename
+
 import tensorflow as tf
-from tensorflow.keras import Model, losses
 from sklearn.model_selection import train_test_split
-import math
+from tensorflow.keras import Model, losses
 
 from dfpl import callbacks
-from dfpl import options
 from dfpl import history as ht
-from dfpl import settings
+from dfpl import options, settings
 from dfpl.utils import *
 
 

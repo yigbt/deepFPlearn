@@ -1,28 +1,28 @@
+import logging
+import math
 import os.path
 from os.path import basename
-import math
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import tensorflow.keras.metrics as metrics
+import umap
+import wandb
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 from sklearn.metrics import silhouette_score
-import matplotlib.pyplot as plt
-import umap
-import seaborn as sns
 from sklearn.metrics.pairwise import cosine_similarity
-from dfpl.utils import *
-import numpy as np
-import pandas as pd
-import logging
-import wandb
-import tensorflow.keras.metrics as metrics
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense
-from tensorflow.keras import optimizers, losses, initializers
 from sklearn.model_selection import train_test_split
+from tensorflow.keras import initializers, losses, optimizers
+from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.models import Model
 
-from dfpl import options
 from dfpl import callbacks
 from dfpl import history as ht
-from dfpl import settings
+from dfpl import options, settings
+from dfpl.utils import *
 
 
 def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):

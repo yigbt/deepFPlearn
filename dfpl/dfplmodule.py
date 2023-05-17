@@ -1,50 +1,35 @@
 import argparse
-
+import csv
+import math
 # Python module for deepFPlearn tools
 import re
-import math
-import csv
-import numpy as np
-import pandas as pd
 import shutil
-import matplotlib.pyplot as plt
-import matplotlib
+from time import time
 
+import matplotlib
 # matplotlib.use('Agg')
 import matplotlib.patches as mpatches
-from matplotlib.colors import LinearSegmentedColormap
-
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 # %matplotlib inline
 # for drawing the heatmaps
 import seaborn as sns
-
-# for fingerprint generation
-from rdkit import Chem
-from rdkit import DataStructs
-from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
-
-# for NN model functions
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Input, Dense, Dropout
-from tensorflow.keras.models import Model
-from tensorflow.keras import regularizers
-from tensorflow.keras import optimizers
-from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.callbacks import ReduceLROnPlateau
 import sklearn
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_curve
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import auc
-from sklearn.metrics import matthews_corrcoef
-from sklearn.model_selection import KFold
-
-from time import time
-
+from matplotlib.colors import LinearSegmentedColormap
+# for fingerprint generation
+from rdkit import Chem, DataStructs
+from rdkit.Chem import MACCSkeys
+from rdkit.Chem.AtomPairs import Pairs, Torsions
+from sklearn.metrics import auc, confusion_matrix, matthews_corrcoef, roc_curve
+from sklearn.model_selection import KFold, train_test_split
+from tensorflow.keras import optimizers, regularizers
+from tensorflow.keras.callbacks import (EarlyStopping, ModelCheckpoint,
+                                        ReduceLROnPlateau)
+from tensorflow.keras.layers import Dense, Dropout, Input
+# for NN model functions
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.optimizers import SGD
 
 ###############################################################################
 # GENERAL FUNCTIONS --------------------------------------------------------- #

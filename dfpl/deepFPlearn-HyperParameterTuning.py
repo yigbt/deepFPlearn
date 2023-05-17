@@ -1,16 +1,13 @@
-import pandas as pd
-import numpy as np
-
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
-
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
-
 from time import time
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import LabelEncoder
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
 
 def tuning_model(optimizer, activation, init, dropout=0.2):

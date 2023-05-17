@@ -1,24 +1,23 @@
+import logging
+import math
 import os.path
 from os.path import basename
-import math
-from keras import backend as K
-from dfpl.utils import *
+
 import numpy as np
 import pandas as pd
-import logging
-import wandb
 import tensorflow.keras.metrics as metrics
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense
-from tensorflow.keras import optimizers, losses, initializers
-from tensorflow.keras.layers import Lambda
+import wandb
+from keras import backend as K
 from sklearn.model_selection import train_test_split
+from tensorflow.keras import initializers, losses, optimizers
+from tensorflow.keras.layers import Dense, Input, Lambda
+from tensorflow.keras.models import Model
+from tensorflow.python.framework.ops import disable_eager_execution
 
-from dfpl import options
 from dfpl import callbacks
 from dfpl import history as ht
-from dfpl import settings
-from tensorflow.python.framework.ops import disable_eager_execution
+from dfpl import options, settings
+from dfpl.utils import *
 
 disable_eager_execution()
 

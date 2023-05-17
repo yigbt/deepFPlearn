@@ -1,10 +1,10 @@
-import pathlib
 import logging
+import pathlib
 from os import path
 
-import dfpl.options as opt
-import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
+import dfpl.fingerprint as fp
+import dfpl.options as opt
 import dfpl.predictions as p
 
 project_directory = pathlib.Path(__file__).parent.absolute()

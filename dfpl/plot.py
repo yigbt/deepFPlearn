@@ -1,12 +1,12 @@
 import array
-import wandb
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import wandb
+from matplotlib.axes import Axes
 # for NN model functions
 from tensorflow.keras.callbacks import History
-from matplotlib.axes import Axes
 
 
 def get_max_validation_accuracy(history: History) -> str:

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """Store and visualise training histories"""
 
-import pandas as pd
 import logging
-from tensorflow.keras.callbacks import History
+
 import matplotlib as mpl
+import pandas as pd
+from tensorflow.keras.callbacks import History
 
 mpl.use("Agg")
 import matplotlib.pyplot as plt

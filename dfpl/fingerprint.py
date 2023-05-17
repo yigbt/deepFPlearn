@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 """Calculate fingerprints"""
-import os
-from os.path import isfile, join
-
-import pandas as pd
-import numpy as np
-from rdkit import Chem
-from rdkit import RDLogger
-from rdkit.Chem import AllChem
-from rdkit import DataStructs
-from typing import Any, List
-import multiprocessing
-from functools import partial
-from typing import Callable
 import logging
+import multiprocessing
+import os
+from functools import partial
+from os.path import isfile, join
+from typing import Any, Callable, List
+
+import numpy as np
+import pandas as pd
+from rdkit import Chem, DataStructs, RDLogger
+from rdkit.Chem import AllChem
 
 # import settings
 from dfpl import settings

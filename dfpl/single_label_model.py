@@ -1,33 +1,30 @@
 import logging
 import math
-import sys
 import os
+import shutil
+import sys
 from os import path
 from time import time
+from typing import Sequence, Set, Tuple
+
 import numpy as np
 import pandas as pd
-import shutil
-from typing import Sequence, Tuple, Set
-from sklearn.metrics import (
-    auc,
-    classification_report,
-    confusion_matrix,
-    matthews_corrcoef,
-    roc_curve,
-)
-from sklearn.model_selection import StratifiedKFold, train_test_split
 import tensorflow as tf
-from tensorflow.keras import metrics, optimizers, regularizers
-from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
-from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
 import tensorflow.keras.backend as K
+import wandb
+from sklearn.metrics import (auc, classification_report, confusion_matrix,
+                             matthews_corrcoef, roc_curve)
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from tensorflow.keras import metrics, optimizers, regularizers
+from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
+from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
+from tensorflow.keras.models import Model, Sequential
+
 from dfpl import callbacks as cb
 from dfpl import options
 from dfpl import plot as pl
 from dfpl import settings
 from dfpl.utils import scaffold_split, weight_split
-import wandb
 
 
 def prepare_nn_training_data(

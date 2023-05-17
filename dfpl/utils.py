@@ -1,18 +1,18 @@
-from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors
-import pathlib
-import os
 import json
-from collections import defaultdict
 import logging
+import os
+import pathlib
+import warnings
+from collections import defaultdict
 from random import Random
 from typing import Dict, List, Set, Tuple, Union
-import warnings
+
+import numpy as np
 import pandas as pd
+from rdkit import Chem, RDLogger
+from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from tqdm import tqdm
-import numpy as np
-from rdkit import RDLogger
 
 RDLogger.DisableLog("rdApp.*")
 

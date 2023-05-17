@@ -1,6 +1,6 @@
-import pathlib
 import logging
 import os
+import pathlib
 import sys
 
 # Add the parent directory of the tests directory to the module search path
@@ -8,8 +8,8 @@ tests_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(tests_dir)
 sys.path.insert(0, parent_dir)
 
-import dfpl.options as opt
 import dfpl.fingerprint as fp
+import dfpl.options as opt
 import dfpl.rbm as rbm
 import dfpl.utils as utils
 
