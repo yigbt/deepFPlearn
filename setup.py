@@ -19,6 +19,8 @@ setup(
     python_requires=">=3.6",
     # all packages need for the final usage
     # for additional packages during development, use requirements.txt
+    # working releases for [python,numpy,shap] are:
+    # [3.6, 1.19, 0.39], [3.9, 1.20, 0.39], and [3.9, 1.19, 0.38]
     install_requires=[
         "jsonpickle~=2.1.0",
         "matplotlib==3.5.1",
@@ -29,6 +31,7 @@ setup(
         "keras==2.9.0",
         "tensorflow-gpu==2.9.3",
         "wandb~=0.12.0",
+        "shap==0.39"
     ],
     entry_points={"console_scripts": ["dfpl=dfpl.__main__:main"]},
 )

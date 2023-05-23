@@ -128,6 +128,13 @@ def createCommandlineParser() -> argparse.ArgumentParser:
     )
     parser_convert.set_defaults(method="convert")
     parseInputConvert(parser_convert)
+
+    parser_explain = subparsers.add_parser(
+        "explain", help="Provide explainability for trained deepFPlearn models."
+    )
+    parser_explain.set_defaults(method="explain")
+    parseInputExplain(parser_explain)
+
     return parser
 
 
@@ -154,11 +161,11 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="The file containing the data for training in (unquoted) "
-        "comma separated CSV format. First column contain the feature string in "
-        "form of a fingerprint or a SMILES (see -t option). "
-        "The remaining columns contain the outcome(s) (Y matrix). "
-        "A header is expected and respective column names are used "
-        "to refer to outcome(s) (target(s)).",
+             "comma separated CSV format. First column contain the feature string in "
+             "form of a fingerprint or a SMILES (see -t option). "
+             "The remaining columns contain the outcome(s) (Y matrix). "
+             "A header is expected and respective column names are used "
+             "to refer to outcome(s) (target(s)).",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -167,7 +174,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="Prefix of output file name. Trained model(s) and "
-        "respective stats will be returned in this directory.",
+             "respective stats will be returned in this directory.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -201,8 +208,8 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="BOOL",
         type=bool,
         help="Compress the fingerprints. This is done either with an existing autoencoder or a new "
-        "autoencoder model will be trained using the input compounds (see further options for "
-        "details).",
+             "autoencoder model will be trained using the input compounds (see further options for "
+             "details).",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -211,9 +218,9 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="FILE",
         help="The .hdf5 file of a trained encoder (e.g. from a previous"
-        "training run. This avoids a retraining of the autoencoder on the"
-        "training data set (provided with -i). NOTE that the input and encoding"
-        "dimensions must fit your data and settings. Default: train new autoencoder.",
+             "training run. This avoids a retraining of the autoencoder on the"
+             "training data set (provided with -i). NOTE that the input and encoding"
+             "dimensions must fit your data and settings. Default: train new autoencoder.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -221,7 +228,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="DIR",
         help="The directory where the full model of the encoder will be saved (if trainAE=True) or "
-        "loaded from (if trainAE=False). Provide a full path here.",
+             "loaded from (if trainAE=False). Provide a full path here.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -271,7 +278,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=int,
         choices=[0, 1, 2],
         help="Verbosity level. O: No additional output, "
-        "1: Some additional output, 2: full additional output",
+             "1: Some additional output, 2: full additional output",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -279,8 +286,8 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="BOOL",
         type=bool,
         help="Train the autoencoder based on the input file and store the respective weights to the "
-        "file provided with -a option. Set this to False, if the file provided"
-        "with -a option already contains the weights of the autoencoder you would like to use.",
+             "file provided with -a option. Set this to False, if the file provided"
+             "with -a option already contains the weights of the autoencoder you would like to use.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -288,8 +295,8 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="BOOL",
         type=bool,
         help="Train the feed forward network either with provided weights of a trained autoencoder"
-        "(see option -a and --trainAC=False), or train the autoencoder prior to the training"
-        "of the feed forward network(s).",
+             "(see option -a and --trainAC=False), or train the autoencoder prior to the training"
+             "of the feed forward network(s).",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -297,7 +304,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FLOAT",
         type=float,
         help='This is the fraction of positive target associations (1s) after sampling from the "'
-        "negative target association (0s).",
+             "negative target association (0s).",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -305,7 +312,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="BOOL",
         type=bool,
         help="Enable automatic down sampling of the 0 valued samples to compensate extremely "
-        "unbalanced data (<10%%).",
+             "unbalanced data (<10%%).",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -314,7 +321,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["mse", "bce"],
         help="Loss function to use during training. "
-        "mse - mean squared error, bce - binary cross entropy.",
+             "mse - mean squared error, bce - binary cross entropy.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -412,7 +419,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="STRING",
         type=str,
         help="Which target to use for tracking training performance via Weights & Biases, "
-        "see https://wandb.ai.",
+             "see https://wandb.ai.",
         default=argparse.SUPPRESS,
     )
 
@@ -499,13 +506,13 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="The file containing the data for the prediction in (unquoted) "
-        "comma separated CSV format. The column named 'smiles' or 'fp'"
-        "contains the field to be predicted. Please adjust the type "
-        "that should be predicted (fp or smile) with -t option appropriately."
-        "An optional column 'id' is used to assign the outcomes to the"
-        "original identifiers. If this column is missing, the results are"
-        "numbered in the order of their appearance in the input file."
-        "A header is expected and respective column names are used.",
+             "comma separated CSV format. The column named 'smiles' or 'fp'"
+             "contains the field to be predicted. Please adjust the type "
+             "that should be predicted (fp or smile) with -t option appropriately."
+             "An optional column 'id' is used to assign the outcomes to the"
+             "original identifiers. If this column is missing, the results are"
+             "numbered in the order of their appearance in the input file."
+             "A header is expected and respective column names are used.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -514,7 +521,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="Prefix of output directory. It will contain a log file and the file specified"
-        "with --outputFile.",
+             "with --outputFile.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -522,7 +529,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="Output .CSV file name which will contain one prediction per input line. "
-        "Default: prefix of input file name.",
+             "Default: prefix of input file name.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -548,7 +555,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="DIR",
         help="The directory where the full model of the encoder is loaded from."
-        "Provide a full path here.",
+             "Provide a full path here.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -556,7 +563,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="DIR",
         help="The directory where the full model of the fnn is loaded from. "
-        "Provide a full path here.",
+             "Provide a full path here.",
         default=argparse.SUPPRESS,
     )
 
@@ -575,3 +582,62 @@ def parseInputConvert(parser: argparse.ArgumentParser) -> None:
         required=True,
         default="",
     )
+
+
+def parseInputExplain(parser: argparse.ArgumentParser) -> None:
+    """
+    Parse the input arguments.
+
+    :return: A namespace object built up from attributes parsed out of the cmd line.
+    """
+    parser.add_argument(
+        "-f",
+        "--configFile",
+        metavar="FILE",
+        type=str,
+        help="Input JSON file that contains all information for training/predicting.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "-i",
+        "--inputFile",
+        metavar="FILE",
+        type=str,
+        help="The file containing the data used for training the model."
+             "It will be split 20/80 into input and background data for the SHAPley computation",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--fnnModelDir",
+        type=str,
+        metavar="DIR",
+        help="The directory where the full model of the FFN is loaded from. "
+             "Provide a full path here.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "-o",
+        "--outputDir",
+        metavar="FILE",
+        type=str,
+        help="Prefix of output directory. It will contain a log file and the file specified"
+             "with --outputFile.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--outputFile",
+        metavar="FILE",
+        type=str,
+        help="Output .CSV file name which will contain one prediction per input line. "
+             "Default: prefix of input file name.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "-s",
+        "--fpSize",
+        type=int,
+        help="Size of fingerprint that should be generated.",
+        default=argparse.SUPPRESS,
+    )
+
+

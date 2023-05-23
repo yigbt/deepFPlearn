@@ -11,6 +11,7 @@ from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
 from dfpl import options, predictions
+from dfpl import explainability as ex
 from dfpl import single_label_model as sl
 from dfpl.utils import createDirectory, makePathAbsolute
 
@@ -47,6 +48,12 @@ test_pred_opts = options.Options(
     fnnModelDir=f"{project_directory}/output_data/console_test/ER_saved_model",
     type="smiles",
     fpType="topological",
+)
+test_explain_opts = options.Options(
+    inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
+    outputDir=f"{project_directory}/output_data/case_explain/FNN_explain_AR",
+    outputFile=f"{project_directory}/output_data/case_explain/FNN_explain_AR/S_dataset_explain_AR.csv",
+    fnnModelDir=f"{project_directory}/output_data/case_01/FNN_S_noAE/AR_saved_model",
 )
 
 
@@ -119,6 +126,39 @@ def predict(opts: options.Options) -> None:
     df2[names_columns].to_csv(path_or_buf=path.join(opts.outputDir, opts.outputFile))
     logging.info(
         f"Prediction successful. Results written to '{path.join(opts.outputDir, opts.outputFile)}'"
+    )
+
+
+def explain(opts: options.Options) -> None:
+    """
+    Run explainability computation given specific options
+    :param opts: Options defining the details of the prediction
+    """
+    df = fp.importDataFile(
+        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+    )
+    # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+
+    # Create output dir if it doesn't exist
+    createDirectory(opts.outputDir)
+
+    # if opts.compressFeatures:
+    #     # load trained model for autoencoder
+    #     encoder = keras.models.load_model(opts.ecModelDir)
+    #     # compress the fingerprints using the autoencoder
+    #     df = ac.compress_fingerprints(df, encoder)
+
+    # feature importance & shapley values
+    df_explainable = ex.get_explainable(
+        df=df,
+        opts=opts,
+        feature_importance_threshold=0.1,
+        background_data_fraction=0.8
+    )
+
+    logging.info(
+        f"Feature importance and SHAPley value computation successful. "
+        f"Results written to '{path.join(opts.outputDir, opts.outputFile)}'"
     )
 
 
@@ -197,6 +237,24 @@ def main():
                 f"The following arguments are received or filled with default values:\n{prog_args}"
             )
             predict(fixed_opts)
+            exit(0)
+        elif prog_args.method == "explain":
+            explain_opts = options.Options.fromCmdArgs(prog_args)
+            fixed_opts = dataclasses.replace(
+                explain_opts,
+                inputFile=makePathAbsolute(explain_opts.inputFile),
+                outputDir=makePathAbsolute(explain_opts.outputDir),
+                outputFile=makePathAbsolute(
+                    path.join(explain_opts.outputDir, explain_opts.outputFile)
+                ),
+                fnnModelDir=makePathAbsolute(explain_opts.fnnModelDir)
+            )
+            createDirectory(fixed_opts.outputDir)
+            createLogger(path.join(fixed_opts.outputDir, "explain.log"))
+            logging.info(
+                f"The following arguments are received or filled with default values:\n{prog_args}"
+            )
+            explain(fixed_opts)
             exit(0)
     except AttributeError as e:
         print(e)
