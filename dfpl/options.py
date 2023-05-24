@@ -22,7 +22,7 @@ class Options:
     ecWeightsFile: str = "AE.encoder.weights.hdf5"
     ecModelDir: str = "AE_encoder"
     fnnModelDir: str = "modeltraining"
-    type: str = "smiles"
+    structure_type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
 
     epochs: int = 512
@@ -179,7 +179,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "-t",
-        "--type",
+        "--structure_type",
         metavar="STR",
         type=str,
         choices=["fp", "smiles"],
@@ -422,64 +422,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
              "see https://wandb.ai.",
         default=argparse.SUPPRESS,
     )
-
-
-# @dataclass
-# class PredictOptions(Options):
-#     """
-#     Dataclass to hold all options used for prediction
-#     """
-#
-#     def saveToFile(self, file: str) -> None:
-#         """
-#         Export an instance to JSON. This file is useful for creating template JSON files
-#         """
-#         jsonFile = Path(file)
-#         with jsonFile.open("w") as f:
-#             f.write(jsonpickle.encode(self))
-#
-#     @classmethod
-#     def fromJson(cls, file: str) -> PredictOptions:
-#         """
-#         Create an instance from a JSON file
-#         """
-#         jsonFile = Path(file)
-#         if jsonFile.exists() and jsonFile.is_file():
-#             with jsonFile.open() as f:
-#                 content = f.read()
-#                 return jsonpickle.decode(content)
-#         raise ValueError("JSON file does not exist or is not readable")
-#
-#     @classmethod
-#     def fromCmdArgs(cls, args: argparse.Namespace) -> PredictOptions:
-#         """Creates Options instance from cmdline arguments"""
-#         for key, value in vars(args).items():
-#             # The args dict will contain a "method" key from the subparser.
-#             # We don't use this.
-#             if key != "method":
-#                 result.__setattr__(key, value)
-#         return result
-#
-#         if args.f != "":
-#             jsonFile = Path(makePathAbsolute(args.f))
-#             if jsonFile.exists() and jsonFile.is_file():
-#                 with jsonFile.open() as f:
-#                     content = f.read()
-#                     return jsonpickle.decode(content)
-#             else:
-#                 raise ValueError("Could not find JSON input file")
-#         else:
-#             return cls(
-#                 inputFile=args.i,
-#                 outputDir=args.o,
-#                 ecWeightsFile=args.ECmodel,
-#                 model=args.model,
-#                 target=args.target,
-#                 fpSize=args.s,
-#                 encFPSize=args.d,
-#                 type=args.t,
-#                 fpType=args.k,
-#             )
+    parser.add_argument(
+        "--top_x",
+        metavar="INT",
+        type=int,
+        help="Top X features to be selected from feature importance to retrain the model.",
+        default=argparse.SUPPRESS,
+    )
 
 
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:
@@ -534,7 +483,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "-t",
-        "--type",
+        "--structure_type",
         metavar="STR",
         type=str,
         choices=["fp", "smiles"],
@@ -639,5 +588,3 @@ def parseInputExplain(parser: argparse.ArgumentParser) -> None:
         help="Size of fingerprint that should be generated.",
         default=argparse.SUPPRESS,
     )
-
-

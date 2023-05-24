@@ -53,7 +53,10 @@ test_explain_opts = options.Options(
     inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
     outputDir=f"{project_directory}/output_data/case_explain/FNN_explain_AR",
     outputFile=f"{project_directory}/output_data/case_explain/FNN_explain_AR/S_dataset_explain_AR.csv",
-    fnnModelDir=f"{project_directory}/output_data/case_01/FNN_S_noAE/AR_saved_model",
+    ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
+    fnnModelDir=f"{project_directory}/output_data/console_test/AR_saved_model",
+    type="smiles",
+    fpType="topological",
 )
 
 

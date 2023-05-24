@@ -29,7 +29,7 @@ from dfpl import explainability
 
 
 def prepare_nn_training_data(
-    df: pd.DataFrame, target: str, opts: options.Options
+        df: pd.DataFrame, target: str, opts: options.Options
 ) -> (np.ndarray, np.ndarray):
     # check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
@@ -145,7 +145,7 @@ def prepare_nn_training_data(
 
 
 def build_fnn_network(
-    input_size: int, opts: options.Options, output_bias=None
+        input_size: int, opts: options.Options, output_bias=None
 ) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
@@ -214,7 +214,7 @@ def build_fnn_network(
 
 
 def build_snn_network(
-    input_size: int, opts: options.Options, output_bias=None
+        input_size: int, opts: options.Options, output_bias=None
 ) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
@@ -237,7 +237,7 @@ def build_snn_network(
 
 
 def define_single_label_model(
-    input_size: int, opts: options.Options, output_bias=None
+        input_size: int, opts: options.Options, output_bias=None
 ) -> Model:
     if opts.lossFunction == "bce":
         loss_function = BinaryCrossentropy()
@@ -278,12 +278,12 @@ def define_single_label_model(
 
 
 def evaluate_model(
-    x_test: np.ndarray,
-    y_test: np.ndarray,
-    file_prefix: str,
-    model: Model,
-    target: str,
-    fold: int,
+        x_test: np.ndarray,
+        y_test: np.ndarray,
+        file_prefix: str,
+        model: Model,
+        target: str,
+        fold: int,
 ) -> pd.DataFrame:
     name = path.basename(file_prefix).replace("_", " ")
     logging.info(f"Evaluating trained model '{name}' on test data")
@@ -371,13 +371,13 @@ def evaluate_model(
 
 
 def fit_and_evaluate_model(
-    x_train: np.ndarray,
-    x_test: np.ndarray,
-    y_train: np.ndarray,
-    y_test: np.ndarray,
-    fold: int,
-    target: str,
-    opts: options.Options,
+        x_train: np.ndarray,
+        x_test: np.ndarray,
+        y_train: np.ndarray,
+        y_test: np.ndarray,
+        fold: int,
+        target: str,
+        opts: options.Options,
 ) -> pd.DataFrame:
     logging.info(f"Training of fold number: {fold}")
     logging.info(
@@ -442,16 +442,21 @@ def fit_and_evaluate_model(
     feature_importance = explainability.get_feature_importance(model=model,
                                                                x_train=x_train,
                                                                y_train=y_train)
-    top_x = 1024
+    np.savetxt(
+        fname=f"{model_file_prefix}_feature_importance.csv",
+        X=feature_importance,
+        delimiter=","
+    )
+
     important_features_indices = explainability.get_important_feature_indices(
-        feature_importance = feature_importance,
+        feature_importance=feature_importance,
         threshold=0.1,
-        top_x=top_x
+        top_x=opts.top_x
     )
     model_reduced = define_single_label_model(
-        input_size=top_x, opts=opts, output_bias=initial_bias
+        input_size=opts.top_x, opts=opts, output_bias=initial_bias
     )
-    checkpoint_model_weights_path = f"{model_file_prefix}.model_reduced.weights.hdf5"
+    checkpoint_model_weights_path = f"{model_file_prefix}.model.reduced_{opts.top_x}.weights.hdf5"
     callback_list = cb.nn_callback(
         checkpoint_path=checkpoint_model_weights_path, opts=opts
     )
@@ -459,13 +464,13 @@ def fit_and_evaluate_model(
     # measure the training time
     start = time()
     hist = model_reduced.fit(
-        x_train[:,important_features_indices],
+        x_train[:, important_features_indices],
         y_train,
         callbacks=callback_list,
         epochs=opts.epochs,
         batch_size=opts.batchSize,
         verbose=opts.verbose,
-        validation_data=(x_test[:,important_features_indices], y_test),
+        validation_data=(x_test[:, important_features_indices], y_test),
     )
     trainTime = str(round((time() - start) / 60, ndigits=2))
     logging.info(
@@ -473,16 +478,16 @@ def fit_and_evaluate_model(
     )
 
     # save and plot history
-    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}_reduced.history.csv")
-    pl.plot_history(history=hist, file=f"{model_file_prefix}_reduced.history.svg")
+    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}_reduced_{opts.top_x}.history.csv")
+    pl.plot_history(history=hist, file=f"{model_file_prefix}_reduced_{opts.top_x}.history.svg")
 
     # evaluate callback model
-    callback_model = define_single_label_model(input_size=top_x, opts=opts)
+    callback_model = define_single_label_model(input_size=opts.top_x, opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)
     performance = evaluate_model(
-        x_test=x_test[:,important_features_indices],
+        x_test=x_test[:, important_features_indices],
         y_test=y_test,
-        file_prefix=f"{model_file_prefix}.reduced",
+        file_prefix=f"{model_file_prefix}.reduced_{opts.top_x}",
         model=callback_model,
         target=target,
         fold=fold,
@@ -507,7 +512,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         c
         for c in df.columns
         if c
-        not in ["cid", "ID", "id", "mol_id", "smiles", "fp", "inchi", "fpcompressed"]
+           not in ["cid", "ID", "id", "mol_id", "smiles", "fp", "inchi", "fpcompressed"]
     ]
 
     if opts.wabTracking:
