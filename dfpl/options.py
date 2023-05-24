@@ -129,11 +129,11 @@ def createCommandlineParser() -> argparse.ArgumentParser:
     parser_convert.set_defaults(method="convert")
     parseInputConvert(parser_convert)
 
-    parser_explain = subparsers.add_parser(
-        "explain", help="Provide explainability for trained deepFPlearn models."
-    )
-    parser_explain.set_defaults(method="explain")
-    parseInputExplain(parser_explain)
+    # parser_explain = subparsers.add_parser(
+    #     "explain", help="Provide explainability for trained deepFPlearn models."
+    # )
+    # parser_explain.set_defaults(method="explain")
+    # parseInputExplain(parser_explain)
 
     return parser
 
@@ -420,6 +420,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Which target to use for tracking training performance via Weights & Biases, "
              "see https://wandb.ai.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--useFeatureImportance",
+        metavar="INT",
+        type=int,
+        help="Use feature importance for trained models and retrain with reduced set of top X features "
+             "(set value via top_x variable).",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(

@@ -439,59 +439,61 @@ def fit_and_evaluate_model(
         fold=fold,
     )
 
-    feature_importance = explainability.get_feature_importance(model=model,
-                                                               x_train=x_train,
-                                                               y_train=y_train)
-    np.savetxt(
-        fname=f"{model_file_prefix}_feature_importance.csv",
-        X=feature_importance,
-        delimiter=","
-    )
+    if opts.useFeatureImportance:
 
-    important_features_indices = explainability.get_important_feature_indices(
-        feature_importance=feature_importance,
-        threshold=0.1,
-        top_x=opts.top_x
-    )
-    model_reduced = define_single_label_model(
-        input_size=opts.top_x, opts=opts, output_bias=initial_bias
-    )
-    checkpoint_model_weights_path = f"{model_file_prefix}.model.reduced_{opts.top_x}.weights.hdf5"
-    callback_list = cb.nn_callback(
-        checkpoint_path=checkpoint_model_weights_path, opts=opts
-    )
+        feature_importance = explainability.get_feature_importance(model=model,
+                                                                   x_train=x_train,
+                                                                   y_train=y_train)
+        np.savetxt(
+            fname=f"{model_file_prefix}_feature_importance.csv",
+            X=feature_importance,
+            delimiter=","
+        )
 
-    # measure the training time
-    start = time()
-    hist = model_reduced.fit(
-        x_train[:, important_features_indices],
-        y_train,
-        callbacks=callback_list,
-        epochs=opts.epochs,
-        batch_size=opts.batchSize,
-        verbose=opts.verbose,
-        validation_data=(x_test[:, important_features_indices], y_test),
-    )
-    trainTime = str(round((time() - start) / 60, ndigits=2))
-    logging.info(
-        f"Computation time for training the single-label (reduced) model for {target}: {trainTime} min"
-    )
+        important_features_indices = explainability.get_important_feature_indices(
+            feature_importance=feature_importance,
+            threshold=0.1,
+            top_x=opts.top_x
+        )
+        model_reduced = define_single_label_model(
+            input_size=opts.top_x, opts=opts, output_bias=initial_bias
+        )
+        checkpoint_model_weights_path = f"{model_file_prefix}.model.reduced_{opts.top_x}.weights.hdf5"
+        callback_list = cb.nn_callback(
+            checkpoint_path=checkpoint_model_weights_path, opts=opts
+        )
 
-    # save and plot history
-    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}_reduced_{opts.top_x}.history.csv")
-    pl.plot_history(history=hist, file=f"{model_file_prefix}_reduced_{opts.top_x}.history.svg")
+        # measure the training time
+        start = time()
+        hist = model_reduced.fit(
+            x_train[:, important_features_indices],
+            y_train,
+            callbacks=callback_list,
+            epochs=opts.epochs,
+            batch_size=opts.batchSize,
+            verbose=opts.verbose,
+            validation_data=(x_test[:, important_features_indices], y_test),
+        )
+        trainTime = str(round((time() - start) / 60, ndigits=2))
+        logging.info(
+            f"Computation time for training the single-label (reduced) model for {target}: {trainTime} min"
+        )
 
-    # evaluate callback model
-    callback_model = define_single_label_model(input_size=opts.top_x, opts=opts)
-    callback_model.load_weights(filepath=checkpoint_model_weights_path)
-    performance = evaluate_model(
-        x_test=x_test[:, important_features_indices],
-        y_test=y_test,
-        file_prefix=f"{model_file_prefix}.reduced_{opts.top_x}",
-        model=callback_model,
-        target=target,
-        fold=fold,
-    )
+        # save and plot history
+        pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}_reduced_{opts.top_x}.history.csv")
+        pl.plot_history(history=hist, file=f"{model_file_prefix}_reduced_{opts.top_x}.history.svg")
+
+        # evaluate callback model
+        callback_model = define_single_label_model(input_size=opts.top_x, opts=opts)
+        callback_model.load_weights(filepath=checkpoint_model_weights_path)
+        performance = evaluate_model(
+            x_test=x_test[:, important_features_indices],
+            y_test=y_test,
+            file_prefix=f"{model_file_prefix}.reduced_{opts.top_x}",
+            model=callback_model,
+            target=target,
+            fold=fold,
+        )
 
     return performance
 
