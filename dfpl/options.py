@@ -424,18 +424,18 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--useFeatureImportance",
-        metavar="INT",
-        type=int,
+        metavar="BOOL",
+        type=bool,
         help="Use feature importance for trained models and retrain with reduced set of top X features "
              "(set value via top_x variable).",
-        default=argparse.SUPPRESS,
+        default=False,
     )
     parser.add_argument(
         "--top_x",
         metavar="INT",
         type=int,
         help="Top X features to be selected from feature importance to retrain the model.",
-        default=argparse.SUPPRESS,
+        default=512,
     )
 
 
