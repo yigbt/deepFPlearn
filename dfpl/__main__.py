@@ -21,7 +21,7 @@ test_train_opts = options.Options(
     outputDir=f"{project_directory}/output_data/console_test",
     ecWeightsFile=f"{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5",
     ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
-    type="smiles",
+    structure_type="smiles",
     fpType="topological",
     epochs=100,
     batchSize=1024,
@@ -46,7 +46,7 @@ test_pred_opts = options.Options(
     outputFile=f"{project_directory}/output_data/console_test/S_dataset.predictions_ER.csv",
     ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
     fnnModelDir=f"{project_directory}/output_data/console_test/ER_saved_model",
-    type="smiles",
+    structure_type="smiles",
     fpType="topological",
 )
 test_explain_opts = options.Options(
@@ -55,7 +55,7 @@ test_explain_opts = options.Options(
     outputFile=f"{project_directory}/output_data/case_explain/FNN_explain_AR/S_dataset_explain_AR.csv",
     ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
     fnnModelDir=f"{project_directory}/output_data/console_test/AR_saved_model",
-    type="smiles",
+    structure_type="smiles",
     fpType="topological",
 )
 
