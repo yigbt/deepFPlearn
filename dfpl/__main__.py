@@ -95,6 +95,7 @@ def train(opts: options.Options):
     if opts.trainFNN:
         # train single label models
         # fNN.train_single_label_models(df=df, opts=opts)
+        logging.info('Running latest (FI)')
         sl.train_single_label_models(df=df, opts=opts)
 
     # train multi-label models

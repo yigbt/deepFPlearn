@@ -441,6 +441,7 @@ def fit_and_evaluate_model(
 
     if opts.useFeatureImportance:
 
+        logging.info(msg="Calculating feature importance")
         feature_importance = explainability.get_feature_importance(model=model,
                                                                    x_train=x_train,
                                                                    y_train=y_train)
