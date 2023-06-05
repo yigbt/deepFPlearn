@@ -57,7 +57,7 @@ class Options:
     wabTracking: bool = False  # Wand & Biases tracking
     wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
     useFeatureImportance: bool = False
-    top_x: int = 512
+    top_x: int = 1024
 
     def saveToFile(self, file: str) -> None:
         """
@@ -379,7 +379,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Learning rate decay for AC training.",
         default=argparse.SUPPRESS,
     )
-
     parser.add_argument(
         "--learningRate",
         metavar="FLOAT",
@@ -430,14 +429,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=bool,
         help="Use feature importance for trained models and retrain with reduced set of top X features "
              "(set value via top_x variable).",
-        default=False,
+        default=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--top_x",
         metavar="INT",
         type=int,
         help="Top X features to be selected from feature importance to retrain the model.",
-        default=512,
+        default=argparse.SUPPRESS,
     )
 
 

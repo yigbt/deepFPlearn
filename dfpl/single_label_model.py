@@ -322,7 +322,7 @@ def evaluate_model(
     logging.info(f"Precision: {round(precision, 4)}")
     logging.info(f"Recall: {round(recall, 4)}")
 
-    MCC = matthews_corrcoef(y_test_int, y_predict_int)
+    MCC = matthews_corrcoef(y_test_int, y_predict_int, sample_weight=np.ones(shape=len(y_test_int)))
     logging.info(f"MCC: {round(MCC, 4)}")
 
     # generate the AUC-ROC curve data from the validation data

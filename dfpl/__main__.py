@@ -194,8 +194,8 @@ def main():
     """
     Main function that runs training/prediction defined by command line arguments
     """
-    parser = options.createCommandlineParser()
-    prog_args: Namespace = parser.parse_args()
+    parser = options.createCommandlineParser()  #
+    prog_args: Namespace = parser.parse_args()  #
 
     try:
         if prog_args.method == "convert":
