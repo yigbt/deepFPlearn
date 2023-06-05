@@ -56,8 +56,8 @@ class Options:
     snnWidth = 50
     wabTracking: bool = False  # Wand & Biases tracking
     wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
-    useFeatureImportance: bool = False
-    top_x: int = 1024
+    useFeatureImportance: bool = True
+    top_x: int = 512
 
     def saveToFile(self, file: str) -> None:
         """
