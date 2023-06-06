@@ -3,6 +3,7 @@ import os.path
 from os.path import basename
 
 import tensorflow as tf
+import wandb
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import Model, losses
 
@@ -204,6 +205,8 @@ def define_rbm_model(
     :param opts: options for the RBM model
     :return: a tuple of autoencoder and encoder models
     """
+    if opts.aeWabTracking and not opts.wabTracking:
+        wandb.init(project=f"RBM_{opts.aeSplitType}", config=opts)
     my_loss = tf.keras.losses.BinaryCrossentropy()
     if opts.aeOptimizer == "Adam":
         ac_optimizer = tf.keras.optimizers.Adam(
@@ -334,7 +337,6 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     x_test = tf.cast(tf.where(x_test, 1, 0), tf.float32)
     logging.info(f"RBM train data shape {x_train.shape} with type {x_train.dtype}")
     logging.info(f"RBM test data shape {x_test.shape} with type {x_test.dtype}")
-
     auto_hist = rbm.fit(
         x=x_train,
         y=x_train,
@@ -343,6 +345,7 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
         batch_size=opts.aeBatchSize,
         verbose=opts.verbose,
         validation_data=(x_test, x_test),
+        steps_per_epoch = 25
     )
     rbm.summary(print_fn=logging.info)
     ht.store_and_plot_history(
