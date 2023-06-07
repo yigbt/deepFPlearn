@@ -2,12 +2,13 @@
   "py/object": "dfpl.options.GnnOptions",
   "data_path": "example/data/S_dataset-AR.csv",
   "gnn_type": "dmpnn",
-  "save_dir": "dmpnn-random-AR/",
-  "epochs": 30,
+  "save_dir": "dmpnn-random-uniform-AR/",
+  "epochs": 235,
   "num_folds": 5,
   "metric": "binary_cross_entropy",
   "split_type": "random",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
-  "extra_metrics": ["accuracy","auc","f1","mcc","recall","specificity","precision"]
+  "extra_metrics": ["accuracy","auc","f1","mcc","recall","specificity","precision"],
+  "dynamic_depth" : "uniform"
 }

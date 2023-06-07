@@ -66,6 +66,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
         # encoding layers, incl. bottle-neck
         for i in range(1, hidden_layer_count):
             factor_units = 2 ** (i + 1)
+            # print(f'{factor_units}: {int(input_size / factor_units)}')
             if opts.aeActivationFunction != "selu":
                 encoded = Dense(
                     units=int(input_size / factor_units),
@@ -95,6 +96,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
         # decoding layers
         for i in range(hidden_layer_count - 2, 0, -1):
             factor_units = 2**i
+            # print(f'{factor_units}: {int(input_size/factor_units)}')
             if opts.aeActivationFunction != "selu":
                 decoded = Dense(
                     units=int(input_size / factor_units),
@@ -108,6 +110,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
                 )(decoded)
 
         # output layer
+        # The output layer needs to predict the probability of an output which needs
         # to either 0 or 1 and hence we use sigmoid activation function.
         decoded = Dense(
             units=input_size, activation="sigmoid", bias_initializer=output_bias
@@ -316,6 +319,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         callback_encoder.save(filepath=save_path)
     else:
         encoder.save(filepath=save_path)
+
     # Return the encoder model of the trained autoencoder
     return encoder, train_indices, test_indices
 
@@ -343,6 +347,137 @@ def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFra
         {"fpcompressed": [s for s in encoder.predict(fp_matrix)]}, idx
     )
     return dataframe
+
+
+# def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, save_as: str):
+#     # Convert the boolean values in the before_col column to floats
+#     df[before_col] = df[before_col].apply(lambda x: np.array(x, dtype=float))
+#
+#     # Get the fingerprints before and after compression
+#     before_fingerprints = np.array(df[before_col].to_list())
+#     after_fingerprints = np.array(df[after_col].to_list())
+#
+#     # Create UMAP and t-SNE embeddings for the fingerprints before and after compression
+#     before_umap_embedding = UMAP(n_components=2, n_neighbors=10, min_dist=0.1, random_state=42).fit_transform(
+#         before_fingerprints)
+#     after_umap_embedding = UMAP(n_components=2, n_neighbors=10, min_dist=0.1, random_state=42).fit_transform(
+#         after_fingerprints)
+#     # before_tsne_embedding = TSNE().fit_transform(before_fingerprints)
+#     # after_tsne_embedding = TSNE().fit_transform(after_fingerprints)
+#     # cosine_similarities = cosine_similarity(before_umap_embedding, after_umap_embedding)
+#
+#     # Apply the elbow method to find the best number of clusters for k-means
+#     # wcss = []
+#     # max_clusters = 10
+#     # for k in range(1, max_clusters):
+#     #     kmeans = KMeans(n_clusters=k)
+#     #     kmeans.fit(before_umap_embedding)
+#     #     wcss.append(kmeans.inertia_)
+#     # plt.plot(range(1, max_clusters), wcss)
+#     # plt.title('Elbow Method')
+#     # plt.xlabel('Number of clusters')
+#     # plt.ylabel('WCSS')
+#     # plt.savefig(os.path.join(output_dir, f'wcss_plot_{opts.split_type}.png'))
+#     # plt.show()
+#     # 3 or 4 clusters seem like a good choice
+#
+#     # Use silhouette score to choose number of clusters
+#     # max_clusters = 5
+#     # before_umap_scores = []
+#     # for n_clusters in range(2, max_clusters+1):
+#     #     labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_umap_embedding)
+#     #     score = silhouette_score(before_umap_embedding, labels)
+#     #     before_umap_scores.append(score)
+#     # optimal_n_clusters = np.argmax(before_umap_scores) + 2
+#     # print(f"Optimal number of clusters for before (UMAP) is {optimal_n_clusters}")
+#
+#     # Apply k-means clustering to the embeddings
+#     n_clusters = 4  # optimal_n_clusters= 3 based on silhouette score but 4 was previously used but 4 on pub version
+#     before_umap_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_umap_embedding)
+#     after_umap_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(after_umap_embedding)
+#     # before_tsne_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(before_tsne_embedding)
+#     # after_tsne_labels = KMeans(n_clusters=n_clusters, random_state=42).fit_predict(after_tsne_embedding)
+#     # Assign same colormap to all plots
+#     cmap = plt.get_cmap('rainbow', n_clusters)
+#     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
+#     fig.suptitle('Dimensionality reduction and clustering of fingerprints')
+#     before_umap_scatter = axes[0].scatter(before_umap_embedding[:, 0], before_umap_embedding[:, 1],
+#                                           c=before_umap_labels, s=5, cmap=cmap)
+#     axes[0].set_title('Before compression (UMAP)')
+#     after_umap_scatter = axes[1].scatter(after_umap_embedding[:, 0], after_umap_embedding[:, 1],
+#                                          c=after_umap_labels, s=5, cmap=cmap)
+#     axes[1].set_title('After compression (UMAP)')
+#     # before_tsne_scatter = axes[1, 0].scatter(before_tsne_embedding[:, 0], before_tsne_embedding[:, 1],
+#     # c=before_tsne_labels, s=5, cmap=cmap)
+#     # axes[1, 0].set_title('Before compression (t-SNE)')
+#     # after_tsne_scatter = axes[1, 1].scatter(after_tsne_embedding[:, 0], after_tsne_embedding[:, 1],
+#     # c=after_tsne_labels, s=5, cmap=cmap)
+#     # axes[1, 1].set_title('After compression (t-SNE)')
+#     plt.subplots_adjust(wspace=0.2)
+#     plt.tight_layout()
+#     plt.savefig(f'{save_as}.png', dpi=300, bbox_inches='tight')
+#     plt.close(fig)
+
+
+# def visualize_fingerprints(
+#     df: pd.DataFrame,
+#     before_col: str,
+#     after_col: str,
+#     train_indices: np.ndarray,
+#     test_indices: np.ndarray,
+#     save_as: str,
+# ):
+#     # Convert the boolean values in the after_col column to floats
+#     df[after_col] = df[after_col].apply(lambda x: np.array(x, dtype=float))
+#
+#     # Add 'set' column to categorize rows as train or test
+#     df["set"] = pd.Series(
+#         ["train" if i in train_indices else "test" for i in range(len(df))]
+#     )
+#
+#     # Apply UMAP
+#     umap_model = umap.UMAP(
+#         n_neighbors=15, min_dist=0.1, metric="euclidean", random_state=42
+#     )
+#     umap_results = umap_model.fit_transform(df[after_col].tolist())
+#
+#     # Add UMAP results to the DataFrame
+#     df["umap_x"] = umap_results[:, 0]
+#     df["umap_y"] = umap_results[:, 1]
+#
+#     # Define custom color palette
+#     palette = {"train": "blue", "test": "red"}
+#
+#     # Create the scatter plot
+#     sns.set(style="white")
+#     fig, ax = plt.subplots(figsize=(10, 8))
+#     split = save_as.split("_", 1)
+#     part_after_underscore = split[1]
+#     split_type = part_after_underscore.split(".")[0]
+#     # Plot the UMAP results
+#     for label, grp in df.groupby("set"):
+#         set_label = label
+#         color = palette[set_label]
+#         alpha = (
+#             0.09 if set_label == "train" else 0.9
+#         )  # Set different opacities for train and test
+#         ax.scatter(
+#             grp["umap_x"], grp["umap_y"], label=f"{set_label}", c=color, alpha=alpha
+#         )
+#
+#     # Customize the plot
+#     ax.set_title(
+#         f"UMAP visualization of molecular fingerprints using {split_type} split",
+#         fontsize=14,
+#     )
+#     ax.set_xlabel("UMAP 1")
+#     ax.set_ylabel("UMAP 2")
+#     ax.legend(title="", loc="upper right")
+#     sns.despine(ax=ax, offset=10)
+#
+#     # Save the plot as an image
+#     save_path = os.path.join(os.getcwd(), save_as)
+#     plt.savefig(save_path)
 
 
 def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, train_indices: np.ndarray,

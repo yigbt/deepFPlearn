@@ -147,7 +147,7 @@ def define_vae_model(opts: options.Options, output_bias=None) -> (Model, Model):
     def vae_loss(y_true, y_pred):
         bce = bce_loss(y_true, y_pred)
         kl = kl_loss(z_mean, z_log_var)
-        return bce + 0.000001 * kl
+        return bce + 0.0001 * kl
 
     autoencoder.compile(
         optimizer=ac_optimizer, loss=vae_loss, metrics=[bce_loss, kl_loss]

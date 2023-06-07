@@ -1,4 +1,0 @@
-[submodule "dfpl_chemprop"]
-	path = dfpl_chemprop
-	url = https://github.com/soulios/chemprop/
-	branch = dfpl_chemprop

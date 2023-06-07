@@ -688,17 +688,9 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                         )
                     if opts.wabTracking and opts.aeWabTracking:
                         wandb.init(
-                            project=f"AE_{opts.aeSplitType}",
-                            name=f"AE_{target}-{fold_no}",
+                            project=f"AE_{opts.aeSplitType}_FNN_{opts.split_type}",
+                            name=f"{target}-{fold_no}",
                             group=f"{target}",
-                            reinit=True,
-                        )
-
-                        # Initialize wandb for the feed forward model
-                        wandb.init(
-                            project=f"FNN_{opts.threshold}_{opts.split_type}",
-                            group=f"{target}",
-                            name=f"FNN_{target}-{fold_no}",
                             reinit=True,
                         )
 
@@ -951,7 +943,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 )
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
-                        project=f"FFN_{opts.split_type}AE_{opts.aeSplitType}",
+                        project=f"FFN_weight_splitAE_{opts.split_type}",
                         group=f"{target}",
                         name=f"{target}_single_fold",
                     )

@@ -1,4 +1,7 @@
 import os.path
+import sys
+
+# sys.path.append("./dfpl_chemprop")
 import dataclasses
 import logging
 import math
@@ -138,11 +141,14 @@ def train(opts: options.Options):
     rbm_model = None
     if opts.trainAC:
         if opts.aeType == "deterministic":
+            (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+            autoencoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
             encoder, train_indices, test_indices = ac.train_full_ac(df, opts)
+            df.to_csv(f'fingerprints_{opts.aeSplitType}')
         elif opts.aeType == "variational":
             encoder, train_indices, test_indices = vae.train_full_vae(df, opts)
         else:
-            raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
+            raise ValueError(f"Unknown autoencoder type: {opts.Type}")
 
     # train an RBM on the full feature matrix if requested
     if opts.trainRBM:
@@ -185,14 +191,14 @@ def train(opts: options.Options):
                     )
             # compress the fingerprints using the autoencoder
             df = ac.compress_fingerprints(df, encoder)
-            # ac.visualize_fingerprints(
-            #     df,
-            #     before_col="fp",
-            #     after_col="fpcompressed",
-            #     train_indices=train_indices,
-            #     test_indices=test_indices,
-            #     save_as=f"UMAP_{opts.aeSplitType}.png",
-            # )
+            ac.visualize_fingerprints(
+                df,
+                before_col="fp",
+                after_col="fpcompressed",
+                train_indices=train_indices,
+                test_indices=test_indices,
+                save_as=f"UMAP_{opts.aeSplitType}.png",
+            )
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
@@ -220,7 +226,10 @@ def predict(opts: options.Options) -> None:
     if opts.compressFeatures:
         # load trained model for autoencoder
         if opts.aeType == "deterministic":
-            (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+            if opts.ecWeightsFile == "":
+                encoder = keras.models.load_model(opts.ecModelDir)
+            else:
+                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
         if opts.aeType == "variational":
             (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
         # Load trained model for autoencoder
