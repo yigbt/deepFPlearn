@@ -2,7 +2,6 @@ import os
 import sys
 
 import pandas as pd
-import pytest
 from rdkit import RDLogger
 
 currentdir = os.path.dirname(os.path.realpath(__file__))

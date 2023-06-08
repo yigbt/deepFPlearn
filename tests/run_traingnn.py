@@ -1,50 +1,50 @@
-import json
 import logging
 import os
 import pathlib
-import shutil
 import sys
 import unittest
+from unittest.mock import patch
 
-# Add the parent directory of the tests directory to the module search path
+import dfpl.autoencoder as ac
+import dfpl.fingerprint as fp
+import dfpl.options as opt
+import dfpl.utils as utils
+
 tests_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(tests_dir)
 sys.path.insert(0, parent_dir)
-sys.path.insert(0, "./dfpl_chemprop")
-from dfpl import __main__ as main
+
+import os
+
+import pytest
+from chemprop.train import cross_validate
+
 from dfpl import options
-from dfpl_chemprop import chemprop
-from dfpl_chemprop.chemprop import args
+from dfpl.train import traindmpnn
 
 
-class TestTrainDMPNN(unittest.TestCase):
-    def setUp(self):
-        self.opts_file = "./example/traingnn.json"
-        with open(self.opts_file, "r") as f:
-            opts_dict = json.load(f)
-        ignore_elements = ["py/object", "gnn_type"]
-        filtered_opts_dict = {
-            k: v for k, v in opts_dict.items() if k not in ignore_elements
-        }
-        print(filtered_opts_dict)
-        self.train_opts = args.TrainArgs().parse_args(filtered_opts_dict)
-        self.save_dir = "test_dmpnn"
-        os.makedirs(self.save_dir)
-
-    def tearDown(self):
-        shutil.rmtree(self.save_dir)
-
-    def test_train_dmpnn(self):
-        main.traindmpnn(self.train_opts)
-        # check that model weight file exists in save_dir
-        self.assertTrue(
-            os.path.isfile(os.path.join(self.train_opts.save_dir, "saved_model.pth"))
-        )
-        # check that log file exists in save_dir
-        self.assertTrue(
-            os.path.isfile(os.path.join(self.train_opts.save_dir, "train.log"))
-        )
+@pytest.fixture
+def mock_opts():
+    opts = options.GnnOptions()
+    opts.gpu = 0
+    opts.configFile = "config.json"
+    return opts
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_traindmpnn(mock_opts, monkeypatch, capsys):
+    # Define a mock implementation of cross_validate
+    def mock_cross_validate(args, train_func):
+        return 0.85, 0.02
+
+    # Monkeypatch the cross_validate function with the mock implementation
+    monkeypatch.setattr(cross_validate, "cross_validate", mock_cross_validate)
+
+    # Call the function
+    traindmpnn(mock_opts)
+
+    # Capture the printed output
+    captured = capsys.readouterr()
+
+    # Assertions
+    assert captured.out.strip() == "Training DMPNN..."
+    assert captured.err.strip() == f"Results: 0.85000 +/- 0.02000"

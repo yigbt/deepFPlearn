@@ -1,12 +1,12 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "example/data/train_data.csv",
-  "outputDir": "example/results_predict_weightAE",
-  "outputFile": "B_data_AR_preds_weightAE_weightFNN.csv",
-  "ecModelDir": "example/results/scaffold_balanced_autoencoder",
+  "inputFile": "tests/data/smiles.csv",
+  "outputDir": "example/results_predict_fnn",
+  "outputFile": "smiles.csv",
+  "ecModelDir": "",
   "ecWeightsFile": "",
-  "fnnModelDir": "example/results/AR-2_best_saved_model",
-  "compressFeatures": true,
+  "fnnModelDir": "example/onlyfnn/AR-1_best_saved_model",
+  "compressFeatures": false,
   "useRBM": false,
   "trainAC": false,
   "trainFNN": false

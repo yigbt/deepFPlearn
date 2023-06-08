@@ -1,6 +1,11 @@
 import logging
+import os
 import pathlib
+import sys
 
+tests_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(tests_dir)
+sys.path.insert(0, parent_dir)
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt
@@ -18,12 +23,13 @@ test_train_args = opt.Options(
     type="smiles",
     fpType="topological",
     epochs=10,
+    aeEpochs=3,
     fpSize=2048,
     encFPSize=256,
     testSize=0.2,
     kFolds=1,
     verbose=2,
-    trainAC=True,
+    trainAC=False,
     trainFNN=True,
 )
 

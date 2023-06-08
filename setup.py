@@ -17,16 +17,18 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
+    # all packages need for the final usage
+    # for additional packages during development, use requirements.txt
     install_requires=[
-        "jsonpickle~=2.1",
+        "jsonpickle~=2.1.0",
         "matplotlib==3.5.1",
-        "numpy==1.19.5",
+        "numpy==1.22.0",
         "pandas==1.4.2",
         "rdkit-pypi==2022.03.1",
         "scikit-learn==1.0.2",
-        "keras==2.6.0",
-        "tensorflow-gpu==2.6.0",
-        "wandb~=0.12",
+        "keras==2.9.0",
+        "tensorflow-gpu==2.9.3",
+        "wandb~=0.12.0",
     ],
     entry_points={"console_scripts": ["dfpl=dfpl.__main__:main"]},
 )
