@@ -6,10 +6,10 @@
   "ecWeightsFile": "",
   "verbose": 2,
 
-  "trainAC": false,
+  "trainAC": true,
   "trainRBM": false,
   "useRBM": false,
-  "compressFeatures": false,
+  "compressFeatures": true,
   "encFPSize": 256,
 
   "aeSplitType": "random",
@@ -19,7 +19,7 @@
   "aeActivationFunction": "relu",
   "aeLearningRate": 0.001,
   "aeLearningRateDecay": 0.001,
-  "aeType": "deterministic",
+  "aeType": "variational",
 
   "type": "smiles",
   "fpType": "topological",
@@ -30,7 +30,7 @@
   "sampleDown": false,
   "gpu": "",
 
-  "trainFNN": true,
+  "trainFNN": false,
   "kFolds": 2,
   "threshold": 0.5,
   "testSize": 0.2,
