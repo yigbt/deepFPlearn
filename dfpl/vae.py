@@ -147,7 +147,7 @@ def define_vae_model(opts: options.Options, output_bias=None) -> (Model, Model):
     def vae_loss(y_true, y_pred):
         bce = bce_loss(y_true, y_pred)
         kl = kl_loss(z_mean, z_log_var)
-        return bce + 0.001 * kl
+        return bce + 0.5 * kl
 
     autoencoder.compile(
         optimizer=ac_optimizer, loss=vae_loss, metrics=[bce_loss, kl_loss]
@@ -325,5 +325,9 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
         callback_encoder.save(filepath=save_path)
     else:
         encoder.save(filepath=save_path)
-
+    latent_space = encoder.predict(fp_matrix)
+    latent_space_file = os.path.join(opts.outputDir, base_file_name + ".latent_space.csv")
+    with open(latent_space_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(latent_space)
     return encoder, train_indices, test_indices

@@ -37,7 +37,7 @@
   "fnnType": "FNN",
   "optimizer": "Adam",
   "lossFunction": "bce",
-  "epochs": 3,
+  "epochs": 300,
   "batchSize": 128,
   "activationFunction": "selu",
   "dropout": 0.0238,

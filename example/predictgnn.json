@@ -2,7 +2,8 @@
   "py/object": "dfpl.options.GnnOptions",
   "gnn_type": "dmpnn",
   "test_path": "tests/data/smiles.csv",
-  "checkpoint_path": "/home/soulios/git-soulios/deepFPlearn/dmpnn-random-uniform/fold_0/model_0/model.pt",
+  "checkpoint_path": "/home/soulios/git-soulios/deepFPlearn/example/dmpnn-random-AR/fold_0/model_0/model.pt",
   "save_dir": "output_dmpnn",
-  "saving_name": "smiles-preds.csv"
+  "saving_name": "smiles-preds.csv",
+  "chunk_size": 3
 }
