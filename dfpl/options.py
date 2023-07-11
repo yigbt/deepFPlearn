@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import sys
 
-# sys.path.append("./dfpl_chemprop")
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
@@ -116,12 +115,10 @@ class Options:
 
 
 @dataclass
-# class GnnOptions(Options):
 class GnnOptions(TrainArgs):
     """
     Dataclass to hold all options used for training the graph models
     """
-
     total_epochs: int = 30
     save: bool = True
     configFile: str = "./example/traingnn.json"
@@ -135,11 +132,10 @@ class GnnOptions(TrainArgs):
     num_lrs: int = 2
     minimize_score: bool = False
     num_tasks: int = 12
-    # Model arguments
-    # Training arguments
     gnn_type: str = "cmpnn"
     preds_path: str = "./tox21dmpnn.csv"
     test_path: str = ""
+    save_preds: bool = True
 
 
     @classmethod
