@@ -5,6 +5,7 @@ from rdkit.Chem import Draw
 
 import dfpl.fingerprint as fp
 from dfpl import autoencoder as ac
+from dfpl import feedforwardNN as fNN
 from dfpl import options as opt
 from dfpl import predictions
 

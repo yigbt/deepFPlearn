@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import sys
+
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
 import jsonpickle
+import torch
+from chemprop.args import TrainArgs
 
 from dfpl.utils import makePathAbsolute
 
@@ -15,8 +19,8 @@ class Options:
     Dataclass for all options necessary for training the neural nets
     """
 
-    configFile: str = ""
-    inputFile: str = "data/Sun_etal_dataset.csv"
+    configFile: str = "./example/train.json"
+    inputFile: str = "/deepFPlearn/CMPNN/data/tox21.csv"
     outputDir: str = "."
     outputFile: str = ""
     ecWeightsFile: str = "AE.encoder.weights.hdf5"
@@ -24,7 +28,6 @@ class Options:
     fnnModelDir: str = "modeltraining"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
-
     epochs: int = 512
     fpSize: int = 2048
     encFPSize: int = 256
@@ -37,13 +40,17 @@ class Options:
     compressFeatures: bool = True
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
-
+    split_type: str = "random"
+    aeSplitType: str = "random"
+    aeType: str = "deterministic"
     aeEpochs: int = 3000
     aeBatchSize: int = 512
     aeLearningRate: float = 0.001
     aeLearningRateDecay: float = 0.01
     aeActivationFunction: str = "relu"
-
+    aeOptimizer: str = "Adam"
+    trainRBM: bool = True
+    useRBM: bool = True
     fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
@@ -52,9 +59,12 @@ class Options:
     activationFunction: str = "relu"
     l2reg: float = 0.001
     dropout: float = 0.2
+    threshold: float = 0.5
+    gpu: str = ""
     snnDepth = 8
     snnWidth = 50
-    wabTracking: bool = False  # Wand & Biases tracking
+    aeWabTracking: str = ""  # Wand & Biases autoencoder tracking
+    wabTracking: str = ""  # Wand & Biases FNN tracking
     wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
 
     def saveToFile(self, file: str) -> None:
@@ -104,12 +114,82 @@ class Options:
         return result
 
 
+@dataclass
+class GnnOptions(TrainArgs):
+    """
+    Dataclass to hold all options used for training the graph models
+    """
+    total_epochs: int = 30
+    save: bool = True
+    configFile: str = "./example/traingnn.json"
+    data_path: str = "./example/data/tox21.csv"
+    use_compound_names: bool = False
+    save_dir: str = ""
+    no_cache: bool = False
+    features_scaling: bool = True
+    use_input_features: str = ""
+    cuda: bool = False
+    num_lrs: int = 2
+    minimize_score: bool = False
+    num_tasks: int = 12
+    gnn_type: str = "cmpnn"
+    preds_path: str = "./tox21dmpnn.csv"
+    test_path: str = ""
+    save_preds: bool = True
+
+
+    @classmethod
+    def fromCmdArgs(cls, args: argparse.Namespace) -> GnnOptions:
+        """
+        Creates Options instance from cmdline arguments.
+
+        If a training file (JSON) is provided, the values from that file are used.
+        However, additional commandline arguments will be preferred. If, e.g., "fpSize" is specified both in the
+        JSON file and on the commandline, then the value of the commandline argument will be used.
+        """
+        result = GnnOptions()
+        if "configFile" in vars(args).keys():
+            jsonFile = Path(makePathAbsolute(args.configFile))
+            if jsonFile.exists() and jsonFile.is_file():
+                with jsonFile.open() as f:
+                    content = f.read()
+                    result = jsonpickle.decode(content)
+            else:
+                raise ValueError("Could not find JSON input file")
+
+        return result
+
+    @classmethod
+    def fromJson(cls, file: str) -> GnnOptions:
+        """
+        Create an instance from a JSON file
+        """
+        jsonFile = Path(file)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = f.read()
+                return jsonpickle.decode(content)
+        raise ValueError("JSON file does not exist or is not readable")
+
+
 def createCommandlineParser() -> argparse.ArgumentParser:
     """
     Build the parser for arguments with its two subparsers
     """
     parser = argparse.ArgumentParser(prog="deepFPlearn")
     subparsers = parser.add_subparsers(help="Sub programs of deepFPlearn")
+
+    parser_train_gnn = subparsers.add_parser(
+        "traingnn", help="Train new GNN models with your data"
+    )
+    parser_train_gnn.set_defaults(method="traingnn")
+    parseTrainGnn(parser_train_gnn)
+
+    parser_predict_gnn = subparsers.add_parser(
+        "predictgnn", help="Predict with your GNN models"
+    )
+    parser_predict_gnn.set_defaults(method="predictgnn")
+    parsePredictGnn(parser_predict_gnn)
 
     parser_train = subparsers.add_parser(
         "train", help="Train new models with your data"
@@ -137,9 +217,9 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
 
     :return: A namespace object built up from attributes parsed out of the cmd line.
     """
-    #    parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
-    #                                     'target(s). Trained models are saved to disk including fitted weights and '
-    #                                     'can be used in the deepFPlearn-Predict.py tool to make predictions.')
+    #     parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
+    #                                       'target(s). Trained models are saved to disk including fitted weights and '
+    #                                         'can be used in the deepFPlearn-Predict.py tool to make predictions.')
     parser.add_argument(
         "-f",
         "--configFile",
@@ -171,12 +251,51 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
+        "--split_type",
+        metavar="STR",
+        type=str,
+        choices=["scaffold_balanced", "random", "molecular_weight"],
+        help="Set how the data is going to be split for the feedforward neural network",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--aeType",
+        metavar="STR",
+        type=str,
+        choices=["variational", "deterministic"],
+        help="Autoencoder type",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--aeSplitType",
+        metavar="STR",
+        type=str,
+        choices=["scaffold_balanced", "random", "molecular_weight"],
+        help="Set how the data is going to be split for the autoencoder",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
         "-t",
         "--type",
         metavar="STR",
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "-thr",
+        "--threshold",
+        type=float,
+        help="Threshold for binary classification.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "-gpu",
+        "--gpu",
+        metavar="STR",
+        type=str,
+        help="Select which gpu to use",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -271,7 +390,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=int,
         choices=[0, 1, 2],
         help="Verbosity level. O: No additional output, "
-        "1: Some additional output, 2: full additional output",
+        + "1: Some additional output, 2: full additional output",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
@@ -402,77 +521,420 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--wabTracking",
-        metavar="BOOL",
-        type=bool,
-        help="Track training performance via Weights & Biases, see https://wandb.ai.",
+        metavar="STRING",
+        type=str,
+        help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--aeWabTracking",
+        metavar="STRING",
+        type=str,
+        help="Track autoencoder performance via Weights & Biases, see https://wandb.ai.",
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--wabTarget",
         metavar="STRING",
         type=str,
-        help="Which target to use for tracking training performance via Weights & Biases, "
-        "see https://wandb.ai.",
+        choices=["AR", "ER", "ED", "GR", "TR", "PPARg", "Aromatase"],
+        help="Which target to use for tracking performance via Weights & Biases, see https://wandb.ai.",
         default=argparse.SUPPRESS,
     )
 
 
-# @dataclass
-# class PredictOptions(Options):
-#     """
-#     Dataclass to hold all options used for prediction
-#     """
-#
-#     def saveToFile(self, file: str) -> None:
-#         """
-#         Export an instance to JSON. This file is useful for creating template JSON files
-#         """
-#         jsonFile = Path(file)
-#         with jsonFile.open("w") as f:
-#             f.write(jsonpickle.encode(self))
-#
-#     @classmethod
-#     def fromJson(cls, file: str) -> PredictOptions:
-#         """
-#         Create an instance from a JSON file
-#         """
-#         jsonFile = Path(file)
-#         if jsonFile.exists() and jsonFile.is_file():
-#             with jsonFile.open() as f:
-#                 content = f.read()
-#                 return jsonpickle.decode(content)
-#         raise ValueError("JSON file does not exist or is not readable")
-#
-#     @classmethod
-#     def fromCmdArgs(cls, args: argparse.Namespace) -> PredictOptions:
-#         """Creates Options instance from cmdline arguments"""
-#         for key, value in vars(args).items():
-#             # The args dict will contain a "method" key from the subparser.
-#             # We don't use this.
-#             if key != "method":
-#                 result.__setattr__(key, value)
-#         return result
-#
-#         if args.f != "":
-#             jsonFile = Path(makePathAbsolute(args.f))
-#             if jsonFile.exists() and jsonFile.is_file():
-#                 with jsonFile.open() as f:
-#                     content = f.read()
-#                     return jsonpickle.decode(content)
-#             else:
-#                 raise ValueError("Could not find JSON input file")
-#         else:
-#             return cls(
-#                 inputFile=args.i,
-#                 outputDir=args.o,
-#                 ecWeightsFile=args.ECmodel,
-#                 model=args.model,
-#                 target=args.target,
-#                 fpSize=args.s,
-#                 encFPSize=args.d,
-#                 type=args.t,
-#                 fpType=args.k,
-#             )
+def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--save", type=bool)
+    parser.add_argument(
+        "-f",
+        "--configFile",
+        metavar="FILE",
+        type=str,
+        help="Input JSON file that contains all information for training/predicting.",
+    )
+    parser.add_argument(
+        "--gpu",
+        type=int,
+        choices=list(range(torch.cuda.device_count())),
+        help="Which GPU to use",
+    )
+    parser.add_argument(
+        "--data_path", type=str, help="Path to data CSV file", default=""
+    )
+    parser.add_argument(
+        "--use_compound_names",
+        action="store_true",
+        default=False,
+        help="Use when test data file contains compound names in addition to SMILES strings",
+    )
+    parser.add_argument(
+        "--max_data_size", type=int, help="Maximum number of data points to load"
+    )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        default=False,
+        help="Whether to skip training and only test the model",
+    )
+    parser.add_argument(
+        "--features_only",
+        action="store_true",
+        default=False,
+        help="Use only the additional features in an FFN, no graph network",
+    )
+    # parser.add_argument('--features_generator', type=str, nargs='*',
+    #                     choices=get_available_features_generators(),
+    #                     help='Method of generating additional features')
+    parser.add_argument(
+        "--features_path",
+        type=str,
+        nargs="*",
+        help="Path to features to use in FNN (instead of features_generator)",
+    )
+    parser.add_argument(
+        "--save_dir",
+        type=str,
+        default="./ckpt/",
+        help="Directory where model checkpoints will be saved",
+    )
+    parser.add_argument(
+        "--save_smiles_splits",
+        action="store_true",
+        default=False,
+        help="Save smiles for each train/val/test splits for prediction convenience later",
+    )
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        default=None,
+        help="Directory from which to load model checkpoints"
+        "(walks directory and ensembles all models that are found)",
+    )
+    parser.add_argument(
+        "--checkpoint_path",
+        type=str,
+        default=None,
+        help="Path to model checkpoint (.pt file)",
+    )
+    parser.add_argument(
+        "--checkpoint_paths",
+        type=str,
+        nargs="*",
+        default=None,
+        help="Path to model checkpoint (.pt file)",
+    )
+    parser.add_argument(
+        "--dataset_type",
+        type=str,
+        choices=["classification", "regression", "multiclass"],
+        help="Type of dataset, e.g. classification or regression."
+        "This determines the loss function used during training.",
+        default="regression",
+    )  # classification
+    parser.add_argument(
+        "--multiclass_num_classes",
+        type=int,
+        default=3,
+        help="Number of classes when running multiclass classification",
+    )
+    parser.add_argument(
+        "--separate_val_path", type=str, help="Path to separate val set, optional"
+    )
+    parser.add_argument(
+        "--separate_val_features_path",
+        type=str,
+        nargs="*",
+        help="Path to file with features for separate val set",
+    )
+    parser.add_argument(
+        "--separate_test_path", type=str, help="Path to separate test set, optional"
+    )
+    parser.add_argument(
+        "--separate_test_features_path",
+        type=str,
+        nargs="*",
+        help="Path to file with features for separate test set",
+    )
+    parser.add_argument(
+        "--split_type",
+        type=str,
+        default="random",
+        choices=[
+            "random",
+            "scaffold_balanced",
+            "predetermined",
+            "crossval",
+            "index_predetermined",
+        ],
+        help="Method of splitting the data into train/val/test",
+    )
+    parser.add_argument(
+        "--split_sizes",
+        type=float,
+        nargs=3,
+        default=[0.8, 0.2, 0.0],
+        help="Split proportions for train/validation/test sets",
+    )
+    parser.add_argument(
+        "--num_folds",
+        type=int,
+        default=1,
+        help="Number of folds when performing cross validation",
+    )
+    parser.add_argument(
+        "--folds_file", type=str, default=None, help="Optional file of fold labels"
+    )
+    parser.add_argument(
+        "--val_fold_index",
+        type=int,
+        default=None,
+        help="Which fold to use as val for leave-one-out cross val",
+    )
+    parser.add_argument(
+        "--test_fold_index",
+        type=int,
+        default=None,
+        help="Which fold to use as test for leave-one-out cross val",
+    )
+    parser.add_argument(
+        "--crossval_index_dir",
+        type=str,
+        help="Directory in which to find cross validation index files",
+    )
+    parser.add_argument(
+        "--crossval_index_file",
+        type=str,
+        help="Indices of files to use as train/val/test"
+        "Overrides --num_folds and --seed.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Random seed to use when splitting data into train/val/test sets."
+        "When `num_folds` > 1, the first fold uses this seed and all"
+        "subsequent folds add 1 to the seed.",
+    )
+    parser.add_argument(
+        "--metric",
+        type=str,
+        default=None,
+        choices=[
+            "auc",
+            "prc-auc",
+            "rmse",
+            "mae",
+            "mse",
+            "r2",
+            "accuracy",
+            "cross_entropy",
+        ],
+        help="Metric to use during evaluation."
+        "Note: Does NOT affect loss function used during training"
+        "(loss is determined by the `dataset_type` argument)."
+        'Note: Defaults to "auc" for classification and "rmse" for regression.',
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        default=False,
+        help="Skip non-essential print statements",
+    )
+    parser.add_argument(
+        "--log_frequency",
+        type=int,
+        default=10,
+        help="The number of batches between each logging of the training loss",
+    )
+    parser.add_argument(
+        "--no_cuda", action="store_true", default=True, help="Turn off cuda"
+    )
+    parser.add_argument(
+        "--show_individual_scores",
+        action="store_true",
+        default=True,
+        help="Show all scores for individual targets, not just average, at the end",
+    )
+    parser.add_argument(
+        "--no_cache",
+        action="store_true",
+        default=False,
+        help="Turn off caching mol2graph computation",
+    )
+    parser.add_argument(
+        "--config_path",
+        type=str,
+        help="Path to a .json file containing arguments. Any arguments present in the config"
+        "file will override arguments specified via the command line or by the defaults.",
+    )
+    parser.add_argument("--smiles_columns", type=str, help="Name of the smiles columns")
+
+    parser.add_argument("--target_columns", type=str, help="Name of the target columns")
+
+    parser.add_argument(
+        "--ignore_columns", type=str, help="Ignore or not the smiles columns"
+    )
+    parser.add_argument("--num_tasks", type=int, help="NUmber of tasks")
+    # Training arguments
+    parser.add_argument(
+        "--epochs", type=int, default=30, help="Number of epochs to run"
+    )
+    parser.add_argument(
+        "--total_epochs", type=int, default=30, help="Number of total epochs to run"
+    )
+    parser.add_argument("--batch_size", type=int, default=50, help="Batch size")
+    parser.add_argument(
+        "--warmup_epochs",
+        type=float,
+        default=2.0,
+        help="Number of epochs during which learning rate increases linearly from"
+        "init_lr to max_lr. Afterwards, learning rate decreases exponentially"
+        "from max_lr to final_lr.",
+    )
+    parser.add_argument(
+        "--init_lr", type=float, default=1e-4, help="Initial learning rate"
+    )
+    parser.add_argument(
+        "--max_lr", type=float, default=1e-3, help="Maximum learning rate"
+    )
+    parser.add_argument(
+        "--final_lr", type=float, default=1e-4, help="Final learning rate"
+    )
+    parser.add_argument(
+        "--no_features_scaling",
+        action="store_true",
+        default=False,
+        help="Turn off scaling of features",
+    )
+    parser.add_argument(
+        "--features_scaling",
+        action="store_true",
+        default=False,
+        help="Turn on scaling of features",
+    )
+    parser.add_argument(
+        "--use_input_features", type=str, help="Turn on scaling of features"
+    )
+    parser.add_argument("--extra_metrics", nargs="*", help="Extra metrics to use")
+    # Model arguments
+    parser.add_argument(
+        "--ensemble_size", type=int, default=1, help="Number of models in ensemble"
+    )
+    parser.add_argument(
+        "--hidden_size",
+        type=int,
+        default=300,
+        help="Dimensionality of hidden layers in MPN",
+    )
+    parser.add_argument(
+        "--bias",
+        action="store_true",
+        default=False,
+        help="Whether to add bias to linear layers",
+    )
+    parser.add_argument(
+        "--depth", type=int, default=3, help="Number of message passing steps"
+    )
+    parser.add_argument(
+        "--dropout", type=float, default=0.0, help="Dropout probability"
+    )
+    parser.add_argument(
+        "--activation",
+        type=str,
+        default="ReLU",
+        choices=["ReLU", "LeakyReLU", "PReLU", "tanh", "SELU", "ELU"],
+        help="Activation function",
+    )
+    parser.add_argument(
+        "--undirected",
+        action="store_true",
+        default=False,
+        help="Undirected edges (always sum the two relevant bond vectors)",
+    )
+    parser.add_argument(
+        "--ffn_hidden_size",
+        type=int,
+        default=2,
+        help="Hidden dim for higher-capacity FFN (defaults to hidden_size)",
+    )
+    parser.add_argument(
+        "--ffn_num_layers",
+        type=int,
+        default=2,
+        help="Number of layers in FFN after MPN encoding",
+    )
+    parser.add_argument(
+        "--atom_messages",
+        action="store_true",
+        default=False,
+        help="Use messages on atoms instead of messages on bonds",
+    )
+    parser.add_argument(
+        "--cuda", action="store_true", default=False, help="Turn on cuda"
+    )
+    parser.add_argument(
+        "--num_lrs",
+        type=int,
+        default=2,
+        help="Number of layers in FFN after MPN encoding",
+    )
+    parser.add_argument(
+        "--minimize_score",
+        type=bool,
+        default=False,
+        help="Number of layers in FFN after MPN encoding",
+    )
+    parser.add_argument(
+        "--loss_function",
+        type=str,
+        choices=[
+            "mse",
+            "bounded_mse",
+            "binary_cross_entropy",
+            "cross_entropy",
+            "mcc",
+            "sid",
+            "wasserstein",
+            "mve",
+            "evidential",
+            "dirichlet",
+        ],
+    )
+    parser.add_argument("--data_weights_path", type=str)
+    # parser.add_argument("--target_weights": List[float])
+    parser.add_argument("--split_key_molecule", type=int)
+    parser.add_argument("--pytorch_seed", type=int)
+    parser.add_argument("--checkpoint_frzn", type=str)
+    parser.add_argument("--cache_cutoff", type=float)
+    parser.add_argument("--save_preds", type=bool)
+    # Model arguments
+    parser.add_argument("--mpn_shared", type=bool)
+    parser.add_argument("--separate_val_phase_features_path", type=str)
+    parser.add_argument("--separate_test_phase_features_path", type=str)
+
+    parser.add_argument("--separate_val_atom_descriptors_path", type=str)
+    parser.add_argument("--separate_test_atom_descriptors_path", type=str)
+    parser.add_argument("--aggregation", choices=["mean", "sum", "norm"])
+    parser.add_argument("--aggregation_norm", type=int)
+    parser.add_argument("--explicit_h", type=bool)
+    parser.add_argument("--adding_h", type=bool)
+    # Training arguments
+    parser.add_argument("--grad_clip", type=float)
+    parser.add_argument("--class_balance", type=bool)
+    parser.add_argument("--evidential_regularization", type=float)
+    parser.add_argument("--overwrite_default_atom_features", type=bool)
+    parser.add_argument("--no_atom_descriptor_scaling", type=bool)
+    parser.add_argument("--overwrite_default_bond_features", type=bool)
+    parser.add_argument("--frzn_ffn_layers", type=int)
+    parser.add_argument("--freeze_first_only", type=bool)
+    parser.add_argument(
+        "-gt",
+        "--gnn_type",
+        metavar="STR",
+        choices=["cmpnn", "dmpnn"],
+        help="Define GNN Model",
+        default=argparse.SUPPRESS,
+    )
 
 
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:
@@ -557,6 +1019,141 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         metavar="DIR",
         help="The directory where the full model of the fnn is loaded from. "
         "Provide a full path here.",
+        default=argparse.SUPPRESS,
+    )
+
+
+def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "-f",
+        "--configFile",
+        metavar="FILE",
+        type=str,
+        help="Input JSON file that contains all information for training/predicting.",
+        default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--gpu",
+        type=int,
+        choices=list(range(torch.cuda.device_count())),
+        help="Which GPU to use",
+    )
+    parser.add_argument(
+        "--data_path",
+        type=str,
+        help="Path to CSV file containing testing data for which predictions will be made",
+        default="",
+    )
+    parser.add_argument(
+        "--test_path",
+        type=str,
+        help="Path to CSV file containing testing data for which predictions will be made",
+        default="",
+    )
+    parser.add_argument(
+        "--use_compound_names",
+        action="store_true",
+        default=False,
+        help="Use when test data file contains compound names in addition to SMILES strings",
+    )
+    parser.add_argument(
+        "--preds_path",
+        type=str,
+        help="Path to CSV file where predictions will be saved",
+        default="",
+    )
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        help="Directory from which to load model checkpoints"
+        "(walks directory and ensembles all models that are found)",
+        default="./ckpt",
+    )
+    parser.add_argument(
+        "--checkpoint_path", type=str, help="Path to model checkpoint (.pt file)"
+    )
+    parser.add_argument(
+        "--checkpoint_paths",
+        type=str,
+        nargs="*",
+        help="Path to model checkpoint (.pt file)",
+    )
+    parser.add_argument("--batch_size", type=int, default=50, help="Batch size")
+    parser.add_argument(
+        "--no_cuda", action="store_true", default=False, help="Turn off cuda"
+    )
+    # parser.add_argument('--features_generator', type=str, nargs='*',
+    #                     choices=get_available_features_generators(),
+    #                     help='Method of generating additional features')
+    parser.add_argument(
+        "--features_path",
+        type=str,
+        nargs="*",
+        help="Path to features to use in FNN (instead of features_generator)",
+    )
+    parser.add_argument(
+        "--no_features_scaling",
+        action="store_true",
+        default=False,
+        help="Turn off scaling of features",
+    )
+    parser.add_argument(
+        "--max_data_size", type=int, help="Maximum number of data points to load"
+    )
+    parser.add_argument(
+        "--smiles_columns",
+        type=str,
+        help="List of names of the columns containing SMILES strings.By default, uses the first\
+                             number_of_molecules columns.",
+    )
+    parser.add_argument(
+        "--number_of_molecules",
+        type=int,
+        help="Number of molecules in each input to the model.This must equal the length of\
+                             smiles_columns if not None",
+    )
+    parser.add_argument(
+        "--num_workers",
+        type=int,
+        help="Number of workers for the parallel data loading 0 means sequential",
+    )
+    parser.add_argument(
+        "--atom_descriptors", type=str, help="Custom extra atom descriptors"
+    )
+    parser.add_argument(
+        "--atom_descriptors_path", type=str, help="Path to the extra atom descriptors."
+    )
+    parser.add_argument(
+        "--bond_features_size",
+        type=str,
+        help="Size of the extra bond descriptors that will be used as bond features to featurize a\
+                             given molecule",
+    )
+    parser.add_argument(
+        "--no_cache",
+        type=bool,
+        default=False,
+        help="Turn off caching mol2graph computation",
+    )
+    parser.add_argument(
+        "--no_cache_mol",
+        type=bool,
+        default=False,
+        help="Whether to not cache the RDKit molecule for each SMILES string to reduce memory\
+                             usage cached by default",
+    )
+    parser.add_argument(
+        "--empty_cache",
+        type=bool,
+        help="Whether to empty all caches before training or predicting. This is necessary if\
+                             multiple jobs are run within a single script and the atom or bond features change",
+    )
+    parser.add_argument(
+        "-gt",
+        "--gnn_type",
+        metavar="STR",
+        choices=["cmpnn", "dmpnn"],
+        help="Define GNN Model",
         default=argparse.SUPPRESS,
     )
 

@@ -1,11 +1,13 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "example/data/predict_data.csv",
-  "outputDir": "example/results_predict",
-  "outputFile": "predict_data_AR.csv",
-  "ecModelDir": "example/models/generic_encoder",
-  "fnnModelDir": "example/models/AR_saved_model",
-  "compressFeatures": true,
+  "inputFile": "tests/data/smiles.csv",
+  "outputDir": "example/results_predict_fnn",
+  "outputFile": "smiles.csv",
+  "ecModelDir": "",
+  "ecWeightsFile": "",
+  "fnnModelDir": "example/onlyfnn/AR-1_best_saved_model",
+  "compressFeatures": false,
+  "useRBM": false,
   "trainAC": false,
   "trainFNN": false
 }

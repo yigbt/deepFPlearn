@@ -5,13 +5,13 @@ import sys
 
 import numpy as np
 
-from dfpl import fingerprint as fp
-from dfpl import options as opts
-from dfpl import single_label_model as fNN
-
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
+
+from dfpl import fingerprint as fp
+from dfpl import options as opts
+from dfpl import single_label_model as fNN
 
 
 def test_fractional_sampling():

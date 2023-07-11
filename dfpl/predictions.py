@@ -13,12 +13,10 @@ def predict_values(df: pd.DataFrame, opts: options.Options) -> pd.DataFrame:
 
     :param df:
     :param opts:
-    :param use_compressed:
     :return:
     """
-
-    model = tensorflow.keras.models.load_model(opts.fnnModelDir)
-
+    model = tensorflow.keras.models.load_model(opts.fnnModelDir, compile=False)
+    model.compile(loss=opts.lossFunction, optimizer=opts.optimizer)
     if opts.compressFeatures:
         sub_df = df[df["fpcompressed"].notnull()]
         x = np.array(

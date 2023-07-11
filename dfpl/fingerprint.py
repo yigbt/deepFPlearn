@@ -35,15 +35,6 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         None otherwise
         """
 
-        # generate morgan fp (circular, ecfp)
-        # smile = df['smiles'][1]
-        # mol = Chem.MolFromSmiles(smile)
-        # from rdkit.Chem import AllChem
-        # morgan = AllChem.GetMorganFingerprintAsBitVect(mol, 2)
-        # npa = np.zeros((0,), dtype=np.bool)
-        # from rdkit import DataStructs
-        # DataStructs.ConvertToNumpyArray(morgan, npa)
-
         npa = np.zeros((0,), dtype=np.bool)
         try:
             DataStructs.ConvertToNumpyArray(
@@ -53,16 +44,8 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
                 npa,
             )
             return npa
-        except Exception:
+        except:
             return None
-
-        # try:
-        #     return np.array(
-        #         Chem.RDKFingerprint(Chem.MolFromSmiles(smile), fpSize=fp_size),
-        #         dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
-        # except:
-        #     # Note: We don't need to log here since rdkit already logs
-        #     return None
 
     def inchi2fp(inchi: str) -> Any:
         """
@@ -77,7 +60,7 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
                 dtype=settings.df_fp_numpy_type,
                 copy=settings.numpy_copy_values,
             )
-        except Exception:
+        except:
             # Note: We don't need to log here since rdkit already logs
             return None
 

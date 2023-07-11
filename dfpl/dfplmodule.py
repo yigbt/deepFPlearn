@@ -1,27 +1,37 @@
-"""
-Python module for deepFPlearn tools
-"""
-
 import argparse
 import csv
 import math
+# Python module for deepFPlearn tools
+import re
+import shutil
+from time import time
 
+import matplotlib
+# matplotlib.use('Agg')
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns  # for drawing the heatmaps
-from rdkit import Chem, DataStructs  # for fingerprint generation
+# %matplotlib inline
+# for drawing the heatmaps
+import seaborn as sns
+import sklearn
+from matplotlib.colors import LinearSegmentedColormap
+# for fingerprint generation
+from rdkit import Chem, DataStructs
 from rdkit.Chem import MACCSkeys
 from rdkit.Chem.AtomPairs import Pairs, Torsions
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import auc, confusion_matrix, matthews_corrcoef, roc_curve
+from sklearn.model_selection import KFold, train_test_split
 from tensorflow.keras import optimizers, regularizers
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.callbacks import (EarlyStopping, ModelCheckpoint,
+                                        ReduceLROnPlateau)
 from tensorflow.keras.layers import Dense, Dropout, Input
-
 # for NN model functions
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.optimizers import SGD
 
+###############################################################################
 # GENERAL FUNCTIONS --------------------------------------------------------- #
 
 
@@ -40,6 +50,9 @@ def gather(df, key, value, cols):
     var_name = key
     value_name = value
     return pd.melt(df, id_vars, id_values, var_name, value_name)
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def shuffleDataPriorToTraining(x, y):
@@ -61,6 +74,9 @@ def shuffleDataPriorToTraining(x, y):
     #             cols=y.columns)
 
 
+# ------------------------------------------------------------------------------------- #
+
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -70,6 +86,9 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError("Boolean value expected.")
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def smi2fp(smile, fptype, size=2048):
@@ -90,7 +109,7 @@ def smi2fp(smile, fptype, size=2048):
     # first transform to canoncial smiles
     try:
         cs = Chem.CanonSmiles(smile)
-    except Exception:
+    except:
         print(
             f"[WARNING]: Not able to transform your smile to a canonical version of it: {smile}"
         )
@@ -100,7 +119,7 @@ def smi2fp(smile, fptype, size=2048):
     mol = None
     try:
         mol = Chem.MolFromSmiles(cs)
-    except Exception:
+    except:
         print(
             f"[WARNING]: Not able to extract molecule from (canonically transformed) SMILES: {cs}\n          Original SMILE: {smile}"
         )
@@ -108,7 +127,7 @@ def smi2fp(smile, fptype, size=2048):
         return None
 
     # init fp, any better idea? e.g. calling a constructor?
-    # fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
+    fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
 
     if fptype == "topological":  # 2048 bits
         # Topological Fingerprints:
@@ -120,7 +139,7 @@ def smi2fp(smile, fptype, size=2048):
         try:
             # fp = Chem.RDKFingerprint(mol, fpSize=size)
             return Chem.RDKFingerprint(mol, fpSize=size)
-        except Exception:
+        except:
             print("SMILES not convertable to topological fingerprint:")
             assert isinstance(smile, object)
             print("SMILES: " + smile)
@@ -136,7 +155,7 @@ def smi2fp(smile, fptype, size=2048):
         try:
             # fp = MACCSkeys.GenMACCSKeys(mol)
             return MACCSkeys.GenMACCSKeys(mol)
-        except Exception:
+        except:
             print("SMILES not convertable to MACSS fingerprint:")
             assert isinstance(smile, object)
             print("SMILES: " + smile)
@@ -153,7 +172,7 @@ def smi2fp(smile, fptype, size=2048):
             return Pairs.GetAtomPairFingerprintAsBitVect(mol)
             # counts if features also possible here! needs to be parsed differently
             # fps.update({i:Pairs.GetAtomPairFingerprintAsIntVect(mols[i])})
-        except Exception:
+        except:
             print("SMILES not convertable to atompairs fingerprint:")
             assert isinstance(smile, object)
             print("SMILES: " + smile)
@@ -168,11 +187,14 @@ def smi2fp(smile, fptype, size=2048):
         try:
             # fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
             return Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
-        except Exception:
+        except:
             print("SMILES not convertable to torsions fingerprint:")
             assert isinstance(smile, object)
             print("SMILES: " + smile)
             return None
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def XandYfromInput(
@@ -203,7 +225,7 @@ def XandYfromInput(
     df = pd.read_csv(csvfilename)
     cnames = df.columns
 
-    if rtype not in cnames:
+    if not rtype in cnames:
         print(
             f"[ERROR:] There is no column named {rtype} in your input training set file"
         )
@@ -241,6 +263,9 @@ def XandYfromInput(
     return (dfX, dfY)
 
 
+# ------------------------------------------------------------------------------------- #
+
+
 def TrainingDataHeatmap(x, y):
     x["ID"] = x.index
     y["ID"] = y.index
@@ -259,6 +284,7 @@ def TrainingDataHeatmap(x, y):
     return 1
 
 
+# ------------------------------------------------------------------------------------- #
 def removeDuplicates(x, y):
     """
     Remove duplicated feature - outcome pairs from feature matrix and outcome vector combination.
@@ -280,6 +306,9 @@ def removeDuplicates(x, y):
     fpstrings_unique = np.unique(fpstrings, return_index=True)
 
     return (x[fpstrings_unique[1]], y[fpstrings_unique[1]])
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def defineCallbacks(
@@ -330,6 +359,9 @@ def defineCallbacks(
 
     # Return list of callbacks - collect the callbacks for training
     return callbacks
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def defineNNmodelMulti(
@@ -390,6 +422,9 @@ def defineNNmodelMulti(
     )
 
     return model
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def defineNNmodel(
@@ -462,6 +497,9 @@ def defineNNmodel(
     model.compile(loss="mse", optimizer=myoptimizer, metrics=["accuracy"])
 
     return model
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def autoencoderModel(
@@ -540,6 +578,8 @@ def autoencoderModel(
     return (autoencoder, encoder)
 
 
+# ------------------------------------------------------------------------------------- #
+
 # def predict_values(ac_model_file_path, model_file_path, pdx):
 #     """
 #     Predict a set of chemicals using a selected model.
@@ -587,6 +627,9 @@ def autoencoderModel(
 #                       index=pdx.index)
 #     print(df)
 #     return (df)
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def trainfullac(
@@ -666,6 +709,9 @@ def trainfullac(
     return encoder
 
 
+# ------------------------------------------------------------------------------------- #
+
+
 def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     """
     Plot the training performance in terms of accuracy and loss values for each epoch.
@@ -703,6 +749,9 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     plt.close()
 
 
+# ------------------------------------------------------------------------------------- #
+
+
 def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.figure()
     plt.plot([0, 1], [0, 1], "k--")
@@ -713,6 +762,9 @@ def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.legend(loc="best")
     plt.savefig(fname=filename, format="svg")
     plt.close()
+
+
+# ------------------------------------------------------------------------------------- #
 
 
 def plotHeatmap(matrix, filename, title=""):
@@ -831,6 +883,8 @@ def plotHeatmap(matrix, filename, title=""):
 #     plt.savefig(fname=file, format='svg')
 #     plt.close()
 #
+
+# ------------------------------------------------------------------------------------- #
 
 
 def drawHeatmap(data, anno):

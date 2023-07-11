@@ -1,9 +1,11 @@
 import array
 import logging
 import math
+import os
 import re
 import shutil
 import sys
+from os import path
 from time import time
 
 import numpy as np
@@ -12,9 +14,9 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold, train_test_split
 from tensorflow.keras import metrics, optimizers, regularizers
 from tensorflow.keras.layers import Dense, Dropout
-
 # for NN model functions
 from tensorflow.keras.models import Model, Sequential
+from wandb.keras import WandbCallback
 
 from dfpl import callbacks as cb
 from dfpl import history as ht
@@ -294,6 +296,8 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
                 model_file_path_weights,
                 model_file_path_json,
                 model_hist_path,
+                model_hist_csv_path,
+                model_predict_valset_csv_path,
                 model_validation,
                 model_auc_file,
                 model_auc_file_data,
@@ -306,7 +310,6 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
                 target="multi" + "_compressed-" + str(opts.compressFeatures),
                 fold=fold_no,
             )
-
             # use a dnn for multi-class prediction
             model = define_nn_model_multi(
                 input_size=fpMatrix[train].shape[1], output_size=y.shape[1]
@@ -389,7 +392,11 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
         fold_no = all_scores.iloc[idx2]["fold_no"]
 
         model_name = (
-            "multi_compressed-" + str(opts.compressFeatures) + ".Fold-" + str(fold_no)
+            "multi"
+            + "_compressed-"
+            + str(opts.compressFeatures)
+            + ".Fold-"
+            + str(fold_no)
         )
         checkpoint_path = opts.outputDir + "/" + model_name + ".checkpoint.model.hdf5"
         best_model_file = checkpoint_path.replace(

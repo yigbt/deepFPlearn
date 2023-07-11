@@ -1,18 +1,25 @@
+import os.path
 import dataclasses
 import logging
+import math
 import pathlib
 from argparse import Namespace
 from os import path
 
-import wandb
-from tensorflow import keras
+import pandas as pd
+import tensorflow as tf
+from keras.models import load_model
 
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
 from dfpl import options, predictions
+from dfpl import rbm as rbm
 from dfpl import single_label_model as sl
-from dfpl.utils import createDirectory, makePathAbsolute
+from dfpl import vae as vae
+from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
+import chemprop as cp
+from chemprop import args, train
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
@@ -50,45 +57,148 @@ test_pred_opts = options.Options(
 )
 
 
+def traindmpnn(opts: options.GnnOptions):
+    """
+    Train a D-MPNN model using the given options.
+    Args:
+    - opts: options.GnnOptions instance containing the details of the training
+    Returns:
+    - None
+    """
+    os.environ["CUDA_VISIBLE_DEVICES"] = f"{opts.gpu}"
+    ignore_elements = ["py/object", "gnn_type"]
+    # Load options from a JSON file and replace the relevant attributes in `opts`
+    arguments = createArgsFromJson(
+        opts.configFile, ignore_elements, return_json_object=False
+    )
+    opts = cp.args.TrainArgs().parse_args(arguments)
+    print("Training DMPNN...")
+    # Train the model and get the mean and standard deviation of AUC score from cross-validation
+    mean_score, std_score = cp.train.cross_validate(
+        args=opts, train_func=cp.train.run_training
+    )
+    print(f"Results: {mean_score:.5f} +/- {std_score:.5f}")
+
+
+def predictdmpnn(opts: options.GnnOptions, json_arg_path: str) -> None:
+    """
+    Predict the values using a trained D-MPNN model with the given options.
+    Args:
+    - opts: options.GnnOptions instance containing the details of the prediction
+    - JSON_ARG_PATH: path to a JSON file containing additional arguments for prediction
+    Returns:
+    - None
+    """
+    ignore_elements = [
+        "py/object",
+        "gnn_type",
+        "checkpoint_paths",
+        "save_dir",
+        "saving_name",
+    ]
+    # Load options and additional arguments from a JSON file
+    arguments, data = createArgsFromJson(
+        json_arg_path, ignore_elements, return_json_object=True
+    )
+    arguments.append("--preds_path")
+    arguments.append("")
+    save_dir = data.get("save_dir")
+    name = data.get("saving_name")
+    # Replace relevant attributes in `opts` with loaded options
+    opts = cp.args.PredictArgs().parse_args(arguments)
+    opts.preds_path = save_dir + "/" + name
+    df = pd.read_csv(opts.test_path)
+    smiles = []
+    for index, rows in df.iterrows():
+        my_list = [rows.smiles]
+        smiles.append(my_list)
+    # Make predictions and return the result
+    cp.train.make_predictions(args=opts, smiles=smiles)
+
+
 def train(opts: options.Options):
     """
     Run the main training procedure
     :param opts: Options defining the details of the training
     """
 
-    if opts.wabTracking:
-        wandb.init(project=f"dfpl-training-{opts.wabTarget}", config=vars(opts))
-        # opts = wandb.config
+    os.environ["CUDA_VISIBLE_DEVICES"] = f"{opts.gpu}"
 
-    df = fp.importDataFile(
-        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
-    )
-
-    # Create output dir if it doesn't exist
-    createDirectory(
-        opts.outputDir
-    )  # why? we just created that directory in the function before??
-
+    # import data from file and create DataFrame
+    if "tsv" in opts.inputFile:
+        df = fp.importDataFile(
+            opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize
+        )
+    else:
+        df = fp.importDataFile(
+            opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+        )
+    # initialize encoders to None
     encoder = None
+    rbm_model = None
     if opts.trainAC:
-        # train an autoencoder on the full feature matrix
-        encoder = ac.train_full_ac(df, opts)
+        if opts.aeType == "deterministic":
+            encoder, train_indices, test_indices = ac.train_full_ac(df, opts)
+        elif opts.aeType == "variational":
+            encoder, train_indices, test_indices = vae.train_full_vae(df, opts)
+        else:
+            raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
 
+    # train an RBM on the full feature matrix if requested
+    if opts.trainRBM:
+        rbm_model = rbm.train_full_rbm(df, opts)
+
+    # if feature compression is enabled
     if opts.compressFeatures:
-        if not opts.trainAC:
-            # load trained model for autoencoder
-            encoder = keras.models.load_model(opts.ecModelDir)
+        # if an RBM was trained, compress the fingerprints using the RBM
+        if opts.useRBM:
+            # if an RBM was not trained, create the model and fit it on dummy data
+            if not opts.trainRBM:
+                rbm_model = rbm.define_rbm_model(
+                    opts=options.Options,
+                    input_size=opts.fpSize,
+                    encoding_dim=opts.encFPSize,
+                )
+                x_run = tf.ones((12, opts.fpSize))
+                rbm_model.fit(x_run, x_run, epochs=1)
+                rbm_model.load_weights(os.path.join(opts.outputDir, opts.ecWeightsFile))
 
-        # compress the fingerprints using the autoencoder
-        df = ac.compress_fingerprints(df, encoder)
+            # determine the number of layers to compress the fingerprints to
+            layer_out = round(math.log2(opts.fpSize / opts.encFPSize))
 
-    if opts.trainFNN:
-        # train single label models
-        # fNN.train_single_label_models(df=df, opts=opts)
+            # compress the fingerprints using the RBM
+            df = rbm.compress_fingerprints(df, rbm_model, layer_out - 1)
+
+        # if an autoencoder was trained, compress the fingerprints using the autoencoder
+        else:
+            # if an autoencoder was not trained, load the trained model and weights
+            if not opts.trainAC:
+                if opts.aeType == "deterministic":
+                    (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+                if opts.aeType == "variational":
+                    (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+                if opts.ecWeightsFile == "":
+                    encoder = load_model(opts.ecModelDir)
+                else:
+                    autoencoder.load_weights(
+                        os.path.join(opts.ecModelDir, opts.ecWeightsFile)
+                    )
+            # compress the fingerprints using the autoencoder
+            df = ac.compress_fingerprints(df, encoder)
+            # ac.visualize_fingerprints(
+            #     df,
+            #     before_col="fp",
+            #     after_col="fpcompressed",
+            #     train_indices=train_indices,
+            #     test_indices=test_indices,
+            #     save_as=f"UMAP_{opts.aeSplitType}.png",
+            # )
+    # train single label models if requested
+    if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
 
-    # train multi-label models
-    if opts.enableMultiLabel:
+    # train multi-label models if requested
+    if opts.trainFNN and opts.enableMultiLabel:
         fNN.train_nn_models_multi(df=df, opts=opts)
 
 
@@ -97,26 +207,44 @@ def predict(opts: options.Options) -> None:
     Run prediction given specific options
     :param opts: Options defining the details of the prediction
     """
-    df = fp.importDataFile(
-        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
-    )
-    # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
-
-    # Create output dir if it doesn't exist
-    createDirectory(opts.outputDir)
+    # import data from file and create DataFrame
+    if "tsv" in opts.inputFile:
+        df = fp.importDataFile(
+            opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize
+        )
+    else:
+        df = fp.importDataFile(
+            opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+        )
 
     if opts.compressFeatures:
         # load trained model for autoencoder
-        encoder = keras.models.load_model(opts.ecModelDir)
-        # compress the fingerprints using the autoencoder
-        df = ac.compress_fingerprints(df, encoder)
+        if opts.aeType == "deterministic":
+            (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+        if opts.aeType == "variational":
+            (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+        # Load trained model for autoencoder
+        if opts.ecWeightsFile == "":
+            encoder = load_model(opts.ecModelDir)
+        else:
+            encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
+        if opts.useRBM:
+            # Compress the fingerprints using the RBM model
+            df = rbm.compress_fingerprints(df, encoder, layer_num=3)
+        else:
+            # Compress the fingerprints using the autoencoder
+            df = ac.compress_fingerprints(df, encoder)
 
-    # predict
+    # Run predictions on the compressed fingerprints and store the results in a dataframe
     df2 = predictions.predict_values(df=df, opts=opts)
 
+    # Extract the column names from the dataframe, excluding the 'fp' and 'fpcompressed' columns
     names_columns = [c for c in df2.columns if c not in ["fp", "fpcompressed"]]
 
+    # Save the predicted values to a CSV file in the output directory
     df2[names_columns].to_csv(path_or_buf=path.join(opts.outputDir, opts.outputFile))
+
+    # Log successful completion of prediction and the file path where the results were saved
     logging.info(
         f"Prediction successful. Results written to '{path.join(opts.outputDir, opts.outputFile)}'"
     )
@@ -151,9 +279,9 @@ def main():
     """
     Main function that runs training/prediction defined by command line arguments
     """
+
     parser = options.createCommandlineParser()
     prog_args: Namespace = parser.parse_args()
-
     try:
         if prog_args.method == "convert":
             directory = makePathAbsolute(prog_args.f)
@@ -163,7 +291,28 @@ def main():
                 fp.convert_all(directory)
             else:
                 raise ValueError("Input directory is not a directory")
-        if prog_args.method == "train":
+        elif prog_args.method == "traingnn":
+            traingnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
+
+            if traingnn_opts.gnn_type == "dmpnn":
+                traindmpnn(traingnn_opts)
+
+        elif prog_args.method == "predictgnn":
+            predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
+            fixed_opts = dataclasses.replace(
+                predictgnn_opts,
+                test_path=makePathAbsolute(predictgnn_opts.test_path),
+                preds_path=makePathAbsolute(predictgnn_opts.preds_path),
+            )
+
+            logging.info(
+                f"The following arguments are received or filled with default values:\n{prog_args}"
+            )
+
+            if predictgnn_opts.gnn_type == "dmpnn":
+                predictdmpnn(fixed_opts, prog_args.configFile)
+
+        elif prog_args.method == "train":
             train_opts = options.Options.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 train_opts,
@@ -176,7 +325,6 @@ def main():
                 f"The following arguments are received or filled with default values:\n{fixed_opts}"
             )
             train(fixed_opts)
-            exit(0)
         elif prog_args.method == "predict":
             predict_opts = options.Options.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
@@ -197,7 +345,6 @@ def main():
                 f"The following arguments are received or filled with default values:\n{prog_args}"
             )
             predict(fixed_opts)
-            exit(0)
     except AttributeError as e:
         print(e)
         parser.print_usage()

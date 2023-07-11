@@ -1,6 +1,5 @@
 # for NN model functions
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-
 # for testing in Weights & Biases
 from wandb.keras import WandbCallback
 
@@ -44,7 +43,7 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
     )
     callbacks.append(early_stop)
 
-    if opts.wabTracking:
+    if opts.aeWabTracking and not opts.wabTracking:
         callbacks.append(WandbCallback(save_model=False))
     return callbacks
 
