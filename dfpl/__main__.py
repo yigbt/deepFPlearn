@@ -19,7 +19,6 @@ from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
 import chemprop as cp
-from chemprop import args, train
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
@@ -72,12 +71,12 @@ def traindmpnn(opts: options.GnnOptions):
         opts.configFile, ignore_elements, return_json_object=False
     )
     opts = cp.args.TrainArgs().parse_args(arguments)
-    print("Training DMPNN...")
+    logging.info("Training DMPNN...")
     # Train the model and get the mean and standard deviation of AUC score from cross-validation
     mean_score, std_score = cp.train.cross_validate(
         args=opts, train_func=cp.train.run_training
     )
-    print(f"Results: {mean_score:.5f} +/- {std_score:.5f}")
+    logging.info(f"Results: {mean_score:.5f} +/- {std_score:.5f}")
 
 
 def predictdmpnn(opts: options.GnnOptions, json_arg_path: str) -> None:
@@ -185,14 +184,14 @@ def train(opts: options.Options):
                     )
             # compress the fingerprints using the autoencoder
             df = ac.compress_fingerprints(df, encoder)
-            # ac.visualize_fingerprints(
-            #     df,
-            #     before_col="fp",
-            #     after_col="fpcompressed",
-            #     train_indices=train_indices,
-            #     test_indices=test_indices,
-            #     save_as=f"UMAP_{opts.aeSplitType}.png",
-            # )
+            ac.visualize_fingerprints(
+                df,
+                before_col="fp",
+                after_col="fpcompressed",
+                train_indices=train_indices,
+                test_indices=test_indices,
+                save_as=f"UMAP_{opts.aeSplitType}.png",
+            )
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)

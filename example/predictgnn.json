@@ -1,8 +1,8 @@
 {
   "py/object": "dfpl.options.GnnOptions",
   "gnn_type": "dmpnn",
-  "test_path": "/home/soulios/data/B_data_AR.csv",
-  "checkpoint_path": "/home/soulios/Desktop/application_note_data/dmpnn-trained_models/dmpnn-random-ED/fold_0/model_0/model.pt",
-  "save_dir": "/home/soulios/Desktop/application_note_data/preds_dmpnn/",
-  "saving_name": "B_data_ED_rand_dmpnn_preds.csv"
+  "test_path": "tests/data/smiles.csv",
+  "checkpoint_path": "dmpnn-random-ED/fold_0/model_0/model.pt",
+  "save_dir": "preds_dmpnn",
+  "saving_name": "B_data_test.csv"
 }

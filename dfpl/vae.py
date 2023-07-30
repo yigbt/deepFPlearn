@@ -9,15 +9,15 @@ import tensorflow.keras.metrics as metrics
 import wandb
 from keras import backend as K
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import initializers, losses, optimizers
+from tensorflow.keras import initializers, optimizers
 from tensorflow.keras.layers import Dense, Input, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.python.framework.ops import disable_eager_execution
-
-from dfpl import callbacks
+import csv
 from dfpl import history as ht
+from dfpl import callbacks
 from dfpl import options, settings
-from dfpl.utils import *
+from dfpl.utils import ae_scaffold_split, weight_split
 
 disable_eager_execution()
 
@@ -188,9 +188,9 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
         vae_weights_file = os.path.join(
             opts.outputDir, base_file_name + ".vae.weights.hdf5"
         )
-        ec_weights_file = os.path.join(
-            opts.outputDir, base_file_name + ".encoder.weights.hdf5"
-        )
+        # ec_weights_file = os.path.join(
+        #     opts.outputDir, base_file_name + ".encoder.weights.hdf5"
+        # )
     else:
         # If an encoder weights file is specified, use it as the encoder weights file name
         logging.info(f"VAE encoder will be saved in {opts.ecWeightsFile}")
@@ -200,7 +200,7 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
         vae_weights_file = os.path.join(
             opts.outputDir, base_file_name + ".vae.weights.hdf5"
         )
-        ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
+        # ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # Collect the callbacks for training
     callback_list = callbacks.autoencoder_callback(
@@ -279,13 +279,11 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
             x_test = None
     else:
         raise ValueError(f"Invalid split type: {opts.split_type}")
-    print(train_indices)
     if opts.testSize > 0.0:
         train_indices = train_indices[train_indices < x_train.shape[0]]
         test_indices = np.arange(x_train.shape[0], x_train.shape[0] + x_test.shape[0])
     else:
         test_indices = None
-    print(train_indices, test_indices)
     ids, counts = np.unique(x_train.flatten(), return_counts=True)
     count_dict = dict(zip(ids, counts))
     if count_dict[0] == 0:
@@ -316,8 +314,8 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # Save the VAE weights
     logging.info(f"VAE weights stored in file: {vae_weights_file}")
-    # ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".VAE"),
-    #                           hist=vae_hist)
+    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".VAE"),
+                              hist=vae_hist)
     save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_VAE.h5")
     if opts.testSize > 0.0:
         (callback_vae, callback_encoder) = define_vae_model(opts)

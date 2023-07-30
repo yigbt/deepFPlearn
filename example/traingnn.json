@@ -1,15 +1,14 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "data_path": "tests/data/S_dataset-ED.csv",
+  "data_path": "tests/data/S_dataset.csv",
   "gnn_type": "dmpnn",
   "save_dir": "dmpnn-random-ED/",
-  "epochs": 15,
-  "num_folds": 5,
-  "metric": "binary_cross_entropy",
+  "epochs": 2,
+  "num_folds": 1,
+  "metric": "accuracy",
+  "loss_function": "dirichlet",
   "split_type": "random",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
-  "extra_metrics": ["accuracy","balanced_accuracy","auc","f1","mcc","recall","specificity","precision"],
-  "dynamic_depth" : "",
-  "warmup_epochs" : 3
+  "extra_metrics": ["balanced_accuracy","auc","f1","mcc","recall","specificity","precision"]
 }

@@ -5,7 +5,6 @@ import shutil
 import sys
 from os import path
 from time import time
-from typing import Sequence, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -394,7 +393,7 @@ def evaluate_model(
     )
 
     # Compute the confusion matrix
-    cfm = confusion_matrix(y_true=y_test_int, y_pred=y_predict_int)
+    confusion_matrix(y_true=y_test_int, y_pred=y_predict_int)
 
     # Compute the metrics that depend on the class label
     precision_recall = classification_report(

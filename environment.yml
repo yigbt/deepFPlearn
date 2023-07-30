@@ -17,3 +17,5 @@ dependencies:
   - scikit-learn=1.0.2
   - tensorflow-gpu=2.6.0
   - wandb=0.12
+  - pip:
+    - git+https://github.com/soulios/chemprop/tree/dfpl_chemprop

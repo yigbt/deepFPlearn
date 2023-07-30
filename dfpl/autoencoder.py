@@ -7,13 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import tensorflow.keras.metrics as metrics
 import umap
 import wandb
-from sklearn.cluster import KMeans
-from sklearn.manifold import TSNE
-from sklearn.metrics import silhouette_score
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses, optimizers
 from tensorflow.keras.layers import Dense, Input
@@ -22,7 +17,7 @@ from tensorflow.keras.models import Model
 from dfpl import callbacks
 from dfpl import history as ht
 from dfpl import options, settings
-from dfpl.utils import *
+from dfpl.utils import ae_scaffold_split, weight_split
 
 
 def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
@@ -162,9 +157,9 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         ac_weights_file = os.path.join(
             opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
         )
-        ec_weights_file = os.path.join(
-            opts.outputDir, base_file_name + ".encoder.weights.hdf5"
-        )
+        # ec_weights_file = os.path.join(
+        #     opts.outputDir, base_file_name + ".encoder.weights.hdf5"
+        # )
     else:
         # If an encoder weights file is specified, use it as the encoder weights file name
         logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
@@ -174,7 +169,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
         ac_weights_file = os.path.join(
             opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
         )
-        ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
+        # ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
 
     # Collect the callbacks for training
     callback_list = callbacks.autoencoder_callback(
@@ -261,7 +256,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
             # Find the corresponding indices for train_data, val_data, and test_data in the sorted DataFrame
             train_indices = sorted_indices[df.index.isin(train_data.index)]
-            val_indices = sorted_indices[df.index.isin(val_data.index)]
+            # val_indices = sorted_indices[df.index.isin(val_data.index)]
             test_indices = sorted_indices[df.index.isin(test_data.index)]
         else:
             x_train = fp_matrix
@@ -348,7 +343,7 @@ def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFra
 def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, train_indices: np.ndarray,
                            test_indices: np.ndarray, save_as: str):
     # Calculate the number of samples to be taken from each set
-    num_samples = 10000
+    num_samples = 7000
     train_samples = int(num_samples * len(train_indices) / len(df))
     test_samples = num_samples - train_samples
 
@@ -368,15 +363,9 @@ def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, tr
 
     df_sampled.loc[train_data_sampled.index, 'set'] = 'train'
     df_sampled.loc[test_data_sampled.index, 'set'] = 'test'
-    num_invalid_arrays = sum(
-        df_sampled[after_col].apply(lambda x: x.shape[0] if isinstance(x, np.ndarray) else 0) != 256)
-    # Filter out the rows with invalid arrays
-    df_sampled = df_sampled[
-        df_sampled[after_col].apply(lambda x: x.shape[0] if isinstance(x, np.ndarray) else 0) == 256]
     # Apply UMAP
     umap_model = umap.UMAP(n_neighbors=15, min_dist=0.1, metric='euclidean', random_state=42)
     # Filter out the rows with invalid arrays
-    # umap_results = umap_model.fit_transform(df_sampled[after_col].tolist())
     umap_results = umap_model.fit_transform(df_sampled[after_col].tolist())
     # Add UMAP results to the DataFrame
     df_sampled['umap_x'] = umap_results[:, 0]

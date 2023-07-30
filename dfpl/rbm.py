@@ -116,8 +116,8 @@ class RBM(tf.keras.Model):
         learning_rate = self.optimizer._decayed_lr('float32')
         out, visibleGen, hiddenGen, h1, out_dict = self(X, training=True)
         weights_dict = {}
-        for l in self.layers:
-            weights_dict[l.name] = l
+        for lay in self.layers:
+            weights_dict[lay.name] = lay
 
         last_out = X
         for idx, (key, value) in enumerate(out_dict.items()):
@@ -129,7 +129,7 @@ class RBM(tf.keras.Model):
 
             # update the weights of the model based on the loss and LR.
             curr_layer = weights_dict[key]
-            curr_layer.weights[0].assign(curr_layer.weights[0] + learning_rate * \
+            curr_layer.weights[0].assign(curr_layer.weights[0] + learning_rate *
                                          (positive_grad - negative_grad) / tf.cast(tf.shape(last_out)[0],
                                                                                    dtype=tf.float32))
             curr_layer.weights[1].assign(curr_layer.weights[1] + learning_rate * tf.math.reduce_mean(hiddenGen - h1, 0))
@@ -155,7 +155,7 @@ class RBM(tf.keras.Model):
 
 def define_rbm_model(opts: options.Options,
                      input_size: int = 2048,
-                     encoding_dim: int = 256 ) -> Model:
+                     encoding_dim: int = 256) -> Model:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -171,24 +171,6 @@ def define_rbm_model(opts: options.Options,
     rbm_model = RBM(input_size=input_size,
                     output_size=encoding_dim)
     rbm_model.compile(optimizer=ac_optimizer, loss=opts.lossFunction)
-    # encoder = RBM(input_size=input_size, output_size=encoding_dim)
-    # decoder = RBM(input_size=encoding_dim, output_size=input_size)
-    #
-    # # Compile the models
-    # encoder.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
-    # decoder.compile(optimizer=ac_optimizer, loss=tf.keras.losses.MeanSquaredError())
-    #
-    # # Define the input layer for the models
-    # input_layer = tf.keras.Input(shape=(input_size,))
-    #
-    # # Define the encoder and decoder parts of the model
-    # encoded = encoder(input_layer)
-    # decoded = decoder(encoded)
-    #
-    # # Define the full autoencoder model
-    # autoencoder = Model(input_layer, decoded)
-    #
-    # return autoencoder, encoder
 
     return rbm_model
 
@@ -204,17 +186,14 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     """
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    rbm = define_rbm_model(opts, input_size=opts.fpSize,
-                               encoding_dim=opts.encFPSize)
-    # callback_list = callbacks.autoencoder_callback(checkpoint_path=rbm_weights_file, opts=opts)
-
+    rbm = define_rbm_model(opts, input_size=opts.fpSize, encoding_dim=opts.encFPSize)
     # define output file for autoencoder and encoder weights
     if opts.ecWeightsFile == "":
         logging.info("No RBM encoder weights file specified")
         base_file_name = os.path.splitext(basename(opts.inputFile))[0]
         logging.info(f"RBM weights will be saved in {base_file_name}.rbm{opts.encFPSize}.hdf5")
         rbm_weights_file = os.path.join(opts.outputDir, base_file_name + f".rbm{opts.encFPSize}.hdf5")
-        ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".rbm_encoder.weights.hdf5")
+        # ec_weights_file = os.path.join(opts.outputDir, base_file_name + ".rbm_encoder.weights.hdf5")
     else:
         logging.info(f"RBM encoder will be saved in {opts.ecWeightsFile}")
         base_file_name = os.path.splitext(basename(opts.ecWeightsFile))[0]
@@ -238,21 +217,19 @@ def train_full_rbm(df: pd.DataFrame, opts: options.Options) -> Model:
     x_test = tf.cast(tf.where(x_test, 1, 0), tf.float32)
     logging.info(f"RBM train data shape {x_train.shape} with type {x_train.dtype}")
     logging.info(f"RBM test data shape {x_test.shape} with type {x_test.dtype}")
-
     auto_hist = rbm.fit(x=x_train, y=x_train,
-                            callbacks=callback_list,
-                            epochs=opts.aeEpochs,
-                            batch_size=opts.aeBatchSize,
-                            verbose=opts.verbose,
-                            steps_per_epoch =25,
-                            validation_data=(x_test, x_test))
+                        callbacks=callback_list,
+                        epochs=opts.aeEpochs,
+                        batch_size=opts.aeBatchSize,
+                        verbose=opts.verbose,
+                        steps_per_epoch=25,
+                        validation_data=(x_test, x_test))
     rbm.summary(print_fn=logging.info)
     ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".RBM"),
                               hist=auto_hist)
     rbm.save_weights(rbm_weights_file)
     save_path = os.path.join(opts.ecModelDir, "rbm_model")
     rbm.save(save_path)
-    # tf.saved_model.save(encoder,'/home/soulios/deepFPlearn-master/example/results_train/')
     logging.info(f"RBM weights stored in file: {rbm_weights_file}")
 
     return rbm

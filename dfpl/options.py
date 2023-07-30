@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import sys
-
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
@@ -137,7 +135,6 @@ class GnnOptions(TrainArgs):
     test_path: str = ""
     save_preds: bool = True
 
-
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> GnnOptions:
         """
@@ -217,10 +214,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
 
     :return: A namespace object built up from attributes parsed out of the cmd line.
     """
-    #     parser = argparse.ArgumentParser(description='Train a DNN to associate chemical fingerprints with a (set of)'
-    #                                       'target(s). Trained models are saved to disk including fitted weights and '
-    #                                         'can be used in the deepFPlearn-Predict.py tool to make predictions.')
-    parser.add_argument(
+    # Create argument groups
+    general_args = parser.add_argument_group('Model Configuration')
+    autoencoder_args = parser.add_argument_group('Autoencoder Configuration')
+    training_args = parser.add_argument_group('Training Configuration')
+    tracking_args = parser.add_argument_group('Tracking Configuration')
+
+    # Model Configuration
+    general_args.add_argument(
         "-f",
         "--configFile",
         metavar="FILE",
@@ -228,20 +229,16 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Input JSON file that contains all information for training/predicting.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-i",
         "--inputFile",
         metavar="FILE",
         type=str,
         help="The file containing the data for training in (unquoted) "
-        "comma separated CSV format. First column contain the feature string in "
-        "form of a fingerprint or a SMILES (see -t option). "
-        "The remaining columns contain the outcome(s) (Y matrix). "
-        "A header is expected and respective column names are used "
-        "to refer to outcome(s) (target(s)).",
+        "comma separated CSV format...",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-o",
         "--outputDir",
         metavar="FILE",
@@ -250,31 +247,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         "respective stats will be returned in this directory.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
-        "--split_type",
-        metavar="STR",
-        type=str,
-        choices=["scaffold_balanced", "random", "molecular_weight"],
-        help="Set how the data is going to be split for the feedforward neural network",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--aeType",
-        metavar="STR",
-        type=str,
-        choices=["variational", "deterministic"],
-        help="Autoencoder type",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--aeSplitType",
-        metavar="STR",
-        type=str,
-        choices=["scaffold_balanced", "random", "molecular_weight"],
-        help="Set how the data is going to be split for the autoencoder",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
+    general_args.add_argument(
         "-t",
         "--type",
         metavar="STR",
@@ -283,14 +256,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-thr",
         "--threshold",
         type=float,
         help="Threshold for binary classification.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-gpu",
         "--gpu",
         metavar="STR",
@@ -298,7 +271,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Select which gpu to use",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-k",
         "--fpType",
         metavar="STR",
@@ -307,59 +280,22 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="The type of fingerprint to be generated/used in input file.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-s",
         "--fpSize",
         type=int,
         help="Size of fingerprint that should be generated.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-c",
         "--compressFeatures",
         metavar="BOOL",
         type=bool,
-        help="Compress the fingerprints. This is done either with an existing autoencoder or a new "
-        "autoencoder model will be trained using the input compounds (see further options for "
-        "details).",
+        help="Compress the fingerprints...",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
-        "-a",
-        "--ecWeightsFile",
-        type=str,
-        metavar="FILE",
-        help="The .hdf5 file of a trained encoder (e.g. from a previous"
-        "training run. This avoids a retraining of the autoencoder on the"
-        "training data set (provided with -i). NOTE that the input and encoding"
-        "dimensions must fit your data and settings. Default: train new autoencoder.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--ecModelDir",
-        type=str,
-        metavar="DIR",
-        help="The directory where the full model of the encoder will be saved (if trainAE=True) or "
-        "loaded from (if trainAE=False). Provide a full path here.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "-d",
-        "--encFPSize",
-        metavar="INT",
-        type=int,
-        help="Size of encoded fingerprint (z-layer of autoencoder).",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "-e",
-        "--epochs",
-        metavar="INT",
-        type=int,
-        help="Number of epochs that should be used for the FNN training",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
+    general_args.add_argument(
         "-m",
         "--enableMultiLabel",
         metavar="BOOL",
@@ -367,7 +303,92 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Train multi-label classification model in addition to the individual models.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    # Autoencoder Configuration
+    autoencoder_args.add_argument(
+        "-a",
+        "--ecWeightsFile",
+        type=str,
+        metavar="FILE",
+        help="The .hdf5 file of a trained encoder...",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--ecModelDir",
+        type=str,
+        metavar="DIR",
+        help="The directory where the full model of the encoder will be saved...",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--aeType",
+        metavar="STR",
+        type=str,
+        choices=["variational", "deterministic"],
+        help="Autoencoder type",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--aeEpochs",
+        metavar="INT",
+        type=int,
+        help="Number of epochs for autoencoder training.",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--aeBatchSize",
+        metavar="INT",
+        type=int,
+        help="Batch size in FNN training.",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--aeActivationFunction",
+        metavar="STRING",
+        type=str,
+        choices=["relu", "tanh", "selu", "elu"],
+        help="The activation function for hidden layers in the autoencoder.",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--aeLearningRate",
+        metavar="FLOAT",
+        type=float,
+        help="Learning rate for AC training.",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--aeLearningRateDecay",
+        metavar="FLOAT",
+        type=float,
+        help="Learning rate decay for AC training.",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "--aeSplitType",
+        metavar="STR",
+        type=str,
+        choices=["scaffold_balanced", "random", "molecular_weight"],
+        help="Set how the data is going to be split for the autoencoder",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "-d",
+        "--encFPSize",
+        metavar="INT",
+        type=int,
+        help="Size of encoded fingerprint (z-layer of autoencoder).",
+        default=argparse.SUPPRESS,
+    )
+    # Training Configuration
+    training_args.add_argument(
+        "--split_type",
+        metavar="STR",
+        type=str,
+        choices=["scaffold_balanced", "random", "molecular_weight"],
+        help="Set how the data is going to be split for the feedforward neural network",
+        default=argparse.SUPPRESS,
+    )
+    training_args.add_argument(
         "-l",
         "--testSize",
         metavar="INT",
@@ -375,15 +396,15 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Fraction of the dataset that should be used for testing. Value in [0,1].",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "-K",
         "--kFolds",
         metavar="INT",
         type=int,
-        help="K that is used for K-fold cross validation in the training procedure.",
+        help="K that is used for K-fold cross-validation in the training procedure.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "-v",
         "--verbose",
         metavar="INT",
@@ -393,50 +414,52 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         + "1: Some additional output, 2: full additional output",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "--trainAC",
         metavar="BOOL",
         type=bool,
-        help="Train the autoencoder based on the input file and store the respective weights to the "
-        "file provided with -a option. Set this to False, if the file provided"
-        "with -a option already contains the weights of the autoencoder you would like to use.",
+        help="Train the autoencoder based on the input file...",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "--trainFNN",
         metavar="BOOL",
         type=bool,
-        help="Train the feed forward network either with provided weights of a trained autoencoder"
-        "(see option -a and --trainAC=False), or train the autoencoder prior to the training"
-        "of the feed forward network(s).",
+        help="Train the feedforward network either with provided weights...",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "--sampleFractionOnes",
         metavar="FLOAT",
         type=float,
-        help='This is the fraction of positive target associations (1s) after sampling from the "'
-        "negative target association (0s).",
+        help='This is the fraction of positive target associations (1s)...',
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "--sampleDown",
         metavar="BOOL",
         type=bool,
-        help="Enable automatic down sampling of the 0 valued samples to compensate extremely "
-        "unbalanced data (<10%%).",
+        help="Enable automatic down sampling of the 0 valued samples...",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
+        "-e",
+        "--epochs",
+        metavar="INT",
+        type=int,
+        help="Number of epochs that should be used for the FNN training",
+        default=argparse.SUPPRESS,
+    )
+
+    training_args.add_argument(
         "--lossFunction",
         metavar="character",
         type=str,
         choices=["mse", "bce"],
-        help="Loss function to use during training. "
-        "mse - mean squared error, bce - binary cross entropy.",
+        help="Loss function to use during training. mse - mean squared error, bce - binary cross entropy.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "--optimizer",
         metavar="character",
         type=str,
@@ -444,60 +467,35 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help='Optimizer to use for backpropagation in the FNN. Possible values: "Adam", "SGD"',
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "--batchSize",
         metavar="INT",
         type=int,
         help="Batch size in FNN training.",
         default=argparse.SUPPRESS,
     )
-
-    # Specific options for AE training
-    parser.add_argument(
-        "--aeEpochs",
-        metavar="INT",
-        type=int,
-        help="Number of epochs for autoencoder training.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--aeBatchSize",
-        metavar="INT",
-        type=int,
-        help="Batch size in FNN training.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--aeActivationFunction",
-        metavar="STRING",
-        type=str,
-        choices=["relu", "tanh", "selu", "elu"],
-        help="The activation function for hidden layers in the autoencoder.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--aeLearningRate",
+    training_args.add_argument(
+        "--l2reg",
         metavar="FLOAT",
         type=float,
-        help="Learning rate for AC training.",
+        help="Value for l2 kernel regularizer.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
-        "--aeLearningRateDecay",
+    training_args.add_argument(
+        "--dropout",
         metavar="FLOAT",
         type=float,
-        help="Learning rate decay for AC training.",
+        help="The fraction of data that is dropped out in each dropout layer.",
         default=argparse.SUPPRESS,
     )
-
-    parser.add_argument(
+    training_args.add_argument(
         "--learningRate",
         metavar="FLOAT",
         type=float,
         help="Batch size in FNN training.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    training_args.add_argument(
         "--activationFunction",
         metavar="character",
         type=str,
@@ -505,35 +503,22 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="The activation function for hidden layers in the FNN.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
-        "--l2reg",
-        metavar="FLOAT",
-        type=float,
-        help="Value for l2 kernel regularizer.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--dropout",
-        metavar="FLOAT",
-        type=float,
-        help="The fraction of data that is dropped out in each dropout layer.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--wabTracking",
-        metavar="STRING",
-        type=str,
-        help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
-        default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
+    # Tracking Configuration
+    tracking_args.add_argument(
         "--aeWabTracking",
         metavar="STRING",
         type=str,
         help="Track autoencoder performance via Weights & Biases, see https://wandb.ai.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    tracking_args.add_argument(
+        "--wabTracking",
+        metavar="STRING",
+        type=str,
+        help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
+        default=argparse.SUPPRESS,
+    )
+    tracking_args.add_argument(
         "--wabTarget",
         metavar="STRING",
         type=str,
@@ -544,86 +529,180 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
 
 
 def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--save", type=bool)
-    parser.add_argument(
+
+    general_args = parser.add_argument_group('General Configuration')
+    data_args = parser.add_argument_group('Data Configuration')
+    files_args = parser.add_argument_group('Files')
+    model_args = parser.add_argument_group('Model arguments')
+    training_args = parser.add_argument_group('Training Configuration')
+
+    # General arguments
+    general_args.add_argument("--split_key_molecule", type=int)
+    general_args.add_argument("--pytorch_seed", type=int)
+    general_args.add_argument("--cache_cutoff", type=float)
+    general_args.add_argument("--save_preds", type=bool)
+    general_args.add_argument(
+        "--cuda", action="store_true", default=False, help="Turn on cuda"
+    )
+    general_args.add_argument(
+        "--save_smiles_splits",
+        action="store_true",
+        default=False,
+        help="Save smiles for each train/val/test splits for prediction convenience later",
+    )
+    general_args.add_argument(
+        "--test",
+        action="store_true",
+        default=False,
+        help="Whether to skip training and only test the model",
+    )
+    general_args.add_argument(
+        "--gpu",
+        type=int,
+        choices=list(range(torch.cuda.device_count())),
+        help="Which GPU to use",
+    )
+    general_args.add_argument("--save", type=bool)
+    general_args.add_argument(
+        "--quiet",
+        action="store_true",
+        default=False,
+        help="Skip non-essential print statements",
+    )
+    general_args.add_argument(
+        "--log_frequency",
+        type=int,
+        default=10,
+        help="The number of batches between each logging of the training loss",
+    )
+    general_args.add_argument(
+        "--no_cuda", action="store_true", default=True, help="Turn off cuda"
+    )
+    general_args.add_argument(
+        "--no_cache",
+        action="store_true",
+        default=False,
+        help="Turn off caching mol2graph computation",
+    )
+
+    # FILES ARGUMENTS
+    files_args.add_argument(
         "-f",
         "--configFile",
         metavar="FILE",
         type=str,
         help="Input JSON file that contains all information for training/predicting.",
     )
-    parser.add_argument(
-        "--gpu",
-        type=int,
-        choices=list(range(torch.cuda.device_count())),
-        help="Which GPU to use",
-    )
-    parser.add_argument(
-        "--data_path", type=str, help="Path to data CSV file", default=""
-    )
-    parser.add_argument(
-        "--use_compound_names",
-        action="store_true",
-        default=False,
-        help="Use when test data file contains compound names in addition to SMILES strings",
-    )
-    parser.add_argument(
-        "--max_data_size", type=int, help="Maximum number of data points to load"
-    )
-    parser.add_argument(
-        "--test",
-        action="store_true",
-        default=False,
-        help="Whether to skip training and only test the model",
-    )
-    parser.add_argument(
-        "--features_only",
-        action="store_true",
-        default=False,
-        help="Use only the additional features in an FFN, no graph network",
-    )
-    # parser.add_argument('--features_generator', type=str, nargs='*',
-    #                     choices=get_available_features_generators(),
-    #                     help='Method of generating additional features')
-    parser.add_argument(
-        "--features_path",
+    files_args.add_argument(
+        "--config_path",
         type=str,
-        nargs="*",
-        help="Path to features to use in FNN (instead of features_generator)",
+        help="Path to a .json file containing arguments. Any arguments present in the config"
+        "file will override arguments specified via the command line or by the defaults.",
     )
-    parser.add_argument(
+    files_args.add_argument(
         "--save_dir",
         type=str,
         default="./ckpt/",
         help="Directory where model checkpoints will be saved",
     )
-    parser.add_argument(
-        "--save_smiles_splits",
-        action="store_true",
-        default=False,
-        help="Save smiles for each train/val/test splits for prediction convenience later",
-    )
-    parser.add_argument(
+    files_args.add_argument(
         "--checkpoint_dir",
         type=str,
         default=None,
         help="Directory from which to load model checkpoints"
         "(walks directory and ensembles all models that are found)",
     )
-    parser.add_argument(
+    files_args.add_argument(
         "--checkpoint_path",
         type=str,
         default=None,
         help="Path to model checkpoint (.pt file)",
     )
-    parser.add_argument(
+    files_args.add_argument(
         "--checkpoint_paths",
         type=str,
         nargs="*",
         default=None,
         help="Path to model checkpoint (.pt file)",
     )
-    parser.add_argument(
+    files_args.add_argument(
+        "--separate_val_path", type=str, help="Path to separate val set, optional"
+    )
+    files_args.add_argument(
+        "--separate_val_features_path",
+        type=str,
+        nargs="*",
+        help="Path to file with features for separate val set",
+    )
+    files_args.add_argument(
+        "--separate_test_path", type=str, help="Path to separate test set, optional"
+    )
+    files_args.add_argument(
+        "--separate_test_features_path",
+        type=str,
+        nargs="*",
+        help="Path to file with features for separate test set",
+    )
+    files_args.add_argument(
+        "--folds_file", type=str, default=None, help="Optional file of fold labels"
+    )
+    files_args.add_argument(
+        "--val_fold_index",
+        type=int,
+        default=None,
+        help="Which fold to use as val for leave-one-out cross val",
+    )
+    files_args.add_argument(
+        "--test_fold_index",
+        type=int,
+        default=None,
+        help="Which fold to use as test for leave-one-out cross val",
+    )
+    files_args.add_argument(
+        "--crossval_index_dir",
+        type=str,
+        help="Directory in which to find cross validation index files",
+    )
+    files_args.add_argument(
+        "--crossval_index_file",
+        type=str,
+        help="Indices of files to use as train/val/test"
+        "Overrides --num_folds and --seed.",
+    )
+    files_args.add_argument("--data_weights_path", type=str)
+    files_args.add_argument(
+        "--features_path",
+        type=str,
+        nargs="*",
+        help="Path to features to use in FNN (instead of features_generator)",
+    )
+
+    files_args.add_argument("--separate_val_phase_features_path", type=str)
+    files_args.add_argument("--separate_test_phase_features_path", type=str)
+
+    files_args.add_argument("--separate_val_atom_descriptors_path", type=str)
+    files_args.add_argument("--separate_test_atom_descriptors_path", type=str)
+    # Data related arguments
+    data_args.add_argument(
+        "--data_path", type=str, help="Path to data CSV file", default=""
+    )
+    data_args.add_argument(
+        "--use_compound_names",
+        action="store_true",
+        default=False,
+        help="Use when test data file contains compound names in addition to SMILES strings",
+    )
+    data_args.add_argument(
+        "--max_data_size", type=int, help="Maximum number of data points to load"
+    )
+
+    data_args.add_argument(
+        "--features_only",
+        action="store_true",
+        default=False,
+        help="Use only the additional features in an FFN, no graph network",
+    )
+    data_args.add_argument(
         "--dataset_type",
         type=str,
         choices=["classification", "regression", "multiclass"],
@@ -631,31 +710,13 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         "This determines the loss function used during training.",
         default="regression",
     )  # classification
-    parser.add_argument(
+    data_args.add_argument(
         "--multiclass_num_classes",
         type=int,
         default=3,
         help="Number of classes when running multiclass classification",
     )
-    parser.add_argument(
-        "--separate_val_path", type=str, help="Path to separate val set, optional"
-    )
-    parser.add_argument(
-        "--separate_val_features_path",
-        type=str,
-        nargs="*",
-        help="Path to file with features for separate val set",
-    )
-    parser.add_argument(
-        "--separate_test_path", type=str, help="Path to separate test set, optional"
-    )
-    parser.add_argument(
-        "--separate_test_features_path",
-        type=str,
-        nargs="*",
-        help="Path to file with features for separate test set",
-    )
-    parser.add_argument(
+    data_args.add_argument(
         "--split_type",
         type=str,
         default="random",
@@ -668,46 +729,15 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         ],
         help="Method of splitting the data into train/val/test",
     )
-    parser.add_argument(
+    data_args.add_argument(
         "--split_sizes",
         type=float,
         nargs=3,
         default=[0.8, 0.2, 0.0],
         help="Split proportions for train/validation/test sets",
     )
-    parser.add_argument(
-        "--num_folds",
-        type=int,
-        default=1,
-        help="Number of folds when performing cross validation",
-    )
-    parser.add_argument(
-        "--folds_file", type=str, default=None, help="Optional file of fold labels"
-    )
-    parser.add_argument(
-        "--val_fold_index",
-        type=int,
-        default=None,
-        help="Which fold to use as val for leave-one-out cross val",
-    )
-    parser.add_argument(
-        "--test_fold_index",
-        type=int,
-        default=None,
-        help="Which fold to use as test for leave-one-out cross val",
-    )
-    parser.add_argument(
-        "--crossval_index_dir",
-        type=str,
-        help="Directory in which to find cross validation index files",
-    )
-    parser.add_argument(
-        "--crossval_index_file",
-        type=str,
-        help="Indices of files to use as train/val/test"
-        "Overrides --num_folds and --seed.",
-    )
-    parser.add_argument(
+
+    data_args.add_argument(
         "--seed",
         type=int,
         default=0,
@@ -715,176 +745,147 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         "When `num_folds` > 1, the first fold uses this seed and all"
         "subsequent folds add 1 to the seed.",
     )
-    parser.add_argument(
-        "--metric",
-        type=str,
-        default=None,
-        choices=[
-            "auc",
-            "prc-auc",
-            "rmse",
-            "mae",
-            "mse",
-            "r2",
-            "accuracy",
-            "cross_entropy",
-        ],
-        help="Metric to use during evaluation."
-        "Note: Does NOT affect loss function used during training"
-        "(loss is determined by the `dataset_type` argument)."
-        'Note: Defaults to "auc" for classification and "rmse" for regression.',
-    )
-    parser.add_argument(
-        "--quiet",
-        action="store_true",
-        default=False,
-        help="Skip non-essential print statements",
-    )
-    parser.add_argument(
-        "--log_frequency",
-        type=int,
-        default=10,
-        help="The number of batches between each logging of the training loss",
-    )
-    parser.add_argument(
-        "--no_cuda", action="store_true", default=True, help="Turn off cuda"
-    )
-    parser.add_argument(
-        "--show_individual_scores",
-        action="store_true",
-        default=True,
-        help="Show all scores for individual targets, not just average, at the end",
-    )
-    parser.add_argument(
-        "--no_cache",
-        action="store_true",
-        default=False,
-        help="Turn off caching mol2graph computation",
-    )
-    parser.add_argument(
-        "--config_path",
-        type=str,
-        help="Path to a .json file containing arguments. Any arguments present in the config"
-        "file will override arguments specified via the command line or by the defaults.",
-    )
-    parser.add_argument("--smiles_columns", type=str, help="Name of the smiles columns")
+    data_args.add_argument("--smiles_columns", type=str, help="Name of the smiles columns")
 
-    parser.add_argument("--target_columns", type=str, help="Name of the target columns")
+    data_args.add_argument("--target_columns", type=str, help="Name of the target columns")
 
-    parser.add_argument(
+    data_args.add_argument(
         "--ignore_columns", type=str, help="Ignore or not the smiles columns"
     )
-    parser.add_argument("--num_tasks", type=int, help="NUmber of tasks")
-    # Training arguments
-    parser.add_argument(
-        "--epochs", type=int, default=30, help="Number of epochs to run"
-    )
-    parser.add_argument(
-        "--total_epochs", type=int, default=30, help="Number of total epochs to run"
-    )
-    parser.add_argument("--batch_size", type=int, default=50, help="Batch size")
-    parser.add_argument(
-        "--warmup_epochs",
-        type=float,
-        default=2.0,
-        help="Number of epochs during which learning rate increases linearly from"
-        "init_lr to max_lr. Afterwards, learning rate decreases exponentially"
-        "from max_lr to final_lr.",
-    )
-    parser.add_argument(
-        "--init_lr", type=float, default=1e-4, help="Initial learning rate"
-    )
-    parser.add_argument(
-        "--max_lr", type=float, default=1e-3, help="Maximum learning rate"
-    )
-    parser.add_argument(
-        "--final_lr", type=float, default=1e-4, help="Final learning rate"
-    )
-    parser.add_argument(
+    data_args.add_argument("--num_tasks", type=int, help="NUmber of tasks")
+    data_args.add_argument(
         "--no_features_scaling",
         action="store_true",
         default=False,
         help="Turn off scaling of features",
     )
-    parser.add_argument(
+    data_args.add_argument(
         "--features_scaling",
         action="store_true",
         default=False,
         help="Turn on scaling of features",
     )
-    parser.add_argument(
+    data_args.add_argument(
         "--use_input_features", type=str, help="Turn on scaling of features"
     )
-    parser.add_argument("--extra_metrics", nargs="*", help="Extra metrics to use")
+
     # Model arguments
-    parser.add_argument(
+    model_args.add_argument(
         "--ensemble_size", type=int, default=1, help="Number of models in ensemble"
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--hidden_size",
         type=int,
         default=300,
         help="Dimensionality of hidden layers in MPN",
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--bias",
         action="store_true",
         default=False,
         help="Whether to add bias to linear layers",
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--depth", type=int, default=3, help="Number of message passing steps"
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--dropout", type=float, default=0.0, help="Dropout probability"
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--activation",
         type=str,
         default="ReLU",
         choices=["ReLU", "LeakyReLU", "PReLU", "tanh", "SELU", "ELU"],
         help="Activation function",
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--undirected",
         action="store_true",
         default=False,
         help="Undirected edges (always sum the two relevant bond vectors)",
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--ffn_hidden_size",
         type=int,
         default=2,
         help="Hidden dim for higher-capacity FFN (defaults to hidden_size)",
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--ffn_num_layers",
         type=int,
         default=2,
         help="Number of layers in FFN after MPN encoding",
     )
-    parser.add_argument(
+    model_args.add_argument(
         "--atom_messages",
         action="store_true",
         default=False,
         help="Use messages on atoms instead of messages on bonds",
     )
-    parser.add_argument(
-        "--cuda", action="store_true", default=False, help="Turn on cuda"
-    )
-    parser.add_argument(
+
+    model_args.add_argument(
         "--num_lrs",
         type=int,
         default=2,
         help="Number of layers in FFN after MPN encoding",
     )
-    parser.add_argument(
-        "--minimize_score",
-        type=bool,
-        default=False,
-        help="Number of layers in FFN after MPN encoding",
+    model_args.add_argument("--checkpoint_frzn", type=str)
+
+    # Model arguments
+    model_args.add_argument("--mpn_shared", type=bool)
+    model_args.add_argument(
+        "--show_individual_scores",
+        action="store_true",
+        default=True,
+        help="Show all scores for individual targets, not just average, at the end",
     )
-    parser.add_argument(
+    model_args.add_argument("--aggregation", choices=["mean", "sum", "norm"])
+    model_args.add_argument("--aggregation_norm", type=int)
+    model_args.add_argument("--explicit_h", type=bool)
+    model_args.add_argument("--adding_h", type=bool)
+    # Training arguments
+    model_args.add_argument("--class_balance", type=bool)
+    model_args.add_argument("--evidential_regularization", type=float)
+    model_args.add_argument("--overwrite_default_atom_features", type=bool)
+    model_args.add_argument("--no_atom_descriptor_scaling", type=bool)
+    model_args.add_argument("--overwrite_default_bond_features", type=bool)
+    model_args.add_argument("--frzn_ffn_layers", type=int)
+    model_args.add_argument("--freeze_first_only", type=bool)
+    model_args.add_argument(
+        "-gt",
+        "--gnn_type",
+        metavar="STR",
+        choices=["cmpnn", "dmpnn"],
+        help="Define GNN Model",
+        default=argparse.SUPPRESS,
+    )
+    # Training arguments
+    training_args.add_argument(
+        "--epochs", type=int, default=30, help="Number of epochs to run"
+    )
+    training_args.add_argument(
+        "--total_epochs", type=int, default=30, help="Number of total epochs to run"
+    )
+    training_args.add_argument("--batch_size", type=int, default=50, help="Batch size")
+    training_args.add_argument(
+        "--warmup_epochs",
+        type=float,
+        default=2.0,
+        help="Number of epochs during which learning rate increases linearly from"
+             "init_lr to max_lr. Afterwards, learning rate decreases exponentially"
+             "from max_lr to final_lr.",
+    )
+    training_args.add_argument(
+        "--init_lr", type=float, default=1e-4, help="Initial learning rate"
+    )
+    training_args.add_argument(
+        "--max_lr", type=float, default=1e-3, help="Maximum learning rate"
+    )
+    training_args.add_argument(
+        "--final_lr", type=float, default=1e-4, help="Final learning rate"
+    )
+    training_args.add_argument("--extra_metrics", nargs="*", help="Extra metrics to use")
+    training_args.add_argument(
         "--loss_function",
         type=str,
         choices=[
@@ -900,40 +901,31 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
             "dirichlet",
         ],
     )
-    parser.add_argument("--data_weights_path", type=str)
-    # parser.add_argument("--target_weights": List[float])
-    parser.add_argument("--split_key_molecule", type=int)
-    parser.add_argument("--pytorch_seed", type=int)
-    parser.add_argument("--checkpoint_frzn", type=str)
-    parser.add_argument("--cache_cutoff", type=float)
-    parser.add_argument("--save_preds", type=bool)
-    # Model arguments
-    parser.add_argument("--mpn_shared", type=bool)
-    parser.add_argument("--separate_val_phase_features_path", type=str)
-    parser.add_argument("--separate_test_phase_features_path", type=str)
-
-    parser.add_argument("--separate_val_atom_descriptors_path", type=str)
-    parser.add_argument("--separate_test_atom_descriptors_path", type=str)
-    parser.add_argument("--aggregation", choices=["mean", "sum", "norm"])
-    parser.add_argument("--aggregation_norm", type=int)
-    parser.add_argument("--explicit_h", type=bool)
-    parser.add_argument("--adding_h", type=bool)
-    # Training arguments
-    parser.add_argument("--grad_clip", type=float)
-    parser.add_argument("--class_balance", type=bool)
-    parser.add_argument("--evidential_regularization", type=float)
-    parser.add_argument("--overwrite_default_atom_features", type=bool)
-    parser.add_argument("--no_atom_descriptor_scaling", type=bool)
-    parser.add_argument("--overwrite_default_bond_features", type=bool)
-    parser.add_argument("--frzn_ffn_layers", type=int)
-    parser.add_argument("--freeze_first_only", type=bool)
-    parser.add_argument(
-        "-gt",
-        "--gnn_type",
-        metavar="STR",
-        choices=["cmpnn", "dmpnn"],
-        help="Define GNN Model",
-        default=argparse.SUPPRESS,
+    training_args.add_argument("--grad_clip", type=float)
+    training_args.add_argument(
+        "--metric",
+        type=str,
+        default=None,
+        choices=[
+            "auc",
+            "prc-auc",
+            "rmse",
+            "mae",
+            "mse",
+            "r2",
+            "accuracy",
+            "cross_entropy",
+        ],
+        help="Metric to use during evaluation."
+             "Note: Does NOT affect loss function used during training"
+             "(loss is determined by the `dataset_type` argument)."
+             'Note: Defaults to "auc" for classification and "rmse" for regression.',
+    )
+    training_args.add_argument(
+        "--num_folds",
+        type=int,
+        default=1,
+        help="Number of folds when performing cross validation",
     )
 
 
@@ -946,8 +938,9 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     #    parser = argparse.ArgumentParser(description='Use models that have been generated by deepFPlearn-Train.py '
     #                                                 'tool to make predictions on chemicals (provide SMILES or '
     #                                                 'topological fingerprints).')
-
-    parser.add_argument(
+    general_args = parser.add_argument_group('General Configuration')
+    files_args = parser.add_argument_group('Files')
+    files_args.add_argument(
         "-f",
         "--configFile",
         metavar="FILE",
@@ -955,7 +948,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         help="Input JSON file that contains all information for training/predicting.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    files_args.add_argument(
         "-i",
         "--inputFile",
         metavar="FILE",
@@ -970,7 +963,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "A header is expected and respective column names are used.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    files_args.add_argument(
         "-o",
         "--outputDir",
         metavar="FILE",
@@ -979,7 +972,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "with --outputFile.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    files_args.add_argument(
         "--outputFile",
         metavar="FILE",
         type=str,
@@ -987,7 +980,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "Default: prefix of input file name.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-t",
         "--type",
         metavar="STR",
@@ -996,7 +989,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "-k",
         "--fpType",
         metavar="STR",
@@ -1005,7 +998,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         help="The type of fingerprint to be generated/used in input file.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    files_args.add_argument(
         "--ecModelDir",
         type=str,
         metavar="DIR",
@@ -1013,7 +1006,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "Provide a full path here.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    files_args.add_argument(
         "--fnnModelDir",
         type=str,
         metavar="DIR",
@@ -1024,7 +1017,12 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
 
 
 def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    general_args = parser.add_argument_group('General Configuration')
+    data_args = parser.add_argument_group('Data Configuration')
+    files_args = parser.add_argument_group('Files')
+    model_args = parser.add_argument_group('Model arguments')
+    training_args = parser.add_argument_group('Training Configuration')
+    files_args.add_argument(
         "-f",
         "--configFile",
         metavar="FILE",
@@ -1032,123 +1030,123 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         help="Input JSON file that contains all information for training/predicting.",
         default=argparse.SUPPRESS,
     )
-    parser.add_argument(
+    general_args.add_argument(
         "--gpu",
         type=int,
         choices=list(range(torch.cuda.device_count())),
         help="Which GPU to use",
     )
-    parser.add_argument(
-        "--data_path",
-        type=str,
-        help="Path to CSV file containing testing data for which predictions will be made",
-        default="",
-    )
-    parser.add_argument(
-        "--test_path",
-        type=str,
-        help="Path to CSV file containing testing data for which predictions will be made",
-        default="",
-    )
-    parser.add_argument(
-        "--use_compound_names",
-        action="store_true",
-        default=False,
-        help="Use when test data file contains compound names in addition to SMILES strings",
-    )
-    parser.add_argument(
-        "--preds_path",
-        type=str,
-        help="Path to CSV file where predictions will be saved",
-        default="",
-    )
-    parser.add_argument(
-        "--checkpoint_dir",
-        type=str,
-        help="Directory from which to load model checkpoints"
-        "(walks directory and ensembles all models that are found)",
-        default="./ckpt",
-    )
-    parser.add_argument(
-        "--checkpoint_path", type=str, help="Path to model checkpoint (.pt file)"
-    )
-    parser.add_argument(
-        "--checkpoint_paths",
-        type=str,
-        nargs="*",
-        help="Path to model checkpoint (.pt file)",
-    )
-    parser.add_argument("--batch_size", type=int, default=50, help="Batch size")
-    parser.add_argument(
+    general_args.add_argument(
         "--no_cuda", action="store_true", default=False, help="Turn off cuda"
     )
-    # parser.add_argument('--features_generator', type=str, nargs='*',
-    #                     choices=get_available_features_generators(),
-    #                     help='Method of generating additional features')
-    parser.add_argument(
-        "--features_path",
-        type=str,
-        nargs="*",
-        help="Path to features to use in FNN (instead of features_generator)",
-    )
-    parser.add_argument(
-        "--no_features_scaling",
-        action="store_true",
-        default=False,
-        help="Turn off scaling of features",
-    )
-    parser.add_argument(
-        "--max_data_size", type=int, help="Maximum number of data points to load"
-    )
-    parser.add_argument(
-        "--smiles_columns",
-        type=str,
-        help="List of names of the columns containing SMILES strings.By default, uses the first\
-                             number_of_molecules columns.",
-    )
-    parser.add_argument(
-        "--number_of_molecules",
-        type=int,
-        help="Number of molecules in each input to the model.This must equal the length of\
-                             smiles_columns if not None",
-    )
-    parser.add_argument(
+    general_args.add_argument(
         "--num_workers",
         type=int,
         help="Number of workers for the parallel data loading 0 means sequential",
     )
-    parser.add_argument(
-        "--atom_descriptors", type=str, help="Custom extra atom descriptors"
-    )
-    parser.add_argument(
-        "--atom_descriptors_path", type=str, help="Path to the extra atom descriptors."
-    )
-    parser.add_argument(
-        "--bond_features_size",
-        type=str,
-        help="Size of the extra bond descriptors that will be used as bond features to featurize a\
-                             given molecule",
-    )
-    parser.add_argument(
+    general_args.add_argument(
         "--no_cache",
         type=bool,
         default=False,
         help="Turn off caching mol2graph computation",
     )
-    parser.add_argument(
+    general_args.add_argument(
         "--no_cache_mol",
         type=bool,
         default=False,
         help="Whether to not cache the RDKit molecule for each SMILES string to reduce memory\
                              usage cached by default",
     )
-    parser.add_argument(
+    general_args.add_argument(
         "--empty_cache",
         type=bool,
         help="Whether to empty all caches before training or predicting. This is necessary if\
                              multiple jobs are run within a single script and the atom or bond features change",
     )
-    parser.add_argument(
+    files_args.add_argument(
+        "--preds_path",
+        type=str,
+        help="Path to CSV file where predictions will be saved",
+        default="",
+    )
+    files_args.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        help="Directory from which to load model checkpoints"
+        "(walks directory and ensembles all models that are found)",
+        default="./ckpt",
+    )
+    files_args.add_argument(
+        "--checkpoint_path", type=str, help="Path to model checkpoint (.pt file)"
+    )
+    files_args.add_argument(
+        "--checkpoint_paths",
+        type=str,
+        nargs="*",
+        help="Path to model checkpoint (.pt file)",
+    )
+    files_args.add_argument(
+        "--data_path",
+        type=str,
+        help="Path to CSV file containing testing data for which predictions will be made",
+        default="",
+    )
+    files_args.add_argument(
+        "--test_path",
+        type=str,
+        help="Path to CSV file containing testing data for which predictions will be made",
+        default="",
+    )
+    files_args.add_argument(
+        "--features_path",
+        type=str,
+        nargs="*",
+        help="Path to features to use in FNN (instead of features_generator)",
+    )
+    files_args.add_argument(
+        "--atom_descriptors_path", type=str, help="Path to the extra atom descriptors."
+    )
+    data_args.add_argument(
+        "--use_compound_names",
+        action="store_true",
+        default=False,
+        help="Use when test data file contains compound names in addition to SMILES strings",
+    )
+    data_args.add_argument(
+        "--no_features_scaling",
+        action="store_true",
+        default=False,
+        help="Turn off scaling of features",
+    )
+    data_args.add_argument(
+        "--max_data_size", type=int, help="Maximum number of data points to load"
+    )
+    data_args.add_argument(
+        "--smiles_columns",
+        type=str,
+        help="List of names of the columns containing SMILES strings.By default, uses the first\
+                             number_of_molecules columns.",
+    )
+    data_args.add_argument(
+        "--number_of_molecules",
+        type=int,
+        help="Number of molecules in each input to the model.This must equal the length of\
+                             smiles_columns if not None",
+    )
+
+    data_args.add_argument(
+        "--atom_descriptors", type=str, help="Custom extra atom descriptors"
+    )
+
+    data_args.add_argument(
+        "--bond_features_size",
+        type=str,
+        help="Size of the extra bond descriptors that will be used as bond features to featurize a\
+                             given molecule",
+    )
+    training_args.add_argument("--batch_size", type=int, default=50, help="Batch size")
+
+    model_args.add_argument(
         "-gt",
         "--gnn_type",
         metavar="STR",
