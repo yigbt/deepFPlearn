@@ -1,12 +1,6 @@
 import logging
-import os
 import pathlib
-import sys
 
-# Add the parent directory of the tests directory to the module search path
-tests_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(tests_dir)
-sys.path.insert(0, parent_dir)
 import dfpl.fingerprint as fp
 import dfpl.options as opt
 import dfpl.utils as utils
@@ -39,7 +33,9 @@ def runVae(opts: opt.Options) -> None:
     """
     Run and test auto-encoder
     """
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     logging.info("Adding fingerprint to dataset")
     df = fp.importDataFile(
         opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
@@ -50,6 +46,8 @@ def runVae(opts: opt.Options) -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     utils.createDirectory(test_train_args.outputDir)
     runVae(test_train_args)

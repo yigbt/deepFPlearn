@@ -1,12 +1,6 @@
-import os
-import sys
-
 import pandas as pd
 from rdkit import RDLogger
 
-currentdir = os.path.dirname(os.path.realpath(__file__))
-parentdir = os.path.dirname(currentdir)
-sys.path.append(parentdir)
 
 from dfpl import fingerprint as fp
 

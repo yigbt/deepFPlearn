@@ -1,13 +1,7 @@
 import logging
-import os
 import pathlib
-import sys
 from os import path
 
-# Add the parent directory of the tests directory to the module search path
-tests_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(tests_dir)
-sys.path.insert(0, parent_dir)
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt
@@ -29,16 +23,18 @@ test_predict_args = opt.Options(
 def test_predictions(opts: opt.Options):
     opts = test_predict_args
 
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     logging.info(f"Predicting compounds in the input file {opts.inputFile}")
 
     df = fp.importDataFile(
         opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
     )
 
-    use_compressed = False
+    # use_compressed = False
     if opts.ecWeightsFile:
-        use_compressed = True
+        # use_compressed = True
         # load trained model for autoencoder
         (autoencoder, encoder) = ac.define_ac_model(opts, output_bias=None)
         autoencoder.load_weights(opts.ecWeightsFile)
@@ -61,6 +57,8 @@ def test_predictions(opts: opt.Options):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     utils.createDirectory(test_predict_args.outputDir)
     test_predictions(test_predict_args)

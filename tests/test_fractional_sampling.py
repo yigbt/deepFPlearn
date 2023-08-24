@@ -1,13 +1,6 @@
-import os
 import os.path
 import pathlib
-import sys
-
 import numpy as np
-
-currentdir = os.path.dirname(os.path.realpath(__file__))
-parentdir = os.path.dirname(currentdir)
-sys.path.append(parentdir)
 
 from dfpl import fingerprint as fp
 from dfpl import options as opts

@@ -1,11 +1,5 @@
 import logging
-import os
 import pathlib
-import sys
-
-tests_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(tests_dir)
-sys.path.insert(0, parent_dir)
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt
@@ -35,7 +29,9 @@ test_train_args = opt.Options(
 
 
 def run_single_label_training(opts: opt.Options) -> None:
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     logging.info("Adding fingerprint to dataset")
 
     opts.outputDir = utils.makePathAbsolute(

@@ -263,10 +263,8 @@ def createLogger(filename: str) -> None:
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     # create formatter and add it to the handlers
-    formatterFile = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    formatterConsole = logging.Formatter("%(levelname)-8s %(message)s")
+    formatterFile = logging.Formatter("{asctime} - {name} - {levelname} - {message}", style="{")
+    formatterConsole = logging.Formatter("{levelname} {message}", style="{")
     fh.setFormatter(formatterFile)
     ch.setFormatter(formatterConsole)
     # add the handlers to the logger

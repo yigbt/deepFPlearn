@@ -29,7 +29,7 @@ setup(
         "keras==2.9.0",
         "tensorflow-gpu==2.9.3",
         "wandb~=0.12.0",
-        "chemprop @ git+https://github.com/soulios/chemprop/tree/dfpl_chemprop"
+        "chemprop @ git+https://github.com/soulios/chemprop.git@044f9d0dbd52741d66886a2f02045bd608986ce4"
     ],
     entry_points={"console_scripts": ["dfpl=dfpl.__main__:main"]},
 )

@@ -1,11 +1,6 @@
 import logging
-import os
 import pathlib
-import sys
 
-tests_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(tests_dir)
-sys.path.insert(0, parent_dir)
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt
@@ -35,7 +30,9 @@ def runAutoencoder(opts: opt.Options) -> None:
     """
     Run and test auto-encoder
     """
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     logging.info("Adding fingerprint to dataset")
     df = fp.importDataFile(
         opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
@@ -46,6 +43,8 @@ def runAutoencoder(opts: opt.Options) -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     utils.createDirectory(test_train_args.outputDir)
     runAutoencoder(test_train_args)

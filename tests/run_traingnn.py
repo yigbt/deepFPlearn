@@ -1,11 +1,4 @@
-import logging
-import os
 import pathlib
-import sys
-
-tests_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(tests_dir)
-sys.path.insert(0, parent_dir)
 import chemprop as cp
 from chemprop import args
 

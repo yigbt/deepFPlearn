@@ -244,7 +244,7 @@ if __name__ == "__main__":
             sys.stdout.write(
                 "# --------------------------------------------------------------------------- #\n"
             )
-            sys.stdout.write("#target = %s\n" % target)
+            sys.stdout.write(f"#target = {target}\n")
 
             # Start optimizing epochs and batchsizes (if more than one provided)
 
@@ -418,12 +418,9 @@ if __name__ == "__main__":
 
             # find best performing parameters
             sys.stdout.write(
-                "Calculation time: %s min\n\n"
-                % str(round((time() - start) / 60, ndigits=2))
+                f"Calculation time: {round((time() - start) / 60, ndigits=2)} min\n\n"
             )
-
         else:
             sys.stderr.write(
-                "ERROR: the target that you provide (%s) "
-                "is not contained in your data file (%s)" % (target, args.i[0])
+                f"ERROR: the target that you provide ({target}) is not contained in your data file ({args.i[0]})"
             )
