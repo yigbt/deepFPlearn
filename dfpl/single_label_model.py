@@ -16,7 +16,7 @@ from sklearn.metrics import (auc, classification_report, confusion_matrix,
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tensorflow.keras import metrics, optimizers, regularizers
 from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
-from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
+from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError, Huber
 from tensorflow.keras.models import Model, Sequential
 
 from dfpl import callbacks as cb
@@ -320,7 +320,9 @@ def define_single_label_model(
     if opts.lossFunction == "bce":
         loss_function = BinaryCrossentropy()
     elif opts.lossFunction == "mse":
-        loss_function = MeanSquaredError()
+            loss_function = MeanSquaredError()
+    elif opts.lossFunction == "huber":
+            loss_function = Huber()
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")
@@ -532,7 +534,7 @@ def fit_and_evaluate_model(
     # Save and plot model history
     pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
     pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
-
+    pl.plot_train_history(history=hist, file=f"{model_file_prefix}.loss.svg" )
     # Evaluate model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)

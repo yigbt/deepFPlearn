@@ -5,7 +5,7 @@
   "outputFile": "smiles.csv",
   "ecModelDir": "",
   "ecWeightsFile": "",
-  "fnnModelDir": "example/onlyfnn/AR-1_best_saved_model",
+  "fnnModelDir": "example/grokking/AR-2_best_saved_model",
   "compressFeatures": false,
   "useRBM": false,
   "trainAC": false,

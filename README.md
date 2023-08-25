@@ -165,52 +165,73 @@ data.to_pickle("output/path/file.pkl")
 Note that the file-extension needs to be `"pkl"` to be identified correctly by DFPL. Also, you might want to look at
 the `convert_all` function in the `fingerprint` module that we use to convert different data-files all at once.
 
-## Use training/prediction functions
+# Running deepFPlearn
 
-You have several options to work with the DFPL package. The package can be started as a program on the commandline and
-you can provide all necessary information as commandline-parameters. Check
+Here you will find example code for running deepFPlearn in all five modes:
 
-```shell script
-dfpl --help
-dfpl train --help
-dfpl predict --help
+- **train**
+- **predict**
+- **traingnn**
+- **predictgnn**
+- **convert**
+
+The input data for each of these modes can be found in the `example/data` folder. The pre-computed output of the `train` mode can be found in the assets of the release, for the `predict` mode it is stored in the respective `example/results_predict` folder. Trained models that are used in the prediction mode are stored in the `models` folder.
+
+## Train
+
+The train mode is used to train models to predict the association of molecular structures to biological targets. The encoding of the molecules is done based on molecular fingerprints (we chose 2048 as the fp length). The training data contains three targets and you may train models for each using the following command:
+```shell
+python -m dfpl train -f example/train.json
 ```
+Training with the configurations from the `example/train.json` file will take approximately 4 minutes on a single CPU. The trained models, training histories, respective plots, as well as the predictions on the test data are stored in the `example/results_train` folder as defined in the `example/train.json` file (you may change this).
 
-However, using JSON files that contain all train/predict options an easy way to preserve what was run and you can use
-them instead of providing multiple commandline arguments.
+- `train.json` options file provides various options for training a model on the input data.
+- One option is `trainAC`, which when set to true, trains an autoencoder model.
+- Another option is `trainRBM`, which when set to true, trains a deep belief network (DBN) using Restricted Boltzmann Machines (RBM).
+- The `useRBM` option specifies whether the RBM weights should be used to initialize the model parameters for training the final neural network.
+- The `split_type` and `aeSplitType` option specifies the type of data splitting used for training the models. It can be set to either `scaffold_balanced`,  `random` or `molecular weight`.
+- In addition, `train.json` also includes options for setting the type of fingerprint (`fpType`), the size of the fingerprint (`fpSize`), the type of neural network (`fnnType`), the optimizer (`optimizer`), the loss function (`lossFunction`), the number of epochs (`epochs`), the batch size (`batchSize`), the learning rate (`learningRate`), the L2 regularization parameter (`l2reg`), and more.
+- The `wabTracking` or `aeWabTracking` option specifies whether Weights and Biases (WANDB) tracking should be used to monitor model performance during training. If either is set to true, the `wabTarget` option can be used to specify the target value for WAB tracking.
 
-```shell script
-dfpl train -f path/to/file.json
+## Predict
+
+The `predict` mode is used to predict the from molecular structures. Use this command to predict the provided data for prediction:
+```shell
+python -m dfpl predict -f example/predict.json
 ```
+The compounds are predicted with the provided model and results are returned as a float number between 0 and 1.
 
-See, e.g. the JSON files under `validation/case_XX` for examples. Also, you can use the following to create template
-JSON files for training or prediction
+- `inputFile`: The path to the input file containing the molecules to be predicted.
+- `outputDir`: The directory where the output file will be saved.
+- `outputFile`: The name of the output file containing the predicted values.
+- `ecModelDir`: The directory where the autoencoder model is saved.
+- `ecWeightsFile`: The name of the file containing the weights of the autoencoder. This is not needed for predicting with an AR model.
+- `fnnModelDir`: The directory where the FNN model is saved.
+- `compressFeatures`: Whether to compress the features using the autoencoder or not.
+- `useRBM`: Whether to use a trained deep belief network or not. This is not needed for predicting with an AR model.
+- `trainAC`: Whether to train a new autoencoder or use a pre-trained one.
+- `trainFNN`: Whether to train a new FNN model or use a pre-trained one.
 
-```python
-import dfpl.options as opts
-
-train_opts = opts.Options()
-train_opts.saveToFile("train.json")
-
-predict_opts = opts.Options()
-predict_opts.saveToFile("predict_bestER03.json")
+## Traingnn
+```shell
+python -m dfpl traingnn -f example/traingnn.json
 ```
+The `traingnn` mode is used to train models using a graph neural network to predict binary fingerprints from molecular structures. The training data contains three targets and you may train models for each using the following command:
 
-You can also work with the DFPL package from within an interactive Python session. Load the `dfpl` package in your
-Python console and start the training/prediction functions yourself by providing instances
-of `dfpl.options.TrainingOptions` or
-`dfpl.options.PredictOptions`. You can also use load options from JSON files. Example
+The trained models, training histories, and respective plots, as well as the predictions on the test data, are stored in the `example/results_traingnn` folder as defined in the `example/traingnn.json` file (you may change this). Similar and even more options are offered via the GNN model. Go to `chemprop/args.py` to take a peek and set your options.
 
-```python
-import dfpl.__main__ as main
-import dfpl.options as opts
-
-o = opts.Options.fromJson("/path/to/train.json")
-main.train(o)
+## Predictgnn
+```shell
+python -m dfpl predictgnn -f example/predictgnn.json
 ```
+The `predictgnn` mode is used to predict binary fingerprints from molecular structures using a graph neural network. Use this command to predict the provided data for prediction:
 
-Finally, if you like to work in PyCharm, you can also create a run-configuration in PyCharm using the `dfpl/__main__.py`
-script and providing the commandline arguments there.
+## Convert
+
+The `convert` mode is used to convert `.csv` or `.tsv` files into `.pkl` files for easy access in Python and to reduce memory on disk.
+
+
+
 
 # Please note that:
 
