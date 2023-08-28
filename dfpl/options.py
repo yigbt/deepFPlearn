@@ -47,8 +47,8 @@ class Options:
     aeLearningRateDecay: float = 0.01
     aeActivationFunction: str = "relu"
     aeOptimizer: str = "Adam"
-    trainRBM: bool = True
-    useRBM: bool = True
+    # trainRBM: bool = True
+    # useRBM: bool = True
     fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
@@ -312,6 +312,22 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="The .hdf5 file of a trained encoder...",
         default=argparse.SUPPRESS,
     )
+    # autoencoder_args.add_argument(
+    #     "-userbm",
+    #     "--useRBM",
+    #     metavar="BOOL",
+    #     type=bool,
+    #     help="UseDBN",
+    #     default=argparse.SUPPRESS,
+    # )
+    # autoencoder_args.add_argument(
+    #     "-trainrbm",
+    #     "--trainRBM",
+    #     metavar="BOOL",
+    #     type=bool,
+    #     help="TrainDBN",
+    #     default=argparse.SUPPRESS,
+    # )
     autoencoder_args.add_argument(
         "--ecModelDir",
         type=str,

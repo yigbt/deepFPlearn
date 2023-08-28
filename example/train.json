@@ -6,10 +6,8 @@
   "ecWeightsFile": "",
   "verbose": 2,
 
-  "trainAC": false,
-  "trainRBM": false,
-  "useRBM": false,
-  "compressFeatures": false,
+  "trainAC": true,
+  "compressFeatures": true,
   "encFPSize": 256,
 
   "aeSplitType": "random",
@@ -19,7 +17,7 @@
   "aeActivationFunction": "relu",
   "aeLearningRate": 0.001,
   "aeLearningRateDecay": 0.0001,
-  "aeType": "deterministic",
+  "aeType": "variational",
 
   "type": "smiles",
   "fpType": "topological",
@@ -37,10 +35,10 @@
   "fnnType": "FNN",
   "optimizer": "Adam",
   "lossFunction": "huber",
-  "epochs": 30000,
+  "epochs": 5,
   "batchSize": 128,
   "activationFunction": "selu",
-  "dropout": 0.0,
+  "dropout": 0.0107,
   "learningRate": 0.0000022,
   "l2reg": 0.001,
 

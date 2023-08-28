@@ -1,4 +1,4 @@
-name: dfpl_env
+name: dfplenv
 channels:
   - conda-forge
   - defaults
@@ -18,4 +18,4 @@ dependencies:
   - tensorflow-gpu=2.6.0
   - wandb=0.12
   - pip:
-    - git+https://github.com/soulios/chemprop/tree/dfpl_chemprop
+    - git+https://github.com/soulios/chemprop.git@1d73523e49aa28a90b74edc04aaf45d7e124e338

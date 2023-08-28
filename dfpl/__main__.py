@@ -14,7 +14,7 @@ from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
 from dfpl import options, predictions
-from dfpl import rbm as rbm
+# from dfpl import rbm as rbm
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
@@ -134,7 +134,7 @@ def train(opts: options.Options):
         )
     # initialize encoders to None
     encoder = None
-    rbm_model = None
+    # rbm_model = None
     if opts.trainAC:
         if opts.aeType == "deterministic":
             encoder, train_indices, test_indices = ac.train_full_ac(df, opts)
@@ -144,54 +144,54 @@ def train(opts: options.Options):
             raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
 
     # train an RBM on the full feature matrix if requested
-    if opts.trainRBM:
-        rbm_model = rbm.train_full_rbm(df, opts)
+    # if opts.trainRBM:
+    #     rbm_model = rbm.train_full_rbm(df, opts)
 
     # if feature compression is enabled
     if opts.compressFeatures:
         # if an RBM was trained, compress the fingerprints using the RBM
-        if opts.useRBM:
-            # if an RBM was not trained, create the model and fit it on dummy data
-            if not opts.trainRBM:
-                rbm_model = rbm.define_rbm_model(
-                    opts=options.Options,
-                    input_size=opts.fpSize,
-                    encoding_dim=opts.encFPSize,
-                )
-                x_run = tf.ones((12, opts.fpSize))
-                rbm_model.fit(x_run, x_run, epochs=1)
-                rbm_model.load_weights(os.path.join(opts.outputDir, opts.ecWeightsFile))
-
-            # determine the number of layers to compress the fingerprints to
-            layer_out = round(math.log2(opts.fpSize / opts.encFPSize))
-
-            # compress the fingerprints using the RBM
-            df = rbm.compress_fingerprints(df, rbm_model, layer_out - 1)
+        # if opts.useRBM:
+        #     # if an RBM was not trained, create the model and fit it on dummy data
+        #     if not opts.trainRBM:
+        #         rbm_model = rbm.define_rbm_model(
+        #             opts=options.Options,
+        #             input_size=opts.fpSize,
+        #             encoding_dim=opts.encFPSize,
+        #         )
+        #         x_run = tf.ones((12, opts.fpSize))
+        #         rbm_model.fit(x_run, x_run, epochs=1)
+        #         rbm_model.load_weights(os.path.join(opts.outputDir, opts.ecWeightsFile))
+        #
+        #     # determine the number of layers to compress the fingerprints to
+        #     layer_out = round(math.log2(opts.fpSize / opts.encFPSize))
+        #
+        #     # compress the fingerprints using the RBM
+        #     df = rbm.compress_fingerprints(df, rbm_model, layer_out - 1)
 
         # if an autoencoder was trained, compress the fingerprints using the autoencoder
-        else:
+        # else:
             # if an autoencoder was not trained, load the trained model and weights
-            if not opts.trainAC:
-                if opts.aeType == "deterministic":
-                    (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
-                if opts.aeType == "variational":
-                    (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
-                if opts.ecWeightsFile == "":
-                    encoder = load_model(opts.ecModelDir)
-                else:
-                    autoencoder.load_weights(
-                        os.path.join(opts.ecModelDir, opts.ecWeightsFile)
-                    )
-            # compress the fingerprints using the autoencoder
-            df = ac.compress_fingerprints(df, encoder)
-            ac.visualize_fingerprints(
-                df,
-                before_col="fp",
-                after_col="fpcompressed",
-                train_indices=train_indices,
-                test_indices=test_indices,
-                save_as=f"UMAP_{opts.aeSplitType}.png",
-            )
+        if not opts.trainAC:
+            if opts.aeType == "deterministic":
+                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+            if opts.aeType == "variational":
+                (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+            if opts.ecWeightsFile == "":
+                encoder = load_model(opts.ecModelDir)
+            else:
+                autoencoder.load_weights(
+                    os.path.join(opts.ecModelDir, opts.ecWeightsFile)
+                )
+        # compress the fingerprints using the autoencoder
+        df = ac.compress_fingerprints(df, encoder)
+        # ac.visualize_fingerprints(
+        #     df,
+        #     before_col="fp",
+        #     after_col="fpcompressed",
+        #     train_indices=train_indices,
+        #     test_indices=test_indices,
+        #     save_as=f"UMAP_{opts.aeSplitType}.png",
+        # )
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
@@ -227,12 +227,12 @@ def predict(opts: options.Options) -> None:
             encoder = load_model(opts.ecModelDir)
         else:
             encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
-        if opts.useRBM:
-            # Compress the fingerprints using the RBM model
-            df = rbm.compress_fingerprints(df, encoder, layer_num=3)
-        else:
+        # if opts.useRBM:
+        #     # Compress the fingerprints using the RBM model
+        #     df = rbm.compress_fingerprints(df, encoder, layer_num=3)
+        # else:
             # Compress the fingerprints using the autoencoder
-            df = ac.compress_fingerprints(df, encoder)
+        df = ac.compress_fingerprints(df, encoder)
 
     # Run predictions on the compressed fingerprints and store the results in a dataframe
     df2 = predictions.predict_values(df=df, opts=opts)

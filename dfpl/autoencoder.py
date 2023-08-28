@@ -343,7 +343,7 @@ def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFra
 def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, train_indices: np.ndarray,
                            test_indices: np.ndarray, save_as: str):
     # Calculate the number of samples to be taken from each set
-    num_samples = 7000
+    num_samples = 1000
     train_samples = int(num_samples * len(train_indices) / len(df))
     test_samples = num_samples - train_samples
 
