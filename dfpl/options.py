@@ -506,15 +506,15 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     # Tracking Configuration
     tracking_args.add_argument(
         "--aeWabTracking",
-        metavar="STRING",
-        type=str,
+        metavar="BOOL",
+        type=bool,
         help="Track autoencoder performance via Weights & Biases, see https://wandb.ai.",
         default=argparse.SUPPRESS,
     )
     tracking_args.add_argument(
         "--wabTracking",
-        metavar="STRING",
-        type=str,
+        metavar="BOOL",
+        type=bool,
         help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
         default=argparse.SUPPRESS,
     )
