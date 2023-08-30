@@ -11,12 +11,21 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import wandb
-from sklearn.metrics import (auc, classification_report, confusion_matrix,
-                             matthews_corrcoef, roc_curve)
+from sklearn.metrics import (
+    auc,
+    classification_report,
+    confusion_matrix,
+    matthews_corrcoef,
+    roc_curve,
+)
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tensorflow.keras import metrics, optimizers, regularizers
 from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
-from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError, Huber
+from tensorflow.keras.losses import (
+    BinaryCrossentropy,
+    MeanSquaredError,
+    BinaryFocalCrossentropy,
+)
 from tensorflow.keras.models import Model, Sequential
 
 from dfpl import callbacks as cb
@@ -244,6 +253,7 @@ def build_fnn_network(
 
     # Add the output layer with a sigmoid activation function and the output bias if provided
     model.add(Dense(units=1, activation="sigmoid", bias_initializer=output_bias))
+    model.summary()
     return model
 
 
@@ -320,9 +330,9 @@ def define_single_label_model(
     if opts.lossFunction == "bce":
         loss_function = BinaryCrossentropy()
     elif opts.lossFunction == "mse":
-            loss_function = MeanSquaredError()
-    elif opts.lossFunction == "huber":
-            loss_function = Huber()
+        loss_function = MeanSquaredError()
+    elif opts.lossFunction == "focal":
+        loss_function = BinaryFocalCrossentropy()
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")

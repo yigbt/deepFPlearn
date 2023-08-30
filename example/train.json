@@ -6,8 +6,8 @@
   "ecWeightsFile": "",
   "verbose": 2,
 
-  "trainAC": true,
-  "compressFeatures": true,
+  "trainAC": false,
+  "compressFeatures": false,
   "encFPSize": 256,
 
   "aeSplitType": "random",
@@ -34,7 +34,7 @@
   "testSize": 0.2,
   "fnnType": "FNN",
   "optimizer": "Adam",
-  "lossFunction": "huber",
+  "lossFunction": "bce",
   "epochs": 5,
   "batchSize": 128,
   "activationFunction": "selu",

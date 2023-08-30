@@ -1,19 +1,18 @@
 import os.path
 import dataclasses
 import logging
-import math
 import pathlib
 from argparse import Namespace
 from os import path
 
 import pandas as pd
-import tensorflow as tf
 from keras.models import load_model
 
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
 from dfpl import options, predictions
+
 # from dfpl import rbm as rbm
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
@@ -65,7 +64,7 @@ def traindmpnn(opts: options.GnnOptions):
     - None
     """
     os.environ["CUDA_VISIBLE_DEVICES"] = f"{opts.gpu}"
-    ignore_elements = ["py/object", "gnn_type"]
+    ignore_elements = ["py/object"]
     # Load options from a JSON file and replace the relevant attributes in `opts`
     arguments = createArgsFromJson(
         opts.configFile, ignore_elements, return_json_object=False
@@ -134,6 +133,7 @@ def train(opts: options.Options):
         )
     # initialize encoders to None
     encoder = None
+    autoencoder = None
     # rbm_model = None
     if opts.trainAC:
         if opts.aeType == "deterministic":
@@ -170,13 +170,13 @@ def train(opts: options.Options):
 
         # if an autoencoder was trained, compress the fingerprints using the autoencoder
         # else:
-            # if an autoencoder was not trained, load the trained model and weights
+        # if an autoencoder was not trained, load the trained model and weights
         if not opts.trainAC:
             if opts.aeType == "deterministic":
                 (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
-            if opts.aeType == "variational":
+            elif opts.aeType == "variational":
                 (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
-            if opts.ecWeightsFile == "":
+            elif opts.ecWeightsFile == "":
                 encoder = load_model(opts.ecModelDir)
             else:
                 autoencoder.load_weights(
@@ -211,6 +211,7 @@ def predict(opts: options.Options) -> None:
         df = fp.importDataFile(
             opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize
         )
+        print(df)
     else:
         df = fp.importDataFile(
             opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
@@ -231,7 +232,7 @@ def predict(opts: options.Options) -> None:
         #     # Compress the fingerprints using the RBM model
         #     df = rbm.compress_fingerprints(df, encoder, layer_num=3)
         # else:
-            # Compress the fingerprints using the autoencoder
+        # Compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
     # Run predictions on the compressed fingerprints and store the results in a dataframe
@@ -263,7 +264,9 @@ def createLogger(filename: str) -> None:
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
     # create formatter and add it to the handlers
-    formatterFile = logging.Formatter("{asctime} - {name} - {levelname} - {message}", style="{")
+    formatterFile = logging.Formatter(
+        "{asctime} - {name} - {levelname} - {message}", style="{"
+    )
     formatterConsole = logging.Formatter("{levelname} {message}", style="{")
     fh.setFormatter(formatterFile)
     ch.setFormatter(formatterConsole)
@@ -291,8 +294,7 @@ def main():
         elif prog_args.method == "traingnn":
             traingnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
 
-            if traingnn_opts.gnn_type == "dmpnn":
-                traindmpnn(traingnn_opts)
+            traindmpnn(traingnn_opts)
 
         elif prog_args.method == "predictgnn":
             predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)

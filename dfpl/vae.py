@@ -314,8 +314,10 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # Save the VAE weights
     logging.info(f"VAE weights stored in file: {vae_weights_file}")
-    ht.store_and_plot_history(base_file_name=os.path.join(opts.outputDir, base_file_name + ".VAE"),
-                              hist=vae_hist)
+    ht.store_and_plot_history(
+        base_file_name=os.path.join(opts.outputDir, base_file_name + ".VAE"),
+        hist=vae_hist,
+    )
     save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_VAE.h5")
     if opts.testSize > 0.0:
         (callback_vae, callback_encoder) = define_vae_model(opts)
@@ -324,8 +326,10 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
     else:
         encoder.save(filepath=save_path)
     latent_space = encoder.predict(fp_matrix)
-    latent_space_file = os.path.join(opts.outputDir, base_file_name + ".latent_space.csv")
-    with open(latent_space_file, 'w', newline='') as file:
+    latent_space_file = os.path.join(
+        opts.outputDir, base_file_name + ".latent_space.csv"
+    )
+    with open(latent_space_file, "w", newline="") as file:
         writer = csv.writer(file)
         writer.writerows(latent_space)
     return encoder, train_indices, test_indices

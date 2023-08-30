@@ -340,8 +340,14 @@ def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFra
     return dataframe
 
 
-def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, train_indices: np.ndarray,
-                           test_indices: np.ndarray, save_as: str):
+def visualize_fingerprints(
+    df: pd.DataFrame,
+    before_col: str,
+    after_col: str,
+    train_indices: np.ndarray,
+    test_indices: np.ndarray,
+    save_as: str,
+):
     # Calculate the number of samples to be taken from each set
     num_samples = 1000
     train_samples = int(num_samples * len(train_indices) / len(df))
@@ -359,17 +365,21 @@ def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, tr
     df_sampled = pd.concat([train_data_sampled, test_data_sampled])
 
     # Convert the boolean values in the after_col column to floats
-    df_sampled[after_col] = df_sampled[after_col].apply(lambda x: np.array(x, dtype=float))
+    df_sampled[after_col] = df_sampled[after_col].apply(
+        lambda x: np.array(x, dtype=float)
+    )
 
-    df_sampled.loc[train_data_sampled.index, 'set'] = 'train'
-    df_sampled.loc[test_data_sampled.index, 'set'] = 'test'
+    df_sampled.loc[train_data_sampled.index, "set"] = "train"
+    df_sampled.loc[test_data_sampled.index, "set"] = "test"
     # Apply UMAP
-    umap_model = umap.UMAP(n_neighbors=15, min_dist=0.1, metric='euclidean', random_state=42)
+    umap_model = umap.UMAP(
+        n_neighbors=15, min_dist=0.1, metric="euclidean", random_state=42
+    )
     # Filter out the rows with invalid arrays
     umap_results = umap_model.fit_transform(df_sampled[after_col].tolist())
     # Add UMAP results to the DataFrame
-    df_sampled['umap_x'] = umap_results[:, 0]
-    df_sampled['umap_y'] = umap_results[:, 1]
+    df_sampled["umap_x"] = umap_results[:, 0]
+    df_sampled["umap_y"] = umap_results[:, 1]
 
     # Define custom color palette
     palette = {"train": "blue", "test": "red"}
@@ -377,18 +387,25 @@ def visualize_fingerprints(df: pd.DataFrame, before_col: str, after_col: str, tr
     # Create the scatter plot
     sns.set(style="white")
     fig, ax = plt.subplots(figsize=(10, 8))
-    split = save_as.split('_', 1)
+    split = save_as.split("_", 1)
     part_after_underscore = split[1]
     split_type = part_after_underscore.split(".")[0]
     # Plot the UMAP results
-    for label, grp in df_sampled.groupby('set'):
+    for label, grp in df_sampled.groupby("set"):
         set_label = label
         color = palette[set_label]
-        alpha = 0.09 if set_label == 'train' else 0.9  # Set different opacities for train and test
-        ax.scatter(grp['umap_x'], grp['umap_y'], label=f'{set_label}', c=color, alpha=alpha)
+        alpha = (
+            0.09 if set_label == "train" else 0.9
+        )  # Set different opacities for train and test
+        ax.scatter(
+            grp["umap_x"], grp["umap_y"], label=f"{set_label}", c=color, alpha=alpha
+        )
 
     # Customize the plot
-    ax.set_title(f"UMAP visualization of molecular fingerprints using {split_type} split", fontsize=14)
+    ax.set_title(
+        f"UMAP visualization of molecular fingerprints using {split_type} split",
+        fontsize=14,
+    )
     ax.set_xlabel("UMAP 1")
     ax.set_ylabel("UMAP 2")
     ax.legend(title="", loc="upper right")
