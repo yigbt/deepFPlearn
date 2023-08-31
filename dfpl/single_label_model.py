@@ -5,14 +5,13 @@ import shutil
 import sys
 from os import path
 from time import time
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import wandb
-from typing import Union, Tuple
-
 from sklearn.metrics import (
     auc,
     classification_report,
@@ -25,8 +24,8 @@ from tensorflow.keras import metrics, optimizers, regularizers
 from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
 from tensorflow.keras.losses import (
     BinaryCrossentropy,
-    MeanSquaredError,
     BinaryFocalCrossentropy,
+    MeanSquaredError,
 )
 from tensorflow.keras.models import Model, Sequential
 

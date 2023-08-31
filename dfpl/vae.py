@@ -1,23 +1,23 @@
+import csv
 import logging
 import math
 import os.path
 from os.path import basename
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
+import tensorflow.keras.metrics as metrics
 import wandb
 from keras import backend as K
 from sklearn.model_selection import train_test_split
-import tensorflow.keras.metrics as metrics
 from tensorflow.keras import initializers, optimizers
 from tensorflow.keras.layers import Dense, Input, Lambda
 from tensorflow.keras.models import Model
 from tensorflow.python.framework.ops import disable_eager_execution
-from typing import Tuple
-import csv
 
-from dfpl import history as ht
 from dfpl import callbacks
+from dfpl import history as ht
 from dfpl import options, settings
 from dfpl.utils import ae_scaffold_split, weight_split
 

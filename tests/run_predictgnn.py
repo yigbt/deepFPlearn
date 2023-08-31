@@ -1,11 +1,12 @@
 import logging
 import os
 import pathlib
+
+import pandas as pd
+from chemprop import args, train
+
 import dfpl.options as opt
 import dfpl.utils as utils
-import pandas as pd
-from chemprop import train, args
-
 
 project_directory = pathlib.Path(__file__).parent.absolute()
 example_directory = (

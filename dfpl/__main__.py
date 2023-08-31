@@ -1,10 +1,11 @@
-import os.path
 import dataclasses
 import logging
+import os.path
 import pathlib
 from argparse import Namespace
 from os import path
 
+import chemprop as cp
 import pandas as pd
 from keras.models import load_model
 
@@ -12,11 +13,9 @@ from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
 from dfpl import options, predictions
-
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
-import chemprop as cp
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(

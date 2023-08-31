@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "/home/soulios/data/S_dataset-AR.csv",
+  "inputFile": "/home/soulios/tests/data/S_dataset.csv",
   "outputDir": "example/grokking",
   "ecModelDir": "",
   "ecWeightsFile": "",

@@ -1,5 +1,6 @@
 import logging
 import pathlib
+
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt

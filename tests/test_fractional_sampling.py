@@ -1,5 +1,6 @@
 import os.path
 import pathlib
+
 import numpy as np
 
 from dfpl import fingerprint as fp

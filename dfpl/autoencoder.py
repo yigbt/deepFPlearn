@@ -2,6 +2,7 @@ import logging
 import math
 import os.path
 from os.path import basename
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +14,6 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses, optimizers
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.models import Model
-from typing import Tuple
 
 from dfpl import callbacks
 from dfpl import history as ht
