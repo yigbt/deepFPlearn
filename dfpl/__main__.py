@@ -13,7 +13,6 @@ from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
 from dfpl import options, predictions
 
-# from dfpl import rbm as rbm
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
@@ -89,7 +88,6 @@ def predictdmpnn(opts: options.GnnOptions, json_arg_path: str) -> None:
     """
     ignore_elements = [
         "py/object",
-        "gnn_type",
         "checkpoint_paths",
         "save_dir",
         "saving_name",
@@ -146,9 +144,9 @@ def train(opts: options.Options):
     if opts.compressFeatures:
         if not opts.trainAC:
             if opts.aeType == "deterministic":
-                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
             elif opts.aeType == "variational":
-                (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+                (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
             elif opts.ecWeightsFile == "":
                 encoder = load_model(opts.ecModelDir)
             else:
@@ -193,9 +191,9 @@ def predict(opts: options.Options) -> None:
     if opts.compressFeatures:
         # load trained model for autoencoder
         if opts.aeType == "deterministic":
-            (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+            (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
         if opts.aeType == "variational":
-            (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+            (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
         # Load trained model for autoencoder
         if opts.ecWeightsFile == "":
             encoder = load_model(opts.ecModelDir)

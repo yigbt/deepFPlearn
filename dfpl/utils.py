@@ -211,7 +211,9 @@ def ae_scaffold_split(
         sizes[1] * len(data),
         sizes[2] * len(data),
     )
-    train, val, test = [], [], []
+    train: List[int] = []
+    val: List[int] = []
+    test: List[int] = []
     train_scaffold_count, val_scaffold_count, test_scaffold_count = 0, 0, 0
 
     # Map from scaffold to index in the data
@@ -221,6 +223,10 @@ def ae_scaffold_split(
             (i for i, colname in enumerate(data.columns) if "inchi" in colname.lower()),
             None,
         )
+        if key_molecule_index is None:
+            warnings.warn(
+                "No column with 'inchi' found in the DataFrame. Proceeding with caution."
+            )
         key_mols = data.iloc[:, key_molecule_index].apply(inchi_to_mol).dropna()
     else:
         key_mols = data.iloc[:, key_molecule_index]

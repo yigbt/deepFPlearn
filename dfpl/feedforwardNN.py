@@ -1,11 +1,10 @@
-import array
 import logging
 import math
 import re
 import shutil
 import sys
 from time import time
-
+from typing import List, Union
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
@@ -180,12 +179,12 @@ def define_nn_model_multi(
 
 
 def validate_multi_model_on_test_data(
-    x_test: array,
+    x_test: np.ndarray,
     checkpoint_path: str,
-    y_test: array,
-    col_names: list,
+    y_test: np.ndarray,
+    col_names: List[str],
     result_file: str,
-) -> list:
+) -> List[Union[int, float, str]]:
     """
     Validate the multi label model on a test data set.
 

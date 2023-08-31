@@ -12,8 +12,11 @@ project_directory = pathlib.Path(__file__).parent.absolute()
 test_predict_args = opt.Options(
     inputFile=f"{project_directory}/data/smiles.csv",
     outputDir=f"{project_directory}/preds/",
-    ecWeightsFile=f"{project_directory}/data/D_datasetdeterministicrandom.autoencoder.weights.hdf5",
-    fnnModelDir=f"{project_directory}/output_data/fnnTrainingCompressed/AR_saved_model",
+    ecModelDir=utils.makePathAbsolute(f"{project_directory}/output/"),
+    ecWeightsFile=utils.makePathAbsolute(
+        f"{project_directory}/output/D_datasetdeterministicrandom.autoencoder.weightsrandom.autoencoder.weights.hdf5"
+    ),
+    fnnModelDir=f"{project_directory}/fnnTrainingCompressed/AR_saved_model",
     fpSize=2048,
     type="smiles",
     fpType="topological",
