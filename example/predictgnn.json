@@ -1,6 +1,5 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "gnn_type": "dmpnn",
   "test_path": "tests/data/D_smile_15.csv",
   "checkpoint_path": "example/model.pt",
   "save_dir": "preds_dmpnn_D",

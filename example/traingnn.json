@@ -1,7 +1,6 @@
 {
   "py/object": "dfpl.options.GnnOptions",
   "data_path": "tests/data/S_dataset.csv",
-  "gnn_type": "dmpnn",
   "save_dir": "dmpnn-random/",
   "epochs": 20,
   "num_folds": 5,
