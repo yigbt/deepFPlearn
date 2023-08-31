@@ -11,6 +11,8 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import wandb
+from typing import Union, Tuple
+
 from sklearn.metrics import (
     auc,
     classification_report,
@@ -37,11 +39,8 @@ from dfpl.utils import ae_scaffold_split, weight_split
 
 def prepare_nn_training_data(
     df: pd.DataFrame, target: str, opts: options.Options, return_dataframe: bool = False
-) -> (
-    np.ndarray,
-    np.ndarray,
-    pd.DataFrame,
-):  # Check the value counts and abort if too imbalanced
+) -> Union[Tuple[np.ndarray, np.ndarray], pd.DataFrame]:
+    # Check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
     # If feature compression is enabled, use compressed fingerprints
     if opts.compressFeatures:
@@ -191,7 +190,6 @@ def build_fnn_network(
     # Define the number of hidden layers based on the input size
     my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
     if not str(input_size) in my_hidden_layers.keys():
-        print(input_size)
         raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
     nhl = int(math.log2(input_size) / 2 - 1)
 
@@ -292,16 +290,16 @@ def build_snn_network(
     return model
 
 
-def balanced_accuracy(y_true, y_pred):
+def balanced_accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> np.float64:
     """
     Computes the balanced accuracy metric.
 
     Args:
-        y_true (tf.Tensor): The true values of the labels.
-        y_pred (tf.Tensor): The predicted values of the labels.
+        y_true (np.ndarray): The true values of the labels.
+        y_pred (np.ndarray): The predicted values of the labels.
 
     Returns:
-        tf.Tensor: The balanced accuracy score.
+        np.float64: The balanced accuracy score.
     """
     y_pred = K.round(y_pred)  # Convert continuous predictions to binary class labels
     tn = K.sum((1 - y_true) * (1 - y_pred))

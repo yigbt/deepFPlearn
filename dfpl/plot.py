@@ -217,7 +217,7 @@ def plot_auc(
     # Create a boolean mask to filter out zero values
     plt.figure()
     plt.plot([0, 1], [0, 1], "k--")
-    plt.plot(fpr, tpr, label="Keras (area = {:.3f})".format(auc_value))
+    plt.plot(fpr, tpr, label=f"Keras (area = {auc_value:.3f})")
     plt.xlabel("False positive rate")
     plt.ylabel("True positive rate")
     plt.title("ROC curve " + target)

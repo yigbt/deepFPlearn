@@ -5,7 +5,6 @@ from os.path import basename
 
 import numpy as np
 import pandas as pd
-import tensorflow.keras.metrics as metrics
 import wandb
 from keras import backend as K
 from sklearn.model_selection import train_test_split
@@ -134,17 +133,20 @@ def define_vae_model(opts: options.Options, output_bias=None) -> (Model, Model):
     autoencoder = Model(input_vec, decoded)
 
     # KL divergence loss
-    def kl_loss(z_mean, z_log_var):
-        return -0.5 * K.sum(
-            1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1
+    def kl_loss(z_mean: np.ndarray, z_log_var: np.ndarray) -> np.ndarray:
+        return -0.5 * np.sum(
+            1 + z_log_var - np.square(z_mean) - np.exp(z_log_var), axis=-1
         )
 
-    # binary cross-entropy loss
-    def bce_loss(y_true, y_pred):
-        return metrics.binary_crossentropy(y_true, y_pred)
+    def bce_loss(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        return -np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
 
-    # combined loss
-    def vae_loss(y_true, y_pred):
+    def vae_loss(
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+        z_mean: np.ndarray,
+        z_log_var: np.ndarray,
+    ) -> np.ndarray:
         bce = bce_loss(y_true, y_pred)
         kl = kl_loss(z_mean, z_log_var)
         return bce + 0.5 * kl
