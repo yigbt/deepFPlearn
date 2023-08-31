@@ -238,7 +238,7 @@ Some basic arguments include:
   
 - `save_dir`: The directory where the trained model and any generated output files will be saved. Make sure the directory exists or can be created.
 
-- `epochs`: The number of training epochs. An epoch is one complete forward and backward pass of all the training examples.
+- `epochs`: The number of training epochs. 
 
 - `num_folds`: The number of folds to use for cross-validation. Cross-validation is a resampling procedure used to evaluate machine learning models on a limited data sample.
 
@@ -246,13 +246,17 @@ Some basic arguments include:
 
 - `loss_function`: Specifies the loss function to be minimized during training. Here, it's set to "binary_cross_entropy".
 
-- `split_type`: Defines the strategy used for splitting the data into training and test sets. The "random" option will randomly split the data.
+- `split_type`: Defines the strategy used for splitting the data into training and test sets. 
+                  The **"random"** option will randomly split the data. 
+                  The **"scaffold_balanced"** based on the chemical scaffold (It also logs stats of the split).
+                  The **molecular_weight** puts the small molecules in training and large in the test set based on their MW.
 
-- `dataset_type`: Specifies the type of problem you are solving; in this case, it's a "classification" problem.
+- `dataset_type`: Specifies the type of problem you are solving; i.e classification.
 
 - `smiles_columns`: The name of the column in the CSV file that contains the SMILES strings of the molecules.
 
-- `extra_metrics`: A list of additional metrics that you want to compute for model evaluation. These could include metrics like "balanced_accuracy", "Area Under Curve (AUC)", "F1 score", "Matthews Correlation Coefficient (MCC)", "recall", "specificity", and "precision".
+- `extra_metrics`: A list of additional metrics that you want to compute for model evaluation. 
+                  These could include metrics like "balanced_accuracy", "(AUC)", "F1 score", "Matthews Correlation Coefficient (MCC)", "recall", "specificity", and "precision".
 
 - `hidden_size`: Specifies the size of the hidden layers in the neural network. A larger size may capture more complex representations but could risk overfitting.
 
