@@ -15,6 +15,7 @@ dependencies:
   - pandas=1.4.2
   - rdkit=2022.03.1
   - scikit-learn=1.0.2
+  - seaborn=0.12.2
   - tensorflow-gpu=2.6.0
   - wandb=0.12
   - pip:
