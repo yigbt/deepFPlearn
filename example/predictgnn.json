@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "test_path": "tests/data/D_smile_15.csv",
-  "checkpoint_path": "example/model.pt",
+  "test_path": "data/smiles.csv",
+  "checkpoint_path": "dmpnn-random/fold_0/model_0/model.pt",
   "save_dir": "preds_dmpnn_D",
-  "saving_name": "D_preds_ER_random_dmpnn_15.csv"
+  "saving_name": "DMONN_preds.csv"
 }

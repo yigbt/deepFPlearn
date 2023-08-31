@@ -1,10 +1,9 @@
-import array
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import wandb
 from matplotlib.axes import Axes
+from typing import List
 
 # for NN model functions
 from tensorflow.keras.callbacks import History
@@ -12,42 +11,42 @@ from tensorflow.keras.callbacks import History
 
 def get_max_validation_accuracy(history: History) -> str:
     validation = smooth_curve(history.history["val_accuracy"])
-    y_max = max(validation)
+    y_max: float = max(validation)
     return "Max validation accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
 def get_max_validation_balanced_accuracy(history: History) -> str:
     validation_bal_acc = smooth_curve(history.history["val_balanced_accuracy"])
-    y_max = max(validation_bal_acc)
+    y_max: float = max(validation_bal_acc)
     return "Max validation balanced accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
 def get_max_training_balanced_accuracy(history: History) -> str:
     training_bal_acc = smooth_curve(history.history["balanced_accuracy"])
-    y_max = max(training_bal_acc)
+    y_max: float = max(training_bal_acc)
     return "Training balanced accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
 def get_max_training_auc(history: History) -> str:
     training_auc = smooth_curve(history.history["auc"])
-    y_max = max(training_auc)
+    y_max: float = max(training_auc)
     return "Validation AUC ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
 def get_max_validation_auc(history: History) -> str:
     validation_auc = smooth_curve(history.history["val_auc"])
-    y_max = max(validation_auc)
+    y_max: float = max(validation_auc)
     return "Validation AUC ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
 def get_max_training_accuracy(history: History) -> str:
     training = smooth_curve(history.history["accuracy"])
-    y_max = max(training)
+    y_max: float = max(training)
     return "Max training accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
-def smooth_curve(points: array, factor: float = 0.75) -> array:
-    smoothed_points = []
+def smooth_curve(points: np.ndarray, factor: float = 0.75) -> np.ndarray:
+    smoothed_points: List[float] = []
     for point in points:
         if smoothed_points:
             previous = smoothed_points[-1]

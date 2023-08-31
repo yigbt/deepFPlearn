@@ -1,24 +1,30 @@
+import logging
 import pathlib
-import chemprop as cp
-from chemprop import args
-
+import dfpl.options as opt
 import dfpl.utils as utils
+import dfpl.__main__ as main
+
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_train_args = args.TrainArgs(
-    inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
+example_directory = project_directory.parent / "example"
+test_train_args = opt.GnnOptions(
+    configFile=utils.makePathAbsolute(f"{example_directory}/traingnn.json"),
+    save_dir=utils.makePathAbsolute(f"{project_directory}/output"),
+    total_epochs=1,
 )
 
 
-def test_traindmpnn(opts: args.TrainArgs) -> None:
+def test_traindmpnn(opts: opt.GnnOptions) -> None:
     print("Running traindmpnn test...")
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
+    logging.info("Adding fingerprint to dataset")
+
+    main.traindmpnn(opts)
 
     print("Training DMPNN...")
-    mean_score, std_score = cp.train.cross_validate(
-        args=opts, train_func=cp.train.run_training
-    )
 
-    print(f"Results: {mean_score:.5f} +/- {std_score:.5f}")
     print("traindmpnn test complete.")
 
 

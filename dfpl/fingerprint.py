@@ -44,7 +44,7 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         # from rdkit import DataStructs
         # DataStructs.ConvertToNumpyArray(morgan, npa)
 
-        npa = np.zeros((0,), dtype=np.bool)
+        npa = np.zeros((0,), dtype=np.bool_)
         try:
             DataStructs.ConvertToNumpyArray(
                 AllChem.GetMorganFingerprintAsBitVect(
