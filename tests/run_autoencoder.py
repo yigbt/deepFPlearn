@@ -9,12 +9,12 @@ import dfpl.utils as utils
 project_directory = pathlib.Path(__file__).parent.absolute()
 test_train_args = opt.Options(
     inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
-    ecModelDir=utils.makePathAbsolute(f"{project_directory}/output_data/modeltraining"),
+    ecModelDir=utils.makePathAbsolute(f"{project_directory}/data"),
     outputDir=utils.makePathAbsolute(f"{project_directory}/output_data"),
-    ecWeightsFile="Sun_etal_dataset.encoder.hdf5",
+    ecWeightsFile="D_datasetdeterministicrandom.autoencoder.weights.hdf5",
     type="smiles",
     fpType="topological",
-    epochs=11,
+    aeEpochs=3,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
@@ -30,7 +30,9 @@ def runAutoencoder(opts: opt.Options) -> None:
     """
     Run and test auto-encoder
     """
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     logging.info("Adding fingerprint to dataset")
     df = fp.importDataFile(
         opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
@@ -41,6 +43,8 @@ def runAutoencoder(opts: opt.Options) -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     utils.createDirectory(test_train_args.outputDir)
     runAutoencoder(test_train_args)

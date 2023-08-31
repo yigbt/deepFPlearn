@@ -1,19 +1,43 @@
 import array
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import wandb
 from matplotlib.axes import Axes
 
 # for NN model functions
 from tensorflow.keras.callbacks import History
-
-# for testing in Weights & Biases
 
 
 def get_max_validation_accuracy(history: History) -> str:
     validation = smooth_curve(history.history["val_accuracy"])
     y_max = max(validation)
     return "Max validation accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
+
+
+def get_max_validation_balanced_accuracy(history: History) -> str:
+    validation_bal_acc = smooth_curve(history.history["val_balanced_accuracy"])
+    y_max = max(validation_bal_acc)
+    return "Max validation balanced accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
+
+
+def get_max_training_balanced_accuracy(history: History) -> str:
+    training_bal_acc = smooth_curve(history.history["balanced_accuracy"])
+    y_max = max(training_bal_acc)
+    return "Training balanced accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
+
+
+def get_max_training_auc(history: History) -> str:
+    training_auc = smooth_curve(history.history["auc"])
+    y_max = max(training_auc)
+    return "Validation AUC ≈ " + str(round(y_max, 3) * 100) + "%"
+
+
+def get_max_validation_auc(history: History) -> str:
+    validation_auc = smooth_curve(history.history["val_auc"])
+    y_max = max(validation_auc)
+    return "Validation AUC ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
 def get_max_training_accuracy(history: History) -> str:
@@ -84,7 +108,7 @@ def plot_history(history: History, file: str) -> None:
     plt.text(
         0.5,
         0.6,
-        get_max_validation_accuracy(history),
+        get_max_validation_balanced_accuracy(history),
         horizontalalignment="right",
         verticalalignment="top",
         transform=ax1.transAxes,
@@ -93,7 +117,7 @@ def plot_history(history: History, file: str) -> None:
     plt.text(
         0.5,
         0.8,
-        get_max_training_accuracy(history),
+        get_max_training_balanced_accuracy(history),
         horizontalalignment="right",
         verticalalignment="top",
         transform=ax1.transAxes,
@@ -113,7 +137,7 @@ def plot_history(history: History, file: str) -> None:
     plt.close()
 
 
-def plotTrainHistory(hist, target, file_accuracy, file_loss):
+def plot_train_history(hist, target, file_accuracy, file_loss):
     """
     Plot the training performance in terms of accuracy and loss values for each epoch.
     :param hist: The history returned by model.fit function
@@ -163,7 +187,7 @@ def plot_history_vis(
     histDF.to_csv(model_hist_csv_path)
 
     # plot accuracy and loss for the training and validation during training
-    plotTrainHistory(
+    plot_train_history(
         hist=hist,
         target=target,
         file_accuracy=model_hist_plot_path_a,
@@ -172,7 +196,12 @@ def plot_history_vis(
 
 
 def plot_auc(
-    fpr: array, tpr: array, auc_value: float, target: str, filename: str
+    fpr: np.ndarray,
+    tpr: np.ndarray,
+    auc_value: float,
+    target: str,
+    filename: str,
+    wandb_logging: bool = False,
 ) -> None:
     """
     Plot the area under the curve to the provided file
@@ -182,14 +211,18 @@ def plot_auc(
     :param auc_value: The value of the area under the curve
     :param target: The name of the training target
     :param filename: The filename to which the plot should be stored
+    :param wandb_logging: Whether to log the plot to wandb
     :rtype: None
     """
+    # Create a boolean mask to filter out zero values
     plt.figure()
     plt.plot([0, 1], [0, 1], "k--")
-    plt.plot(fpr, tpr, label="Keras (area = {:.3f})".format(auc_value))
+    plt.plot(fpr, tpr, label=f"Keras (area = {auc_value:.3f})")
     plt.xlabel("False positive rate")
     plt.ylabel("True positive rate")
     plt.title("ROC curve " + target)
     plt.legend(loc="best")
-    plt.savefig(fname=filename, format="svg")
+    plt.savefig(fname=filename, format="png")
+    if wandb_logging:
+        wandb.log({"roc_plot": plt})
     plt.close()

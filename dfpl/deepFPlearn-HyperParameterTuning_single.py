@@ -13,6 +13,8 @@ from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
 from dfpl import dfplmodule as dfpl
 
+# ------------------------------------------------------------------------------------- #
+
 
 def parseInput():
     """
@@ -119,10 +121,11 @@ def parseInput():
     return parser.parse_args()
 
 
+# ----------------------------------------------------------------------------- #
+
+
+# model for tuning epochs and batchsizes only
 def c_model(dropout=0.2):
-    """
-    model for tuning epochs and batchsizes only
-    """
     model = Sequential()
     model.add(Dense(1024, activation="relu"))
     model.add(Dropout(dropout))
@@ -139,10 +142,11 @@ def c_model(dropout=0.2):
     return model
 
 
+# ----------------------------------------------------------------------------- #
+
+
+# model for tuning optmizer, activation functions and initialization of hidden layers
 def tuning_model(optimizer, activation, init, dropout=0.2):
-    """
-    model for tuning optmizer, activation functions and initialization of hidden layers
-    """
     model = Sequential()
     model.add(Dense(1024, activation=activation, init=init))
     model.add(Dropout(dropout))
@@ -176,8 +180,8 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     # filepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/input/Sun_etal_dataset.fingerprints.csv"
-    # outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", ".hpTuningResults.txt", os.path.basename(filepath))
-    # dataset = pd.read_csv(filepath)
+    # outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv",
+    # ".hpTuningResults.txt", os.path.basename(filepath)) dataset = pd.read_csv(filepath)
 
     dataset = pd.read_csv(args.i[0])
 
@@ -189,14 +193,17 @@ if __name__ == "__main__":
     for target in args.t:
         target = "ER"
         print(target)
-        # outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(filepath))
+        # outfilepath = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + re.sub(
+        # ".csv", '.hpTuningResults.' + target + '.txt', os.path.basename(filepath))
         outfilepath = args.p[0] + re.sub(
             ".csv", ".hpTuningResults." + target + ".txt", os.path.basename(args.i[0])
         )
 
         if target in dataset.columns:
-            # modelfilepathW = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.weights.h5'
-            # modelfilepathM = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target + '.json'
+            # modelfilepathW = "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" +
+            # '/model.' + target + '.weights.h5' modelfilepathM =
+            # "/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/" + '/model.' + target +
+            # '.json'
             modelfilepathW = args.p[0] + "/model." + target + ".weights.h5"
             modelfilepathM = args.p[0] + "/model." + target + ".json"
 
@@ -237,7 +244,7 @@ if __name__ == "__main__":
             sys.stdout.write(
                 "# --------------------------------------------------------------------------- #\n"
             )
-            sys.stdout.write("#target = %s\n" % target)
+            sys.stdout.write(f"#target = {target}\n")
 
             # Start optimizing epochs and batchsizes (if more than one provided)
 
@@ -266,7 +273,8 @@ if __name__ == "__main__":
                     ".hpTuningResults.01-BatchSize" + target + ".csv",
                     os.path.basename(args.i[0]),
                 )
-                # outfilepath = '/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning/Sun_etal_dataset.fingerprints.hpTuningResults.ER.txt'
+                # outfilepath = '/data/bioinf/projects/data/2019_IDA-chem/deepFPlearn/modeltraining/HPtuning
+                # /Sun_etal_dataset.fingerprints.hpTuningResults.ER.txt'
                 clf.best_estimator_.model.save(filepath=modelfilepathM)
                 clf.best_estimator_.model.save_weights(filepath=modelfilepathW)
 
@@ -410,12 +418,9 @@ if __name__ == "__main__":
 
             # find best performing parameters
             sys.stdout.write(
-                "Calculation time: %s min\n\n"
-                % str(round((time() - start) / 60, ndigits=2))
+                f"Calculation time: {round((time() - start) / 60, ndigits=2)} min\n\n"
             )
-
         else:
             sys.stderr.write(
-                f"ERROR: the target that you provide ({target}) "
-                "is not contained in your data file ({args.i[0]}%s)"
+                f"ERROR: the target that you provide ({target}) is not contained in your data file ({args.i[0]})"
             )

@@ -44,7 +44,7 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
     )
     callbacks.append(early_stop)
 
-    if opts.wabTracking:
+    if opts.aeWabTracking and not opts.wabTracking:
         callbacks.append(WandbCallback(save_model=False))
     return callbacks
 

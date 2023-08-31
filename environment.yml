@@ -1,4 +1,4 @@
-name: dfpl_env
+name: dfplenv
 channels:
   - conda-forge
   - defaults
@@ -15,5 +15,8 @@ dependencies:
   - pandas=1.4.2
   - rdkit=2022.03.1
   - scikit-learn=1.0.2
+  - seaborn=0.12.2
   - tensorflow-gpu=2.6.0
   - wandb=0.12
+  - pip:
+    - git+https://github.com/soulios/chemprop.git@1d73523e49aa28a90b74edc04aaf45d7e124e338

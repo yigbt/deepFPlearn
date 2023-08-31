@@ -706,7 +706,7 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
 def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.figure()
     plt.plot([0, 1], [0, 1], "k--")
-    plt.plot(fpr, tpr, label="Keras (area = {:.3f})".format(auc))
+    plt.plot(fpr, tpr, label=f"Keras (area = {auc:.3f})")
     plt.xlabel("False positive rate")
     plt.ylabel("True positive rate")
     plt.title(f"ROC curve {target}")

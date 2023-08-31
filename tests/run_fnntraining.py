@@ -1,6 +1,5 @@
 import logging
 import pathlib
-
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt
@@ -18,18 +17,21 @@ test_train_args = opt.Options(
     type="smiles",
     fpType="topological",
     epochs=10,
+    aeEpochs=3,
     fpSize=2048,
     encFPSize=256,
     testSize=0.2,
     kFolds=1,
     verbose=2,
-    trainAC=True,
+    trainAC=False,
     trainFNN=True,
 )
 
 
 def run_single_label_training(opts: opt.Options) -> None:
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
     logging.info("Adding fingerprint to dataset")
 
     opts.outputDir = utils.makePathAbsolute(
