@@ -1,7 +1,6 @@
 import pandas as pd
 from rdkit import RDLogger
 
-
 from dfpl import fingerprint as fp
 
 correct_smiles = [

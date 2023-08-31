@@ -1,9 +1,10 @@
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import wandb
 from matplotlib.axes import Axes
-from typing import List
 
 # for NN model functions
 from tensorflow.keras.callbacks import History

@@ -1,9 +1,9 @@
 import logging
 import pathlib
+
+import dfpl.__main__ as main
 import dfpl.options as opt
 import dfpl.utils as utils
-import dfpl.__main__ as main
-
 
 project_directory = pathlib.Path(__file__).parent.absolute()
 example_directory = project_directory.parent / "example"
