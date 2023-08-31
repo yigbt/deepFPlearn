@@ -183,16 +183,27 @@ The train mode is used to train models to predict the association of molecular s
 ```shell
 python -m dfpl train -f example/train.json
 ```
-Training with the configurations from the `example/train.json` file will take approximately 4 minutes on a single CPU. The trained models, training histories, respective plots, as well as the predictions on the test data are stored in the `example/results_train` folder as defined in the `example/train.json` file (you may change this).
 
-- `train.json` options file provides various options for training a model on the input data.
-- One option is `trainAC`, which when set to true, trains an autoencoder model.
-- Another option is `trainRBM`, which when set to true, trains a deep belief network (DBN) using Restricted Boltzmann Machines (RBM).
-- The `useRBM` option specifies whether the RBM weights should be used to initialize the model parameters for training the final neural network.
-- The `split_type` and `aeSplitType` option specifies the type of data splitting used for training the models. It can be set to either `scaffold_balanced`,  `random` or `molecular weight`.
-- In addition, `train.json` also includes options for setting the type of fingerprint (`fpType`), the size of the fingerprint (`fpSize`), the type of neural network (`fnnType`), the optimizer (`optimizer`), the loss function (`lossFunction`), the number of epochs (`epochs`), the batch size (`batchSize`), the learning rate (`learningRate`), the L2 regularization parameter (`l2reg`), and more.
-- The `wabTracking` or `aeWabTracking` option specifies whether Weights and Biases (WANDB) tracking should be used to monitor model performance during training. If either is set to true, the `wabTarget` option can be used to specify the target value for WAB tracking.
+Training with the configurations from the `example/train.json` file will take approximately 4 minutes on a single CPU. 
+The trained models, training histories, respective plots, as well as the predictions on the test data are stored in the 
+`example/results_train` folder as defined in the `example/train.json` file (this can be changed).
 
+- `configFile or -f`: The path to the `train.json` options file that provides various configurations for training the model.
+- `outputDir`: The directory where the trained models and other output files will be saved.
+- `trainAC`: Whether to train an autoencoder model.
+- `aeType`: Whether to train a deterministic or variational autoencoder
+- `split_type` and `aeSplitType`: The type of data splitting used for training. Options are `scaffold_balanced`, `random`, or `molecular weight`.
+- `fpType`: The type of fingerprint used.
+- `fpSize`: The size of the fingerprint.
+- `fnnType`: The type of Feedforward Neural Network used.
+- `optimizer`: The optimization algorithm used.
+- `lossFunction`: The loss function used.
+- `epochs`: The number of training epochs.
+- `batchSize`: The size of the training batch.
+- `learningRate`: The learning rate for the optimizer.
+- `l2reg`: The L2 regularization parameter.
+- `wabTracking` or `aeWabTracking`: Whether to use Weights and Biases (WANDB) for tracking.
+- `wabTarget`: The target metric for WANDB tracking.
 ## Predict
 
 The `predict` mode is used to predict the from molecular structures. Use this command to predict the provided data for prediction:
@@ -208,7 +219,6 @@ The compounds are predicted with the provided model and results are returned as 
 - `ecWeightsFile`: The name of the file containing the weights of the autoencoder. This is not needed for predicting with an AR model.
 - `fnnModelDir`: The directory where the FNN model is saved.
 - `compressFeatures`: Whether to compress the features using the autoencoder or not.
-- `useRBM`: Whether to use a trained deep belief network or not. This is not needed for predicting with an AR model.
 - `trainAC`: Whether to train a new autoencoder or use a pre-trained one.
 - `trainFNN`: Whether to train a new FNN model or use a pre-trained one.
 
@@ -216,21 +226,58 @@ The compounds are predicted with the provided model and results are returned as 
 ```shell
 python -m dfpl traingnn -f example/traingnn.json
 ```
-The `traingnn` mode is used to train models using a graph neural network to predict binary fingerprints from molecular structures. The training data contains three targets and you may train models for each using the following command:
+The `traingnn` mode is used to train models using a graph neural network to predict the chemical-biological associations
+from molecular structures. If the training data contains multiple targets the GNN will perform nultilabel classification.
 
-The trained models, training histories, and respective plots, as well as the predictions on the test data, are stored in the `example/results_traingnn` folder as defined in the `example/traingnn.json` file (you may change this). Similar and even more options are offered via the GNN model. Go to `chemprop/args.py` to take a peek and set your options.
+The trained models, training histories, and respective plots, as well as the predictions on the test data, are stored
+in the `example/results_traingnn` folder as defined in the `example/traingnn.json` file (you may change this). Similar 
+and even more options are offered via the GNN model. Go to `chemprop/args.py` to take a peek and set your options.
+
+Some basic arguments include:
+- `data_path`: Specifies the path to the dataset in CSV format. This is where the model will read the training data from.
+  
+- `save_dir`: The directory where the trained model and any generated output files will be saved. Make sure the directory exists or can be created.
+
+- `epochs`: The number of training epochs. An epoch is one complete forward and backward pass of all the training examples.
+
+- `num_folds`: The number of folds to use for cross-validation. Cross-validation is a resampling procedure used to evaluate machine learning models on a limited data sample.
+
+- `metric`: The primary metric used for model evaluation. In this case, it's "accuracy".
+
+- `loss_function`: Specifies the loss function to be minimized during training. Here, it's set to "binary_cross_entropy".
+
+- `split_type`: Defines the strategy used for splitting the data into training and test sets. The "random" option will randomly split the data.
+
+- `dataset_type`: Specifies the type of problem you are solving; in this case, it's a "classification" problem.
+
+- `smiles_columns`: The name of the column in the CSV file that contains the SMILES strings of the molecules.
+
+- `extra_metrics`: A list of additional metrics that you want to compute for model evaluation. These could include metrics like "balanced_accuracy", "Area Under Curve (AUC)", "F1 score", "Matthews Correlation Coefficient (MCC)", "recall", "specificity", and "precision".
+
+- `hidden_size`: Specifies the size of the hidden layers in the neural network. A larger size may capture more complex representations but could risk overfitting.
 
 ## Predictgnn
 ```shell
 python -m dfpl predictgnn -f example/predictgnn.json
 ```
-The `predictgnn` mode is used to predict binary fingerprints from molecular structures using a graph neural network. Use this command to predict the provided data for prediction:
+The `predictgnn` mode is using trained GNN model to predict these chemical-biological target associations from molecular
+structures using a graph neural network. 
 
+Again some basic arguments:
+
+- `test_path`: The path to the dataset containing smiles in CSV format. 
+
+- `checkpoint_path`: Specifies the path to the trained model checkpoint file, usually with a `.pt` extension.
+This is the model that will be used for making predictions.
+
+- `save_dir`: The directory where the prediction results will be saved. 
+Make sure the directory exists or can be created.
+
+- `saving_name`: The name of the CSV file where the predictions will be saved. 
+          This file will be created in the `save_dir`.
 ## Convert
 
 The `convert` mode is used to convert `.csv` or `.tsv` files into `.pkl` files for easy access in Python and to reduce memory on disk.
-
-
 
 
 # Please note that:
