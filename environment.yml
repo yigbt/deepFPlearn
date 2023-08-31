@@ -18,5 +18,6 @@ dependencies:
   - seaborn=0.12.2
   - tensorflow-gpu=2.6.0
   - wandb=0.12
+  - umap=0.1.1
   - pip:
     - git+https://github.com/soulios/chemprop.git@1d73523e49aa28a90b74edc04aaf45d7e124e338

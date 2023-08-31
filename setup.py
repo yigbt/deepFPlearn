@@ -29,6 +29,7 @@ setup(
         "keras==2.9.0",
         "tensorflow-gpu==2.9.3",
         "wandb~=0.12.0",
+        "umap~=0.1.1",
         "seaborn~=0.12.2",
         "chemprop @ git+https://github.com/soulios/chemprop.git@1d73523e49aa28a90b74edc04aaf45d7e124e338",
     ],
