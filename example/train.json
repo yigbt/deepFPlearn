@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "tests/data/S_dataset.csv",
-  "outputDir": "tests/output/",
+  "outputDir": "example/results_train/",
   "ecModelDir": "",
   "ecWeightsFile": "",
   "verbose": 2,
