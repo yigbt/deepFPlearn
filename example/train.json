@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "deepFPlearn/tests/data/S_dataset.csv",
+  "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/grokking",
   "ecModelDir": "",
   "ecWeightsFile": "",
