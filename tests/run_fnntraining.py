@@ -11,9 +11,9 @@ project_directory = pathlib.Path(__file__).parent.absolute()
 test_train_args = opt.Options(
     inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
     ecModelDir=utils.makePathAbsolute(
-        f"{project_directory}/output/fnnTrainingCompressed/"
+        f"{project_directory}/output/"
     ),
-    outputDir=utils.makePathAbsolute(f"{project_directory}/output/fnnTraining"),
+    outputDir=utils.makePathAbsolute(f"{project_directory}/output/"),
     ecWeightsFile="",
     type="smiles",
     fpType="topological",
@@ -36,7 +36,7 @@ def run_single_label_training(opts: opt.Options) -> None:
     logging.info("Adding fingerprint to dataset")
 
     opts.outputDir = utils.makePathAbsolute(
-        f"{project_directory}/output/fnnTrainingCompressed"
+        f"{project_directory}/output/"
     )
     utils.createDirectory(opts.outputDir)
 
@@ -65,7 +65,7 @@ def run_single_label_training(opts: opt.Options) -> None:
 
     # train FNNs with uncompressed features
     opts.outputDir = utils.makePathAbsolute(
-        f"{project_directory}/output/fnnTrainingUncompressed"
+        f"{project_directory}/output/"
     )
     utils.createDirectory(opts.outputDir)
     logging.info("Training the FNN using un-compressed input data.")
