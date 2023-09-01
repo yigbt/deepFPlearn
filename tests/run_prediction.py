@@ -16,7 +16,7 @@ test_predict_args = opt.Options(
     ecWeightsFile=utils.makePathAbsolute(
         f"{project_directory}/output/D_datasetdeterministicrandom.autoencoder.weightsrandom.autoencoder.weights.hdf5"
     ),
-    fnnModelDir=f"{project_directory}/fnnTrainingCompressed/AR_saved_model",
+    fnnModelDir=f"{project_directory}/output/fnnTrainingCompressed/AR_saved_model",
     fpSize=2048,
     type="smiles",
     fpType="topological",
