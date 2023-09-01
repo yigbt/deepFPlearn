@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "tests/data/S_dataset.csv",
-  "outputDir": "example/grokking",
+  "outputDir": "tests/output/",
   "ecModelDir": "",
   "ecWeightsFile": "",
   "verbose": 2,
@@ -10,14 +10,14 @@
   "compressFeatures": true,
   "encFPSize": 256,
 
-  "aeSplitType": "scaffold_balanced",
+  "aeSplitType": "random",
   "aeEpochs": 2,
   "aeBatchSize": 351,
   "aeOptimizer": "Adam",
   "aeActivationFunction": "relu",
   "aeLearningRate": 0.001,
   "aeLearningRateDecay": 0.0001,
-  "aeType": "variational",
+  "aeType": "deterministic",
 
   "type": "smiles",
   "fpType": "topological",
