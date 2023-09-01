@@ -9,10 +9,8 @@ from dfpl import single_label_model as fNN
 
 
 def test_fractional_sampling():
-    # test_directory = pathlib.Path(__file__).parent.absolute()
-    # df = fp.importDataFile(os.path.join(test_directory, "data", "S_dataset.csv"))
-    csv_file_path = "/deepFPlearn/tests/data/S_dataset.csv"
-    df = fp.importDataFile(csv_file_path)
+    test_directory = pathlib.Path(__file__).parent.absolute()
+    df = fp.importDataFile(os.path.join(test_directory, "data", "S_dataset.csv"))
 
     targets = ["AR", "ER", "GR"]
     fractions = [0.5, 1.0, 2.0, 3.0]
