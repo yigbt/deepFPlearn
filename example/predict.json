@@ -1,11 +1,11 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "tests/data/smiles.csv",
-  "outputDir": "example/results_predict_fnn",
+  "outputDir": "example/results_predict/",
   "outputFile": "smiles.csv",
   "ecModelDir": "",
   "ecWeightsFile": "",
-  "fnnModelDir": "example/grokking/AR-2_best_saved_model",
+  "fnnModelDir": "example/AR-2_saved_model",
   "compressFeatures": false,
   "useRBM": false,
   "trainAC": false,
