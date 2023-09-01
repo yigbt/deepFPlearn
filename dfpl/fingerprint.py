@@ -135,8 +135,12 @@ def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
     return pd.read_table(tsvfilename, names=["toxid", "inchi", "key"])
 
 
+# Update the directory path to point to the correct location
+directory = "/deepFPlearn/tests/data/"
+
 conversion_rules = {
-    "/deepFPlearn/tests/data/S_dataset.csv": importSmilesCSV,
+    os.path.join(directory, "S_dataset.csv"): importSmilesCSV,
+    # "/tests/data/S_dataset.csv": importSmilesCSV,
     # "S_dataset_extended.csv": importSmilesCSV,
     # "D_dataset.tsv": importDstoxTSV,
     # "train_data.csv": importSmilesCSV,
