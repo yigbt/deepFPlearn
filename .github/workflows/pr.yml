@@ -76,8 +76,8 @@ jobs:
           exit 1
         fi
         echo "result lines "$(wc -l example/results_predict/smiles.csv)
-        if [ "$(cat example/results_predict/smiles.csv | wc -l)" -lt "5" ]; then
-          echo "predict result should have at least 5 lines. But had only $(cat example/results_predict/predict_data_AR.csv | wc -l)" >&2 
+        if [ "$(cat example/results_predict/smiles.csv | wc -l)" -lt "6" ]; then
+          echo "predict result should have at least 6 lines. But had only $(cat example/results_predict/smiles.csv | wc -l)" >&2 
           exit 1
         fi
         tree example
@@ -92,6 +92,12 @@ jobs:
         dfpl predictgnn -f example/predictgnn.json
         if [ ! -d preds_dmpnn/ ]; then
           echo "predict result directory missing" >&2 
+          exit 1
+        fi
+      
+        echo "result lines "$(wc -l preds_dmpnn/DMPNN_preds.csv)
+        if [ "$(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" -lt "6" ]; then
+          echo "predict result should have at least 5 lines. But had only $(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" >&2 
           exit 1
         fi
         
