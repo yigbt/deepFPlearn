@@ -3,5 +3,5 @@
   "test_path": "tests/data/smiles.csv",
   "checkpoint_path": "dmpnn-random/fold_0/model_0/model.pt",
   "save_dir": "preds_dmpnn",
-  "saving_name": "DMONN_preds.csv"
+  "saving_name": "DMPNN_preds.csv"
 }
