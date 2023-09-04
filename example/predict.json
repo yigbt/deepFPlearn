@@ -3,10 +3,10 @@
   "inputFile": "tests/data/smiles.csv",
   "outputDir": "example/results_predict/",
   "outputFile": "smiles.csv",
-  "ecModelDir": "",
+  "ecModelDir": "example/results_train/random_autoencoder/",
   "ecWeightsFile": "",
-  "fnnModelDir": "example/AR-2_saved_model",
-  "compressFeatures": false,
+  "fnnModelDir": "example/results_train/AR_saved_model",
+  "compressFeatures": true,
   "trainAC": false,
   "trainFNN": false
 }

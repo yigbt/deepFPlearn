@@ -181,7 +181,6 @@ def predict(opts: options.Options) -> None:
         df = fp.importDataFile(
             opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize
         )
-        print(df)
     else:
         df = fp.importDataFile(
             opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
@@ -273,8 +272,7 @@ def main():
                 f"The following arguments are received or filled with default values:\n{prog_args}"
             )
 
-            if predictgnn_opts.gnn_type == "dmpnn":
-                predictdmpnn(fixed_opts, prog_args.configFile)
+            predictdmpnn(fixed_opts, prog_args.configFile)
 
         elif prog_args.method == "train":
             train_opts = options.Options.fromCmdArgs(prog_args)
