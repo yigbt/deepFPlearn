@@ -2,6 +2,7 @@ import logging
 import math
 import os.path
 from os.path import basename
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +21,7 @@ from dfpl import options, settings
 from dfpl.utils import ae_scaffold_split, weight_split
 
 
-def define_ac_model(opts: options.Options, output_bias=None) -> (Model, Model):
+def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Model]:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -142,7 +143,7 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # If wandb tracking is enabled for autoencoder weights but not for the main program, initialize a new wandb run
     if opts.aeWabTracking and not opts.wabTracking:
-        wandb.init(project=f"AE_{opts.aeSplitType}", config=opts)
+        wandb.init(project=f"AE_{opts.aeSplitType}")
 
     # Define output files for autoencoder and encoder weights
     if opts.ecWeightsFile == "":

@@ -1,10 +1,11 @@
-import os.path
 import dataclasses
 import logging
+import os.path
 import pathlib
 from argparse import Namespace
 from os import path
 
+import chemprop as cp
 import pandas as pd
 from keras.models import load_model
 
@@ -12,12 +13,9 @@ from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
 from dfpl import options, predictions
-
-# from dfpl import rbm as rbm
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
-import chemprop as cp
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
@@ -89,7 +87,6 @@ def predictdmpnn(opts: options.GnnOptions, json_arg_path: str) -> None:
     """
     ignore_elements = [
         "py/object",
-        "gnn_type",
         "checkpoint_paths",
         "save_dir",
         "saving_name",
@@ -146,9 +143,9 @@ def train(opts: options.Options):
     if opts.compressFeatures:
         if not opts.trainAC:
             if opts.aeType == "deterministic":
-                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
             elif opts.aeType == "variational":
-                (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+                (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
             elif opts.ecWeightsFile == "":
                 encoder = load_model(opts.ecModelDir)
             else:
@@ -184,7 +181,6 @@ def predict(opts: options.Options) -> None:
         df = fp.importDataFile(
             opts.inputFile, import_function=fp.importDstoxTSV, fp_size=opts.fpSize
         )
-        print(df)
     else:
         df = fp.importDataFile(
             opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
@@ -193,9 +189,9 @@ def predict(opts: options.Options) -> None:
     if opts.compressFeatures:
         # load trained model for autoencoder
         if opts.aeType == "deterministic":
-            (autoencoder, encoder) = ac.define_ac_model(opts=options.Options)
+            (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
         if opts.aeType == "variational":
-            (autoencoder, encoder) = vae.define_vae_model(opts=options.Options)
+            (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
         # Load trained model for autoencoder
         if opts.ecWeightsFile == "":
             encoder = load_model(opts.ecModelDir)
@@ -276,8 +272,7 @@ def main():
                 f"The following arguments are received or filled with default values:\n{prog_args}"
             )
 
-            if predictgnn_opts.gnn_type == "dmpnn":
-                predictdmpnn(fixed_opts, prog_args.configFile)
+            predictdmpnn(fixed_opts, prog_args.configFile)
 
         elif prog_args.method == "train":
             train_opts = options.Options.fromCmdArgs(prog_args)

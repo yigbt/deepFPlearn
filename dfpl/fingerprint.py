@@ -44,7 +44,7 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         # from rdkit import DataStructs
         # DataStructs.ConvertToNumpyArray(morgan, npa)
 
-        npa = np.zeros((0,), dtype=np.bool)
+        npa = np.zeros((0,), dtype=np.bool_)
         try:
             DataStructs.ConvertToNumpyArray(
                 AllChem.GetMorganFingerprintAsBitVect(
@@ -136,12 +136,14 @@ def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
 
 
 conversion_rules = {
-    # "S_dataset.csv": importSmilesCSV,
+    "S_dataset.csv": importSmilesCSV,
+    "smiles.csv": importSmilesCSV,
+    "inchi.tsv": importDstoxTSV
     # "S_dataset_extended.csv": importSmilesCSV,
     # "D_dataset.tsv": importDstoxTSV,
     # "train_data.csv": importSmilesCSV,
     # "predict_data.csv": importDstoxTSV,
-    "B_data_ER.csv": importDstoxTSV
+    # "B_data_ER.csv": importDstoxTSV
 }
 
 

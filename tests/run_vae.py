@@ -9,8 +9,8 @@ import dfpl.vae as vae
 project_directory = pathlib.Path(__file__).parent.absolute()
 test_train_args = opt.Options(
     inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
-    ecModelDir=utils.makePathAbsolute(f"{project_directory}/output_data/modeltraining"),
-    outputDir=utils.makePathAbsolute(f"{project_directory}/output_data"),
+    ecModelDir=utils.makePathAbsolute(f"{project_directory}/data"),
+    outputDir=utils.makePathAbsolute(f"{project_directory}/output"),
     ecWeightsFile="",
     type="smiles",
     fpType="topological",
