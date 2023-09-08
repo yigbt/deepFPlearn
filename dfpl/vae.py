@@ -11,9 +11,10 @@ import tensorflow.keras.metrics as metrics
 import wandb
 from keras import backend as K
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import initializers, optimizers
+from tensorflow.keras import initializers
 from tensorflow.keras.layers import Dense, Input, Lambda
 from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from dfpl import callbacks
@@ -27,7 +28,7 @@ disable_eager_execution()
 def define_vae_model(opts: options.Options, output_bias=None) -> Tuple[Model, Model]:
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    ac_optimizer = optimizers.Adam(
+    ac_optimizer = Adam(
         learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay
     )
 

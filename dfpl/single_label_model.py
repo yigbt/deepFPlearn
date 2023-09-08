@@ -28,6 +28,7 @@ from tensorflow.keras.losses import (
     MeanSquaredError,
 )
 from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.optimizers.legacy import Adam
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -336,7 +337,7 @@ def define_single_label_model(
 
     # Set the optimizer according to the option selected
     if opts.optimizer == "Adam":
-        my_optimizer = optimizers.Adam(learning_rate=opts.learningRate)
+        my_optimizer = Adam(learning_rate=opts.learningRate)
     elif opts.optimizer == "SGD":
         my_optimizer = optimizers.SGD(lr=opts.learningRate, momentum=0.9)
     else:
