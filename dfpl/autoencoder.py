@@ -11,9 +11,10 @@ import seaborn as sns
 import umap
 import wandb
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import initializers, losses, optimizers
+from tensorflow.keras import initializers, losses
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers.legacy import Adam
 
 from dfpl import callbacks
 from dfpl import history as ht
@@ -32,7 +33,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     """
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    ac_optimizer = optimizers.Adam(
+    ac_optimizer = Adam(
         learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay
     )
 
