@@ -101,22 +101,23 @@ In order to use the environment it needs to be activated with `. ENV_PATH/bin/ac
 
 To use this tool in a conda environment:
 
-1. Create the conda env from scratch
+1. Install mamba. For details follow the installation guide here. https://mamba.readthedocs.io/en/latest/mamba-installation.html#mamba-install}
+2. Create the mamba env from scratch
 
    From within the `deepFPlearn` directory, you can create the conda environment with the provided yaml file that
    contains all information and necessary packages
 
    ```shell
-   conda env create -f environment.yml
+   mamba env create -f environment.yml
    ```
 
-2. Activate the `dfpl_env` environment with
+3. Activate the `dfpl_env` environment with
 
    ```shell
-   conda activate dfpl_env
+   mamba activate dfpl_env
    ```
 
-3. Install the local `dfpl` package by calling
+4. Install the local `dfpl` package by calling
 
    ```shell
    pip install --no-deps ./
@@ -287,6 +288,6 @@ The `convert` mode is used to convert `.csv` or `.tsv` files into `.pkl` files f
 # Please note that:
 
 This work has been submitted in a research paper and is currently under review.
-You may read the preprint @bioRxiv: https://doi.org/10.1101/2021.06.24.449697
+You may read the published article @Briefings in Bioinformatics: https://doi.org/10.1093/bib/bbac257
 
 For questions, comments please contact me: jana.schor@ufz.de
