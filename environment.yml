@@ -1,4 +1,4 @@
-name: dfplenv
+name: dfpl_env
 channels:
   - conda-forge
   - defaults
@@ -18,7 +18,8 @@ dependencies:
   - seaborn>=0.12.2
   - tensorflow>=2.10
   - wandb>=0.12
-  - umap>=0.1.1
   - pip:
     - git+https://github.com/soulios/chemprop.git@1d73523e49aa28a90b74edc04aaf45d7e124e338
+    - umap>=0.1.1
+
 
