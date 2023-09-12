@@ -18,8 +18,8 @@ dependencies:
   - seaborn>=0.12.2
   - tensorflow>=2.10
   - wandb>=0.12
+  - umap-learn>=0.5.3
   - pip:
     - git+https://github.com/soulios/chemprop.git@1d73523e49aa28a90b74edc04aaf45d7e124e338
-    - umap>=0.1.1
 
 
