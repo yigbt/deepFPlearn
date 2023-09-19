@@ -6,7 +6,7 @@
   "num_folds": 2,
   "metric": "accuracy",
   "loss_function": "binary_cross_entropy",
-  "split_type": "random",
+  "split_type": "molecular_weight",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
   "extra_metrics": ["balanced_accuracy","auc","f1","mcc","recall","specificity","precision"],

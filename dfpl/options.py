@@ -47,6 +47,7 @@ class Options:
     aeLearningRateDecay: float = 0.01
     aeActivationFunction: str = "relu"
     aeOptimizer: str = "Adam"
+    visualize_fingerprints: bool = False
     fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
@@ -376,6 +377,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Size of encoded fingerprint (z-layer of autoencoder).",
+        default=argparse.SUPPRESS,
+    )
+    autoencoder_args.add_argument(
+        "-vis",
+        "--visualize_fingerprints",
+        metavar="BOOL",
+        type=bool,
+        help="UMAP visualization of compressed fingerprints (z-layer of autoencoder).Works only if compressFeatures is True",
         default=argparse.SUPPRESS,
     )
     # Training Configuration

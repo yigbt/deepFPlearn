@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import umap
+import umap.umap_ as umap
 import wandb
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses
@@ -344,14 +344,22 @@ def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFra
 
 def visualize_fingerprints(
     df: pd.DataFrame,
-    before_col: str,
-    after_col: str,
     train_indices: np.ndarray,
     test_indices: np.ndarray,
     save_as: str,
 ):
+    if len(df) <= 10000:
+        num_samples = len(df)
+    elif len(df) > 50000:
+        logging.info("Cannot return the UMAP due to the large dataset size. Skipping the function.")
+        return
+    else:
+        additional_length = len(df) - 10000
+        additional_samples = (additional_length // 10000) * 2000
+        num_samples = 10000 + additional_samples
+
+    after_col = "fpcompressed"
     # Calculate the number of samples to be taken from each set
-    num_samples = 1000
     train_samples = int(num_samples * len(train_indices) / len(df))
     test_samples = num_samples - train_samples
 

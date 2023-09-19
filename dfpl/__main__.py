@@ -154,14 +154,13 @@ def train(opts: options.Options):
                 )
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        # ac.visualize_fingerprints(
-        #     df,
-        #     before_col="fp",
-        #     after_col="fpcompressed",
-        #     train_indices=train_indices,
-        #     test_indices=test_indices,
-        #     save_as=f"UMAP_{opts.aeSplitType}.png",
-        # )
+        if opts.visualize_fingerprints:
+            ac.visualize_fingerprints(
+                df,
+                train_indices=train_indices,
+                test_indices=test_indices,
+                save_as=f"UMAP_{opts.aeSplitType}.png",
+            )
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
