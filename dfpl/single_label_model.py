@@ -787,7 +787,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         )
     # For each individual target train a model
     elif opts.split_type == "scaffold_balanced":
-        # df, irrelevant_columns = preprocess_dataframe(df, opts)
         for idx, target in enumerate(targets):
             df = prepare_nn_training_data(df, target, opts, return_dataframe=True)
             relevant_cols = ["smiles"] + ["fp"] + [target]  # list(irrelevant_columns)

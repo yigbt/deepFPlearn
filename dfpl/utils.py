@@ -31,6 +31,28 @@ def createDirectory(directory: str):
         os.makedirs(path)
 
 
+def mergeConfigFromJson(args, in_json: str):
+    try:
+        with open(in_json, "r") as f:
+            json_config = json.load(f)
+
+        # Find the index of configFile and data_path in args and replace their values
+        if "configFile" in json_config:
+            if "--configFile" in args:
+                index = args.index("--configFile") + 1
+                if index < len(args):
+                    args[index] = json_config["configFile"]
+
+        if "data_path" in json_config:
+            if "--data_path" in args:
+                index = args.index("--data_path") + 1
+                if index < len(args):
+                    args[index] = json_config["data_path"]
+
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error loading JSON file: {e}")
+
+
 def createArgsFromJson(in_json: str, ignore_elements: list, return_json_object: bool):
     arguments = []
     with open(in_json, "r") as f:

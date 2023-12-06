@@ -15,7 +15,7 @@ from dfpl import fingerprint as fp
 from dfpl import options, predictions
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
-from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
+from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute, mergeConfigFromJson
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
@@ -67,6 +67,7 @@ def traindmpnn(opts: options.GnnOptions):
     arguments = createArgsFromJson(
         opts.configFile, ignore_elements, return_json_object=False
     )
+    mergeConfigFromJson(arguments, opts.configFile)
     opts = cp.args.TrainArgs().parse_args(arguments)
     logging.info("Training DMPNN...")
     # Train the model and get the mean and standard deviation of AUC score from cross-validation
