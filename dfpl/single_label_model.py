@@ -334,12 +334,17 @@ def define_single_label_model(
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")
-
+    lr_schedule = optimizers.schedules.ExponentialDecay(
+        opts.learningRate,
+        decay_steps=1000,
+        decay_rate=opts.learningRateDecay,
+        staircase=True,
+    )
     # Set the optimizer according to the option selected
     if opts.optimizer == "Adam":
-        my_optimizer = Adam(learning_rate=opts.learningRate)
+        my_optimizer = optimizers.legacy.Adam(learning_rate=lr_schedule)
     elif opts.optimizer == "SGD":
-        my_optimizer = optimizers.SGD(lr=opts.learningRate, momentum=0.9)
+        my_optimizer = optimizers.legacy.SGD(lr=lr_schedule, momentum=0.9)
     else:
         logging.error(f"Your selected optimizer is not supported: {opts.optimizer}.")
         sys.exit("Unsupported optimizer")
@@ -597,11 +602,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     """
 
     # find target columns
-    targets = [
-        c
-        for c in df.columns
-        if c in ["AR", "ER", "ED", "TR", "GR", "PPARg", "Aromatase"]
-    ]
+    targets = [c for c in df.columns if c not in ["smiles", "fp", "fpcompressed"]]
     if opts.wabTracking and opts.wabTarget != "":
         # For W&B tracking, we only train one target that's specified as wabTarget "ER".
         # In case it's not there, we use the first one available
