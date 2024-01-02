@@ -328,7 +328,6 @@ Kyriakos Soulios, Patrick Scheibe, Matthias Bernt, Jörg Hackermüller, and Jana
 deepFPlearn<sup>+</sup>: Enhancing Toxicity Prediction Across the Chemical Universe Using Graph Neural Networks.
 Submitted to a scientific journal, currently under review.
 
-<a id="2">[2]</a>
 Jana Schor, Patrick Scheibe, Matthias Bernt, Wibke Busch, Chih Lai, and Jörg Hackermüller.
 AI for predicting chemical-effect associations at the chemical universe level—deepFPlearn.
 Briefings in Bioinformatics, Volume 23, Issue 5, September 2022, bbac257, https://doi.org/10.1093/bib/bbac257

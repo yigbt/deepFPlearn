@@ -329,14 +329,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="UMAP the latent space for exploration",
         default=False
     )
-    autoencoder_args.add_argument(
-        "-vis",
-        "--visualize_fingerprints",
-        metavar="BOOL",
-        type=bool,
-        help="UMAP visualization of compressed fingerprints (z-layer of autoencoder).Works only if compressFeatures is True",
-        default=argparse.SUPPRESS,
-    )
     # Training Configuration
     training_args.add_argument(
         "--split_type",

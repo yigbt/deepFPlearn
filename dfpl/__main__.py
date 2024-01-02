@@ -15,7 +15,7 @@ from dfpl import fingerprint as fp
 from dfpl import options, predictions
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
-from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute, mergeConfigFromJson
+from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
 
 
 def traindmpnn(opts: options.GnnOptions) -> None:

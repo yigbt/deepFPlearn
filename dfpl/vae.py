@@ -11,7 +11,7 @@ import tensorflow.keras.metrics as metrics
 import wandb
 from keras import backend as K
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import initializers
+from tensorflow.keras import initializers, optimizers
 from tensorflow.keras.layers import Dense, Input, Lambda
 from tensorflow.keras.models import Model,load_model
 from tensorflow.python.framework.ops import disable_eager_execution

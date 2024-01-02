@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "tests/data/tox21.csv",
+  "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/results_train/",
   "ecModelDir": "example/results_train/random_split_autoencoder/",
   "ecWeightsFile": "",
@@ -19,7 +19,7 @@
   "aeLearningRate": 0.001,
   "aeLearningRateDecay": 0.96,
   "aeType": "deterministic",
-  "visualize_fingerprints": false,
+  "visualizeLatent": false,
 
   "type": "smiles",
   "fpType": "topological",
