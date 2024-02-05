@@ -1,7 +1,6 @@
 import logging
 import math
 import os.path
-from os.path import basename
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -11,7 +10,7 @@ import seaborn as sns
 import umap.umap_ as umap
 import wandb
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import initializers, losses
+from tensorflow.keras import initializers, losses, optimizers
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.models import Model, load_model
 
@@ -122,19 +121,11 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     encoder = Model(input_vec, encoded)
     autoencoder.summary(print_fn=logging.info)
 
-    autoencoder.compile(
-        optimizer=ac_optimizer,
-        loss=losses.BinaryCrossentropy(),
-        # metrics=[
-        #     metrics.AUC(),
-        #     metrics.Precision(),
-        #     metrics.Recall()
-        # ]
-    )
+    autoencoder.compile(optimizer=ac_optimizer, loss=losses.BinaryCrossentropy())
     return autoencoder, encoder
 
 
-def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
+def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Tuple[Model, np.ndarray, np.ndarray]:
     """
     Trains an autoencoder on the given feature matrix X. The response matrix is only used to
     split the data into meaningful test and train sets.
@@ -231,7 +222,6 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
             # Find the corresponding indices for train_data, val_data, and test_data in the sorted DataFrame
             train_indices = sorted_indices[df.index.isin(train_data.index)]
-            # val_indices = sorted_indices[df.index.isin(val_data.index)]
             test_indices = sorted_indices[df.index.isin(test_data.index)]
         else:
             x_train = fp_matrix
@@ -326,15 +316,31 @@ def visualize_fingerprints(
     test_indices: np.ndarray,
     save_as: str,
 ):
+    """
+    Visualize fingerprints using UMAP and save the visualization to a file.
+
+    This function takes a Pandas DataFrame containing fingerprint data, calculates
+    the appropriate number of samples based on the size of the dataset, applies UMAP
+    for dimensionality reduction, and saves the resulting visualization.
+
+    Parameters:
+    - df (pd.DataFrame): A Pandas DataFrame containing fingerprint data.
+    - train_indices (np.ndarray): An array containing indices of training samples.
+    - test_indices (np.ndarray): An array containing indices of test samples.
+    - save_as (str): The filename or path where the UMAP visualization will be saved.
+    Note:
+    - If the DataFrame size exceeds 50,000 rows, the function logs a message and skips
+      the UMAP visualization step.
+    """
     if len(df) <= 10000:
         num_samples = len(df)
     elif len(df) > 50000:
-        logging.info("Cannot return the UMAP due to the large dataset size. Skipping the function.")
+        logging.info(
+            "Cannot return the UMAP due to the large dataset size. Skipping the function."
+        )
         return
     else:
-        additional_length = len(df) - 10000
-        additional_samples = (additional_length // 10000) * 2000
-        num_samples = 10000 + additional_samples
+        num_samples = len(df) // 2
 
     after_col = "fpcompressed"
     # Calculate the number of samples to be taken from each set

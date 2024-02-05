@@ -24,33 +24,33 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
         # enable this checkpoint to restore the weights of the best performing model
     if opts.aeType == "deterministic":
         checkpoint = ModelCheckpoint(
-        checkpoint_path,
-        monitor=target,
-        mode="min",
-        verbose=1,
-        save_freq="epoch",
-        save_best_only=True,
+            checkpoint_path,
+            monitor=target,
+            mode="min",
+            verbose=1,
+            save_freq="epoch",
+            save_best_only=True,
         )
     else:
         checkpoint = ModelCheckpoint(
-        checkpoint_path,
-        monitor=target,
-        mode="min",
-        verbose=1,
-        save_freq="epoch",
-        save_best_only=True,
-        save_weights_only=True
+            checkpoint_path,
+            monitor=target,
+            mode="min",
+            verbose=1,
+            save_freq="epoch",
+            save_best_only=True,
+            save_weights_only=True,
         )
     callbacks.append(checkpoint)
 
     # enable early stopping if val_loss is not improving anymore
     early_stop = EarlyStopping(
-    monitor=target,
-    mode="min",
-    patience=settings.ac_train_patience,
-    min_delta=settings.ac_train_min_delta,
-    verbose=1,
-    restore_best_weights=True,
+        monitor=target,
+        mode="min",
+        patience=settings.ac_train_patience,
+        min_delta=settings.ac_train_min_delta,
+        verbose=1,
+        restore_best_weights=True,
     )
     callbacks.append(early_stop)
     if opts.aeWabTracking and not opts.wabTracking:

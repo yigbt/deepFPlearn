@@ -8,7 +8,7 @@ import jsonpickle
 import torch
 from chemprop.args import TrainArgs
 
-from dfpl.utils import makePathAbsolute, parseCmdArgs
+from dfpl.utils import parseCmdArgs
 
 
 @dataclass
@@ -47,7 +47,6 @@ class Options:
     aeLearningRateDecay: float = 0.96
     aeActivationFunction: str = "selu"
     aeOptimizer: str = "Adam"
-    visualize_fingerprints: bool = False
     fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
@@ -58,7 +57,7 @@ class Options:
     l2reg: float = 0.001
     dropout: float = 0.2
     threshold: float = 0.5
-    visualizeLatent: bool = False #only if autoencoder is trained or loaded
+    visualizeLatent: bool = False  # only if autoencoder is trained or loaded
     gpu: int = None
     aeWabTracking: bool = False  # Wand & Biases autoencoder tracking
     wabTracking: bool = False  # Wand & Biases FNN tracking
@@ -99,6 +98,11 @@ class GnnOptions(TrainArgs):
     preds_path: str = "./tox21dmpnn.csv"
     test_path: str = ""
     save_preds: bool = True
+    calibration_method: str = "none"
+    uncertainty_method: str = "none"
+    calibration_path: str = ""
+    evaluation_methods: str = "none"
+    evaluation_scores_path: str = ""
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
@@ -132,6 +136,12 @@ def createCommandlineParser() -> argparse.ArgumentParser:
     parser_predict_gnn = subparsers.add_parser(
         "predictgnn", help="Predict with your GNN models"
     )
+    parser_interpret_gnn = subparsers.add_parser(
+        "interpretgnn", help="Interpret your GNN models"
+    )
+    parser_interpret_gnn.set_defaults(method="interpretgnn")
+    parseInterpretGnn(parser_interpret_gnn)
+
     parser_predict_gnn.set_defaults(method="predictgnn")
     parsePredictGnn(parser_predict_gnn)
 
@@ -183,7 +193,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="The file containing the data for training in "
         "comma separated CSV format.The first column should be smiles.",
-        default="tests/data/smiles.csv"
+        default="tests/data/smiles.csv",
     )
     general_args.add_argument(
         "-o",
@@ -192,7 +202,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Prefix of output file name. Trained model and "
         "respective stats will be returned in this directory.",
-        default="example/results_train/"
+        default="example/results_train/",
     )
 
     # TODO CHECK WHAT IS TYPE DOING?
@@ -203,7 +213,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-        default="fp"
+        default="fp",
     )
     general_args.add_argument(
         "-thr",
@@ -211,7 +221,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=float,
         metavar="FLOAT",
         help="Threshold for binary classification.",
-        default=0.5
+        default=0.5,
     )
     general_args.add_argument(
         "-gpu",
@@ -219,7 +229,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Select which gpu to use by index. If not available, leave empty",
-        default=None
+        default=None,
     )
     general_args.add_argument(
         "--fpType",
@@ -227,25 +237,25 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["topological", "MACCS"],
         help="The type of fingerprint to be generated/used in input file. MACCS or topological are available.",
-        default="topological"
+        default="topological",
     )
     general_args.add_argument(
         "--fpSize",
         type=int,
         help="Length of the fingerprint that should be generated.",
-        default=2048
+        default=2048,
     )
     general_args.add_argument(
         "--compressFeatures",
         action="store_true",
         help="Should the fingerprints be compressed or not. Needs a path of a trained autoencoder or needs the trainAC also set to True.",
-        default=False
+        default=False,
     )
     general_args.add_argument(
         "--enableMultiLabel",
         action="store_true",
         help="Train multi-label classification model in addition to the individual models.",
-        default=False
+        default=False,
     )
     # Autoencoder Configuration
     autoencoder_args.add_argument(
@@ -254,14 +264,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="FILE",
         help="The .hdf5 file of a trained encoder",
-        default=""
+        default="",
     )
     autoencoder_args.add_argument(
         "--ecModelDir",
         type=str,
         metavar="DIR",
         help="The directory where the full model of the encoder will be saved",
-        default="example/results_train/AE_encoder/"
+        default="example/results_train/AE_encoder/",
     )
     autoencoder_args.add_argument(
         "--aeType",
@@ -269,21 +279,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["variational", "deterministic"],
         help="Autoencoder type, variational or deterministic.",
-        default="deterministic"
+        default="deterministic",
     )
     autoencoder_args.add_argument(
         "--aeEpochs",
         metavar="INT",
         type=int,
         help="Number of epochs for autoencoder training.",
-        default=100
+        default=100,
     )
     autoencoder_args.add_argument(
         "--aeBatchSize",
         metavar="INT",
         type=int,
         help="Batch size in autoencoder training.",
-        default=512
+        default=512,
     )
     autoencoder_args.add_argument(
         "--aeActivationFunction",
@@ -291,21 +301,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["relu", "selu"],
         help="The activation function for the hidden layers in the autoencoder.",
-        default="relu"
+        default="relu",
     )
     autoencoder_args.add_argument(
         "--aeLearningRate",
         metavar="FLOAT",
         type=float,
         help="Learning rate for autoencoder training.",
-        default=0.001
+        default=0.001,
     )
     autoencoder_args.add_argument(
         "--aeLearningRateDecay",
         metavar="FLOAT",
         type=float,
         help="Learning rate decay for autoencoder training.",
-        default=0.96
+        default=0.96,
     )
     autoencoder_args.add_argument(
         "--aeSplitType",
@@ -313,7 +323,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the autoencoder",
-        default="random"
+        default="random",
     )
     autoencoder_args.add_argument(
         "-d",
@@ -321,13 +331,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Size of encoded fingerprint (z-layer of autoencoder).",
-        default=256
+        default=256,
     )
     autoencoder_args.add_argument(
         "--visualizeLatent",
         action="store_true",
         help="UMAP the latent space for exploration",
-        default=False
+        default=False,
     )
     # Training Configuration
     training_args.add_argument(
@@ -336,14 +346,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the feedforward neural network",
-        default="random"
+        default="random",
     )
     training_args.add_argument(
         "--testSize",
         metavar="FLOAT",
         type=float,
         help="Fraction of the dataset that should be used for testing. Value in [0,1].",
-        default=0.2
+        default=0.2,
     )
     training_args.add_argument(
         "-K",
@@ -351,7 +361,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="K that is used for K-fold cross-validation in the training procedure.",
-        default=1
+        default=1,
     )
     training_args.add_argument(
         "-v",
@@ -498,7 +508,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "--configFile",
         metavar="FILE",
         type=str,
-        help="Input JSON file that contains all information for training/predicting."
+        help="Input JSON file that contains all information for training/predicting.",
     )
     files_args.add_argument(
         "-i",
@@ -577,11 +587,16 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     general_args.add_argument(
         "-c", "--compressFeatures", action="store_true", default=False
     )
-    (general_args.add_argument(
-        "--aeType", metavar="STRING", type=str,
-         choices=["variational", "deterministic"],
-         help="Autoencoder type, variational or deterministic.",
-         default="deterministic"))
+    (
+        general_args.add_argument(
+            "--aeType",
+            metavar="STRING",
+            type=str,
+            choices=["variational", "deterministic"],
+            help="Autoencoder type, variational or deterministic.",
+            default="deterministic",
+        )
+    )
 
 
 def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
@@ -590,6 +605,39 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     files_args = parser.add_argument_group("Files")
     model_args = parser.add_argument_group("Model arguments")
     training_args = parser.add_argument_group("Training Configuration")
+    uncertainty_args = parser.add_argument_group("Uncertainty Configuration")
+    uncertainty_args.add_argument(
+    "--uncertainty_method",
+    type=str,
+    metavar="STRING",
+    choices=[
+    'mve',
+    'ensemble',
+    'evidential_epistemic',
+    'evidential_aleatoric',
+    'evidential_total',
+    'classification',
+    'dropout',
+    'spectra_roundrobin',
+    'dirichlet'],
+    help="Method to use for uncertainty estimation",
+    default="none",
+    )
+    # Uncertainty arguments
+    uncertainty_args.add_argument(
+        "--calibration_method",
+        type=str,
+        metavar="STRING",
+        choices=["zscaling", "tscaling", "zelikman_interval", "mve_weighting","platt","isotonic"],
+        help="Method to use for calibration",
+        default="none",
+    )
+    uncertainty_args.add_argument(
+        "--calibration_path",
+        type=str,
+        metavar="FILE",
+        help="Path to file with calibration data",
+    )
 
     # General arguments
     general_args.add_argument("--split_key_molecule", type=int)
@@ -1092,13 +1140,28 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     data_args = parser.add_argument_group("Data Configuration")
     files_args = parser.add_argument_group("Files")
     training_args = parser.add_argument_group("Training Configuration")
+    uncertainty_args = parser.add_argument_group("Uncertainty Configuration")
+
+    uncertainty_args.add_argument(
+        "--evaluation_methods",
+        type=str,
+        metavar="STRING",
+        choices=["nll", "spearman", "ence","miscalibration_area"],
+        help="Method to use for evaluation",
+        default="none",
+    )
+    uncertainty_args.add_argument(
+        "--evaluation_scores_path",
+        type=str,
+        metavar="FILE",
+        help="Path to file with evaluation scores",
+    )
     files_args.add_argument(
         "-f",
         "--configFile",
         metavar="FILE",
         type=str,
         help="Input JSON file that contains all information for training/predicting.",
-        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
         "--gpu",
@@ -1240,6 +1303,72 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     training_args.add_argument(
         "--batch_size", type=int, metavar="INT", default=50, help="Batch size"
     )
+def parseInterpretGnn(parser: argparse.ArgumentParser) -> None:
+    files_args = parser.add_argument_group("Files")
+    interpret_args = parser.add_argument_group("Interpretation Configuration")
+    files_args.add_argument(
+        "-f",
+        "--configFile",
+        metavar="FILE",
+        type=str,
+        help="Input JSON file that contains all information for interpretation.",
+    )
+    files_args.add_argument(
+        "--preds_path",
+        type=str,
+        metavar="FILE",
+        help="Path to CSV file where predictions will be saved",
+        default="",
+    )
+    files_args.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        metavar="DIR",
+        help="Directory from which to load model checkpoints"
+        "(walks directory and ensembles all models that are found)",
+        default="./ckpt",
+    )
+    files_args.add_argument(
+        "--checkpoint_path",
+        type=str,
+        metavar="DIR",
+        help="Path to model checkpoint (.pt file)",
+    )
+    files_args.add_argument(
+        "--data_path",
+        type=str,
+        metavar="FILE",
+        help="Path to CSV file containing testing data for which predictions will be made"
+    )
+    interpret_args.add_argument(
+        "--max_atoms",
+        type=int,
+        metavar="INT",
+        help="Maximum number of atoms to use for interpretation")
+
+    interpret_args.add_argument(
+        "--min_atoms",
+        type=int,
+        metavar="INT",
+        help="Minimum number of atoms to use for interpretation")
+
+    interpret_args.add_argument(
+        "--prop_delta",
+        type=float,
+        metavar="FLOAT",
+        help="The minimum change in the property of interest that is considered significant")
+    interpret_args.add_argument(
+        "--property_id",
+        type=int,
+        metavar="INT",
+        help="The index of the property of interest")
+    # write the argument for rollouts
+    interpret_args.add_argument(
+        "--rollout",
+        type=int,
+        metavar="INT",
+        help="The number of rollouts to use for interpretation")
+
 
 
 def parseInputConvert(parser: argparse.ArgumentParser) -> None:

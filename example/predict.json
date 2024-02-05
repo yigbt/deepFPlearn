@@ -1,12 +1,12 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "tests/data/tox21.csv",
+  "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/results_predict/",
   "outputFile": "smiles.csv",
-  "ecModelDir": "example/results_train/random_split_autoencoder",
-  "ecWeightsFile": "random_split_autoencoder_encoder.h5",
-  "fnnModelDir": "example/results_train/NR-AR-1_best_saved_model",
-  "aeType": "variational",
+  "ecModelDir": "example/results_train/random_split_autoencoder/encoder_model/random_split_autoencoder/encoder_model",
+  "ecWeightsFile": "",
+  "fnnModelDir": "example/results_train/AR-1_best_saved_model",
+  "aeType": "deterministic",
   "compressFeatures": true,
   "trainFNN": false
 }

@@ -50,6 +50,7 @@ RUN sh -c 'echo "APT { Get { AllowUnauthenticated \"1\"; }; };" > /etc/apt/apt.c
 
 RUN apt -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true update
 RUN apt-get install -y curl wget
+RUN apt-get install -y git
 
 RUN apt-key del 7fa2af80
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
@@ -118,7 +119,7 @@ RUN ln -s $(which python3) /usr/local/bin/python
 # does not work sind it just copies the files in dfpl
 COPY ./ /deepFPlearn/
 
-# install dfpl 
+# install dfpl
 RUN python -m pip install --no-cache-dir  /deepFPlearn && pip install --no-cache-dir pytest
 
 # The code to run when container is started. 

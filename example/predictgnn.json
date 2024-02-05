@@ -1,6 +1,8 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "test_path": "tests/data/smiles.csv",
+  "test_path": "tests/data/calibra.csv",
   "preds_path": "example/results_gnn.csv",
+  "evaluation_methods": "spearman",
+  "evaluation_scores_path": "example/eval_gnn.csv",
   "checkpoint_path": "dmpnn-random/fold_0/model_0/model.pt"
 }
