@@ -1,7 +1,9 @@
 import logging
 import pathlib
 from os import path
+
 from tensorflow.keras.models import load_model
+
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt

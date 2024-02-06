@@ -1,24 +1,25 @@
+import argparse
 import json
 import logging
 import os
 import pathlib
+import sys
 import warnings
 from collections import defaultdict
-from random import Random
-from typing import Dict, List, Set, Tuple, Union, Type, TypeVar
-
-# Define a type variable
-
 from pathlib import Path
-import argparse
+from random import Random
+from typing import Dict, List, Set, Tuple, Type, TypeVar, Union
+
 import jsonpickle
-import sys
 import numpy as np
 import pandas as pd
 from rdkit import Chem, RDLogger
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from tqdm import tqdm
+
+# Define a type variable
+
 
 RDLogger.DisableLog("rdApp.*")
 T = TypeVar("T")

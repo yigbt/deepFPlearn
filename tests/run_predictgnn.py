@@ -1,8 +1,9 @@
 import logging
 import pathlib
 
-from chemprop import train
 import chemprop as cp
+from chemprop import train
+
 import dfpl.options as opt
 import dfpl.utils as utils
 

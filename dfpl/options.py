@@ -4,6 +4,7 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
 import jsonpickle
 import torch
 from chemprop.args import TrainArgs
