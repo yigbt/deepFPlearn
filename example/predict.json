@@ -5,7 +5,7 @@
   "outputFile": "smiles.csv",
   "ecModelDir": "",
   "ecWeightsFile": "",
-  "fnnModelDir": "example/results_train/AR-1_best_saved_model",
+  "fnnModelDir": "./example/results_train/AR-1_best_saved_model",
   "aeType": "deterministic",
   "compressFeatures": false,
   "trainFNN": false
