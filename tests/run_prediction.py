@@ -14,14 +14,14 @@ project_directory = pathlib.Path(__file__).parent.absolute()
 test_predict_args = opt.Options(
     inputFile=f"{project_directory}/data/smiles.csv",
     outputDir=f"{project_directory}/preds/",
-    ecModelDir=utils.makePathAbsolute(
-        f"{project_directory}/data/random_split_autoencoder/encoder_model/"
-    ),
+    # ecModelDir=utils.makePathAbsolute(
+    #     f"{project_directory}/data/random_split_autoencoder/encoder_model/"
+    # ),
     fnnModelDir=f"{project_directory}/output/fnnTrainingCompressed/AR_saved_model",
     fpSize=2048,
     type="smiles",
     fpType="topological",
-    compressFeatures=True,
+    compressFeatures=False,
 )
 
 

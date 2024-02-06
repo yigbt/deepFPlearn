@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.Options",
   "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/results_train/",
-  "ecModelDir": "example/results_train/random_split_autoencoder/encoder_model/",
+  "ecModelDir": "",
   "ecWeightsFile": "",
   "verbose": 2,
 
