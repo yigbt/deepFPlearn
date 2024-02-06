@@ -618,7 +618,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     # Collect metrics for each fold and target
     performance_list = []
     if opts.split_type == "random":
-        for target in targets[:1]:
+        for target in targets:
             # target=targets[1] # --> only for testing the code
             x, y = prepare_nn_training_data(df, target, opts, return_dataframe=False)
             if x is None:
