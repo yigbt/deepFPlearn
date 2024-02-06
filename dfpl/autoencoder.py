@@ -125,7 +125,9 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     return autoencoder, encoder
 
 
-def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Tuple[Model, np.ndarray, np.ndarray]:
+def train_full_ac(
+    df: pd.DataFrame, opts: options.Options
+) -> Tuple[Model, np.ndarray, np.ndarray]:
     """
     Trains an autoencoder on the given feature matrix X. The response matrix is only used to
     split the data into meaningful test and train sets.

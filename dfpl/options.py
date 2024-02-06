@@ -607,28 +607,36 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     training_args = parser.add_argument_group("Training Configuration")
     uncertainty_args = parser.add_argument_group("Uncertainty Configuration")
     uncertainty_args.add_argument(
-    "--uncertainty_method",
-    type=str,
-    metavar="STRING",
-    choices=[
-    'mve',
-    'ensemble',
-    'evidential_epistemic',
-    'evidential_aleatoric',
-    'evidential_total',
-    'classification',
-    'dropout',
-    'spectra_roundrobin',
-    'dirichlet'],
-    help="Method to use for uncertainty estimation",
-    default="none",
+        "--uncertainty_method",
+        type=str,
+        metavar="STRING",
+        choices=[
+            "mve",
+            "ensemble",
+            "evidential_epistemic",
+            "evidential_aleatoric",
+            "evidential_total",
+            "classification",
+            "dropout",
+            "spectra_roundrobin",
+            "dirichlet",
+        ],
+        help="Method to use for uncertainty estimation",
+        default="none",
     )
     # Uncertainty arguments
     uncertainty_args.add_argument(
         "--calibration_method",
         type=str,
         metavar="STRING",
-        choices=["zscaling", "tscaling", "zelikman_interval", "mve_weighting","platt","isotonic"],
+        choices=[
+            "zscaling",
+            "tscaling",
+            "zelikman_interval",
+            "mve_weighting",
+            "platt",
+            "isotonic",
+        ],
         help="Method to use for calibration",
         default="none",
     )
@@ -1146,7 +1154,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         "--evaluation_methods",
         type=str,
         metavar="STRING",
-        choices=["nll", "spearman", "ence","miscalibration_area"],
+        choices=["nll", "spearman", "ence", "miscalibration_area"],
         help="Method to use for evaluation",
         default="none",
     )
@@ -1303,6 +1311,8 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     training_args.add_argument(
         "--batch_size", type=int, metavar="INT", default=50, help="Batch size"
     )
+
+
 def parseInterpretGnn(parser: argparse.ArgumentParser) -> None:
     files_args = parser.add_argument_group("Files")
     interpret_args = parser.add_argument_group("Interpretation Configuration")
@@ -1338,37 +1348,41 @@ def parseInterpretGnn(parser: argparse.ArgumentParser) -> None:
         "--data_path",
         type=str,
         metavar="FILE",
-        help="Path to CSV file containing testing data for which predictions will be made"
+        help="Path to CSV file containing testing data for which predictions will be made",
     )
     interpret_args.add_argument(
         "--max_atoms",
         type=int,
         metavar="INT",
-        help="Maximum number of atoms to use for interpretation")
+        help="Maximum number of atoms to use for interpretation",
+    )
 
     interpret_args.add_argument(
         "--min_atoms",
         type=int,
         metavar="INT",
-        help="Minimum number of atoms to use for interpretation")
+        help="Minimum number of atoms to use for interpretation",
+    )
 
     interpret_args.add_argument(
         "--prop_delta",
         type=float,
         metavar="FLOAT",
-        help="The minimum change in the property of interest that is considered significant")
+        help="The minimum change in the property of interest that is considered significant",
+    )
     interpret_args.add_argument(
         "--property_id",
         type=int,
         metavar="INT",
-        help="The index of the property of interest")
+        help="The index of the property of interest",
+    )
     # write the argument for rollouts
     interpret_args.add_argument(
         "--rollout",
         type=int,
         metavar="INT",
-        help="The number of rollouts to use for interpretation")
-
+        help="The number of rollouts to use for interpretation",
+    )
 
 
 def parseInputConvert(parser: argparse.ArgumentParser) -> None:

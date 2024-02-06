@@ -5,6 +5,7 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
+import wandb
 import tensorflow.keras.metrics as metrics
 from keras import backend as K
 from sklearn.model_selection import train_test_split
@@ -17,7 +18,6 @@ from dfpl import callbacks
 from dfpl import history as ht
 from dfpl import options, settings
 from dfpl.utils import ae_scaffold_split, weight_split
-
 
 
 def define_vae_model(opts: options.Options, output_bias=None) -> Tuple[Model, Model]:

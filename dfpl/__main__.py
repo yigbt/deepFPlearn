@@ -48,6 +48,7 @@ def predictdmpnn(opts: options.GnnOptions) -> None:
 
     chemprop.train.make_predictions(args=opts)
 
+
 def interpretdmpnn(opts: options.GnnOptions) -> None:
     """
     Interpret the predictions of a trained D-MPNN model with the given options.
@@ -60,7 +61,10 @@ def interpretdmpnn(opts: options.GnnOptions) -> None:
     arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = chemprop.args.InterpretArgs().parse_args(arguments)
 
-    chemprop.interpret.interpret(args=opts,save_to_csv=True)#,additional_columns=["ID"])
+    chemprop.interpret.interpret(
+        args=opts, save_to_csv=True
+    )  # ,additional_columns=["ID"])
+
 
 def train(opts: options.Options):
     """
@@ -111,7 +115,9 @@ def train(opts: options.Options):
                 save_as=f"{opts.ecModelDir}/UMAP_{opts.aeSplitType}.png",
             )
         elif opts.visualizeLatent:
-            logging.info("Visualizing latent space is only available if you train the autoencoder. Skipping visualization.")
+            logging.info(
+                "Visualizing latent space is only available if you train the autoencoder. Skipping visualization."
+            )
 
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
