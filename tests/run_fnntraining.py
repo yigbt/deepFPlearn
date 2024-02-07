@@ -24,7 +24,7 @@ test_train_args = opt.Options(
     testSize=0.2,
     kFolds=1,
     verbose=2,
-    trainAC=False,
+    trainAC=True,
     trainFNN=True,
 )
 
@@ -49,11 +49,7 @@ def run_single_label_training(opts: opt.Options) -> None:
 
     if opts.trainAC:
         logging.info("Training autoencoder")
-        encoder = ac.train_full_ac(df, opts)
-        # encoder.save_weights(opts.acFile)
-    else:
-        logging.info("Using trained autoencoder")
-        (_, encoder) = ac.define_ac_model(opts)
+        encoder, train_indices, test_indices = ac.train_full_ac(df, opts)
 
     df = ac.compress_fingerprints(df, encoder)
 

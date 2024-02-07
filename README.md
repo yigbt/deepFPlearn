@@ -111,22 +111,23 @@ In order to use the environment it needs to be activated with `. ENV_PATH/bin/ac
 
 To use this tool in a conda environment:
 
-1. Create the conda env from scratch
+1. Install mamba. For details follow the installation guide here. https://mamba.readthedocs.io/en/latest/mamba-installation.html#mamba-install}
+2. Create the mamba env from scratch
 
    From within the `deepFPlearn` directory, you can create the conda environment with the provided yaml file that
    contains all information and necessary packages
 
    ```shell
-   conda env create -f environment.yml
+   mamba env create -f environment.yml
    ```
 
-2. Activate the `dfpl_env` environment with
+3. Activate the `dfpl_env` environment with
 
    ```shell
-   conda activate dfpl_env
+   mamba activate dfpl_env
    ```
 
-3. Install the local `dfpl` package by calling
+4. Install the local `dfpl` package by calling
 
    ```shell
    pip install --no-deps ./
@@ -327,7 +328,6 @@ Kyriakos Soulios, Patrick Scheibe, Matthias Bernt, Jörg Hackermüller, and Jana
 deepFPlearn<sup>+</sup>: Enhancing Toxicity Prediction Across the Chemical Universe Using Graph Neural Networks.
 Submitted to a scientific journal, currently under review.
 
-<a id="2">[2]</a>
 Jana Schor, Patrick Scheibe, Matthias Bernt, Wibke Busch, Chih Lai, and Jörg Hackermüller.
 AI for predicting chemical-effect associations at the chemical universe level—deepFPlearn.
 Briefings in Bioinformatics, Volume 23, Issue 5, September 2022, bbac257, https://doi.org/10.1093/bib/bbac257

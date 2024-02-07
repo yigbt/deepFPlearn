@@ -1,19 +1,18 @@
 import logging
 import math
 import os.path
-from os.path import basename
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import umap
+import umap.umap_ as umap
 import wandb
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses, optimizers
 from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, load_model
 
 from dfpl import callbacks
 from dfpl import history as ht
@@ -32,9 +31,13 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     """
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    ac_optimizer = optimizers.Adam(
-        learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay
+    lr_schedule = optimizers.schedules.ExponentialDecay(
+        opts.aeLearningRate,
+        decay_steps=1000,
+        decay_rate=opts.aeLearningRateDecay,
+        staircase=True,
     )
+    ac_optimizer = optimizers.legacy.Adam(learning_rate=lr_schedule)
 
     if output_bias is not None:
         output_bias = initializers.Constant(output_bias)
@@ -104,7 +107,6 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
                 )(decoded)
 
         # output layer
-        # to either 0 or 1 and hence we use sigmoid activation function.
         decoded = Dense(
             units=input_size, activation="sigmoid", bias_initializer=output_bias
         )(decoded)
@@ -119,19 +121,13 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     encoder = Model(input_vec, encoded)
     autoencoder.summary(print_fn=logging.info)
 
-    autoencoder.compile(
-        optimizer=ac_optimizer,
-        loss=losses.BinaryCrossentropy(),
-        # metrics=[
-        #     metrics.AUC(),
-        #     metrics.Precision(),
-        #     metrics.Recall()
-        # ]
-    )
+    autoencoder.compile(optimizer=ac_optimizer, loss=losses.BinaryCrossentropy())
     return autoencoder, encoder
 
 
-def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
+def train_full_ac(
+    df: pd.DataFrame, opts: options.Options
+) -> Tuple[Model, np.ndarray, np.ndarray]:
     """
     Trains an autoencoder on the given feature matrix X. The response matrix is only used to
     split the data into meaningful test and train sets.
@@ -145,37 +141,8 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     if opts.aeWabTracking and not opts.wabTracking:
         wandb.init(project=f"AE_{opts.aeSplitType}")
 
-    # Define output files for autoencoder and encoder weights
-    if opts.ecWeightsFile == "":
-        # If no encoder weights file is specified, use the input file name to generate a default file name
-        logging.info("No AE encoder weights file specified")
-        base_file_name = (
-            os.path.splitext(basename(opts.inputFile))[0] + opts.aeSplitType
-        )
-        logging.info(
-            f"(auto)encoder weights will be saved in {base_file_name}.autoencoder.hdf5"
-        )
-        ac_weights_file = os.path.join(
-            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
-        )
-        # ec_weights_file = os.path.join(
-        #     opts.outputDir, base_file_name + ".encoder.weights.hdf5"
-        # )
-    else:
-        # If an encoder weights file is specified, use it as the encoder weights file name
-        logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
-        base_file_name = (
-            os.path.splitext(basename(opts.ecWeightsFile))[0] + opts.aeSplitType
-        )
-        ac_weights_file = os.path.join(
-            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
-        )
-        # ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
-
+    save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_split_autoencoder")
     # Collect the callbacks for training
-    callback_list = callbacks.autoencoder_callback(
-        checkpoint_path=ac_weights_file, opts=opts
-    )
 
     # Select all fingerprints that are valid and turn them into a numpy array
     fp_matrix = np.array(
@@ -257,7 +224,6 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
             # Find the corresponding indices for train_data, val_data, and test_data in the sorted DataFrame
             train_indices = sorted_indices[df.index.isin(train_data.index)]
-            # val_indices = sorted_indices[df.index.isin(val_data.index)]
             test_indices = sorted_indices[df.index.isin(test_data.index)]
         else:
             x_train = fp_matrix
@@ -286,30 +252,35 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = define_ac_model(opts, output_bias=initial_bias)
-
+    callback_list = callbacks.autoencoder_callback(checkpoint_path=save_path, opts=opts)
     # Train the autoencoder on the training data
     auto_hist = autoencoder.fit(
         x_train,
         x_train,
-        callbacks=callback_list,
+        callbacks=[callback_list],
         epochs=opts.aeEpochs,
         batch_size=opts.aeBatchSize,
         verbose=opts.verbose,
         validation_data=(x_test, x_test) if opts.testSize > 0.0 else None,
     )
-    logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
     # Store the autoencoder training history and plot the metrics
     ht.store_and_plot_history(
-        base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
+        base_file_name=save_path,
         hist=auto_hist,
     )
 
     # Save the autoencoder callback model to disk
-    save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_autoencoder")
     if opts.testSize > 0.0:
-        (callback_autoencoder, callback_encoder) = define_ac_model(opts)
-        callback_encoder.save(filepath=save_path)
+        # Re-define autoencoder and encoder using your function
+        callback_autoencoder = load_model(filepath=save_path)
+        _, callback_encoder = define_ac_model(opts)
+        for i, layer in enumerate(callback_encoder.layers):
+            layer.set_weights(callback_autoencoder.layers[i].get_weights())
+
+        # Save the encoder model
+        encoder_save_path = os.path.join(save_path, "encoder_model")
+        callback_encoder.save(filepath=encoder_save_path)
     else:
         encoder.save(filepath=save_path)
     # Return the encoder model of the trained autoencoder
@@ -343,14 +314,38 @@ def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFra
 
 def visualize_fingerprints(
     df: pd.DataFrame,
-    before_col: str,
-    after_col: str,
     train_indices: np.ndarray,
     test_indices: np.ndarray,
     save_as: str,
 ):
+    """
+    Visualize fingerprints using UMAP and save the visualization to a file.
+
+    This function takes a Pandas DataFrame containing fingerprint data, calculates
+    the appropriate number of samples based on the size of the dataset, applies UMAP
+    for dimensionality reduction, and saves the resulting visualization.
+
+    Parameters:
+    - df (pd.DataFrame): A Pandas DataFrame containing fingerprint data.
+    - train_indices (np.ndarray): An array containing indices of training samples.
+    - test_indices (np.ndarray): An array containing indices of test samples.
+    - save_as (str): The filename or path where the UMAP visualization will be saved.
+    Note:
+    - If the DataFrame size exceeds 50,000 rows, the function logs a message and skips
+      the UMAP visualization step.
+    """
+    if len(df) <= 10000:
+        num_samples = len(df)
+    elif len(df) > 50000:
+        logging.info(
+            "Cannot return the UMAP due to the large dataset size. Skipping the function."
+        )
+        return
+    else:
+        num_samples = len(df) // 2
+
+    after_col = "fpcompressed"
     # Calculate the number of samples to be taken from each set
-    num_samples = 1000
     train_samples = int(num_samples * len(train_indices) / len(df))
     test_samples = num_samples - train_samples
 

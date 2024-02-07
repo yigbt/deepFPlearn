@@ -1,12 +1,12 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "tests/data/smiles.csv",
+  "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/results_predict/",
   "outputFile": "smiles.csv",
-  "ecModelDir": "example/results_train/random_autoencoder/",
+  "ecModelDir": "",
   "ecWeightsFile": "",
   "fnnModelDir": "example/results_train/AR_saved_model",
-  "compressFeatures": true,
-  "trainAC": false,
+  "aeType": "deterministic",
+  "compressFeatures": false,
   "trainFNN": false
 }

@@ -20,16 +20,16 @@ setup(
     # all packages need for the final usage
     # for additional packages during development, use requirements.txt
     install_requires=[
+        "protobuf == 3.20.3",
         "jsonpickle~=2.1.0",
         "matplotlib==3.5.1",
         "numpy==1.22.0",
         "pandas==1.4.2",
         "rdkit-pypi==2022.03.1",
         "scikit-learn==1.0.2",
-        "keras==2.9.0",
-        "tensorflow-gpu==2.9.3",
-        "wandb~=0.12.0",
-        "umap~=0.1.1",
+        "tensorflow==2.13",
+        "wandb~=0.16.2",
+        "umap-learn~=0.5.3",
         "seaborn~=0.12.2",
         "chemprop @ git+https://github.com/soulios/chemprop.git@1d73523e49aa28a90b74edc04aaf45d7e124e338",
     ],

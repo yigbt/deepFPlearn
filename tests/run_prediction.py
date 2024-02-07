@@ -2,6 +2,8 @@ import logging
 import pathlib
 from os import path
 
+from tensorflow.keras.models import load_model
+
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
 import dfpl.options as opt
@@ -12,14 +14,14 @@ project_directory = pathlib.Path(__file__).parent.absolute()
 test_predict_args = opt.Options(
     inputFile=f"{project_directory}/data/smiles.csv",
     outputDir=f"{project_directory}/preds/",
-    ecModelDir=utils.makePathAbsolute(f"{project_directory}/output/"),
-    ecWeightsFile=utils.makePathAbsolute(
-        f"{project_directory}/output/D_datasetdeterministicrandom.autoencoder.weightsrandom.autoencoder.weights.hdf5"
-    ),
+    # ecModelDir=utils.makePathAbsolute(
+    #     f"{project_directory}/data/random_split_autoencoder/encoder_model/"
+    # ),
     fnnModelDir=f"{project_directory}/output/fnnTrainingCompressed/AR_saved_model",
     fpSize=2048,
     type="smiles",
     fpType="topological",
+    compressFeatures=False,
 )
 
 
@@ -36,16 +38,13 @@ def test_predictions(opts: opt.Options):
     )
 
     # use_compressed = False
-    if opts.ecWeightsFile:
+    if opts.ecModelDir:
         # use_compressed = True
         # load trained model for autoencoder
         (autoencoder, encoder) = ac.define_ac_model(opts, output_bias=None)
-        autoencoder.load_weights(opts.ecWeightsFile)
+        encoder = load_model(opts.ecModelDir)
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-    # model = tensorflow.keras.models.load_model(opts.fnnModelDir, compile=False)
-    # model.compile(loss=opts.lossFunction, optimizer=opts.optimizer)
-    # predict
     df2 = p.predict_values(df=df, opts=opts)
 
     names_columns = [c for c in df2.columns if c not in ["fp", "fpcompressed"]]

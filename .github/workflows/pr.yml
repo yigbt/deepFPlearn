@@ -101,5 +101,17 @@ jobs:
           exit 1
         fi
         
+        dfpl interpretgnn -f example/interpret.json
+        if [ "$(cat interpretations.csv | wc -l)" -lt "6" ]; then
+          echo "predict result should have at least 5 lines. But had only $(cat interpretations.csv | wc -l)" >&2 
+          exit 1
+        fi
         
         dfpl convert -f tests/data
+        if [ "$(find tests/data -name '*.csv' | wc -l)" -ne "$(find tests/data -name '*.pkl' | wc -l)" ]; then
+          echo "not all csv files are converted to pickle ones" >&2 
+          exit 1
+        fi
+        
+        
+        echo "All tests passed"
