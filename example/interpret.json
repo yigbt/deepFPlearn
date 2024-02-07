@@ -1,6 +1,6 @@
 {
   "data_path": "tests/data/smiles.csv",
-  "checkpoint_path": "dmpnn-random-S/fold_0/model_0/model.pt",
+  "checkpoint_path": "dmpnn-random/fold_0/model_0/model.pt",
   "preds_path": "interpretations.csv",
   "max_atoms": 20,
   "min_atoms": 8,
