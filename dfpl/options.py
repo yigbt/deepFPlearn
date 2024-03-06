@@ -3,11 +3,11 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Literal, List
+from typing import List, Literal, Optional
 
 import jsonpickle
 import torch
-from chemprop.args import TrainArgs, PredictArgs, InterpretArgs
+from chemprop.args import InterpretArgs, PredictArgs, TrainArgs
 
 from dfpl.utils import parseCmdArgs
 
@@ -107,6 +107,7 @@ class GnnOptions(TrainArgs):
     wabTracking: bool = False
     split_sizes: List[float] = None
     # save_smiles_splits: bool = False
+
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
         # Initialize with JSON config if provided
@@ -1234,7 +1235,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         "--checkpoint_path",
         type=str,
         metavar="FILE",
-        help="Path to model checkpoint (.pt file)"
+        help="Path to model checkpoint (.pt file)",
     )
     # general_args.add_argument(
     #     "--no_features_scaling",
@@ -1318,10 +1319,12 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         ],
         help="Methods used for calibrating the uncertainty calculated with uncertainty method.",
     )
-    uncertainty_args.add_argument("--individual_ensemble_predictions",
+    uncertainty_args.add_argument(
+        "--individual_ensemble_predictions",
         action="store_true",
         default=False,
-        help="Whether to save individual ensemble predictions.")
+        help="Whether to save individual ensemble predictions.",
+    )
     uncertainty_args.add_argument(
         "--evaluation_methods",
         type=str,

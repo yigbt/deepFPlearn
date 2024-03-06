@@ -61,9 +61,7 @@ def interpretdmpnn(opts: options.GnnOptions) -> None:
     arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = chemprop.args.InterpretArgs().parse_args(arguments)
 
-    chemprop.interpret.interpret(
-        args=opts, save_to_csv=True
-    )
+    chemprop.interpret.interpret(args=opts, save_to_csv=True)
 
 
 def train(opts: options.Options):
