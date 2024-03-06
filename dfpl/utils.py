@@ -74,15 +74,18 @@ def createDirectory(directory: str):
     if not os.path.exists(path):
         os.makedirs(path)
 
+
 def parse_cli_list(value: str):
     # Simple parser for lists passed as comma-separated values
-    return value.split(',')
+    return value.split(",")
+
 
 def parse_cli_boolean(cli_args, cli_arg_key):
     # Determines boolean value based on command line presence
     if cli_arg_key in cli_args:
         return True  # Presence of flag implies True
     return False
+
 
 def createArgsFromJson(jsonFile: str):
     arguments = []
@@ -118,6 +121,7 @@ def createArgsFromJson(jsonFile: str):
 
     return arguments
 
+
 def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
     """
     Builds an RDKit molecule from a SMILES string.
@@ -146,10 +150,6 @@ def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
     return mol
 
 
-
-
-# def inchi_to_mol(inchi: str) -> Chem.Mol:
-#     return Chem.inchi.MolFromInchi(inchi)
 def smiles_to_mol(smiles: str) -> Chem.Mol:
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
@@ -211,6 +211,8 @@ def weight_split(
     test_df = sorted_data.iloc[test_indices].reset_index(drop=True)
 
     return train_df, val_df, test_df
+
+
 def generate_scaffold(
     mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = True
 ) -> str:
@@ -254,6 +256,7 @@ def scaffold_to_smiles(
             scaffolds[scaffold].add(mol)
 
     return scaffolds
+
 
 def ae_scaffold_split(
     data: pd.DataFrame,
@@ -378,7 +381,14 @@ def log_scaffold_stats(
         targets = [
             c
             for c in data.columns
-            if c not in ["fp", "morganfp", "fpcompressed", "id", "smiles",]
+            if c
+            not in [
+                "fp",
+                "morganfp",
+                "fpcompressed",
+                "id",
+                "smiles",
+            ]
         ]
         # targets = data_set.iloc[:, 2:].values
         targets = data_set.loc[:, targets].values
