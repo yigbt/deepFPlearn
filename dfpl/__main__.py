@@ -1,12 +1,10 @@
 import dataclasses
 import logging
-import os.path
-import pathlib
+import os
 from argparse import Namespace
 from os import path
 
-import chemprop as cp
-import pandas as pd
+import chemprop
 from keras.models import load_model
 
 from dfpl import autoencoder as ac
@@ -17,7 +15,6 @@ from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
 
-
 def traindmpnn(opts: options.GnnOptions) -> None:
     """
     Train a D-MPNN model using the given options.
@@ -27,11 +24,11 @@ def traindmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options from a JSON file and replace the relevant attributes in `opts`
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
-    opts = cp.args.TrainArgs().parse_args(arguments)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
+    opts = chemprop.args.TrainArgs().parse_args(arguments)
     logging.info("Training DMPNN...")
-    mean_score, std_score = cp.train.cross_validate(
-        args=opts, train_func=cp.train.run_training
+    mean_score, std_score = chemprop.train.cross_validate(
+        args=opts, train_func=chemprop.train.run_training
     )
     logging.info(f"Results: {mean_score:.5f} +/- {std_score:.5f}")
 
@@ -45,10 +42,27 @@ def predictdmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options and additional arguments from a JSON file
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
-    opts = cp.args.PredictArgs().parse_args(arguments)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
+    opts = chemprop.args.PredictArgs().parse_args(arguments)
 
-    cp.train.make_predictions(args=opts)
+    chemprop.train.make_predictions(args=opts)
+
+
+def interpretdmpnn(opts: options.GnnOptions) -> None:
+    """
+    Interpret the predictions of a trained D-MPNN model with the given options.
+    Args:
+    - opts: options.GnnOptions instance containing the details of the prediction
+    Returns:
+    - None
+    """
+    # Load options and additional arguments from a JSON file
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
+    opts = chemprop.args.InterpretArgs().parse_args(arguments)
+
+    chemprop.interpret.interpret(
+        args=opts, save_to_csv=True
+    )
 
 
 def train(opts: options.Options):
@@ -92,15 +106,18 @@ def train(opts: options.Options):
                 )
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        if opts.visualizeLatent:
+        if opts.visualizeLatent and opts.trainAC:
             ac.visualize_fingerprints(
                 df,
-                before_col="fp",
-                after_col="fpcompressed",
                 train_indices=train_indices,
                 test_indices=test_indices,
-                save_as=f"UMAP_{opts.aeSplitType}.png",
+                save_as=f"{opts.ecModelDir}/UMAP_{opts.aeSplitType}.png",
             )
+        elif opts.visualizeLatent:
+            logging.info(
+                "Visualizing latent space is only available if you train the autoencoder. Skipping visualization."
+            )
+
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
@@ -200,16 +217,18 @@ def main():
             traindmpnn(traingnn_opts)
 
         elif prog_args.method == "predictgnn":
-            predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                predictgnn_opts,
-                test_path=makePathAbsolute(predictgnn_opts.test_path),
-                preds_path=makePathAbsolute(predictgnn_opts.preds_path),
-            )
+            predictgnn_opts = options.PredictGnnOptions.fromCmdArgs(prog_args)
             createLogger("predictgnn.log")
-            predictdmpnn(fixed_opts)
+            predictdmpnn(predictgnn_opts)
+        elif prog_args.method == "interpretgnn":
+            interpretgnn_opts = options.InterpretGNNoptions.fromCmdArgs(prog_args)
+            createLogger("interpretgnn.log")
+            interpretdmpnn(interpretgnn_opts)
 
         elif prog_args.method == "train":
+            if prog_args.configFile is None and prog_args.inputFile is None:
+                parser.error("Either --configFile or --inputFile must be provided.")
+
             train_opts = options.Options.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 train_opts,
@@ -223,6 +242,8 @@ def main():
             )
             train(fixed_opts)
         elif prog_args.method == "predict":
+            if prog_args.configFile is None and prog_args.inputFile is None:
+                parser.error("Either --configFile or --inputFile must be provided.")
             predict_opts = options.Options.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(
                 predict_opts,
