@@ -1,12 +1,16 @@
+import argparse
 import json
 import logging
 import os
 import pathlib
+import sys
 import warnings
 from collections import defaultdict
+from pathlib import Path
 from random import Random
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set, Tuple, Type, TypeVar, Union
 
+import jsonpickle
 import numpy as np
 import pandas as pd
 from rdkit import Chem, RDLogger
@@ -14,7 +18,48 @@ from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from tqdm import tqdm
 
+# Define a type variable
+
+
 RDLogger.DisableLog("rdApp.*")
+T = TypeVar("T")
+
+
+def parseCmdArgs(cls: Type[T], args: argparse.Namespace) -> T:
+    """
+    Parses command-line arguments to create an instance of the given class.
+
+    Args:
+    cls: The class to create an instance of.
+    args: argparse.Namespace containing the command-line arguments.
+
+    Returns:
+    An instance of cls populated with values from the command-line arguments.
+    """
+    # Extract argument flags from sys.argv
+    arg_flags = {arg.lstrip("-") for arg in sys.argv if arg.startswith("-")}
+
+    # Create the result instance, which will be modified and returned
+    result = cls()
+
+    # Load JSON file if specified
+    if hasattr(args, "configFile") and args.configFile:
+        jsonFile = Path(args.configFile)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = jsonpickle.decode(f.read())
+                for key, value in vars(content).items():
+                    setattr(result, key, value)
+        else:
+            raise ValueError("Could not find JSON input file")
+
+    # Override with user-provided command-line arguments
+    for key in arg_flags:
+        if hasattr(args, key):
+            user_value = getattr(args, key, None)
+            setattr(result, key, user_value)
+
+    return result
 
 
 def makePathAbsolute(p: str) -> str:
@@ -30,23 +75,49 @@ def createDirectory(directory: str):
     if not os.path.exists(path):
         os.makedirs(path)
 
+def parse_cli_list(value: str):
+    # Simple parser for lists passed as comma-separated values
+    return value.split(',')
 
-def createArgsFromJson(in_json: str, ignore_elements: list, return_json_object: bool):
+def parse_cli_boolean(cli_args, cli_arg_key):
+    # Determines boolean value based on command line presence
+    if cli_arg_key in cli_args:
+        return True  # Presence of flag implies True
+    return False
+
+def createArgsFromJson(jsonFile: str):
     arguments = []
-    with open(in_json, "r") as f:
+    ignore_elements = ["py/object"]
+    cli_args = sys.argv[1:]  # Skipping the script name itself
+
+    with open(jsonFile, "r") as f:
         data = json.load(f)
+
+    processed_cli_keys = []  # To track which CLI keys have been processed
+
     for key, value in data.items():
         if key not in ignore_elements:
-            if key == "extra_metrics" and isinstance(value, list):
-                arguments.append("--extra_metrics")
-                arguments.extend(value)
+            cli_arg_key = f"--{key}"
+            if cli_arg_key in cli_args:
+                processed_cli_keys.append(cli_arg_key)
+                arg_index = cli_args.index(cli_arg_key) + 1
+                if isinstance(value, bool):
+                    value = parse_cli_boolean(cli_args, cli_arg_key)
+                elif arg_index < len(cli_args):
+                    cli_value = cli_args[arg_index]
+                    if isinstance(value, list):
+                        value = parse_cli_list(cli_value)
+                    else:
+                        value = cli_value  # Override JSON value with command-line value
+            if isinstance(value, bool) and value:
+                arguments.append(cli_arg_key)
+            elif isinstance(value, list):
+                arguments.append(cli_arg_key)
+                arguments.extend(map(str, value))  # Ensure all elements are strings
             else:
-                arguments.append("--" + str(key))
-                arguments.append(str(value))
-    if return_json_object:
-        return arguments, data
-    return arguments
+                arguments.extend([cli_arg_key, str(value)])
 
+    return arguments
 
 def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
     """
@@ -76,49 +147,6 @@ def make_mol(s: str, keep_h: bool, add_h: bool, keep_atom_map: bool):
     return mol
 
 
-def generate_scaffold(
-    mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = True
-) -> str:
-    """
-    Computes the Bemis-Murcko scaffold for a SMILES string, an RDKit molecule, or an InChI string or InChIKey.
-
-    :param mol: A SMILES, RDKit molecule, InChI string, or InChIKey string.
-    :param include_chirality: Whether to include chirality in the computed scaffold.
-    :return: The Bemis-Murcko scaffold for the molecule.
-    """
-    if isinstance(mol, str):
-        if mol.startswith("InChI="):
-            mol = inchi_to_mol(mol)
-        else:
-            mol = make_mol(mol, keep_h=False, add_h=False, keep_atom_map=False)
-    elif isinstance(mol, tuple):
-        mol = mol[0]
-    scaffold = MurckoScaffold.MurckoScaffoldSmiles(
-        mol=mol, includeChirality=include_chirality
-    )
-
-    return scaffold
-
-
-def scaffold_to_smiles(
-    mols: List[str], use_indices: bool = False
-) -> Dict[str, Union[Set[str], Set[int]]]:
-    """
-    Computes the scaffold for each SMILES and returns a mapping from scaffolds to sets of smiles (or indices).
-    :param mols: A list of SMILES.
-    :param use_indices: Whether to map to the SMILES's index in :code:`mols` rather than
-                        mapping to the smiles string itself. This is necessary if there are duplicate smiles.
-    :return: A dictionary mapping each unique scaffold to all SMILES (or indices) which have that scaffold.
-    """
-    scaffolds = defaultdict(set)
-    for i, mol in tqdm(enumerate(mols), total=len(mols)):
-        scaffold = generate_scaffold(mol)
-        if use_indices:
-            scaffolds[scaffold].add(i)
-        else:
-            scaffolds[scaffold].add(mol)
-
-    return scaffolds
 
 
 # def inchi_to_mol(inchi: str) -> Chem.Mol:
@@ -184,7 +212,49 @@ def weight_split(
     test_df = sorted_data.iloc[test_indices].reset_index(drop=True)
 
     return train_df, val_df, test_df
+def generate_scaffold(
+    mol: Union[str, Chem.Mol, Tuple[Chem.Mol, Chem.Mol]], include_chirality: bool = True
+) -> str:
+    """
+    Computes the Bemis-Murcko scaffold for a SMILES string, an RDKit molecule, or an InChI string or InChIKey.
 
+    :param mol: A SMILES, RDKit molecule, InChI string, or InChIKey string.
+    :param include_chirality: Whether to include chirality in the computed scaffold.
+    :return: The Bemis-Murcko scaffold for the molecule.
+    """
+    if isinstance(mol, str):
+        if mol.startswith("InChI="):
+            mol = inchi_to_mol(mol)
+        else:
+            mol = make_mol(mol, keep_h=False, add_h=False, keep_atom_map=False)
+    elif isinstance(mol, tuple):
+        mol = mol[0]
+    scaffold = MurckoScaffold.MurckoScaffoldSmiles(
+        mol=mol, includeChirality=include_chirality
+    )
+
+    return scaffold
+
+
+def scaffold_to_smiles(
+    mols: List[str], use_indices: bool = False
+) -> Dict[str, Union[Set[str], Set[int]]]:
+    """
+    Computes the scaffold for each SMILES and returns a mapping from scaffolds to sets of smiles (or indices).
+    :param mols: A list of SMILES.
+    :param use_indices: Whether to map to the SMILES's index in :code:`mols` rather than
+                        mapping to the smiles string itself. This is necessary if there are duplicate smiles.
+    :return: A dictionary mapping each unique scaffold to all SMILES (or indices) which have that scaffold.
+    """
+    scaffolds = defaultdict(set)
+    for i, mol in tqdm(enumerate(mols), total=len(mols)):
+        scaffold = generate_scaffold(mol)
+        if use_indices:
+            scaffolds[scaffold].add(i)
+        else:
+            scaffolds[scaffold].add(mol)
+
+    return scaffolds
 
 def ae_scaffold_split(
     data: pd.DataFrame,
@@ -309,7 +379,7 @@ def log_scaffold_stats(
         targets = [
             c
             for c in data.columns
-            if c in ["AR", "ER", "ED", "TR", "GR", "PPARg", "Aromatase"]
+            if c not in ["fp", "morganfp", "fpcompressed", "id", "smiles",]
         ]
         # targets = data_set.iloc[:, 2:].values
         targets = data_set.loc[:, targets].values
