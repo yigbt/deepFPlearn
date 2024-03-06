@@ -101,3 +101,8 @@ jobs:
         fi
         
         dfpl convert -f tests/data
+        if [ "$(find tests/data -name '*.csv' | wc -l)" -ne "$(find tests/data -name '*.pkl' | wc -l)" ]; then
+          echo "not all csv files are converted to pickle ones" >&2 
+          exit 1
+        fi
+        echo "All tests passed!"
