@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.GnnOptions",
   "test_path": "tests/data/smiles.csv",
-  "preds_path": "preds.csv",
+  "preds_path": "preds_dmpnn/preds.csv",
   "checkpoint_path": "dmpnn-random/fold_0/model_0/model.pt"
 }
