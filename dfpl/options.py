@@ -106,6 +106,7 @@ class GnnOptions(TrainArgs):
     evaluation_scores_path: str = ""
     wabTracking: bool = False
     split_sizes: List[float] = None
+
     # save_smiles_splits: bool = False
 
     @classmethod
@@ -512,7 +513,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="STRING",
         type=str,
         choices=["Adam", "SGD"],
-        help='Optimizer of the FNN.',
+        help="Optimizer of the FNN.",
         default="Adam",
     )
     training_args.add_argument(
@@ -674,7 +675,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "--compressFeatures",
         action="store_true",
         help="Compresses the fingerprints if encoder dir/file is provided",
-        default=False
+        default=False,
     )
     (
         general_args.add_argument(
@@ -736,10 +737,20 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     )
 
     # General arguments
-    general_args.add_argument("--split_key_molecule",help="The index of the key molecule used for splitting", type=int)
-    general_args.add_argument("--pytorch_seed",help="Seed for pytorch", type=int)
-    general_args.add_argument("--cache_cutoff",help="Maximum number of molecules in dataset to allow caching.", type=float)
-    general_args.add_argument("--save_preds",help="Saves test split predictions during training", type=bool)
+    general_args.add_argument(
+        "--split_key_molecule",
+        type=int,
+        help="The index of the key molecule used for splitting",
+    )
+    general_args.add_argument("--pytorch_seed", type=int, help="Seed for pytorch")
+    general_args.add_argument(
+        "--cache_cutoff",
+        type=float,
+        help="Maximum number of molecules in dataset to allow caching.",
+    )
+    general_args.add_argument(
+        "--save_preds", help="Saves test split predictions during training", type=bool
+    )
     general_args.add_argument("--wabTracking", action="store_true", default=False)
     general_args.add_argument(
         "--cuda", action="store_true", default=False, help="Turn on cuda"
@@ -1103,8 +1114,9 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         default=2,
         help="Number of layers in FFN after MPN encoding",
     )
-    model_args.add_argument("--checkpoint_frzn", type=str, metavar="STRING",help="Freeze the loaded model")
-
+    model_args.add_argument(
+        "--checkpoint_frzn", type=str, metavar="STRING", help="Freeze the loaded model"
+    )
     # Model arguments
     # model_args.add_argument("--mpn_shared", type=bool, metavar="BOOL")
     model_args.add_argument(
@@ -1116,58 +1128,53 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     model_args.add_argument(
         "--aggregation",
         choices=["mean", "sum", "norm"],
-        help="Aggregation scheme for atomic vectors into molecular vectors")
+        help="Aggregation scheme for atomic vectors into molecular vectors",
+    )
     model_args.add_argument(
         "--aggregation_norm",
         type=int,
-        help="For norm aggregation, number by which to divide summed up atomic features")
+        help="For norm aggregation, number by which to divide summed up atomic features",
+    )
     # model_args.add_argument("--explicit_h", type=bool, metavar="BOOL",help="A explicit hydrogen")
     model_args.add_argument(
-        "--adding_h",
-        type=bool,
-        metavar="BOOL",
-        help="Adding hydrogen")
+        "--adding_h", type=bool, metavar="BOOL", help="Adding hydrogen"
+    )
     # Training arguments
     model_args.add_argument(
         "--class_balance",
         type=bool,
         metavar="BOOL",
-        help="Balances the classes across batches")
+        help="Balances the classes across batches",
+    )
     model_args.add_argument(
         "--evidential_regularization",
         type=float,
         metavar="FLOAT",
-        help="Regularization parameter for evidential loss")
+        help="Regularization parameter for evidential loss",
+    )
     model_args.add_argument(
         "--overwrite_default_atom_features",
         type=bool,
         metavar="BOOL",
-        help="Overwrites default atom features instead of concatenating"
+        help="Overwrites default atom features instead of concatenating",
     )
-    model_args.add_argument(
-        "--no_atom_descriptor_scaling",
-        type=bool,
-        metavar="BOOL")
+    model_args.add_argument("--no_atom_descriptor_scaling", type=bool, metavar="BOOL")
     model_args.add_argument(
         "--overwrite_default_bond_features",
         type=bool,
         metavar="BOOL",
-        help="Overwrites default bond features instead of concatenating"
+        help="Overwrites default bond features instead of concatenating",
     )
     model_args.add_argument(
         "--frzn_ffn_layers",
         type=int,
         metavar="INT",
-        help="Number of layers in FFN to freeze"
+        help="Number of layers in FFN to freeze",
     )
     # model_args.add_argument("--freeze_first_only", type=bool, metavar="BOOL")
     # Training arguments
     training_args.add_argument(
-        "--epochs",
-        type=int,
-        metavar="INT",
-        default=30,
-        help="Number of epochs to run"
+        "--epochs", type=int, metavar="INT", default=30, help="Number of epochs to run"
     )
     training_args.add_argument(
         "--total_epochs",
@@ -1177,11 +1184,7 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         help="Number of total epochs to run",
     )
     training_args.add_argument(
-        "--batch_size",
-        type=int,
-        metavar="INT",
-        default=50,
-        help="Batch size"
+        "--batch_size", type=int, metavar="INT", default=50, help="Batch size"
     )
     training_args.add_argument(
         "--warmup_epochs",
@@ -1238,10 +1241,7 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         ],
     )
     training_args.add_argument(
-        "--grad_clip",
-       type=float,
-       metavar="FLOAT",
-       help="Gradient clipping value"
+        "--grad_clip", type=float, metavar="FLOAT", help="Gradient clipping value"
     )
     training_args.add_argument(
         "--metric",
@@ -1321,7 +1321,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         "--calibration_bond_descriptors_path",
         type=str,
         help="Extra bond descriptors file. Path to the extra bond descriptors that will be used as bond features to "
-             "featurize a given molecule.",
+        "featurize a given molecule.",
     )
 
     general_args.add_argument(
@@ -1371,8 +1371,8 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         type=str,
         nargs="+",
         help="Methods used for evaluating the uncertainty performance. Only used if the test data provided includes "
-             "targets. Available methods are [nll, miscalibration_area, ence, spearman] or any available "
-             "classification or multiclass metric.",
+        "targets. Available methods are [nll, miscalibration_area, ence, spearman] or any available "
+        "classification or multiclass metric.",
     )
     uncertainty_args.add_argument(
         "--evaluation_scores_path",
@@ -1390,7 +1390,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         type=int,
         default=10,
         help="The number of samples to use for Monte Carlo dropout uncertainty estimation. Distinct from the dropout "
-             "used during training.",
+        "used during training.",
     )
     uncertainty_args.add_argument(
         "--calibration_interval_percentile",
