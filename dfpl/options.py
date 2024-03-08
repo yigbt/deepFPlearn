@@ -1258,35 +1258,35 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     files_args.add_argument(
         "--preds_path",
         type=str,
-        help="Path to CSV or PICKLE file where predictions will be saved.",
+        help="Predictions output file. CSV or PICKLE file where predictions will be saved.",
     )
     files_args.add_argument(
         "--calibration_path",
         type=str,
-        help="Path to data file to be used for uncertainty calibration.",
+        help="Data file to be used for uncertainty calibration.",
     )
     files_args.add_argument(
         "--calibration_features_path",
         type=str,
         nargs="+",
-        help="Path to features data to be used with the uncertainty calibration dataset.",
+        help="Feature data file to be used with the uncertainty calibration dataset.",
     )
     files_args.add_argument("--calibration_phase_features_path", type=str, help="")
     files_args.add_argument(
         "--calibration_atom_descriptors_path",
         type=str,
-        help="Path to the extra atom descriptors.",
+    help="Extra atom descriptors file.",
     )
     files_args.add_argument(
         "--calibration_bond_descriptors_path",
         type=str,
-        help="Path to the extra bond descriptors that will be used as bond features to featurize a given molecule.",
+        help="Extra bond descriptors file. Path to the extra bond descriptors that will be used as bond features to featurize a given molecule.",
     )
 
     general_args.add_argument(
         "--drop_extra_columns",
         action="store_true",
-        help="Whether to drop all columns from the test data file besides the SMILES columns and the new prediction columns.",
+        help="Keep only SMILES and new prediction columns in the test data files.",
     )
 
     uncertainty_args.add_argument(
@@ -1323,13 +1323,13 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         "--individual_ensemble_predictions",
         action="store_true",
         default=False,
-        help="Whether to save individual ensemble predictions.",
+        help="Save individual ensemble predictions.",
     )
     uncertainty_args.add_argument(
         "--evaluation_methods",
         type=str,
         nargs="+",
-        help="The methods used for evaluating the uncertainty performance if the test data provided includes targets. Available methods are [nll, miscalibration_area, ence, spearman] or any available classification or multiclass metric.",
+        help="Methods used for evaluating the uncertainty performance. Only used if the test data provided includes targets. Available methods are [nll, miscalibration_area, ence, spearman] or any available classification or multiclass metric.",
     )
     uncertainty_args.add_argument(
         "--evaluation_scores_path",
@@ -1352,7 +1352,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         "--calibration_interval_percentile",
         type=float,
         default=95,
-        help="Sets the percentile used in the calibration methods. Must be in the range (1,100).",
+        help="Percentile used in calibration methods. Must be in the range (1,100).",
     )
     uncertainty_args.add_argument(
         "--regression_calibrator_metric",
