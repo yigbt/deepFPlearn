@@ -19,12 +19,12 @@ class Options:
     """
 
     configFile: str = None
-    inputFile: str = ""
-    outputDir: str = ""  # changes according to mode
-    outputFile: str = ""
+    inputFile: str = "tests/data/smiles.csv"
+    outputDir: str = "example/results_train/"  # changes according to mode
+    outputFile: str = "results.csv"
     ecWeightsFile: str = ""
-    ecModelDir: str = ""
-    fnnModelDir: str = ""
+    ecModelDir: str = "example/results_train/AE_encoder/"
+    fnnModelDir: str = "example/results_train/AR_saved_model/"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
     epochs: int = 100
@@ -274,7 +274,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="Input JSON file that contains all information for training/predicting.",
-        default=argparse.SUPPRESS,
+        default="example/train.json",
     )
     general_args.add_argument(
         "-i",
@@ -283,7 +283,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="The file containing the data for training in "
         "comma separated CSV format.The first column should be smiles.",
-        default=argparse.SUPPRESS,
+        default="tests/data/smiles.csv",
     )
     general_args.add_argument(
         "-o",
@@ -292,7 +292,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Prefix of output file name. Trained model and "
         "respective stats will be returned in this directory.",
-        default=argparse.SUPPRESS,
+        default="example/results_train/",
     )
 
     # TODO CHECK WHAT IS TYPE DOING?
@@ -303,7 +303,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-        default=argparse.SUPPRESS,
+        default="fp",
     )
     general_args.add_argument(
         "-thr",
@@ -311,29 +311,29 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=float,
         metavar="FLOAT",
         help="Threshold for binary classification.",
-        default=argparse.SUPPRESS,
+        default=0.5,
     )
     general_args.add_argument(
         "-gpu",
         "--gpu",
         metavar="INT",
         type=int,
-        help="Select which gpu to use. If not available, leave empty.",
-        default=argparse.SUPPRESS,
+        help="Select which gpu to use by index. If not available, leave empty",
+        default=None,
     )
     general_args.add_argument(
         "--fpType",
         metavar="STR",
         type=str,
-        choices=["topological", "MACCS"],  # , 'atompairs', 'torsions'],
-        help="The type of fingerprint to be generated/used in input file.",
-        default=argparse.SUPPRESS,
+        choices=["topological", "MACCS"],
+        help="The type of fingerprint to be generated/used in input file. MACCS or topological are available.",
+        default="topological",
     )
     general_args.add_argument(
         "--fpSize",
         type=int,
-        help="Size of fingerprint that should be generated.",
-        default=argparse.SUPPRESS,
+        help="Length of the fingerprint that should be generated.",
+        default=2048,
     )
     general_args.add_argument(
         "--compressFeatures",
@@ -356,7 +356,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="FILE",
         help="The .hdf5 file of a trained encoder",
-        default=argparse.SUPPRESS,
+        default="",
     )
     autoencoder_args.add_argument(
         "--ecModelDir",
@@ -371,21 +371,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["variational", "deterministic"],
         help="Autoencoder type, variational or deterministic.",
-        default=argparse.SUPPRESS,
+        default="deterministic",
     )
     autoencoder_args.add_argument(
         "--aeEpochs",
         metavar="INT",
         type=int,
         help="Number of epochs for autoencoder training.",
-        default=argparse.SUPPRESS,
+        default=100,
     )
     autoencoder_args.add_argument(
         "--aeBatchSize",
         metavar="INT",
         type=int,
         help="Batch size in autoencoder training.",
-        default=argparse.SUPPRESS,
+        default=512,
     )
     autoencoder_args.add_argument(
         "--aeActivationFunction",
@@ -400,14 +400,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FLOAT",
         type=float,
         help="Learning rate for autoencoder training.",
-        default=argparse.SUPPRESS,
+        default=0.001,
     )
     autoencoder_args.add_argument(
         "--aeLearningRateDecay",
         metavar="FLOAT",
         type=float,
         help="Learning rate decay for autoencoder training.",
-        default=argparse.SUPPRESS,
+        default=0.96,
     )
     autoencoder_args.add_argument(
         "--aeSplitType",
@@ -463,7 +463,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         choices=[0, 1, 2],
         help="Verbosity level. O: No additional output, "
         + "1: Some additional output, 2: full additional output",
-        default=argparse.SUPPRESS,
+        default=2,
     )
     training_args.add_argument(
         "--trainAC",
@@ -522,21 +522,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Batch size in FNN training.",
-        default=argparse.SUPPRESS,
+        default=128,
     )
     training_args.add_argument(
         "--l2reg",
         metavar="FLOAT",
         type=float,
         help="Value for l2 kernel regularizer.",
-        default=argparse.SUPPRESS,
+        default=0.001,
     )
     training_args.add_argument(
         "--dropout",
         metavar="FLOAT",
         type=float,
         help="The fraction of data that is dropped out in each dropout layer.",
-        default=argparse.SUPPRESS,
+        default=0.2,
     )
     training_args.add_argument(
         "--learningRate",
