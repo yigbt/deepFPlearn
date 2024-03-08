@@ -1359,7 +1359,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         "--regression_calibrator_metric",
         type=str,
         choices=["stdev", "interval"],
-        help="Regression calibrators can output either a stdev or an inverval.",
+        help="Regression calibrator output metric. Regression calibrators can output either a stdev or an inverval.",
     )
 
 
