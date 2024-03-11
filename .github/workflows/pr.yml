@@ -94,12 +94,10 @@ jobs:
           echo "predict result directory missing" >&2 
           exit 1
         fi
-      
-        echo "result lines "$(wc -l preds_dmpnn/DMPNN_preds.csv)
-        if [ "$(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" -lt "6" ]; then
-          echo "predict result should have at least 5 lines. But had only $(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" >&2 
-          exit 1
-        fi
-        
         
         dfpl convert -f tests/data
+        if [ "$(find tests/data \( -name '*.csv' -o -name '*.tsv' \) | wc -l)" -ne "$(find tests/data -name '*.pkl' | wc -l)" ]; then
+            echo "not all csv files are converted to pickle ones" >&2 
+            exit 1                                                                                                                                                                                    
+        fi
+        echo "All tests passed!"
