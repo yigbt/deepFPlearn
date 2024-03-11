@@ -133,14 +133,14 @@ class PredictGnnOptions(PredictArgs):
     calibration_atom_descriptors_path: str = None
     calibration_features_path: str = None
     calibration_interval_percentile: float = 95
-    calibration_method: Literal[
+    calibration_method: Optional[Literal[
         "zscaling",
         "tscaling",
         "zelikman_interval",
         "mve_weighting",
         "platt",
         "isotonic",
-    ] = None
+    ]] = None
     calibration_path: str = None
     calibration_phase_features_path: str = None
     drop_extra_columns: bool = False
@@ -150,10 +150,10 @@ class PredictGnnOptions(PredictArgs):
     # no_features_scaling: bool = True
     individual_ensemble_predictions: bool = False
     preds_path: str = None
-    regression_calibrator_metric: Literal["stdev", "interval"] = None
+    regression_calibrator_metric: Optional[Literal["stdev", "interval"]] = None
     test_path: str = None
     uncertainty_dropout_p: float = 0.1
-    uncertainty_method: Literal[
+    uncertainty_method: Optional[Literal[
         "mve",
         "ensemble",
         "evidential_epistemic",
@@ -161,7 +161,7 @@ class PredictGnnOptions(PredictArgs):
         "evidential_total",
         "classification",
         "dropout",
-    ] = None
+    ]] = None
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
