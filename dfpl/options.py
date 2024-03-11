@@ -299,7 +299,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     general_args.add_argument(
         "-t",
         "--type",
-        metavar="STRING",
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
@@ -323,7 +322,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     general_args.add_argument(
         "--fpType",
-        metavar="STR",
         type=str,
         choices=["topological", "MACCS"],
         help="The type of fingerprint to be generated/used in input file. MACCS or topological are available.",
@@ -367,7 +365,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     autoencoder_args.add_argument(
         "--aeType",
-        metavar="STRING",
         type=str,
         choices=["variational", "deterministic"],
         help="Autoencoder type, variational or deterministic.",
@@ -389,7 +386,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     autoencoder_args.add_argument(
         "--aeActivationFunction",
-        metavar="STRING",
         type=str,
         choices=["relu", "selu"],
         help="The activation function for the hidden layers in the autoencoder.",
@@ -411,7 +407,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     autoencoder_args.add_argument(
         "--aeSplitType",
-        metavar="STRING",
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the autoencoder",
@@ -434,7 +429,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     # Training Configuration
     training_args.add_argument(
         "--split_type",
-        metavar="STRING",
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the feedforward neural network",
@@ -458,7 +452,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     training_args.add_argument(
         "-v",
         "--verbose",
-        metavar="INT",
         type=int,
         choices=[0, 1, 2],
         help="Verbosity level. O: No additional output, "
@@ -503,7 +496,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     # TODO CHECK IF ALL LOSSES MAKE SENSE HERE
     training_args.add_argument(
         "--lossFunction",
-        metavar="STRING",
         type=str,
         choices=["mse", "bce", "focal"],
         help="Loss function to use during training. mse - mean squared error, bce - binary cross entropy.",
@@ -511,7 +503,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     training_args.add_argument(
         "--optimizer",
-        metavar="STRING",
         type=str,
         choices=["Adam", "SGD"],
         help='Optimizer to use for backpropagation in the FNN. Possible values: "Adam", "SGD"',
@@ -554,7 +545,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     training_args.add_argument(
         "--activationFunction",
-        metavar="STRING",
         type=str,
         choices=["relu", "selu"],
         help="The activation function for hidden layers in the FNN.",
@@ -637,7 +627,6 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     general_args.add_argument(
         "-t",
         "--type",
-        metavar="STR",
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
@@ -646,7 +635,6 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     general_args.add_argument(
         "-k",
         "--fpType",
-        metavar="STR",
         type=str,
         choices=["topological", "MACCS"],
         help="The type of fingerprint to be generated/used in input file. Should be the same as the type of the fps that the model was trained upon.",
@@ -681,7 +669,6 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     (
         general_args.add_argument(
             "--aeType",
-            metavar="STRING",
             type=str,
             choices=["variational", "deterministic"],
             help="Autoencoder type, variational or deterministic.",
@@ -700,7 +687,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     uncertainty_args.add_argument(
         "--uncertainty_method",
         type=str,
-        metavar="STRING",
         choices=[
             "mve",
             "ensemble",
@@ -718,7 +704,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     uncertainty_args.add_argument(
         "--calibration_method",
         type=str,
-        metavar="STRING",
         choices=[
             "zscaling",
             "tscaling",
@@ -940,7 +925,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     data_args.add_argument(
         "--dataset_type",
         type=str,
-        metavar="STRING",
         choices=["classification", "regression", "multiclass"],
         help="Type of dataset, e.g. classification or regression."
         "This determines the loss function used during training.",
@@ -956,7 +940,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     data_args.add_argument(
         "--split_type",
         type=str,
-        metavar="STRING",
         default="random",
         choices=[
             "random",
@@ -1064,7 +1047,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     model_args.add_argument(
         "--activation",
         type=str,
-        metavar="STRING",
         default="ReLU",
         choices=["ReLU", "LeakyReLU", "PReLU", "tanh", "SELU", "ELU"],
         help="Activation function",
@@ -1183,7 +1165,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     training_args.add_argument(
         "--loss_function",
         type=str,
-        metavar="STRING",
         choices=[
             "mse",
             "bounded_mse",
@@ -1201,7 +1182,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     training_args.add_argument(
         "--metric",
         type=str,
-        metavar="STRING",
         default=None,
         choices=[
             "auc",
