@@ -676,7 +676,6 @@ def parseInputPredict(parser_input_predict: argparse.ArgumentParser) -> None:
         help="Autoencoder type, variational or deterministic.",
         default="deterministic",
     )
-    )
 
 
 def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
