@@ -293,6 +293,8 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         "respective stats will be returned in this directory.",
         default=argparse.SUPPRESS,
     )
+
+    # TODO CHECK WHAT IS TYPE DOING?
     general_args.add_argument(
         "-t",
         "--type",
@@ -319,7 +321,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         default=argparse.SUPPRESS,
     )
     general_args.add_argument(
-        "-k",
         "--fpType",
         metavar="STR",
         type=str,
@@ -328,14 +329,12 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         default=argparse.SUPPRESS,
     )
     general_args.add_argument(
-        "-s",
         "--fpSize",
         type=int,
         help="Size of fingerprint that should be generated.",
         default=argparse.SUPPRESS,
     )
     general_args.add_argument(
-        "-c",
         "--compressFeatures",
         metavar="BOOL",
         type=bool,
@@ -343,7 +342,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         default=argparse.SUPPRESS,
     )
     general_args.add_argument(
-        "-m",
         "--enableMultiLabel",
         metavar="BOOL",
         type=bool,
@@ -424,7 +422,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Size of encoded fingerprint (z-layer of autoencoder).",
-        default=argparse.SUPPRESS,
+        default=256,
+    )
+    autoencoder_args.add_argument(
+        "--visualizeLatent",
+        action="store_true",
+        help="UMAP the latent space for exploration",
+        default=False,
     )
     # Training Configuration
     training_args.add_argument(
@@ -436,7 +440,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         default=argparse.SUPPRESS,
     )
     training_args.add_argument(
-        "-l",
         "--testSize",
         metavar="FLOAT",
         type=float,
@@ -463,17 +466,15 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     )
     training_args.add_argument(
         "--trainAC",
-        metavar="BOOL",
-        type=bool,
+        action="store_true",
         help="Choose to train or not, the autoencoder based on the input file",
         default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--trainFNN",
-        metavar="BOOL",
-        type=bool,
-        help="Train the feedforward network either with provided weights.",
-        default=argparse.SUPPRESS,
+        action="store_false",
+        help="When called it deactivates the training.",
+        default=argparse.SUPPRESS
     )
     training_args.add_argument(
         "--sampleFractionOnes",
@@ -498,7 +499,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Number of epochs that should be used for the FNN training",
         default=argparse.SUPPRESS,
     )
-
+    # TODO CHECK IF ALL LOSSES MAKE SENSE HERE
     training_args.add_argument(
         "--lossFunction",
         metavar="STRING",
@@ -541,7 +542,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FLOAT",
         type=float,
         help="Learning rate size in FNN training.",
-        default=argparse.SUPPRESS,
+        default=0.000022,
+    )
+    training_args.add_argument(
+        "--learningRateDecay",
+        metavar="FLOAT",
+        type=float,
+        help="Learning rate size in FNN training.",
+        default=0.96,
     )
     training_args.add_argument(
         "--activationFunction",
@@ -572,7 +580,112 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["AR", "ER", "ED", "GR", "TR", "PPARg", "Aromatase"],
         help="Which target to use for tracking performance via Weights & Biases, see https://wandb.ai.",
-        default=argparse.SUPPRESS,
+        default="AR",
+    )
+
+
+def parseInputPredict(parser: argparse.ArgumentParser) -> None:
+    """
+    Parse the input arguments.
+
+    :return: A namespace object built up from attributes parsed out of the cmd line.
+    """
+
+    general_args = parser.add_argument_group("General Configuration")
+    files_args = parser.add_argument_group("Files")
+    files_args.add_argument(
+        "-f",
+        "--configFile",
+        metavar="FILE",
+        type=str,
+        help="Input JSON file that contains all information for training/predicting.",
+    )
+    files_args.add_argument(
+        "-i",
+        "--inputFile",
+        metavar="FILE",
+        type=str,
+        help="The file containing the data for the prediction in (unquoted) "
+        "comma separated CSV format. The column named 'smiles' or 'fp'"
+        "contains the field to be predicted. Please adjust the type "
+        "that should be predicted (fp or smile) with -t option appropriately."
+        "An optional column 'id' is used to assign the outcomes to the"
+        "original identifiers. If this column is missing, the results are"
+        "numbered in the order of their appearance in the input file."
+        "A header is expected and respective column names are used.",
+        default="tests/data/smiles.csv",
+    )
+    files_args.add_argument(
+        "-o",
+        "--outputDir",
+        metavar="DIR",
+        type=str,
+        help="Prefix of output directory. It will contain a log file and the file specified"
+        "with --outputFile.",
+        default="example/results_predict/",
+    )
+    files_args.add_argument(
+        "--outputFile",
+        metavar="FILE",
+        type=str,
+        help="Output .CSV file name which will contain one prediction per input line. "
+        "Default: prefix of input file name.",
+        default="results.csv",
+    )
+    # TODO AGAIN THIS TRASH HERE? CAN WE EVEN PROCESS SMILES?
+    general_args.add_argument(
+        "-t",
+        "--type",
+        metavar="STR",
+        type=str,
+        choices=["fp", "smiles"],
+        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
+        default="fp",
+    )
+    general_args.add_argument(
+        "-k",
+        "--fpType",
+        metavar="STR",
+        type=str,
+        choices=["topological", "MACCS"],
+        help="The type of fingerprint to be generated/used in input file. Should be the same as the type of the fps that the model was trained upon.",
+        default="topological",
+    )
+    files_args.add_argument(
+        "--ecModelDir",
+        type=str,
+        metavar="DIR",
+        help="The directory where the full model of the encoder will be saved (if trainAE=True) or "
+        "loaded from (if trainAE=False). Provide a full path here.",
+        default="",
+    )
+    files_args.add_argument(
+        "--ecWeightsFile",
+        type=str,
+        metavar="STR",
+        help="The file  where the full model of the encoder will be loaded from, to compress the fingerprints. Provide a full path here.",
+        default="",
+    )
+    files_args.add_argument(
+        "--fnnModelDir",
+        type=str,
+        metavar="DIR",
+        help="The directory where the full model of the fnn is loaded from. "
+        "Provide a full path here.",
+        default="example/results_train/AR_saved_model",
+    )
+    general_args.add_argument(
+        "-c", "--compressFeatures", action="store_true", default=False
+    )
+    (
+        general_args.add_argument(
+            "--aeType",
+            metavar="STRING",
+            type=str,
+            choices=["variational", "deterministic"],
+            help="Autoencoder type, variational or deterministic.",
+            default="deterministic",
+        )
     )
 
 
@@ -628,15 +741,16 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     general_args.add_argument("--pytorch_seed", type=int)
     general_args.add_argument("--cache_cutoff", type=float)
     general_args.add_argument("--save_preds", type=bool)
+    general_args.add_argument("--wabTracking", action="store_true", default=False)
     general_args.add_argument(
         "--cuda", action="store_true", default=False, help="Turn on cuda"
     )
-    general_args.add_argument(
-        "--save_smiles_splits",
-        action="store_true",
-        default=False,
-        help="Save smiles for each train/val/test splits for prediction convenience later",
-    )
+    # general_args.add_argument(
+    #     "--save_smiles_splits",
+    #     action="store_true",
+    #     default=False,
+    #     help="Save smiles for each train/val/test splits for prediction convenience later",
+    # )
     general_args.add_argument(
         "--test",
         action="store_true",
@@ -664,9 +778,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         help="The number of batches between each logging of the training loss",
     )
     general_args.add_argument(
-        "--no_cuda", action="store_true", default=True, help="Turn off cuda"
-    )
-    general_args.add_argument(
         "--no_cache",
         action="store_true",
         default=False,
@@ -680,13 +791,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="Input JSON file that contains all information for training/predicting.",
-    )
-    files_args.add_argument(
-        "--config_path",
-        type=str,
-        metavar="FILE",
-        help="Path to a .json file containing arguments. Any arguments present in the config"
-        "file will override arguments specified via the command line or by the defaults.",
     )
     files_args.add_argument(
         "--save_dir",
@@ -1285,13 +1389,6 @@ def parseInterpretGnn(parser: argparse.ArgumentParser) -> None:
         "--checkpoint_path",
         type=str,
         metavar="DIR",
-        help="Path to model checkpoint (.pt file)",
-    )
-    files_args.add_argument(
-        "--checkpoint_paths",
-        type=str,
-        metavar="FILE",
-        nargs="*",
         help="Path to model checkpoint (.pt file)",
     )
     files_args.add_argument(
