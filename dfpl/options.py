@@ -3,11 +3,11 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Literal, List
+from typing import List, Literal, Optional
 
 import jsonpickle
 import torch
-from chemprop.args import TrainArgs, PredictArgs, InterpretArgs
+from chemprop.args import InterpretArgs, PredictArgs, TrainArgs
 
 from dfpl.utils import parseCmdArgs
 
@@ -106,7 +106,9 @@ class GnnOptions(TrainArgs):
     evaluation_scores_path: str = ""
     wabTracking: bool = False
     split_sizes: List[float] = None
+
     # save_smiles_splits: bool = False
+
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
         # Initialize with JSON config if provided
@@ -132,13 +134,15 @@ class PredictGnnOptions(PredictArgs):
     calibration_atom_descriptors_path: str = None
     calibration_features_path: str = None
     calibration_interval_percentile: float = 95
-    calibration_method: Literal[
-        "zscaling",
-        "tscaling",
-        "zelikman_interval",
-        "mve_weighting",
-        "platt",
-        "isotonic",
+    calibration_method: Optional[
+        Literal[
+            "zscaling",
+            "tscaling",
+            "zelikman_interval",
+            "mve_weighting",
+            "platt",
+            "isotonic",
+        ]
     ] = None
     calibration_path: str = None
     calibration_phase_features_path: str = None
@@ -149,17 +153,19 @@ class PredictGnnOptions(PredictArgs):
     # no_features_scaling: bool = True
     individual_ensemble_predictions: bool = False
     preds_path: str = None
-    regression_calibrator_metric: Literal["stdev", "interval"] = None
+    regression_calibrator_metric: Optional[Literal["stdev", "interval"]] = None
     test_path: str = None
     uncertainty_dropout_p: float = 0.1
-    uncertainty_method: Literal[
-        "mve",
-        "ensemble",
-        "evidential_epistemic",
-        "evidential_aleatoric",
-        "evidential_total",
-        "classification",
-        "dropout",
+    uncertainty_method: Optional[
+        Literal[
+            "mve",
+            "ensemble",
+            "evidential_epistemic",
+            "evidential_aleatoric",
+            "evidential_total",
+            "classification",
+            "dropout",
+        ]
     ] = None
 
     @classmethod
@@ -298,7 +304,6 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     input_tain_general_args.add_argument(
         "-t",
         "--type",
-        metavar="STRING",
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
@@ -322,7 +327,6 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     )
     input_tain_general_args.add_argument(
         "--fpType",
-        metavar="STR",
         type=str,
         choices=["topological", "MACCS"],
         help="The type of fingerprint to be generated/used in input file. MACCS or topological are available.",
@@ -337,13 +341,13 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     input_tain_general_args.add_argument(
         "--compressFeatures",
         action="store_true",
-        help="Should the fingerprints be compressed or not. Needs a path of a trained autoencoder or needs the trainAC also set to True.",
+        help="Compresses the fingerprints. Needs a path of a trained autoencoder or needs the trainAC also set to True.",
         default=False,
     )
     input_tain_general_args.add_argument(
         "--enableMultiLabel",
         action="store_true",
-        help="Train multi-label classification model in addition to the individual models.",
+        help="Train multi-label classification model. individual models.",
         default=False,
     )
     # Autoencoder Configuration
@@ -359,12 +363,11 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
         "--ecModelDir",
         type=str,
         metavar="DIR",
-        help="The directory where the full model of the encoder will be saved",
+        help="The directory where the full encoder will be saved",
         default="example/results_train/AE_encoder/",
     )
     input_tain_autoencoder_args.add_argument(
         "--aeType",
-        metavar="STRING",
         type=str,
         choices=["variational", "deterministic"],
         help="Autoencoder type, variational or deterministic.",
@@ -386,10 +389,9 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     )
     input_tain_autoencoder_args.add_argument(
         "--aeActivationFunction",
-        metavar="STRING",
         type=str,
         choices=["relu", "selu"],
-        help="The activation function for the hidden layers in the autoencoder.",
+        help="The activation function of the autoencoder.",
         default="relu",
     )
     input_tain_autoencoder_args.add_argument(
@@ -408,10 +410,9 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     )
     input_tain_autoencoder_args.add_argument(
         "--aeSplitType",
-        metavar="STRING",
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
-        help="Set how the data is going to be split for the autoencoder",
+        help="Set how the data is split for the autoencoder",
         default="random",
     )
     input_tain_autoencoder_args.add_argument(
@@ -431,17 +432,16 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     # Training Configuration
     input_tain_training_args.add_argument(
         "--split_type",
-        metavar="STRING",
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
-        help="Set how the data is going to be split for the feedforward neural network",
+        help="Set how the data is split for the feedforward neural network",
         default="random",
     )
     input_tain_training_args.add_argument(
         "--testSize",
         metavar="FLOAT",
         type=float,
-        help="Fraction of the dataset that should be used for testing. Value in [0,1].",
+        help="Fraction[0,1] of the dataset that should be used for testing",
         default=0.2,
     )
     input_tain_training_args.add_argument(
@@ -449,13 +449,12 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
         "--kFolds",
         metavar="INT",
         type=int,
-        help="K that is used for K-fold cross-validation in the training procedure.",
+        help="Number of folds for cross-validation.",
         default=1,
     )
     input_tain_training_args.add_argument(
         "-v",
         "--verbose",
-        metavar="INT",
         type=int,
         choices=[0, 1, 2],
         help="Verbosity level. O: No additional output, "
@@ -465,28 +464,27 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     input_tain_training_args.add_argument(
         "--trainAC",
         action="store_true",
-        help="Choose to train or not, the autoencoder based on the input file",
+        help="Trains the autoencoder.",
         default=False,
     )
     input_tain_training_args.add_argument(
         "--trainFNN",
         action="store_false",
-        help="When called it deactivates the training.",
+        help="Deactivates the FNN training.",
         default=True,
     )
     input_tain_training_args.add_argument(
         "--sampleFractionOnes",
         metavar="FLOAT",
         type=float,
-        help="This is the fraction of positive target associations (1s) in comparison to the majority class(0s)."
-        "only works if --sampleDown is enabled",
+        help="This is the desired fraction 1s/0s.only works if --sampleDown is enabled",
         default=0.5,
     )
     input_tain_training_args.add_argument(
         "--sampleDown",
         metavar="BOOL",
         type=bool,
-        help="Enable automatic down sampling of the 0 valued samples.",
+        help="Down sampling of the 0 valued samples.",
         default=False,
     )
     input_tain_training_args.add_argument(
@@ -494,25 +492,23 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
         "--epochs",
         metavar="INT",
         type=int,
-        help="Number of epochs that should be used for the FNN training",
+        help="Number of epochs for the FNN training",
         default=100,
     )
     # TODO CHECK IF ALL LOSSES MAKE SENSE HERE
     input_tain_training_args.add_argument(
         "--lossFunction",
-        metavar="STRING",
         type=str,
         choices=["mse", "bce", "focal"],
-        help="Loss function to use during training. mse - mean squared error, bce - binary cross entropy.",
+        help="Loss function for FNN training. mse - mean squared error, bce - binary cross entropy.",
         default="bce",
     )
     # TODO DO I NEED ALL ARGUMENTS TO BE USER SPECIFIED? WHAT DOES THE USER KNOW ABOUT OPTIMIZERS?
     input_tain_training_args.add_argument(
         "--optimizer",
-        metavar="STRING",
         type=str,
         choices=["Adam", "SGD"],
-        help='Optimizer to use for backpropagation in the FNN. Possible values: "Adam", "SGD"',
+        help="Optimizer of the FNN.",
         default="Adam",
     )
     input_tain_training_args.add_argument(
@@ -552,10 +548,9 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
     )
     input_tain_training_args.add_argument(
         "--activationFunction",
-        metavar="STRING",
         type=str,
         choices=["relu", "selu"],
-        help="The activation function for hidden layers in the FNN.",
+        help="The activation function of the FNN.",
         default="relu",
     )
     # Tracking Configuration
@@ -563,23 +558,22 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
         "--aeWabTracking",
         metavar="BOOL",
         type=bool,
-        help="Track autoencoder performance via Weights & Biases, see https://wandb.ai.",
+        help="Track autoencoder performance via Weights & Biases.",
         default=False,
     )
     input_tain_tracking_args.add_argument(
         "--wabTracking",
         metavar="BOOL",
         type=bool,
-        help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
+        help="Track FNN performance via Weights & Biases",
         default=False,
     )
     input_tain_tracking_args.add_argument(
         "--wabTarget",
         metavar="STRING",
         type=str,
-        choices=["AR", "ER", "ED", "GR", "TR", "PPARg", "Aromatase"],
-        help="Which target to use for tracking performance via Weights & Biases, see https://wandb.ai.",
-        default="AR",
+        help="Which endpoint to use for tracking performance via Weights & Biases. Should match the column name.",
+        default=None,
     )
 
 
@@ -597,7 +591,7 @@ def parseInputPredict(parser_input_predict: argparse.ArgumentParser) -> None:
         "--configFile",
         metavar="FILE",
         type=str,
-        help="Input JSON file that contains all information for training/predicting.",
+        help="JSON file that contains all information for training/predicting.",
     )
     input_predict_files_args.add_argument(
         "-i",
@@ -619,23 +613,20 @@ def parseInputPredict(parser_input_predict: argparse.ArgumentParser) -> None:
         "--outputDir",
         metavar="DIR",
         type=str,
-        help="Prefix of output directory. It will contain a log file and the file specified"
-        "with --outputFile.",
+        help="Prefix of output directory. It will contain a log file and the file specified with --outputFile.",
         default="example/results_predict/",
     )
     input_predict_files_args.add_argument(
         "--outputFile",
         metavar="FILE",
         type=str,
-        help="Output .CSV file name which will contain one prediction per input line. "
+        help="Output csv file name which will contain one prediction per input line. "
         "Default: prefix of input file name.",
         default="results.csv",
     )
-    # TODO AGAIN THIS TRASH HERE? CAN WE EVEN PROCESS SMILES?
     input_predict_general_args.add_argument(
         "-t",
         "--type",
-        metavar="STR",
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
@@ -644,45 +635,47 @@ def parseInputPredict(parser_input_predict: argparse.ArgumentParser) -> None:
     input_predict_general_args.add_argument(
         "-k",
         "--fpType",
-        metavar="STR",
         type=str,
         choices=["topological", "MACCS"],
-        help="The type of fingerprint to be generated/used in input file. Should be the same as the type of the fps that the model was trained upon.",
+        help="The type of fingerprint to be generated/used in input file.",
         default="topological",
     )
     input_predict_files_args.add_argument(
         "--ecModelDir",
         type=str,
         metavar="DIR",
-        help="The directory where the full model of the encoder will be saved (if trainAE=True) or "
-        "loaded from (if trainAE=False). Provide a full path here.",
+        help="The encoder dir where it is saved (if trainAE=True) or "
+        "it is loaded from (if trainAE=False). Provide a full path here.",
         default="",
     )
     input_predict_files_args.add_argument(
         "--ecWeightsFile",
         type=str,
         metavar="STR",
-        help="The file  where the full model of the encoder will be loaded from, to compress the fingerprints. Provide a full path here.",
+        help="The encoder file where it is loaded from, to compress the fingerprints.",
         default="",
     )
     input_predict_files_args.add_argument(
         "--fnnModelDir",
         type=str,
         metavar="DIR",
-        help="The directory where the full model of the fnn is loaded from. "
-        "Provide a full path here.",
+        help="The directory where the full model of the fnn is loaded from.",
         default="example/results_train/AR_saved_model",
     )
     input_predict_general_args.add_argument(
-        "-c", "--compressFeatures", action="store_true", default=False
+        "-c",
+        "--compressFeatures",
+        action="store_true",
+        help="Compresses the fingerprints if encoder dir/file is provided",
+        default=False,
     )
     input_predict_general_args.add_argument(
         "--aeType",
-        metavar="STRING",
         type=str,
         choices=["variational", "deterministic"],
         help="Autoencoder type, variational or deterministic.",
         default="deterministic",
+    )
     )
 
 
@@ -696,7 +689,6 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     train_gnn_uncertainty_args.add_argument(
         "--uncertainty_method",
         type=str,
-        metavar="STRING",
         choices=[
             "mve",
             "ensemble",
@@ -714,7 +706,6 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     train_gnn_uncertainty_args.add_argument(
         "--calibration_method",
         type=str,
-        metavar="STRING",
         choices=[
             "zscaling",
             "tscaling",
@@ -734,20 +725,30 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     )
 
     # General arguments
-    train_gnn_general_args.add_argument("--split_key_molecule", type=int)
-    train_gnn_general_args.add_argument("--pytorch_seed", type=int)
-    train_gnn_general_args.add_argument("--cache_cutoff", type=float)
-    train_gnn_general_args.add_argument("--save_preds", type=bool)
+    train_gnn_general_args.add_argument(
+        "--split_key_molecule",
+        type=int,
+        help="The index of the key molecule used for splitting",
+    )
+    train_gnn_general_args.add_argument("--pytorch_seed", type=int, help="Seed for pytorch")
+    train_gnn_general_args.add_argument(
+        "--cache_cutoff",
+        type=float,
+        help="Maximum number of molecules in dataset to allow caching.",
+    )
+    train_gnn_general_args.add_argument(
+        "--save_preds", help="Saves test split predictions during training", type=bool
+    )
     train_gnn_general_args.add_argument("--wabTracking", action="store_true", default=False)
     train_gnn_general_args.add_argument(
         "--cuda", action="store_true", default=False, help="Turn on cuda"
     )
-    # train_gnn_general_args.add_argument(
-    #     "--save_smiles_splits",
-    #     action="store_true",
-    #     default=False,
-    #     help="Save smiles for each train/val/test splits for prediction convenience later",
-    # )
+    train_gnn_general_args.add_argument(
+        "--save_smiles_splits",
+        action="store_true",
+        default=False,
+        help="Save smiles for each train/val/test splits",
+    )
     train_gnn_general_args.add_argument(
         "--test",
         action="store_true",
@@ -772,13 +773,13 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
         type=int,
         metavar="INT",
         default=10,
-        help="The number of batches between each logging of the training loss",
+        help="The number of batches between each log",
     )
     train_gnn_general_args.add_argument(
-        "--no_cache",
+        "--no_cache_mol",
         action="store_true",
         default=False,
-        help="Turn off caching mol2graph computation",
+        help="If raised, Turn off caching rdkit mols",
     )
 
     # FILES ARGUMENTS
@@ -787,7 +788,7 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
         "--configFile",
         metavar="FILE",
         type=str,
-        help="Input JSON file that contains all information for training/predicting.",
+        help="JSON file that contains all configuration for training/predicting.",
     )
     train_gnn_files_args.add_argument(
         "--save_dir",
@@ -936,7 +937,6 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     train_gnn_data_args.add_argument(
         "--dataset_type",
         type=str,
-        metavar="STRING",
         choices=["classification", "regression", "multiclass"],
         help="Type of dataset, e.g. classification or regression."
         "This determines the loss function used during training.",
@@ -947,12 +947,11 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
         type=int,
         metavar="INT",
         default=3,
-        help="Number of classes when running multiclass classification",
+        help="Number of classes in multiclass classification",
     )
     train_gnn_data_args.add_argument(
         "--split_type",
         type=str,
-        metavar="STRING",
         default="random",
         choices=[
             "random",
@@ -990,6 +989,7 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     train_gnn_data_args.add_argument(
         "--target_columns",
         type=str,
+        nargs="*",
         metavar="STRING",
         help="Name of the target columns",
     )
@@ -997,11 +997,12 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     train_gnn_data_args.add_argument(
         "--ignore_columns",
         type=str,
+        nargs="*",
         metavar="STRING",
         help="Names of the columns to ignore",
     )
     train_gnn_data_args.add_argument(
-        "--num_tasks", type=int, metavar="INT", help="NUmber of tasks"
+        "--num_tasks", type=int, metavar="INT", help="Number of tasks"
     )
     train_gnn_data_args.add_argument(
         "--no_features_scaling",
@@ -1060,7 +1061,6 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     train_gnn_model_args.add_argument(
         "--activation",
         type=str,
-        metavar="STRING",
         default="ReLU",
         choices=["ReLU", "LeakyReLU", "PReLU", "tanh", "SELU", "ELU"],
         help="Activation function",
@@ -1099,32 +1099,64 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
         default=2,
         help="Number of layers in FFN after MPN encoding",
     )
-    train_gnn_model_args.add_argument("--checkpoint_frzn", type=str, metavar="STRING")
-
+    train_gnn_model_args.add_argument(
+        "--checkpoint_frzn", type=str, metavar="STRING", help="Freeze the loaded model"
+    )
     # Model arguments
-    train_gnn_model_args.add_argument("--mpn_shared", type=bool, metavar="BOOL")
+    # model_args.add_argument("--mpn_shared", type=bool, metavar="BOOL")
     train_gnn_model_args.add_argument(
         "--show_individual_scores",
         action="store_true",
         default=True,
         help="Show all scores for individual targets, not just average, at the end",
     )
-    train_gnn_model_args.add_argument("--aggregation", choices=["mean", "sum", "norm"])
-    train_gnn_model_args.add_argument("--aggregation_norm", type=int)
-    train_gnn_model_args.add_argument("--explicit_h", type=bool, metavar="BOOL")
-    train_gnn_model_args.add_argument("--adding_h", type=bool, metavar="BOOL")
-    # Training arguments
-    train_gnn_model_args.add_argument("--class_balance", type=bool, metavar="BOOL")
-    train_gnn_model_args.add_argument("--evidential_regularization", type=float, metavar="FLOAT")
     train_gnn_model_args.add_argument(
-        "--overwrite_default_atom_features", type=bool, metavar="BOOL"
+        "--aggregation",
+        choices=["mean", "sum", "norm"],
+        help="Aggregation scheme for atomic vectors into molecular vectors",
+    )
+    train_gnn_model_args.add_argument(
+        "--aggregation_norm",
+        type=int,
+        help="For norm aggregation, number by which to divide summed up atomic features",
+    )
+    # model_args.add_argument("--explicit_h", type=bool, metavar="BOOL",help="A explicit hydrogen")
+    train_gnn_model_args.add_argument(
+        "--adding_h", type=bool, metavar="BOOL", help="Adding hydrogen"
+    )
+    # Training arguments
+    train_gnn_model_args.add_argument(
+        "--class_balance",
+        type=bool,
+        metavar="BOOL",
+        help="Balances the classes across batches",
+    )
+    train_gnn_model_args.add_argument(
+        "--evidential_regularization",
+        type=float,
+        metavar="FLOAT",
+        help="Regularization parameter for evidential loss",
+    )
+    train_gnn_model_args.add_argument(
+        "--overwrite_default_atom_features",
+        type=bool,
+        metavar="BOOL",
+        help="Overwrites default atom features instead of concatenating",
     )
     train_gnn_model_args.add_argument("--no_atom_descriptor_scaling", type=bool, metavar="BOOL")
     train_gnn_model_args.add_argument(
-        "--overwrite_default_bond_features", type=bool, metavar="BOOL"
+        "--overwrite_default_bond_features",
+        type=bool,
+        metavar="BOOL",
+        help="Overwrites default bond features instead of concatenating",
     )
-    train_gnn_model_args.add_argument("--frzn_ffn_layers", type=int, metavar="INT")
-    train_gnn_model_args.add_argument("--freeze_first_only", type=bool, metavar="BOOL")
+    train_gnn_model_args.add_argument(
+        "--frzn_ffn_layers",
+        type=int,
+        metavar="INT",
+        help="Number of layers in FFN to freeze",
+    )
+    # model_args.add_argument("--freeze_first_only", type=bool, metavar="BOOL")
     # Training arguments
     train_gnn_training_args.add_argument(
         "--epochs", type=int, metavar="INT", default=30, help="Number of epochs to run"
@@ -1179,7 +1211,6 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
     train_gnn_training_args.add_argument(
         "--loss_function",
         type=str,
-        metavar="STRING",
         choices=[
             "mse",
             "bounded_mse",
@@ -1193,11 +1224,12 @@ def parseTrainGnn(parser_train_gnn: argparse.ArgumentParser) -> None:
             "dirichlet",
         ],
     )
-    train_gnn_training_args.add_argument("--grad_clip", type=float)
+    train_gnn_training_args.add_argument(
+        "--grad_clip", type=float, metavar="FLOAT", help="Gradient clipping value"
+    )
     train_gnn_training_args.add_argument(
         "--metric",
         type=str,
-        metavar="STRING",
         default=None,
         choices=[
             "auc",
@@ -1232,58 +1264,53 @@ def parsePredictGnn(parser_predict_gnn: argparse.ArgumentParser) -> None:
         "--checkpoint_path",
         type=str,
         metavar="FILE",
-        help="Path to model checkpoint (.pt file)"
+        help="Path to model checkpoint (.pt file)",
     )
-    # predict_gnn_general_args.add_argument(
-    #     "--no_features_scaling",
-    #     action="store_true",
-    #     help="Turn on scaling of features",
-    # )
     predict_gnn_files_args.add_argument(
         "-f",
         "--configFile",
         type=str,
         metavar="FILE",
-        help="Path to a .json file containing arguments. Any arguments present in the config"
-        "file will override arguments specified via the command line or by the defaults.",
+        help="Path to a .json file containing arguments. CLI arguments will override these.",
     )
     predict_gnn_files_args.add_argument(
         "--test_path",
         type=str,
-        help="Path to CSV file containing testing data for which predictions will be made.",
+        help="Path to CSV file for which predictions will be made.",
     )
     predict_gnn_files_args.add_argument(
         "--preds_path",
         type=str,
-        help="Path to CSV or PICKLE file where predictions will be saved.",
+        help="Predictions output file. CSV or PICKLE file where predictions will be saved.",
     )
     predict_gnn_files_args.add_argument(
         "--calibration_path",
         type=str,
-        help="Path to data file to be used for uncertainty calibration.",
+        help="Data file to be used for uncertainty calibration.",
     )
     predict_gnn_files_args.add_argument(
         "--calibration_features_path",
         type=str,
         nargs="+",
-        help="Path to features data to be used with the uncertainty calibration dataset.",
+        help="Feature data file to be used with the uncertainty calibration dataset.",
     )
     predict_gnn_files_args.add_argument("--calibration_phase_features_path", type=str, help="")
     predict_gnn_files_args.add_argument(
         "--calibration_atom_descriptors_path",
         type=str,
-        help="Path to the extra atom descriptors.",
+        help="Extra atom descriptors file.",
     )
     predict_gnn_files_args.add_argument(
         "--calibration_bond_descriptors_path",
         type=str,
-        help="Path to the extra bond descriptors that will be used as bond features to featurize a given molecule.",
+        help="Extra bond descriptors file. Path to the extra bond descriptors that will be used as bond features to "
+        "featurize a given molecule.",
     )
 
     predict_gnn_general_args.add_argument(
         "--drop_extra_columns",
         action="store_true",
-        help="Whether to drop all columns from the test data file besides the SMILES columns and the new prediction columns.",
+        help="Keep only SMILES and new prediction columns in the test data files.",
     )
 
     predict_gnn_uncertainty_args.add_argument(
@@ -1314,17 +1341,21 @@ def parsePredictGnn(parser_predict_gnn: argparse.ArgumentParser) -> None:
             "platt",
             "isotonic",
         ],
-        help="Methods used for calibrating the uncertainty calculated with uncertainty method.",
+        help="Methods used for calibrating the uncertainty.",
     )
-    predict_gnn_uncertainty_args.add_argument("--individual_ensemble_predictions",
+    predict_gnn_uncertainty_args.add_argument(
+        "--individual_ensemble_predictions",
         action="store_true",
         default=False,
-        help="Whether to save individual ensemble predictions.")
+        help="Save individual ensemble predictions.",
+    )
     predict_gnn_uncertainty_args.add_argument(
         "--evaluation_methods",
         type=str,
         nargs="+",
-        help="The methods used for evaluating the uncertainty performance if the test data provided includes targets. Available methods are [nll, miscalibration_area, ence, spearman] or any available classification or multiclass metric.",
+        help="Methods used for evaluating the uncertainty performance. Only used if the test data provided includes "
+        "targets. Available methods are [nll, miscalibration_area, ence, spearman] or any available "
+        "classification or multiclass metric.",
     )
     predict_gnn_uncertainty_args.add_argument(
         "--evaluation_scores_path",
@@ -1341,19 +1372,20 @@ def parsePredictGnn(parser_predict_gnn: argparse.ArgumentParser) -> None:
         "--dropout_sampling_size",
         type=int,
         default=10,
-        help="The number of samples to use for Monte Carlo dropout uncertainty estimation. Distinct from the dropout used during training.",
+        help="The number of samples to use for Monte Carlo dropout uncertainty estimation. Distinct from the dropout "
+        "used during training.",
     )
     predict_gnn_uncertainty_args.add_argument(
         "--calibration_interval_percentile",
         type=float,
         default=95,
-        help="Sets the percentile used in the calibration methods. Must be in the range (1,100).",
+        help="Percentile used in calibration methods. Must be in the range (1,100).",
     )
     predict_gnn_uncertainty_args.add_argument(
         "--regression_calibrator_metric",
         type=str,
         choices=["stdev", "interval"],
-        help="Regression calibrators can output either a stdev or an inverval.",
+        help="Regression calibrator output metric. Regression calibrators can output either a stdev or an inverval.",
     )
 
 
@@ -1392,7 +1424,7 @@ def parseInterpretGnn(parser_interpret_gnn: argparse.ArgumentParser) -> None:
         "--data_path",
         type=str,
         metavar="FILE",
-        help="Path to CSV file containing testing data for which predictions will be made",
+        help="Path to CSV file  for which predictions will be made",
     )
     interpret_gnn_interpret_args.add_argument(
         "--max_atoms",
