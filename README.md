@@ -51,30 +51,47 @@ singularity shell --nv dfpl.sif
 be limited.
 For local testing or development, setting up the conda environment is preferable.
 
-### Set up conda environment
+### Set up `conda` environment
 
-To use this tool outside the Singularity container first create the respective conda environment:
+*Install and source `miniforge` (optional but recommended)*
 
-1. Create the conda env from scratch
+Install [miniforge](https://github.com/conda-forge/miniforge?tab=readme-ov-file) to allow for fast and easy
+detection of package dependencies.
 
-   From within the `deepFPlearn` directory, you can create the conda environment with the provided yaml file that
-   contains all information and necessary packages
+```
+source ~/build/local/miniforge3/etc/profile.d/conda.sh
+```
 
-   ```shell
-   conda env create -f singularity_container/environment.yml
-   ```
+*Create the `conda` environment*
 
-2. Activate the `dfpl_env` environment with
+From within the `deepFPlearn` directory, you can create the conda environment with the provided yaml file that
+contains all information and necessary packages
 
-   ```shell
-   conda activate dfpl_env
-   ```
+Navigate to your deepFPlearn base directory
 
-3. Install the local `dfpl` package by calling
+```
+cd ~/git/deepFPlearn
+```
 
-   ```shell
-   conda develop dfpl
-   ```
+Install the `conda` environment via
+
+```
+mamba env create -f singularity_container/environment.yaml
+```
+
+Activate the `dfpl_env` environment with
+
+```
+conda activate dfpl_env
+```
+
+Show usage information
+```
+# see the run modes
+python -m dfpl -h
+# get details how to use a specific run mode (e.g., train)
+python -m dfpl train -h
+```
 
 ## Prepare data
 
@@ -168,7 +185,7 @@ script and providing the commandline arguments there.
 
 # Please note that:
 
-This work has been published in Briefings in Bioinformatics: https://doi.org/10.1093/bib/bbac257 
+This work has been published in Briefings in Bioinformatics: https://doi.org/10.1093/bib/bbac257
 (without the regression part)
 
 For questions, comments please reach out: jana.schor@ufz.de

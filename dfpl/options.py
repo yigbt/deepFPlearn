@@ -13,8 +13,8 @@ class Options:
     Dataclass for all options necessary for training the neural nets
     """
     configFile: str = ""
-    inputFile: str = "data/Sun_etal_dataset.csv"
-    outputDir: str = "."
+    inputFile: str = "../data/input_datasets/S_dataset.csv"
+    outputDir: str = "data/output/S_dataset"
     outputFile: str = ""
     ecWeightsFile: str = "AE.encoder.weights.hdf5"
     ecModelDir: str = 'AE_encoder'
@@ -22,10 +22,10 @@ class Options:
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
 
-    epochs: int = 512
+    epochs: int = 50
     fpSize: int = 2048
     encFPSize: int = 256
-    kFolds: int = 0
+    kFolds: int = 1
     testSize: float = 0.2
     enableMultiLabel: bool = False
     verbose: int = 0
@@ -35,7 +35,7 @@ class Options:
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
 
-    aeEpochs: int = 3000
+    aeEpochs: int = 30
     aeBatchSize: int = 512
     aeLearningRate: float = 0.001
     aeLearningRateDecay: float = 0.01
@@ -91,7 +91,7 @@ class Options:
                     content = f.read()
                     result = jsonpickle.decode(content)
             else:
-                raise ValueError("Could not find JSON input file")
+                raise ValueError(f"Could not find JSON input file: {jsonFile}")
 
         for key, value in vars(args).items():
             # The args dict will contain a "method" key from the subparser.
