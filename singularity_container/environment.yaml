@@ -3,11 +3,13 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - python=3.9.15
   - conda-build=3.21.8
   - conda=4.12.0
   - jsonpickle=2.1.0
   - matplotlib=3.5.1
   - numpy=1.19.5
+  - scipy=1.6.0
   - pandas=1.4.2
   - pip=22.0.4
   - pytest=7.1.1
