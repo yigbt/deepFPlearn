@@ -68,7 +68,7 @@ jobs:
           echo "training result directory missing" >&2 
           exit 1
         fi
-        tree example
+        # tree example
 
         dfpl predict -f example/predict.json
         if [ ! -d example/results_predict/ ]; then
@@ -80,21 +80,20 @@ jobs:
           echo "predict result should have at least 6 lines. But had only $(cat example/results_predict/smiles.csv | wc -l)" >&2 
           exit 1
         fi
-        tree example
+        # tree example
         
         dfpl traingnn -f example/traingnn.json
         if [ ! -d dmpnn-random/ ]; then
           echo "predict result directory missing" >&2 
           exit 1
         fi
-        tree example
+        # tree example
 
         dfpl predictgnn -f example/predictgnn.json
         if [ ! -d preds_dmpnn/ ]; then
           echo "predict result directory missing" >&2 
           exit 1
         fi
-      
         echo "result lines "$(wc -l preds_dmpnn/DMPNN_preds.csv)
         if [ "$(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" -lt "6" ]; then
           echo "predict result should have at least 5 lines. But had only $(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" >&2 
