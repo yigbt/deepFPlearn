@@ -306,7 +306,7 @@ def parseInputTrain(parser_train: argparse.ArgumentParser) -> None:
         "--type",
         type=str,
         choices=["fp", "smiles"],
-        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
+        help="Type of the chemical representation.",
         default="fp",
     )
     input_tain_general_args.add_argument(
@@ -629,7 +629,7 @@ def parseInputPredict(parser_input_predict: argparse.ArgumentParser) -> None:
         "--type",
         type=str,
         choices=["fp", "smiles"],
-        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
+        help="Type of the chemical representation.",
         default="fp",
     )
     input_predict_general_args.add_argument(
