@@ -31,7 +31,7 @@ setup(
         "wandb~=0.12.0",
         "umap-learn~=0.1.1",
         "seaborn~=0.12.2",
-        "chemprop~=1.7.1"
+        "chemprop~=1.7.1",
     ],
     entry_points={"console_scripts": ["dfpl=dfpl.__main__:main"]},
 )
