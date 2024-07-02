@@ -62,7 +62,7 @@ jobs:
 
     - name: Run test CLI calls for example
       run: |
-        set -e
+        set -ex
         dfpl train -f example/train.json
         if [ ! -d example/results_train/ ]; then
           echo "training result directory missing" >&2 
@@ -94,12 +94,10 @@ jobs:
           echo "predict result directory missing" >&2 
           exit 1
         fi
-      
         echo "result lines "$(wc -l preds_dmpnn/DMPNN_preds.csv)
         if [ "$(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" -lt "6" ]; then
           echo "predict result should have at least 5 lines. But had only $(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" >&2 
           exit 1
         fi
-        
         
         dfpl convert -f tests/data
