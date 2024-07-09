@@ -19,12 +19,12 @@ class Options:
     """
 
     configFile: str = None
-    inputFile: str = "tests/data/smiles.csv"
-    outputDir: str = "example/results_train/"  # changes according to mode
+    inputFile: str = ""
+    outputDir: str = ""  # changes according to mode
     outputFile: str = "results.csv"
     ecWeightsFile: str = ""
-    ecModelDir: str = "example/results_train/AE_encoder/"
-    fnnModelDir: str = "example/results_train/AR_saved_model/"
+    ecModelDir: str = ""
+    fnnModelDir: str = ""
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
     epochs: int = 100
@@ -85,8 +85,8 @@ class GnnOptions(TrainArgs):
 
     total_epochs: int = 30
     save: bool = True
-    configFile: str = "./example/traingnn.json"
-    data_path: str = "./example/data/tox21.csv"
+    configFile: str = ""
+    data_path: str = ""
     use_compound_names: bool = False
     save_dir: str = ""
     no_cache: bool = False
