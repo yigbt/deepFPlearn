@@ -17,9 +17,9 @@ class Options:
     Dataclass for all options necessary for training the neural nets
     """
 
-    configFile: str = "./example/train.json"
-    inputFile: str = "/deepFPlearn/CMPNN/data/tox21.csv"
-    outputDir: str = "."
+    configFile: str = ""
+    inputFile: str = ""
+    outputDir: str = ""
     outputFile: str = ""
     ecWeightsFile: str = "AE.encoder.weights.hdf5"
     ecModelDir: str = "AE_encoder"
@@ -118,8 +118,8 @@ class GnnOptions(TrainArgs):
 
     total_epochs: int = 30
     save: bool = True
-    configFile: str = "./example/traingnn.json"
-    data_path: str = "./example/data/tox21.csv"
+    configFile: str = ""
+    data_path: str = ""
     use_compound_names: bool = False
     save_dir: str = ""
     no_cache: bool = False
