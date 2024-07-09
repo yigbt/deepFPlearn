@@ -234,7 +234,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="The file containing the data for training in "
         "comma separated CSV format.The first column should be smiles.",
-        default=argparse.SUPPRESS,
+        default="tests/data/this_filename_should_be_overridden_by_json_value",
     )
     general_args.add_argument(
         "-o",
