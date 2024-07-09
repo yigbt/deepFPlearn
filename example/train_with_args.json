@@ -1,0 +1,47 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "tests/data/this_filename_should_be_overridden_by_cli_arg",
+  "ecModelDir": "example/results_train/",
+  "ecWeightsFile": "random_autoencoder.hdf5",
+  "verbose": 2,
+
+  "trainAC": true,
+  "compressFeatures": true,
+  "encFPSize": 256,
+
+  "aeSplitType": "random",
+  "aeEpochs": 2,
+  "aeBatchSize": 351,
+  "aeOptimizer": "Adam",
+  "aeActivationFunction": "relu",
+  "aeLearningRate": 0.001,
+  "aeLearningRateDecay": 0.0001,
+  "aeType": "deterministic",
+
+  "type": "smiles",
+  "fpType": "topological",
+  "fpSize": 2048,
+  "split_type": "random",
+  "enableMultiLabel": false,
+  "sampleFractionOnes": 0,
+  "sampleDown": false,
+  "gpu": "",
+
+  "trainFNN": true,
+  "kFolds": 1,
+  "threshold": 0.5,
+  "testSize": 0.2,
+  "fnnType": "FNN",
+  "optimizer": "Adam",
+  "lossFunction": "bce",
+  "epochs": 11,
+  "batchSize": 128,
+  "activationFunction": "selu",
+  "dropout": 0.0107,
+  "learningRate": 0.0000022,
+  "l2reg": 0.001,
+
+  "aeWabTracking": false,
+  "wabTracking": false,
+  "wabTarget": ""
+}

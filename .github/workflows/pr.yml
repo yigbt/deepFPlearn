@@ -62,8 +62,8 @@ jobs:
 
     - name: Run test CLI calls for example
       run: |
-        set -ex
-        dfpl train -f example/train.json
+        set -ex 
+        dfpl train -f example/train_with_args.json --inputFile "tests/data/S_dataset.csv"
         if [ ! -d example/results_train/ ]; then
           echo "training result directory missing" >&2 
           exit 1

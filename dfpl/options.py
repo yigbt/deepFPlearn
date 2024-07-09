@@ -19,10 +19,10 @@ class Options:
 
     configFile: str = "./example/train.json"
     inputFile: str = "/deepFPlearn/CMPNN/data/tox21.csv"
-    outputDir: str = "."
+    outputDir: str = "./example/this_dirname_should_be_overridden_by_parse_default"
     outputFile: str = ""
     ecWeightsFile: str = "AE.encoder.weights.hdf5"
-    ecModelDir: str = "AE_encoder"
+    ecModelDir: str = "./example/this_dirname_should_be_overridden_by_json_value"
     fnnModelDir: str = "modeltraining"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
@@ -243,7 +243,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Prefix of output file name. Trained model and "
         "respective stats will be returned in this directory.",
-        default=argparse.SUPPRESS,
+        default="example/results_train/",
     )
     general_args.add_argument(
         "-t",
