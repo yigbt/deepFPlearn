@@ -1,6 +1,6 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "tests/data/tox21.csv",
+  "inputFile": "tests/data/smiles.csv",
   "outputDir": "example/results_train/",
   "ecModelDir": "example/results_train/",
   "ecWeightsFile": "",
