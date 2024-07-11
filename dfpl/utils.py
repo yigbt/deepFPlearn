@@ -105,7 +105,9 @@ def createArgsFromJson(jsonFile: str) -> List[str]:
                 arg_index = cli_args.index(cli_arg_key) + 1
                 if isinstance(value, bool):
                     value = parse_cli_boolean(cli_args, cli_arg_key)
-                elif arg_index < len(cli_args) and not cli_args[arg_index].startswith('--'):
+                elif arg_index < len(cli_args) and not cli_args[arg_index].startswith(
+                    "--"
+                ):
                     cli_value = cli_args[arg_index]
                     if isinstance(value, list):
                         value = parse_cli_list(cli_value)
@@ -125,7 +127,11 @@ def createArgsFromJson(jsonFile: str) -> List[str]:
         if arg.startswith("--"):
             key = arg.lstrip("--")
             if key not in data:
-                value = True if i + 1 >= len(cli_args) or cli_args[i + 1].startswith("--") else cli_args[i + 1]
+                value = (
+                    True
+                    if i + 1 >= len(cli_args) or cli_args[i + 1].startswith("--")
+                    else cli_args[i + 1]
+                )
                 if isinstance(value, bool):
                     if value:
                         arguments.append(arg)

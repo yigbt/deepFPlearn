@@ -13,7 +13,7 @@ from keras import backend as K
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, optimizers
 from tensorflow.keras.layers import Dense, Input, Lambda
-from tensorflow.keras.models import Model,load_model
+from tensorflow.keras.models import Model, load_model
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from dfpl import callbacks
@@ -26,7 +26,9 @@ disable_eager_execution()
 
 def define_vae_model(opts: options.Options, output_bias=None) -> Tuple[Model, Model]:
     input_size = opts.fpSize
-    encoding_dim = opts.encFPSize  # This should be the intended size of your latent space, e.g., 256
+    encoding_dim = (
+        opts.encFPSize
+    )  # This should be the intended size of your latent space, e.g., 256
 
     lr_schedule = optimizers.schedules.ExponentialDecay(
         opts.aeLearningRate,
@@ -45,25 +47,56 @@ def define_vae_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mo
 
     # 1st hidden layer
     if opts.aeActivationFunction != "selu":
-        encoded = Dense(units=int(input_size / 2), activation=opts.aeActivationFunction)(input_vec)
+        encoded = Dense(
+            units=int(input_size / 2), activation=opts.aeActivationFunction
+        )(input_vec)
     else:
-        encoded = Dense(units=int(input_size / 2), activation=opts.aeActivationFunction, kernel_initializer="lecun_normal")(input_vec)
+        encoded = Dense(
+            units=int(input_size / 2),
+            activation=opts.aeActivationFunction,
+            kernel_initializer="lecun_normal",
+        )(input_vec)
 
     # encoding layers
-    for i in range(1, hidden_layer_count - 1):  # Adjust the range to stop before the latent space layers
+    for i in range(
+        1, hidden_layer_count - 1
+    ):  # Adjust the range to stop before the latent space layers
         factor_units = 2 ** (i + 1)
         if opts.aeActivationFunction != "selu":
-            encoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(encoded)
+            encoded = Dense(
+                units=int(input_size / factor_units),
+                activation=opts.aeActivationFunction,
+            )(encoded)
         else:
-            encoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction, kernel_initializer="lecun_normal")(encoded)
+            encoded = Dense(
+                units=int(input_size / factor_units),
+                activation=opts.aeActivationFunction,
+                kernel_initializer="lecun_normal",
+            )(encoded)
 
     # latent space layers
     if opts.aeActivationFunction != "selu":
-        z_mean = Dense(units=encoding_dim, activation=opts.aeActivationFunction)(encoded)  # Adjusted size to encoding_dim
-        z_log_var = Dense(units=encoding_dim, activation=opts.aeActivationFunction)(encoded)  # Adjusted size to encoding_dim
+        z_mean = Dense(units=encoding_dim, activation=opts.aeActivationFunction)(
+            encoded
+        )  # Adjusted size to encoding_dim
+        z_log_var = Dense(units=encoding_dim, activation=opts.aeActivationFunction)(
+            encoded
+        )  # Adjusted size to encoding_dim
     else:
-        z_mean = Dense(units=encoding_dim, activation=opts.aeActivationFunction, kernel_initializer="lecun_normal")(encoded)  # Adjusted size to encoding_dim
-        z_log_var = Dense(units=encoding_dim, activation=opts.aeActivationFunction, kernel_initializer="lecun_normal")(encoded)  # Adjusted size to encoding_dim
+        z_mean = Dense(
+            units=encoding_dim,
+            activation=opts.aeActivationFunction,
+            kernel_initializer="lecun_normal",
+        )(
+            encoded
+        )  # Adjusted size to encoding_dim
+        z_log_var = Dense(
+            units=encoding_dim,
+            activation=opts.aeActivationFunction,
+            kernel_initializer="lecun_normal",
+        )(
+            encoded
+        )  # Adjusted size to encoding_dim
 
     # sampling layer
     def sampling(args):
@@ -78,19 +111,27 @@ def define_vae_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mo
 
     # decoding layers
     for i in range(hidden_layer_count - 2, 0, -1):
-        factor_units = 2 ** i
+        factor_units = 2**i
         if opts.aeActivationFunction != "selu":
-            decoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction)(decoded)
+            decoded = Dense(
+                units=int(input_size / factor_units),
+                activation=opts.aeActivationFunction,
+            )(decoded)
         else:
-            decoded = Dense(units=int(input_size / factor_units), activation=opts.aeActivationFunction, kernel_initializer="lecun_normal")(decoded)
+            decoded = Dense(
+                units=int(input_size / factor_units),
+                activation=opts.aeActivationFunction,
+                kernel_initializer="lecun_normal",
+            )(decoded)
 
     # output layer
-    decoded = Dense(units=input_size, activation="sigmoid", bias_initializer=output_bias)(decoded)
+    decoded = Dense(
+        units=input_size, activation="sigmoid", bias_initializer=output_bias
+    )(decoded)
 
     autoencoder = Model(input_vec, decoded)
     encoder = Model(input_vec, z)
     autoencoder.summary(print_fn=logging.info)
-
 
     # KL divergence loss
     def kl_loss(z_mean, z_log_var):
@@ -238,7 +279,9 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Model:
 
     (vae, encoder) = define_vae_model(opts, output_bias=initial_bias)
     # Train the VAE on the training data
-    callback_list = callbacks.autoencoder_callback(checkpoint_path=f"{save_path}.h5", opts=opts)
+    callback_list = callbacks.autoencoder_callback(
+        checkpoint_path=f"{save_path}.h5", opts=opts
+    )
 
     vae_hist = vae.fit(
         x_train,

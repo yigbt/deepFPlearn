@@ -472,7 +472,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         "--trainFNN",
         action="store_false",
         help="When called it deactivates the training.",
-        default=argparse.SUPPRESS
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--sampleFractionOnes",
@@ -1260,7 +1260,7 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     files_args.add_argument(
         "--calibration_atom_descriptors_path",
         type=str,
-    help="Extra atom descriptors file.",
+        help="Extra atom descriptors file.",
     )
     files_args.add_argument(
         "--calibration_bond_descriptors_path",

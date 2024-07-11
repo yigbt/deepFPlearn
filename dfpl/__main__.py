@@ -15,6 +15,7 @@ from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
 
+
 def traindmpnn(opts: options.GnnOptions) -> None:
     """
     Train a D-MPNN model using the given options.
