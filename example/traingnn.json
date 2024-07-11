@@ -9,6 +9,6 @@
   "split_type": "random",
   "dataset_type": "classification",
   "smiles_columns": "smiles",
-  "extra_metrics": ["balanced_accuracy","auc","f1","mcc","recall","specificity","precision"],
+  "extra_metrics": ["balanced_accuracy","auc","f1","mcc","recall","precision"],
   "hidden_size": 256
 }

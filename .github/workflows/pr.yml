@@ -62,7 +62,7 @@ jobs:
 
     - name: Run test CLI calls for example
       run: |
-        set -e
+        set -ex
         dfpl train -f example/train.json
         if [ ! -d example/results_train/ ]; then
           echo "training result directory missing" >&2 
@@ -93,11 +93,11 @@ jobs:
         if [ ! -d preds_dmpnn/ ]; then
           echo "predict result directory missing" >&2 
           exit 1
-        fi
-        
+        fi        
         dfpl convert -f tests/data
         if [ "$(find tests/data \( -name '*.csv' -o -name '*.tsv' \) | wc -l)" -ne "$(find tests/data -name '*.pkl' | wc -l)" ]; then
             echo "not all csv files are converted to pickle ones" >&2 
             exit 1                                                                                                                                                                                    
         fi
         echo "All tests passed!"
+
