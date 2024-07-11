@@ -1,8 +1,6 @@
-import csv
 import logging
 import math
 import os.path
-from os.path import basename
 from typing import Tuple
 
 import numpy as np
@@ -13,7 +11,7 @@ from keras import backend as K
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, optimizers
 from tensorflow.keras.layers import Dense, Input, Lambda
-from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.models import Model
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from dfpl import callbacks
