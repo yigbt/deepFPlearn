@@ -1,8 +1,9 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "tests/data/tox21.csv",
+  "inputFile": "tests/data/smiles.csv",
   "outputDir": "example/results_train/",
-  "ecModelDir": "example/results_train/random_split_autoencoder/",
+  "ecModelDir": "example/results_train/",
   "ecWeightsFile": "",
   "verbose": 2,
 
@@ -12,7 +13,7 @@
   "encFPSize": 256,
 
   "aeSplitType": "random",
-  "aeEpochs": 4,
+  "aeEpochs": 2,
   "aeBatchSize": 351,
   "aeOptimizer": "Adam",
   "aeActivationFunction": "relu",
