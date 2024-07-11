@@ -10,5 +10,5 @@
   "dataset_type": "classification",
   "smiles_columns": "smiles",
   "extra_metrics": ["balanced_accuracy","auc","f1","mcc","recall","precision"],
-  "hidden_size": 256
+  "hidden_size": 300
 }
