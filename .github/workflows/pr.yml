@@ -95,8 +95,8 @@ jobs:
           exit 1
         fi
         echo "result lines "$(wc -l preds_dmpnn/DMPNN_preds.csv)
-        if [ "$(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" -lt "6" ]; then
-          echo "predict result should have at least 5 lines. But had only $(cat preds_dmpnn/DMPNN_preds.csv | wc -l)" >&2 
+        if [ "$(cat preds_dmpnn/preds.csv | wc -l)" -lt "6" ]; then
+          echo "predict result should have at least 5 lines. But had only $(cat preds_dmpnn/preds.csv | wc -l)" >&2 
           exit 1
         fi
         
