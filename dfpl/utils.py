@@ -88,7 +88,7 @@ def parse_cli_boolean(cli_args, cli_arg_key):
     return False
 
 
-def createArgsFromJson(jsonFile: str):
+def createArgsFromJson(jsonFile: str) -> List[str]:
     arguments = []
     ignore_elements = ["py/object"]
     cli_args = sys.argv[1:]  # Skipping the script name itself
@@ -106,19 +106,37 @@ def createArgsFromJson(jsonFile: str):
                 arg_index = cli_args.index(cli_arg_key) + 1
                 if isinstance(value, bool):
                     value = parse_cli_boolean(cli_args, cli_arg_key)
-                elif arg_index < len(cli_args):
+                elif arg_index < len(cli_args) and not cli_args[arg_index].startswith('--'):
                     cli_value = cli_args[arg_index]
                     if isinstance(value, list):
                         value = parse_cli_list(cli_value)
                     else:
                         value = cli_value  # Override JSON value with command-line value
-            if isinstance(value, bool) and value:
-                arguments.append(cli_arg_key)
+            if isinstance(value, bool):
+                if value:
+                    arguments.append(cli_arg_key)
             elif isinstance(value, list):
                 arguments.append(cli_arg_key)
                 arguments.extend(map(str, value))  # Ensure all elements are strings
             else:
                 arguments.extend([cli_arg_key, str(value)])
+    i = 0
+    while i < len(cli_args):
+        arg = cli_args[i]
+        if arg.startswith("--"):
+            key = arg.lstrip("--")
+            if key not in data:
+                value = True if i + 1 >= len(cli_args) or cli_args[i + 1].startswith("--") else cli_args[i + 1]
+                if isinstance(value, bool):
+                    if value:
+                        arguments.append(arg)
+                else:
+                    arguments.extend([arg, str(value)])
+                i += 1 if isinstance(value, bool) else 2
+            else:
+                i += 1
+        else:
+            i += 1
 
     return arguments
 

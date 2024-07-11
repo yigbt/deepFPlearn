@@ -19,12 +19,12 @@ class Options:
     """
 
     configFile: str = None
-    inputFile: str = "tests/data/smiles.csv"
-    outputDir: str = "example/results_train/"  # changes according to mode
-    outputFile: str = "results.csv"
+    inputFile: str = ""
+    outputDir: str = ""  # changes according to mode
+    outputFile: str = ""
     ecWeightsFile: str = ""
-    ecModelDir: str = "example/results_train/AE_encoder/"
-    fnnModelDir: str = "example/results_train/AR_saved_model/"
+    ecModelDir: str = ""
+    fnnModelDir: str = ""
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
     epochs: int = 100
@@ -85,8 +85,8 @@ class GnnOptions(TrainArgs):
 
     total_epochs: int = 30
     save: bool = True
-    configFile: str = "./example/traingnn.json"
-    data_path: str = "./example/data/tox21.csv"
+    configFile: str = ""
+    data_path: str = ""
     use_compound_names: bool = False
     save_dir: str = ""
     no_cache: bool = False
@@ -96,13 +96,13 @@ class GnnOptions(TrainArgs):
     num_lrs: int = 2
     minimize_score: bool = False
     num_tasks: int = 12
-    preds_path: str = "./tox21dmpnn.csv"
+    preds_path: str = ""
     test_path: str = ""
     save_preds: bool = True
-    calibration_method: str = "none"
-    uncertainty_method: str = "none"
+    calibration_method: str = ""
+    uncertainty_method: str = ""
     calibration_path: str = ""
-    evaluation_methods: str = "none"
+    evaluation_methods: str = ""
     evaluation_scores_path: str = ""
     wabTracking: bool = False
     split_sizes: List[float] = None
@@ -130,7 +130,7 @@ class PredictGnnOptions(PredictArgs):
     Dataclass to hold all options used for training the graph models
     """
 
-    configFile: str = "./example/predictgnn.json"
+    configFile: str = ""
     calibration_atom_descriptors_path: str = None
     calibration_features_path: str = None
     calibration_interval_percentile: float = 95
