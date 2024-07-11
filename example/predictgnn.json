@@ -1,25 +1,11 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "test_path": "tests/data/calibra.csv",
+  "checkpoint_path": "dmpnntox21-cv-8020/fold_1/model_0/model.pt",
+  "test_path": "tests/data/tox21.csv",
   "preds_path": "example/results_gnn.csv",
-  "evaluation_methods": "nll",
-  "evaluation_scores_path": "example/eval_gnn.csv",
-  "calibration_method": "zscaling",
-  "calibration_path": "tests/data/calibra.csv",
-  "calibration_interval_percentile": 95,
-  "calibration_atom_descriptors_path": "tests/data/atom_descriptors.csv",
-  "calibration_bond_features_path": "tests/data/bond_features.csv",
-  "calibration_features_path": "tests/data/features.csv",
-  "calibration_phase_features_path": "tests/data/phase_features.csv",
-  "calibration_phase_features_path": "tests/data/phase_features.csv",
-  "ensemble_variance": true,
-  "individual_ensemble_predictions": true,
-  "propertyensemble_size": 5,
-  "uncertainty_method": "mve",
+  "uncertainty_method": "dropout",
   "uncertainty_dropout_p": 0.1,
-  "dropout_sampling_size": 10,
-  "regression_calibrator_metric": "stdev",
-  "spectra_roundrobin": true
+  "dropout_sampling_size": 10
 }
 
 

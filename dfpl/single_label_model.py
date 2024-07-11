@@ -21,13 +21,13 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tensorflow.keras import metrics, optimizers, regularizers
-from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
+from tensorflow.keras.layers import AlphaDropout, Dense, Dropout, InputLayer
 from tensorflow.keras.losses import (
     BinaryCrossentropy,
     BinaryFocalCrossentropy,
     MeanSquaredError,
 )
-from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.models import Model, Sequential, load_model
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -180,78 +180,118 @@ def prepare_nn_training_data(
 
 # This function defines a feedforward neural network (FNN) with the given input size, options, and output bias
 def build_fnn_network(
-    input_size: int, opts: options.Options, output_bias=None
+    input_size: int, opts: options.Options, output_bias=None, encoder: Model = None
 ) -> Model:
+    # Assuming the last layer of the encoder is the input to the FNN
+    input_size = encoder.layers[-1].output_shape[-1]
+    # Rename encoder layers for clarity
+    for i, layer in enumerate(encoder.layers):
+        layer._name = f'encoder_layer_{i + 1}'
+
+    # Start model with encoder output
+    x = encoder.output
+
     # Set the output bias if it is provided
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
 
-    # Define the number of hidden layers based on the input size
-    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
-    if not str(input_size) in my_hidden_layers.keys():
-        raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
+    # Define the number of hidden layers dynamically based on the input size
     nhl = int(math.log2(input_size) / 2 - 1)
+    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
+    if str(input_size) not in my_hidden_layers.keys():
+        raise ValueError("Input size not supported. Must be in {2048, 1024, 999, 512, 256}.")
 
-    # Create a sequential model
-    model = Sequential()
+    # Add hidden layers
+    for i in range(nhl):
+        units = int(input_size / 2 ** (i + 1))
+        dropout_rate = opts.dropout / (2 * i + 1) if i > 0 else opts.dropout
 
-    # Add the first hidden layer
-    if opts.activationFunction == "relu":
-        model.add(
-            Dense(
-                units=int(input_size / 2),
-                input_dim=input_size,
-                activation="relu",
-                kernel_regularizer=regularizers.l2(opts.l2reg),
-                kernel_initializer="he_uniform",
-            )
-        )
-        model.add(Dropout(opts.dropout))
-    elif opts.activationFunction == "selu":
-        model.add(
-            Dense(
-                units=int(input_size / 2),
-                input_dim=input_size,
-                activation="selu",
-                kernel_initializer="lecun_normal",
-            )
-        )
-        model.add(AlphaDropout(opts.dropout))
-    else:
-        logging.error("Only 'relu' and 'selu' activation is supported")
-        sys.exit(-1)
-
-    # Add additional hidden layers
-    for i in range(1, nhl):
-        factor_units = 2 ** (i + 1)
-        factor_dropout = 2 * i
         if opts.activationFunction == "relu":
-            model.add(
-                Dense(
-                    units=int(input_size / factor_units),
-                    activation="relu",
-                    kernel_regularizer=regularizers.l2(opts.l2reg),
-                    kernel_initializer="he_uniform",
-                )
-            )
-            model.add(Dropout(opts.dropout / factor_dropout))
+            x = Dense(units, activation="relu", kernel_regularizer=regularizers.l2(opts.l2reg),
+                      kernel_initializer="he_uniform")(x)
+            x = Dropout(dropout_rate)(x)
         elif opts.activationFunction == "selu":
-            model.add(
-                Dense(
-                    units=int(input_size / factor_units),
-                    activation="selu",
-                    kernel_initializer="lecun_normal",
-                )
-            )
-            model.add(AlphaDropout(opts.dropout / factor_dropout))
+            x = Dense(units, activation="selu", kernel_initializer="lecun_normal")(x)
+            x = AlphaDropout(dropout_rate)(x)
         else:
-            logging.error("Only 'relu' and 'selu' activation is supported")
+            logging.error("Unsupported activation function. Only 'relu' and 'selu' are supported.")
             sys.exit(-1)
 
-    # Add the output layer with a sigmoid activation function and the output bias if provided
-    model.add(Dense(units=1, activation="sigmoid", bias_initializer=output_bias))
+    # Add the output layer
+    outputs = Dense(units=1, activation="sigmoid", bias_initializer=output_bias)(x)
+
+    # Create the model
+    model = Model(inputs=encoder.input, outputs=outputs)
     model.summary()
+
     return model
+
+    # # Define the number of hidden layers based on the input size
+    # my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
+    # if not str(input_size) in my_hidden_layers.keys():
+    #     raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
+    # nhl = int(math.log2(input_size) / 2 - 1)
+    #
+    # # Create a sequential model
+    # model = Sequential()
+    #
+    # # Add the first hidden layer
+    # if opts.activationFunction == "relu":
+    #     model.add(
+    #         Dense(
+    #             units=int(input_size / 2),
+    #             input_dim=input_size,
+    #             activation="relu",
+    #             kernel_regularizer=regularizers.l2(opts.l2reg),
+    #             kernel_initializer="he_uniform",
+    #         )
+    #     )
+    #     model.add(Dropout(opts.dropout))
+    # elif opts.activationFunction == "selu":
+    #     model.add(
+    #         Dense(
+    #             units=int(input_size / 2),
+    #             input_dim=input_size,
+    #             activation="selu",
+    #             kernel_initializer="lecun_normal",
+    #         )
+    #     )
+    #     model.add(AlphaDropout(opts.dropout))
+    # else:
+    #     logging.error("Only 'relu' and 'selu' activation is supported")
+    #     sys.exit(-1)
+    #
+    # # Add additional hidden layers
+    # for i in range(1, nhl):
+    #     factor_units = 2 ** (i + 1)
+    #     factor_dropout = 2 * i
+    #     if opts.activationFunction == "relu":
+    #         model.add(
+    #             Dense(
+    #                 units=int(input_size / factor_units),
+    #                 activation="relu",
+    #                 kernel_regularizer=regularizers.l2(opts.l2reg),
+    #                 kernel_initializer="he_uniform",
+    #             )
+    #         )
+    #         model.add(Dropout(opts.dropout / factor_dropout))
+    #     elif opts.activationFunction == "selu":
+    #         model.add(
+    #             Dense(
+    #                 units=int(input_size / factor_units),
+    #                 activation="selu",
+    #                 kernel_initializer="lecun_normal",
+    #             )
+    #         )
+    #         model.add(AlphaDropout(opts.dropout / factor_dropout))
+    #     else:
+    #         logging.error("Only 'relu' and 'selu' activation is supported")
+    #         sys.exit(-1)
+    #
+    # # Add the output layer with a sigmoid activation function and the output bias if provided
+    # model.add(Dense(units=1, activation="sigmoid", bias_initializer=output_bias))
+    # model.summary()
+    # return model
 
 
 # This function defines a shallow neural network (SNN) with the given input size, options, and output bias
@@ -347,10 +387,13 @@ def define_single_label_model(
     else:
         logging.error(f"Your selected optimizer is not supported: {opts.optimizer}.")
         sys.exit("Unsupported optimizer")
-
+    if opts.finetuneEncoder:
+        encoder = load_model(opts.ecModelDir)  # Ensure this loads the correct model
+    else:
+        encoder = None
     # Set the type of neural network according to the option selected
     if opts.fnnType == "FNN":
-        model = build_fnn_network(input_size, opts, output_bias)
+        model = build_fnn_network(input_size, opts, output_bias,encoder=encoder)
     elif opts.fnnType == "SNN":
         model = build_snn_network(input_size, opts, output_bias)
     else:
@@ -494,8 +537,10 @@ def fit_and_evaluate_model(
     y_test: np.ndarray,
     fold: int,
     target: str,
-    opts: options.Options,
+    opts: options.Options
 ) -> pd.DataFrame:
+
+
     # Print info about training
     logging.info(f"Training of fold number: {fold}")
 
@@ -549,6 +594,15 @@ def fit_and_evaluate_model(
     # Evaluate model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)
+    callback_model.save_weights(
+        path.join(
+            opts.outputDir,
+            f"{target}_single-labeled_Fold-{fold}.model.weights.hdf5",
+        )
+    )
+    callback_model.save(
+        filepath=path.join(opts.outputDir, f"{target}-{fold}_saved_model")
+    )
     performance = evaluate_model(
         x_test=x_test,
         y_test=y_test,
@@ -557,6 +611,7 @@ def fit_and_evaluate_model(
         target=target,
         fold=fold,
     )
+
 
     return performance
 
@@ -600,7 +655,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     :param df: The dataframe containing x matrix and at least one column for a y target.
     """
 
-    # find target columns
     targets = [c for c in df.columns if c not in ["smiles", "fp", "fpcompressed"]]
     if opts.wabTracking and opts.wabTarget != "":
         # For W&B tracking, we only train one target that's specified as wabTarget "ER".
@@ -631,7 +685,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # for single 'folds' and when sweeping on W&B, we fix the random state
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
-                        project=f"FFN_{opts.split_type}",
+                        project=f"May_FFN_{opts.split_type}",
                         group=f"{target}",
                         name=f"{target}_single_fold",
                     )
@@ -643,7 +697,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                         reinit=True,
                     )
                     x_train, x_test, y_train, y_test = train_test_split(
-                        x, y, stratify=y, test_size=opts.testSize, random_state=1
+                        x, y, stratify=y, test_size=opts.testSize, random_state=0
                     )
                     logging.info(
                         f"Splitting train/test data with fixed random initializer"
@@ -664,32 +718,19 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 )
                 performance_list.append(performance)
                 # save complete model
-                trained_model = define_single_label_model(
-                    input_size=len(x[0]), opts=opts
-                )
-                # trained_model.load_weights
-                # (path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(opts.outputDir, f"{target}_saved_model")
-                )
+
 
             elif 1 < opts.kFolds < 10:  # int(x.shape[0] / 100):
                 # do a kfold cross-validation
                 kfold_c_validator = StratifiedKFold(
-                    n_splits=opts.kFolds, shuffle=True, random_state=42
+                    n_splits=opts.kFolds, shuffle=True, random_state=0
                 )
                 fold_no = 1
                 # split the data
                 for train, test in kfold_c_validator.split(x, y):
                     if opts.wabTracking and not opts.aeWabTracking:
                         wandb.init(
-                            project=f"FNN_{opts.threshold}_{opts.split_type}",
+                            project=f"May_FNN_{opts.threshold}_{opts.split_type}",
                             group=f"{target}",
                             name=f"{target}-{fold_no}",
                             reinit=True,
@@ -721,28 +762,15 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     )
                     performance_list.append(performance)
 
-                    # save complete model
-                    trained_model = define_single_label_model(
-                        input_size=len(x[0]), opts=opts
-                    )
-                    # trained_model.load_weights
-                    # (path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
-                    trained_model.save_weights(
-                        path.join(
-                            opts.outputDir,
-                            f"{target}_single-labeled_Fold-{fold_no}.model.weights.hdf5",
-                        )
-                    )
-                    # create output directory and store complete model
-                    trained_model.save(
-                        filepath=path.join(
-                            opts.outputDir, f"{target}-{fold_no}_saved_model"
-                        )
-                    )
                     if opts.wabTracking:
                         wandb.finish()
-                    fold_no += 1
+                    train_indices_path = os.path.join(opts.outputDir, f"fold_{fold_no}_train_indices.csv")
+                    test_indices_path = os.path.join(opts.outputDir, f"fold_{fold_no}_test_indices.csv")
 
+                    # Save the indices to CSV files
+                    pd.DataFrame(train, columns=['Index']).to_csv(train_indices_path, index=False)
+                    pd.DataFrame(test, columns=['Index']).to_csv(test_indices_path, index=False)
+                    fold_no += 1
                 # select and copy best model - how to define the best model?
                 best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
                     by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
@@ -750,11 +778,11 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # rename the fold to best fold
                 src = os.path.join(
                     opts.outputDir,
-                    f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
+                    f"{target}_{opts.split_type}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
                 )
                 dst = os.path.join(
                     opts.outputDir,
-                    f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
+                    f"{target}_{opts.split_type}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
                 )
                 os.rename(src, dst)
 
@@ -771,7 +799,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # Rename source directory to destination directory
                 os.rename(src_dir, dst_dir)
 
-                # save complete model
             else:
                 logging.info(
                     "Your selected number of folds for Cross validation is out of range. "
@@ -781,7 +808,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         (
             pd.concat(performance_list, ignore_index=True).to_csv(
                 path_or_buf=path.join(
-                    opts.outputDir, "single_label_random_model.evaluation.csv"
+                    opts.outputDir, f"single_label_{opts.split_type}_model.evaluation.csv"
                 )
             )
         )
@@ -808,7 +835,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 )
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
-                        project=f"FFN_{opts.split_type}",
+                        project=f"May_FFN_{opts.split_type}",
                         group=f"{target}",
                         name=f"{target}_single_fold",
                     )
@@ -829,20 +856,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     opts=opts,
                 )
                 performance_list.append(performance)
-                trained_model = define_single_label_model(
-                    input_size=len(x_train[0]), opts=opts
-                )
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_scaffold_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(
-                        opts.outputDir, f"{target}_scaffold_saved_model_0"
-                    )
-                )
+
             elif opts.kFolds > 1:
                 for fold_no in range(1, opts.kFolds + 1):
                     print(f"Splitting data with seed {fold_no}")
@@ -857,7 +871,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     )
                     if opts.wabTracking and not opts.aeWabTracking:
                         wandb.init(
-                            project=f"FFN_{opts.split_type}",
+                            project=f"May_FFN_{opts.split_type}",
                             group=f"{target}",
                             name=f"{target}-{fold_no}",
                             reinit=True,
@@ -880,20 +894,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     )
                     performance_list.append(performance)
 
-                    trained_model = define_single_label_model(
-                        input_size=len(x_train[0]), opts=opts
-                    )
-                    trained_model.save_weights(
-                        path.join(
-                            opts.outputDir,
-                            f"{target}_scaffold_single-labeled_Fold-{fold_no}.model.weights.hdf5",
-                        )
-                    )
-                    trained_model.save(
-                        filepath=path.join(
-                            opts.outputDir, f"{target}_scaffold_saved_model_{fold_no}"
-                        )
-                    )
                     if opts.wabTracking:
                         wandb.finish()
                     fold_no += 1
@@ -904,20 +904,20 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # rename the fold to best fold
                 src = os.path.join(
                     opts.outputDir,
-                    f"{target}_scaffold_single-labeled_Fold-{best_fold}.model.weights.hdf5",
+                    f"{target}_{opts.split_type}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
                 )
                 dst = os.path.join(
                     opts.outputDir,
-                    f"{target}_scaffold_single-labeled_BEST_Fold-{best_fold}.model.weights.hdf5",
+                    f"{target}_{opts.split_type}_single-labeled_BEST_Fold-{best_fold}.model.weights.hdf5",
                 )
                 os.rename(src, dst)
 
                 src_dir = os.path.join(
-                    opts.outputDir, f"{target}_scaffold_saved_model_{best_fold}"
+                    opts.outputDir, f"{target}_{opts.split_type}_saved_model_{best_fold}"
                 )
                 dst_dir = os.path.join(
                     opts.outputDir,
-                    f"{target}_scaffold_saved_model_BEST_FOLD_{best_fold}",
+                    f"{target}_{opts.split_type}_saved_model_BEST_FOLD_{best_fold}",
                 )
 
                 if path.isdir(dst_dir):
@@ -935,7 +935,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         (
             pd.concat(performance_list, ignore_index=True).to_csv(
                 path_or_buf=path.join(
-                    opts.outputDir, "single_label_scaffold_model.evaluation.csv"
+                    opts.outputDir, f"single_label_{opts.split_type}_model.evaluation.csv"
                 )
             )
         )
@@ -958,7 +958,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 )
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
-                        project=f"FFN_{opts.split_type}AE_{opts.aeSplitType}",
+                        project=f"May_FFN_{opts.split_type}AE_{opts.aeSplitType}",
                         group=f"{target}",
                         name=f"{target}_single_fold",
                     )
@@ -978,18 +978,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     opts=opts,
                 )
                 performance_list.append(performance)
-                trained_model = define_single_label_model(
-                    input_size=len(x_train[0]), opts=opts
-                )
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_weight_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(opts.outputDir, f"{target}_weight_saved_model_0")
-                )
+
             elif opts.kFolds > 1:
                 raise Exception(
                     f"Unsupported number of folds: {opts.kFolds} for {opts.split_type} split.\

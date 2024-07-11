@@ -284,6 +284,7 @@ def train_full_ac(
     else:
         encoder.save(filepath=save_path)
     # Return the encoder model of the trained autoencoder
+    autoencoder.summary(print_fn=logging.info)
     return encoder, train_indices, test_indices
 
 
@@ -312,99 +313,161 @@ def compress_fingerprints(dataframe: pd.DataFrame, encoder: Model) -> pd.DataFra
     return dataframe
 
 
-def visualize_fingerprints(
-    df: pd.DataFrame,
-    train_indices: np.ndarray,
-    test_indices: np.ndarray,
-    save_as: str,
-):
-    """
-    Visualize fingerprints using UMAP and save the visualization to a file.
+# def visualize_fingerprints(
+#     df: pd.DataFrame,
+#     train_indices: np.ndarray,
+#     test_indices: np.ndarray,
+#     save_as: str,
+# ):
+#     """
+#     Visualize fingerprints using UMAP and save the visualization to a file.
+#
+#     This function takes a Pandas DataFrame containing fingerprint data, calculates
+#     the appropriate number of samples based on the size of the dataset, applies UMAP
+#     for dimensionality reduction, and saves the resulting visualization.
+#
+#     Parameters:
+#     - df (pd.DataFrame): A Pandas DataFrame containing fingerprint data.
+#     - train_indices (np.ndarray): An array containing indices of training samples.
+#     - test_indices (np.ndarray): An array containing indices of test samples.
+#     - save_as (str): The filename or path where the UMAP visualization will be saved.
+#     Note:
+#     - If the DataFrame size exceeds 50,000 rows, the function logs a message and skips
+#       the UMAP visualization step.
+#     """
+#     if len(df) <= 10000:
+#         num_samples = len(df)
+#     elif len(df) > 50000:
+#         logging.info(
+#             "Cannot return the UMAP due to the large dataset size. Skipping the function."
+#         )
+#         return
+#     else:
+#         num_samples = len(df) // 2
+#
+#     after_col = "fpcompressed"
+#     # Calculate the number of samples to be taken from each set
+#     train_samples = int(num_samples * len(train_indices) / len(df))
+#     test_samples = num_samples - train_samples
+#
+#     # Assign train and test data points separately
+#     train_data = df.loc[train_indices]
+#     test_data = df.loc[test_indices]
+#
+#     # Sample train and test data points
+#     train_data_sampled = train_data.sample(n=train_samples, random_state=42)
+#     test_data_sampled = test_data.sample(n=test_samples, random_state=42)
+#
+#     # Concatenate the sampled train and test data
+#     df_sampled = pd.concat([train_data_sampled, test_data_sampled])
+#
+#     # Convert the boolean values in the after_col column to floats
+#     df_sampled[after_col] = df_sampled[after_col].apply(
+#         lambda x: np.array(x, dtype=float)
+#     )
+#
+#     df_sampled.loc[train_data_sampled.index, "set"] = "train"
+#     df_sampled.loc[test_data_sampled.index, "set"] = "test"
+#     # Apply UMAP
+#     umap_model = umap.UMAP(
+#         n_neighbors=15, min_dist=0.1, metric="euclidean", random_state=42
+#     )
+#     # Filter out the rows with invalid arrays
+#     umap_results = umap_model.fit_transform(df_sampled[after_col].tolist())
+#     # Add UMAP results to the DataFrame
+#     df_sampled["umap_x"] = umap_results[:, 0]
+#     df_sampled["umap_y"] = umap_results[:, 1]
+#
+#     # Define custom color palette
+#     palette = {"train": "blue", "test": "red"}
+#
+#     # Create the scatter plot
+#     sns.set(style="white")
+#     fig, ax = plt.subplots(figsize=(10, 8))
+#     split = save_as.split("_", 1)
+#     part_after_underscore = split[1]
+#     split_type = part_after_underscore.split(".")[0]
+#     # Plot the UMAP results
+#     for label, grp in df_sampled.groupby("set"):
+#         set_label = label
+#         color = palette[set_label]
+#         alpha = (
+#             0.09 if set_label == "train" else 0.9
+#         )  # Set different opacities for train and test
+#         ax.scatter(
+#             grp["umap_x"], grp["umap_y"], label=f"{set_label}", c=color, alpha=alpha
+#         )
+#
+#     # Customize the plot
+#     ax.set_title(
+#         f"UMAP visualization of molecular fingerprints using {split_type} split",
+#         fontsize=14,
+#     )
+#     ax.set_xlabel("UMAP 1")
+#     ax.set_ylabel("UMAP 2")
+#     ax.legend(title="", loc="upper right")
+#     sns.despine(ax=ax, offset=10)
+#     save_path = os.path.join(os.getcwd(), save_as)
+#     plt.savefig(save_path)
+import math
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.manifold import TSNE
+from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
+import umap
+import matplotlib.pyplot as plt
+from sklearn.neighbors import NearestNeighbors
 
-    This function takes a Pandas DataFrame containing fingerprint data, calculates
-    the appropriate number of samples based on the size of the dataset, applies UMAP
-    for dimensionality reduction, and saves the resulting visualization.
+def knn_preservation(original_fp, compressed_fp, n_neighbors=5):
+    original_nn = NearestNeighbors(n_neighbors=n_neighbors).fit(original_fp)
+    compressed_nn = NearestNeighbors(n_neighbors=n_neighbors).fit(compressed_fp)
 
-    Parameters:
-    - df (pd.DataFrame): A Pandas DataFrame containing fingerprint data.
-    - train_indices (np.ndarray): An array containing indices of training samples.
-    - test_indices (np.ndarray): An array containing indices of test samples.
-    - save_as (str): The filename or path where the UMAP visualization will be saved.
-    Note:
-    - If the DataFrame size exceeds 50,000 rows, the function logs a message and skips
-      the UMAP visualization step.
-    """
-    if len(df) <= 10000:
-        num_samples = len(df)
-    elif len(df) > 50000:
-        logging.info(
-            "Cannot return the UMAP due to the large dataset size. Skipping the function."
-        )
-        return
-    else:
-        num_samples = len(df) // 2
+    original_neighbors = original_nn.kneighbors(original_fp, return_distance=False)
+    compressed_neighbors = compressed_nn.kneighbors(compressed_fp, return_distance=False)
 
-    after_col = "fpcompressed"
-    # Calculate the number of samples to be taken from each set
-    train_samples = int(num_samples * len(train_indices) / len(df))
-    test_samples = num_samples - train_samples
+    intersection = np.array([len(np.intersect1d(original_neighbors[i], compressed_neighbors[i])) for i in range(len(original_fp))])
+    preservation_score = np.mean(intersection / n_neighbors)
+    return preservation_score
+def knn_preservation(original_fp, compressed_fp, n_neighbors=5):
+    original_nn = NearestNeighbors(n_neighbors=n_neighbors).fit(original_fp)
+    compressed_nn = NearestNeighbors(n_neighbors=n_neighbors).fit(compressed_fp)
 
-    # Assign train and test data points separately
-    train_data = df.loc[train_indices]
-    test_data = df.loc[test_indices]
+    original_neighbors = original_nn.kneighbors(original_fp, return_distance=False)
+    compressed_neighbors = compressed_nn.kneighbors(compressed_fp, return_distance=False)
 
-    # Sample train and test data points
-    train_data_sampled = train_data.sample(n=train_samples, random_state=42)
-    test_data_sampled = test_data.sample(n=test_samples, random_state=42)
+    intersection = np.array([len(np.intersect1d(original_neighbors[i], compressed_neighbors[i])) for i in range(len(original_fp))])
+    preservation_score = np.mean(intersection / n_neighbors)
+    return preservation_score
 
-    # Concatenate the sampled train and test data
-    df_sampled = pd.concat([train_data_sampled, test_data_sampled])
+def visualize_fingerprints(dataframe, n_clusters=7, save_as=None):
+    # Extract original and compressed fingerprints
+    original_fp = np.array(dataframe['fp'].to_list())
+    compressed_fp = np.array(dataframe['fpcompressed'].to_list())
 
-    # Convert the boolean values in the after_col column to floats
-    df_sampled[after_col] = df_sampled[after_col].apply(
-        lambda x: np.array(x, dtype=float)
-    )
+    original_tsne = TSNE(n_components=2, random_state=42).fit_transform(original_fp)
+    compressed_tsne = TSNE(n_components=2, random_state=42).fit_transform(compressed_fp)
 
-    df_sampled.loc[train_data_sampled.index, "set"] = "train"
-    df_sampled.loc[test_data_sampled.index, "set"] = "test"
-    # Apply UMAP
-    umap_model = umap.UMAP(
-        n_neighbors=15, min_dist=0.1, metric="euclidean", random_state=42
-    )
-    # Filter out the rows with invalid arrays
-    umap_results = umap_model.fit_transform(df_sampled[after_col].tolist())
-    # Add UMAP results to the DataFrame
-    df_sampled["umap_x"] = umap_results[:, 0]
-    df_sampled["umap_y"] = umap_results[:, 1]
 
-    # Define custom color palette
-    palette = {"train": "blue", "test": "red"}
+    # Cluster using MiniBatchKMeans
+    kmeans = MiniBatchKMeans(n_clusters=n_clusters, random_state=42)
+    original_clusters = kmeans.fit_predict(original_tsne)
+    compressed_clusters = kmeans.fit_predict(compressed_tsne)
 
-    # Create the scatter plot
-    sns.set(style="white")
-    fig, ax = plt.subplots(figsize=(10, 8))
-    split = save_as.split("_", 1)
-    part_after_underscore = split[1]
-    split_type = part_after_underscore.split(".")[0]
-    # Plot the UMAP results
-    for label, grp in df_sampled.groupby("set"):
-        set_label = label
-        color = palette[set_label]
-        alpha = (
-            0.09 if set_label == "train" else 0.9
-        )  # Set different opacities for train and test
-        ax.scatter(
-            grp["umap_x"], grp["umap_y"], label=f"{set_label}", c=color, alpha=alpha
-        )
+    # Calculate metrics
+    ars = adjusted_rand_score(original_clusters, compressed_clusters)
+    ami = adjusted_mutual_info_score(original_clusters, compressed_clusters)
+    knn_preservation_score = knn_preservation(original_fp, compressed_fp)
 
-    # Customize the plot
-    ax.set_title(
-        f"UMAP visualization of molecular fingerprints using {split_type} split",
-        fontsize=14,
-    )
-    ax.set_xlabel("UMAP 1")
-    ax.set_ylabel("UMAP 2")
-    ax.legend(title="", loc="upper right")
-    sns.despine(ax=ax, offset=10)
-    save_path = os.path.join(os.getcwd(), save_as)
-    plt.savefig(save_path)
+    # Visualize
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
+    plt.scatter(original_tsne[:, 0], original_tsne[:, 1], c=original_clusters, cmap='Spectral', s=5)
+    plt.title('Original TSNE Visualization')
+
+    plt.subplot(1, 2, 2)
+    plt.scatter(compressed_tsne[:, 0], compressed_tsne[:, 1], c=compressed_clusters, cmap='Spectral', s=5)
+    plt.title('Deterministic Autoencoder Latent Space TSNE Visualization')
+    metrics_text = f"ARS: {ars:.2f}\nAMI: {ami:.2f}\nkNN: {knn_preservation_score:.2f}"
+    plt.text(0.95, 0.02, metrics_text, verticalalignment='bottom', horizontalalignment='right', transform=plt.gca().transAxes, color='black', fontsize=9, bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
+
+    plt.suptitle('Deterministic Autoencoder Latent Space')
+    plt.savefig(save_as)

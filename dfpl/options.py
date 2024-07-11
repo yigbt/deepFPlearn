@@ -3,11 +3,11 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal, List
 
 import jsonpickle
 import torch
-from chemprop.args import TrainArgs
+from chemprop.args import TrainArgs, PredictArgs, InterpretArgs
 
 from dfpl.utils import parseCmdArgs
 
@@ -36,6 +36,7 @@ class Options:
     verbose: int = 2
     trainAC: bool = False
     trainFNN: bool = True
+    finetuneEncoder: bool = False
     compressFeatures: bool = False
     sampleFractionOnes: float = 0.5
     sampleDown: bool = False
@@ -85,8 +86,8 @@ class GnnOptions(TrainArgs):
 
     total_epochs: int = 30
     save: bool = True
-    configFile: str = "./example/traingnn.json"
-    data_path: str = "./example/data/tox21.csv"
+    configFile: str = ""
+    data_path: str = ""
     use_compound_names: bool = False
     save_dir: str = ""
     no_cache: bool = False
@@ -96,14 +97,103 @@ class GnnOptions(TrainArgs):
     num_lrs: int = 2
     minimize_score: bool = False
     num_tasks: int = 12
-    preds_path: str = "./tox21dmpnn.csv"
+    preds_path: str = ""
     test_path: str = ""
-    save_preds: bool = True
-    calibration_method: str = "none"
-    uncertainty_method: str = "none"
+    save_preds: bool = False
+    calibration_method: str = ""
+    uncertainty_method: str = ""
     calibration_path: str = ""
-    evaluation_methods: str = "none"
+    evaluation_methods: str = ""
     evaluation_scores_path: str = ""
+    wabTracking: bool = False
+    split_sizes: List[float] = None
+    show_individual_scores: bool = False
+
+    # save_smiles_splits: bool = False
+    @classmethod
+    def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
+        # Initialize with JSON config if provided
+        if json_config:
+            opts = cls(**json_config)
+        else:
+            opts = cls()
+
+        # Update with command-line arguments
+        for key, value in vars(args).items():
+            if value is not None:
+                setattr(opts, key, value)
+
+        return opts
+
+class PredictGnnOptions(PredictArgs):
+    """
+    Dataclass to hold all options used for training the graph models
+    """
+
+    configFile: str = "./example/predictgnn.json"
+    calibration_atom_descriptors_path: str = None
+    calibration_features_path: str = None
+    calibration_interval_percentile: float = 95
+    calibration_method: Literal[
+        "zscaling",
+        "tscaling",
+        "zelikman_interval",
+        "mve_weighting",
+        "platt",
+        "isotonic",
+    ] = None
+    calibration_path: str = None
+    calibration_phase_features_path: str = None
+    drop_extra_columns: bool = False
+    dropout_sampling_size: int = 10
+    evaluation_methods: List[str] = None
+    evaluation_scores_path: str = None
+    # no_features_scaling: bool = True
+    individual_ensemble_predictions: bool = False
+    preds_path: str = None
+    regression_calibrator_metric: Literal["stdev", "interval"] = None
+    test_path: str = None
+    uncertainty_dropout_p: float = 0.1
+    uncertainty_method: Literal[
+        "mve",
+        "ensemble",
+        "evidential_epistemic",
+        "evidential_aleatoric",
+        "evidential_total",
+        "classification",
+        "dropout",
+    ] = None
+
+    @classmethod
+    def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
+        # Initialize with JSON config if provided
+        if json_config:
+            opts = cls(**json_config)
+        else:
+            opts = cls()
+
+        # Update with command-line arguments
+        for key, value in vars(args).items():
+            if value is not None:
+                setattr(opts, key, value)
+
+        return opts
+
+
+class InterpretGNNoptions(InterpretArgs):
+    """
+    Dataclass to hold all options used for training the graph models
+    """
+
+    configFile: str = "./example/interpret.json"
+    data_path: str = "./example/data/smiles.csv"
+    batch_size: int = 500
+    c_puct: float = 10.0
+    max_atoms: int = 20
+    min_atoms: int = 8
+    prop_delta: float = 0.5
+    property_id: List[int] = None
+    rollout: int = 20
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
@@ -137,14 +227,14 @@ def createCommandlineParser() -> argparse.ArgumentParser:
     parser_predict_gnn = subparsers.add_parser(
         "predictgnn", help="Predict with your GNN models"
     )
+    parser_predict_gnn.set_defaults(method="predictgnn")
+    parsePredictGnn(parser_predict_gnn)
+
     parser_interpret_gnn = subparsers.add_parser(
         "interpretgnn", help="Interpret your GNN models"
     )
     parser_interpret_gnn.set_defaults(method="interpretgnn")
     parseInterpretGnn(parser_interpret_gnn)
-
-    parser_predict_gnn.set_defaults(method="predictgnn")
-    parsePredictGnn(parser_predict_gnn)
 
     parser_train = subparsers.add_parser(
         "train", help="Train new models with your data"
@@ -409,6 +499,12 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Number of epochs that should be used for the FNN training",
         default=100,
     )
+    training_args.add_argument(
+        "--finetuneEncoder",
+        action="store_true",
+        help="Finetune the encoder with the FNN",
+        default=False,
+    )
     # TODO CHECK IF ALL LOSSES MAKE SENSE HERE
     training_args.add_argument(
         "--lossFunction",
@@ -619,7 +715,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
             "evidential_total",
             "classification",
             "dropout",
-            "spectra_roundrobin",
             "dirichlet",
         ],
         help="Method to use for uncertainty estimation",
@@ -652,16 +747,17 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     general_args.add_argument("--split_key_molecule", type=int)
     general_args.add_argument("--pytorch_seed", type=int)
     general_args.add_argument("--cache_cutoff", type=float)
-    general_args.add_argument("--save_preds", type=bool)
+    general_args.add_argument("--save_preds", action="store_true", default=False)
+    general_args.add_argument("--wabTracking", action="store_true", default=False)
     general_args.add_argument(
         "--cuda", action="store_true", default=False, help="Turn on cuda"
     )
-    general_args.add_argument(
-        "--save_smiles_splits",
-        action="store_true",
-        default=False,
-        help="Save smiles for each train/val/test splits for prediction convenience later",
-    )
+    # general_args.add_argument(
+    #     "--save_smiles_splits",
+    #     action="store_true",
+    #     default=False,
+    #     help="Save smiles for each train/val/test splits for prediction convenience later",
+    # )
     general_args.add_argument(
         "--test",
         action="store_true",
@@ -702,13 +798,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="Input JSON file that contains all information for training/predicting.",
-    )
-    files_args.add_argument(
-        "--config_path",
-        type=str,
-        metavar="FILE",
-        help="Path to a .json file containing arguments. Any arguments present in the config"
-        "file will override arguments specified via the command line or by the defaults.",
     )
     files_args.add_argument(
         "--save_dir",
@@ -1027,7 +1116,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     model_args.add_argument(
         "--show_individual_scores",
         action="store_true",
-        default=True,
         help="Show all scores for individual targets, not just average, at the end",
     )
     model_args.add_argument("--aggregation", choices=["mean", "sum", "norm"])
@@ -1146,171 +1234,137 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
 
 def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     general_args = parser.add_argument_group("General Configuration")
-    data_args = parser.add_argument_group("Data Configuration")
     files_args = parser.add_argument_group("Files")
-    training_args = parser.add_argument_group("Training Configuration")
     uncertainty_args = parser.add_argument_group("Uncertainty Configuration")
 
-    uncertainty_args.add_argument(
-        "--evaluation_methods",
-        type=str,
-        metavar="STRING",
-        choices=["nll", "spearman", "ence", "miscalibration_area"],
-        help="Method to use for evaluation",
-        default="none",
-    )
-    uncertainty_args.add_argument(
-        "--evaluation_scores_path",
+    general_args.add_argument(
+        "--checkpoint_path",
         type=str,
         metavar="FILE",
-        help="Path to file with evaluation scores",
+        help="Path to model checkpoint (.pt file)",
     )
+    # general_args.add_argument(
+    #     "--no_features_scaling",
+    #     action="store_true",
+    #     help="Turn on scaling of features",
+    # )
     files_args.add_argument(
         "-f",
         "--configFile",
-        metavar="FILE",
-        type=str,
-        help="Input JSON file that contains all information for training/predicting.",
-    )
-    general_args.add_argument(
-        "--gpu",
-        type=int,
-        metavar="INT",
-        choices=list(range(torch.cuda.device_count())),
-        help="Which GPU to use",
-    )
-    general_args.add_argument(
-        "--num_workers",
-        type=int,
-        metavar="INT",
-        help="Number of workers for the parallel data loading 0 means sequential",
-    )
-    general_args.add_argument(
-        "--no_cache",
-        type=bool,
-        metavar="BOOL",
-        default=False,
-        help="Turn off caching mol2graph computation",
-    )
-    general_args.add_argument(
-        "--no_cache_mol",
-        type=bool,
-        metavar="BOOL",
-        default=False,
-        help="Whether to not cache the RDKit molecule for each SMILES string to reduce memory\
-                             usage cached by default",
-    )
-    general_args.add_argument(
-        "--empty_cache",
-        type=bool,
-        metavar="BOOL",
-        help="Whether to empty all caches before training or predicting. This is necessary if\
-                             multiple jobs are run within a single script and the atom or bond features change",
-    )
-    files_args.add_argument(
-        "--preds_path",
         type=str,
         metavar="FILE",
-        help="Path to CSV file where predictions will be saved",
-        default="",
-    )
-    files_args.add_argument(
-        "--checkpoint_dir",
-        type=str,
-        metavar="DIR",
-        help="Directory from which to load model checkpoints"
-        "(walks directory and ensembles all models that are found)",
-        default="./ckpt",
-    )
-    files_args.add_argument(
-        "--checkpoint_path",
-        type=str,
-        metavar="DIR",
-        help="Path to model checkpoint (.pt file)",
-    )
-    files_args.add_argument(
-        "--checkpoint_paths",
-        type=str,
-        metavar="FILE",
-        nargs="*",
-        help="Path to model checkpoint (.pt file)",
-    )
-    files_args.add_argument(
-        "--data_path",
-        type=str,
-        metavar="FILE",
-        help="Path to CSV file containing testing data for which predictions will be made",
-        default="",
+        help="Path to a .json file containing arguments. Any arguments present in the config"
+        "file will override arguments specified via the command line or by the defaults.",
     )
     files_args.add_argument(
         "--test_path",
         type=str,
-        metavar="FILE",
-        help="Path to CSV file containing testing data for which predictions will be made",
-        default="",
+        help="Path to CSV file containing testing data for which predictions will be made.",
     )
     files_args.add_argument(
-        "--features_path",
+        "--preds_path",
         type=str,
-        metavar="FILE",
-        nargs="*",
-        help="Path to features to use in FNN (instead of features_generator)",
+        help="Path to CSV or PICKLE file where predictions will be saved.",
     )
     files_args.add_argument(
-        "--atom_descriptors_path",
+        "--calibration_path",
         type=str,
-        metavar="FILE",
+        help="Path to data file to be used for uncertainty calibration.",
+    )
+    files_args.add_argument(
+        "--calibration_features_path",
+        type=str,
+        nargs="+",
+        help="Path to features data to be used with the uncertainty calibration dataset.",
+    )
+    files_args.add_argument("--calibration_phase_features_path", type=str, help="")
+    files_args.add_argument(
+        "--calibration_atom_descriptors_path",
+        type=str,
         help="Path to the extra atom descriptors.",
     )
-    data_args.add_argument(
-        "--use_compound_names",
-        action="store_true",
-        default=False,
-        help="Use when test data file contains compound names in addition to SMILES strings",
-    )
-    data_args.add_argument(
-        "--no_features_scaling",
-        action="store_true",
-        default=False,
-        help="Turn off scaling of features",
-    )
-    data_args.add_argument(
-        "--max_data_size",
-        type=int,
-        metavar="INT",
-        help="Maximum number of data points to load",
-    )
-    data_args.add_argument(
-        "--smiles_columns",
+    files_args.add_argument(
+        "--calibration_bond_descriptors_path",
         type=str,
-        metavar="STRING",
-        help="List of names of the columns containing SMILES strings.By default, uses the first\
-                             number_of_molecules columns.",
-    )
-    data_args.add_argument(
-        "--number_of_molecules",
-        type=int,
-        metavar="INT",
-        help="Number of molecules in each input to the model.This must equal the length of\
-                             smiles_columns if not None",
+        help="Path to the extra bond descriptors that will be used as bond features to featurize a given molecule.",
     )
 
-    data_args.add_argument(
-        "--atom_descriptors",
-        type=bool,
-        metavar="Bool",
-        help="Use or not atom descriptors",
+    general_args.add_argument(
+        "--drop_extra_columns",
+        action="store_true",
+        help="Whether to drop all columns from the test data file besides the SMILES columns and the new prediction columns.",
     )
 
-    data_args.add_argument(
-        "--bond_features_size",
-        type=int,
-        metavar="INT",
-        help="Size of the extra bond descriptors that will be used as bond features to featurize a\
-                             given molecule",
+    uncertainty_args.add_argument(
+        "--uncertainty_method",
+        type=str,
+        choices=[
+            "mve",
+            "ensemble",
+            "evidential_epistemic",
+            "evidential_aleatoric",
+            "evidential_total",
+            "classification",
+            "dropout",
+            "spectra_roundrobin",
+            "dirichlet",
+        ],
+        help="The method of calculating uncertainty.",
     )
-    training_args.add_argument(
-        "--batch_size", type=int, metavar="INT", default=50, help="Batch size"
+    uncertainty_args.add_argument(
+        "--calibration_method",
+        type=str,
+        nargs="+",
+        choices=[
+            "zscaling",
+            "tscaling",
+            "zelikman_interval",
+            "mve_weighting",
+            "platt",
+            "isotonic",
+        ],
+        help="Methods used for calibrating the uncertainty calculated with uncertainty method.",
+    )
+    uncertainty_args.add_argument(
+        "--individual_ensemble_predictions",
+        action="store_true",
+        default=False,
+        help="Whether to save individual ensemble predictions.",
+    )
+    uncertainty_args.add_argument(
+        "--evaluation_methods",
+        type=str,
+        nargs="+",
+        help="The methods used for evaluating the uncertainty performance if the test data provided includes targets. Available methods are [nll, miscalibration_area, ence, spearman] or any available classification or multiclass metric.",
+    )
+    uncertainty_args.add_argument(
+        "--evaluation_scores_path",
+        type=str,
+        help="Location to save the results of uncertainty evaluations.",
+    )
+    uncertainty_args.add_argument(
+        "--uncertainty_dropout_p",
+        type=float,
+        default=0.1,
+        help="The probability to use for Monte Carlo dropout uncertainty estimation.",
+    )
+    uncertainty_args.add_argument(
+        "--dropout_sampling_size",
+        type=int,
+        default=10,
+        help="The number of samples to use for Monte Carlo dropout uncertainty estimation. Distinct from the dropout used during training.",
+    )
+    uncertainty_args.add_argument(
+        "--calibration_interval_percentile",
+        type=float,
+        default=95,
+        help="Sets the percentile used in the calibration methods. Must be in the range (1,100).",
+    )
+    uncertainty_args.add_argument(
+        "--regression_calibrator_metric",
+        type=str,
+        choices=["stdev", "interval"],
+        help="Regression calibrators can output either a stdev or an inverval.",
     )
 
 

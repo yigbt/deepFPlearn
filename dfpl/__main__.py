@@ -3,7 +3,7 @@ import logging
 import os
 from argparse import Namespace
 from os import path
-
+import wandb
 import chemprop
 from keras.models import load_model
 
@@ -63,7 +63,7 @@ def interpretdmpnn(opts: options.GnnOptions) -> None:
 
     chemprop.interpret.interpret(
         args=opts, save_to_csv=True
-    )  # ,additional_columns=["ID"])
+    )
 
 
 def train(opts: options.Options):
@@ -105,19 +105,20 @@ def train(opts: options.Options):
                 autoencoder.load_weights(
                     os.path.join(opts.ecModelDir, opts.ecWeightsFile)
                 )
+
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
         if opts.visualizeLatent and opts.trainAC:
             ac.visualize_fingerprints(
                 df,
-                train_indices=train_indices,
-                test_indices=test_indices,
-                save_as=f"{opts.ecModelDir}/UMAP_{opts.aeSplitType}.png",
+                save_as=f"{opts.ecModelDir}/TSNE_{opts.aeType}_{opts.aeSplitType}.png",
             )
         elif opts.visualizeLatent:
             logging.info(
                 "Visualizing latent space is only available if you train the autoencoder. Skipping visualization."
             )
+    if opts.trainFNN and opts.finetuneEncoder:
+        sl.train_single_label_models(df=df, opts=opts)
 
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
@@ -218,33 +219,32 @@ def main():
             traindmpnn(traingnn_opts)
 
         elif prog_args.method == "predictgnn":
-            predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                predictgnn_opts,
-                test_path=makePathAbsolute(predictgnn_opts.test_path),
-                preds_path=makePathAbsolute(predictgnn_opts.preds_path),
-            )
+            predictgnn_opts = options.PredictGnnOptions.fromCmdArgs(prog_args)
             createLogger("predictgnn.log")
-            predictdmpnn(fixed_opts)
+            predictdmpnn(predictgnn_opts)
         elif prog_args.method == "interpretgnn":
-            interpretgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                interpretgnn_opts,
-                test_path=makePathAbsolute(interpretgnn_opts.test_path),
-                preds_path=makePathAbsolute(interpretgnn_opts.preds_path),
-            )
+            interpretgnn_opts = options.InterpretGNNoptions.fromCmdArgs(prog_args)
             createLogger("interpretgnn.log")
-            interpretdmpnn(fixed_opts)
+            interpretdmpnn(interpretgnn_opts)
 
         elif prog_args.method == "train":
             if prog_args.configFile is None and prog_args.inputFile is None:
                 parser.error("Either --configFile or --inputFile must be provided.")
 
             train_opts = options.Options.fromCmdArgs(prog_args)
+            # Access wandb configuration
+            # wandb.init(project="dfpl")
+            # config = wandb.config
+
             fixed_opts = dataclasses.replace(
                 train_opts,
                 inputFile=makePathAbsolute(train_opts.inputFile),
                 outputDir=makePathAbsolute(train_opts.outputDir),
+                # learningRate=config.learningRate,
+                # learningRateDecay=config.learningRateDecay,
+                # dropout=config.dropout,
+                # batchSize=config.batchSize,
+                # l2reg=config.l2reg
             )
             createDirectory(fixed_opts.outputDir)
             createLogger(path.join(fixed_opts.outputDir, "train.log"))

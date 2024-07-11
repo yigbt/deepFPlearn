@@ -288,7 +288,7 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
                 "f1_trained",
             ]
         )  # F1 scores of predictions
-
+        all_scores_data = []
         fold_no = 1
 
         # split the data
@@ -359,6 +359,16 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
             )
 
             idx = hist.history["val_loss"].index(min(hist.history["val_loss"]))
+            row_data = {
+                "fold_no": fold_no,
+                "loss": hist.history["loss"][idx],
+                "val_loss": hist.history["val_loss"][idx],
+                "acc": hist.history["accuracy"][idx],
+                "val_acc": hist.history["val_accuracy"][idx],
+                "f1_random": scores[0],
+                "f1_trained": scores[1],
+            }
+            all_scores_data.append(row_data)
             row_df = pd.DataFrame(
                 [
                     [
@@ -383,12 +393,13 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
             )
 
             logging.info(row_df)
-            all_scores = all_scores.append(row_df, ignore_index=True)
+            all_scores = all_scores_data.append(row_data)#, ignore_index=True)
 
             fold_no += 1
             del model
 
         logging.info(all_scores)
+        all_scores = pd.DataFrame(all_scores_data)
 
         # finalize model
         # 1. provide best performing fold variant
@@ -397,11 +408,11 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
         fold_no = all_scores.iloc[idx2]["fold_no"]
 
         model_name = (
-            "multi_compressed-" + str(opts.compressFeatures) + ".Fold-" + str(fold_no)
+            "multi_compressed-" + str(opts.compressFeatures) + ".Fold-" + str(int(fold_no))
         )
         checkpoint_path = opts.outputDir + "/" + model_name + ".checkpoint.model.hdf5"
         best_model_file = checkpoint_path.replace(
-            "Fold-" + str(fold_no) + ".checkpoint.", "best.FNN-"
+            "Fold-" + str(int(fold_no)) + ".checkpoint.", "best.FNN-"
         )
 
         file = re.sub(

@@ -1,10 +1,10 @@
 {
-  "data_path": "tests/data/smiles.csv",
-  "checkpoint_path": "dmpnn-random/fold_0/model_0/model.pt",
+  "data_path": "tests/data/S_dataset.csv",
+  "checkpoint_path": "dmpnn-tox21-cvnotest8020-30-multilabel-bce/fold_0/model_0/model.pt",
   "preds_path": "interpretations.csv",
   "max_atoms": 20,
   "min_atoms": 8,
   "prop_delta": 0.5,
-  "property_id": 5,
+  "property_id": [1,2,3,4,5,6,7,8,9,10,11,12],
   "rollout": 20
 }
