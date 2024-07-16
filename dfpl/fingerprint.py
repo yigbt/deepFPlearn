@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 """Calculate fingerprints"""
-import os
-from os.path import isfile, join
-
-import pandas as pd
-import numpy as np
-from rdkit import Chem
-from rdkit import RDLogger
-from rdkit.Chem import AllChem
-from rdkit import DataStructs
-from typing import Any, List
-import multiprocessing
-from functools import partial
-from typing import Callable
 import logging
+import multiprocessing
+import os
+from functools import partial
+from os.path import isfile, join
+from typing import Any, Callable, List
+
+import numpy as np
+import pandas as pd
+from rdkit import Chem, DataStructs, RDLogger
+from rdkit.Chem import AllChem
 
 # import settings
 from dfpl import settings
@@ -47,13 +44,16 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         # from rdkit import DataStructs
         # DataStructs.ConvertToNumpyArray(morgan, npa)
 
-        npa = np.zeros((0,), dtype=np.bool)
+        npa = np.zeros((0,), dtype=np.bool_)
         try:
             DataStructs.ConvertToNumpyArray(
-                AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(smile), 2, nBits=fp_size),
-                npa)
+                AllChem.GetMorganFingerprintAsBitVect(
+                    Chem.MolFromSmiles(smile), 2, nBits=fp_size
+                ),
+                npa,
+            )
             return npa
-        except:
+        except Exception:
             return None
 
         # try:
@@ -74,8 +74,10 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         try:
             return np.array(
                 Chem.RDKFingerprint(Chem.MolFromInchi(inchi), fpSize=fp_size),
-                dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
-        except:
+                dtype=settings.df_fp_numpy_type,
+                copy=settings.numpy_copy_values,
+            )
+        except Exception:
             # Note: We don't need to log here since rdkit already logs
             return None
 
@@ -94,9 +96,10 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
 
 
 def importDataFile(
-        file_name: str,
-        import_function: Callable[[str], pd.DataFrame] = pd.read_csv,
-        fp_size: int = default_fp_size) -> pd.DataFrame:
+    file_name: str,
+    import_function: Callable[[str], pd.DataFrame] = pd.read_csv,
+    fp_size: int = default_fp_size,
+) -> pd.DataFrame:
     """
     Reads data as CSV or TSV and calculates fingerprints from the SMILES in the data.
     :param import_function:
@@ -118,8 +121,7 @@ def importDataFile(
     n_cores = multiprocessing.cpu_count()
     df_split = np.array_split(df, n_cores)
     with multiprocessing.Pool(n_cores) as pool:
-        df = pd.concat(
-            pool.map(partial(addFPColumn, fp_size=fp_size), df_split))
+        df = pd.concat(pool.map(partial(addFPColumn, fp_size=fp_size), df_split))
         pool.close()
         pool.join()
     return df
@@ -129,30 +131,29 @@ def importSmilesCSV(csvfilename: str) -> pd.DataFrame:
     return pd.read_csv(csvfilename)
 
 
-def importCSV(csvfilename: str) -> pd.DataFrame:
-    return pd.read_csv(csvfilename)
-
-
 def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
     return pd.read_table(tsvfilename, names=["toxid", "inchi", "key"])
 
 
 conversion_rules = {
-    # "S_dataset.csv": importSmilesCSV,
+    "S_dataset.csv": importSmilesCSV,
+    "smiles.csv": importSmilesCSV,
+    "inchi.tsv": importDstoxTSV
     # "S_dataset_extended.csv": importSmilesCSV,
     # "D_dataset.tsv": importDstoxTSV,
     # "train_data.csv": importSmilesCSV,
     # "predict_data.csv": importDstoxTSV,
     # "B_data_ER.csv": importDstoxTSV
-    "toxcast_regression.csv": importCSV,
-    "toxcast_regression_ER.csv": importCSV,
-    "toxcast_regression_AR.csv": importCSV,
 }
 
 
 def convert_all(directory: str) -> List[str]:
-    files = [f for f in os.listdir(directory) for key, value in conversion_rules.items()
-             if isfile(join(directory, f)) and f in key]
+    files = [
+        f
+        for f in os.listdir(directory)
+        for key, value in conversion_rules.items()
+        if isfile(join(directory, f)) and f in key
+    ]
     logging.info(f"Found {len(files)} files to convert")
     for f in files:
         path = join(directory, f)
