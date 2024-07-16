@@ -528,15 +528,14 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # now next fold
 
         # select and copy best model - how to define the best model?
+
         best_fold = (
-            pd
-            .concat(performance_list, ignore_index=True)
+            pd.concat(performance_list, ignore_index=True)
             .sort_values(
-                by=['p_1', 'r_1', 'MCC'],
+                by= ['value'],
                 ascending=False,
                 ignore_index=True)['fold'][0]
         )
-
         # copy checkpoint model weights
         shutil.copy(
             src=path.join(opts.outputDir, f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5"),

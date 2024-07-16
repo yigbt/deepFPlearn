@@ -1,0 +1,26 @@
+{
+    "os": "Linux-6.5.0-1025-oem-x86_64-with-glibc2.35",
+    "python": "3.9.15",
+    "heartbeatAt": "2024-07-15T12:41:38.094320",
+    "startedAt": "2024-07-15T12:41:36.732844",
+    "docker": null,
+    "cpu_count": 12,
+    "cuda": null,
+    "args": [
+        "train",
+        "-f",
+        "/home/shanavas/PycharmProjects/deepFPlearn/example/train_dilshana.json"
+    ],
+    "state": "running",
+    "program": "/home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py",
+    "codePath": "dfpl/__main__.py",
+    "git": {
+        "remote": "https://github.com/yigbt/deepFPlearn",
+        "commit": "64ad7cd155b1036c532d61b6fc37ee3ce9a87b15"
+    },
+    "email": "dilshana.shanavas-rasheeda@ufz.de",
+    "root": "/home/shanavas/PycharmProjects/deepFPlearn",
+    "host": "UFZ544049",
+    "username": "shanavas",
+    "executable": "/home/shanavas/miniforge3/envs/dfpl_env/bin/python"
+}

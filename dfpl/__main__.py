@@ -60,7 +60,8 @@ def train(opts: options.Options):
     """
 
     if opts.wabTracking:
-        wandb.init(project=f"dfpl-reg-training-{opts.wabTarget}", entity="dfpl_regression", config=vars(opts))
+       wandb.init(project=f"dfpl-regression-{opts.wabTarget}", entity="dilshana-ufz", config=vars(opts))
+        #wandb.init(project=f"dfpl-reg-training-{opts.wabTarget}", entity="dfpl_regression", config=vars(opts))
         # opts = wandb.config
 
     # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)

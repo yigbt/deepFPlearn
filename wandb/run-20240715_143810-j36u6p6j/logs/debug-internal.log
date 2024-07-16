@@ -1,0 +1,64 @@
+2024-07-15 14:38:11,154 INFO    MainThread:143016 [internal.py:wandb_internal():90] W&B internal server running at pid: 143016, started at: 2024-07-15 14:38:11.154370
+2024-07-15 14:38:11,156 INFO    WriterThread:143016 [datastore.py:open_for_write():75] open: /home/shanavas/PycharmProjects/deepFPlearn/wandb/run-20240715_143810-j36u6p6j/run-j36u6p6j.wandb
+2024-07-15 14:38:11,158 DEBUG   SenderThread:143016 [sender.py:send():236] send: header
+2024-07-15 14:38:11,158 DEBUG   SenderThread:143016 [sender.py:send():236] send: run
+2024-07-15 14:38:11,514 ERROR   SenderThread:143016 [internal_api.py:execute():161] 403 response executing GraphQL.
+2024-07-15 14:38:11,514 ERROR   SenderThread:143016 [internal_api.py:execute():162] {"errors":[{"message":"permission denied","path":["upsertBucket"],"extensions":{"code":"PERMISSION_ERROR"}}],"data":{"upsertBucket":null}}
+2024-07-15 14:38:12,157 INFO    WriterThread:143016 [datastore.py:close():279] close: /home/shanavas/PycharmProjects/deepFPlearn/wandb/run-20240715_143810-j36u6p6j/run-j36u6p6j.wandb
+2024-07-15 14:38:12,158 INFO    HandlerThread:143016 [handler.py:finish():806] shutting down handler
+2024-07-15 14:38:12,168 ERROR   MainThread:143016 [internal.py:wandb_internal():165] Thread SenderThread:
+Traceback (most recent call last):
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/lib/retry.py", line 108, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py", line 158, in execute
+    return self.client.execute(*args, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/transport/requests.py", line 39, in execute
+    request.raise_for_status()
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/requests/models.py", line 960, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://api.wandb.ai/graphql
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/apis/normalize.py", line 25, in wrapper
+    return func(*args, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py", line 1341, in upsert_run
+    response = self.gql(mutation, variable_values=variable_values, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/lib/retry.py", line 124, in __call__
+    if not check_retry_fn(e):
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/util.py", line 887, in no_retry_auth
+    raise CommError("Permission denied, ask the project owner to grant you access")
+wandb.errors.CommError: Permission denied, ask the project owner to grant you access
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/internal_util.py", line 51, in run
+    self._run()
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/internal_util.py", line 102, in _run
+    self._process(record)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/internal.py", line 310, in _process
+    self._sm.send(record)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/sender.py", line 238, in send
+    send_handler(record)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/sender.py", line 696, in send_run
+    self._init_run(run, config_value_dict)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/sender.py", line 720, in _init_run
+    server_run, inserted = self._api.upsert_run(
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/apis/normalize.py", line 61, in wrapper
+    raise CommError(message, err).with_traceback(sys.exc_info()[2])
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/apis/normalize.py", line 25, in wrapper
+    return func(*args, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/internal/internal_api.py", line 1341, in upsert_run
+    response = self.gql(mutation, variable_values=variable_values, **kwargs)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/lib/retry.py", line 124, in __call__
+    if not check_retry_fn(e):
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/util.py", line 887, in no_retry_auth
+    raise CommError("Permission denied, ask the project owner to grant you access")
+wandb.errors.CommError: Permission denied, ask the project owner to grant you access
+2024-07-15 14:38:14,192 INFO    MainThread:143016 [internal.py:handle_exit():80] Internal process exited

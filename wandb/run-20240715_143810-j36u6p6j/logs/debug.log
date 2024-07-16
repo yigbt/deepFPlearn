@@ -1,0 +1,42 @@
+2024-07-15 14:38:10,496 INFO    MainThread:142981 [wandb_setup.py:_flush():76] Configure stats pid to 142981
+2024-07-15 14:38:10,496 INFO    MainThread:142981 [wandb_setup.py:_flush():76] Loading settings from /home/shanavas/.config/wandb/settings
+2024-07-15 14:38:10,496 INFO    MainThread:142981 [wandb_setup.py:_flush():76] Loading settings from /home/shanavas/PycharmProjects/deepFPlearn/wandb/settings
+2024-07-15 14:38:10,496 INFO    MainThread:142981 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2024-07-15 14:38:10,496 INFO    MainThread:142981 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'dfpl/__main__.py', 'program': '/home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py'}
+2024-07-15 14:38:10,496 INFO    MainThread:142981 [wandb_init.py:_log_setup():461] Logging user logs to /home/shanavas/PycharmProjects/deepFPlearn/wandb/run-20240715_143810-j36u6p6j/logs/debug.log
+2024-07-15 14:38:10,496 INFO    MainThread:142981 [wandb_init.py:_log_setup():462] Logging internal logs to /home/shanavas/PycharmProjects/deepFPlearn/wandb/run-20240715_143810-j36u6p6j/logs/debug-internal.log
+2024-07-15 14:38:10,497 INFO    MainThread:142981 [wandb_init.py:init():495] calling init triggers
+2024-07-15 14:38:10,497 INFO    MainThread:142981 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {'configFile': '/home/shanavas/PycharmProjects/deepFPlearn/example/train_dilshana.json', 'inputFile': '/home/shanavas/PycharmProjects/deepFPlearn/example/data/scaled_data_AR.csv', 'outputDir': '/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/scaled_data_AR', 'outputFile': '', 'ecWeightsFile': 'AE.encoder.weights.hdf5', 'ecModelDir': 'example/models/generic_encoder/', 'fnnModelDir': 'modeltraining', 'type': 'smiles', 'fpType': 'topological', 'epochs': 1000, 'fpSize': 2048, 'encFPSize': 256, 'kFolds': 1, 'testSize': 0.2, 'enableMultiLabel': False, 'verbose': 2, 'trainAC': False, 'trainFNN': True, 'compressFeatures': False, 'sampleFractionOnes': 0.5, 'sampleDown': False, 'aeEpochs': 30, 'aeBatchSize': 512, 'aeLearningRate': 0.001, 'aeLearningRateDecay': 0.01, 'aeActivationFunction': 'relu', 'fnnType': 'REG', 'batchSize': 128, 'optimizer': 'Adam', 'learningRate': 7.83711232114358e-06, 'lossFunction': 'mae', 'activationFunction': 'relu', 'l2reg': 0.001, 'dropout': 0.02382519002555714, 'wabTracking': True, 'wabTarget': 'ARR'}
+2024-07-15 14:38:10,497 INFO    MainThread:142981 [wandb_init.py:init():548] starting backend
+2024-07-15 14:38:10,497 INFO    MainThread:142981 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2024-07-15 14:38:10,511 INFO    MainThread:142981 [backend.py:ensure_launched():217] starting backend process...
+2024-07-15 14:38:10,520 INFO    MainThread:142981 [backend.py:ensure_launched():222] started backend process with pid: 143016
+2024-07-15 14:38:10,522 INFO    MainThread:142981 [wandb_init.py:init():558] backend started and connected
+2024-07-15 14:38:10,536 INFO    MainThread:142981 [wandb_init.py:init():634] updated telemetry
+2024-07-15 14:38:10,551 INFO    MainThread:142981 [wandb_init.py:init():665] communicating run to backend with 30 second timeout
+2024-07-15 14:38:40,553 INFO    MainThread:142981 [interface_shared.py:_communicate_run():326] couldn't get run from backend
+2024-07-15 14:38:40,553 ERROR   MainThread:142981 [wandb_init.py:init():674] backend process timed out
+2024-07-15 14:38:40,554 ERROR   MainThread:142981 [wandb_init.py:init():685] encountered error: Error communicating with wandb process
+try: wandb.init(settings=wandb.Settings(start_method='fork'))
+or:  wandb.init(settings=wandb.Settings(start_method='thread'))
+For more info see: https://docs.wandb.ai/library/init#init-start-error
+2024-07-15 14:38:40,565 ERROR   MainThread:142981 [wandb_init.py:init():1070] error
+Traceback (most recent call last):
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1043, in init
+    run = wi.init()
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 689, in init
+    backend.cleanup()
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/backend/backend.py", line 246, in cleanup
+    self.interface.join()
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/interface/interface_shared.py", line 475, in join
+    super().join()
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/interface/interface.py", line 666, in join
+    _ = self._communicate_shutdown()
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/interface/interface_shared.py", line 472, in _communicate_shutdown
+    _ = self._communicate(record)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/interface/interface_shared.py", line 226, in _communicate
+    return self._communicate_async(rec, local=local).get(timeout=timeout)
+  File "/home/shanavas/miniforge3/envs/dfpl_env/lib/python3.9/site-packages/wandb/sdk/interface/interface_shared.py", line 231, in _communicate_async
+    raise Exception("The wandb backend process has shutdown")
+Exception: The wandb backend process has shutdown

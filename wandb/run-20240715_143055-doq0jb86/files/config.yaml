@@ -1,0 +1,132 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.12.21
+    framework: keras
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.9.15
+    start_time: 1721046655
+    t:
+      1:
+      - 2
+      - 3
+      - 5
+      - 53
+      - 55
+      3:
+      - 16
+      4: 3.9.15
+      5: 0.12.21
+      8:
+      - 5
+activationFunction:
+  desc: null
+  value: relu
+aeActivationFunction:
+  desc: null
+  value: relu
+aeBatchSize:
+  desc: null
+  value: 512
+aeEpochs:
+  desc: null
+  value: 30
+aeLearningRate:
+  desc: null
+  value: 0.001
+aeLearningRateDecay:
+  desc: null
+  value: 0.01
+batchSize:
+  desc: null
+  value: 128
+compressFeatures:
+  desc: null
+  value: false
+configFile:
+  desc: null
+  value: /home/shanavas/PycharmProjects/deepFPlearn/example/train_dilshana.json
+dropout:
+  desc: null
+  value: 0.02382519002555714
+ecModelDir:
+  desc: null
+  value: example/models/generic_encoder/
+ecWeightsFile:
+  desc: null
+  value: AE.encoder.weights.hdf5
+enableMultiLabel:
+  desc: null
+  value: false
+encFPSize:
+  desc: null
+  value: 256
+epochs:
+  desc: null
+  value: 1000
+fnnModelDir:
+  desc: null
+  value: modeltraining
+fnnType:
+  desc: null
+  value: REG
+fpSize:
+  desc: null
+  value: 2048
+fpType:
+  desc: null
+  value: topological
+inputFile:
+  desc: null
+  value: /home/shanavas/PycharmProjects/deepFPlearn/example/data/scaled_data_AR.csv
+kFolds:
+  desc: null
+  value: 1
+l2reg:
+  desc: null
+  value: 0.001
+learningRate:
+  desc: null
+  value: 7.83711232114358e-06
+lossFunction:
+  desc: null
+  value: mae
+optimizer:
+  desc: null
+  value: Adam
+outputDir:
+  desc: null
+  value: /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/scaled_data_AR
+outputFile:
+  desc: null
+  value: ''
+sampleDown:
+  desc: null
+  value: false
+sampleFractionOnes:
+  desc: null
+  value: 0.5
+testSize:
+  desc: null
+  value: 0.2
+trainAC:
+  desc: null
+  value: false
+trainFNN:
+  desc: null
+  value: true
+type:
+  desc: null
+  value: smiles
+verbose:
+  desc: null
+  value: 2
+wabTarget:
+  desc: null
+  value: ARR
+wabTracking:
+  desc: null
+  value: true
