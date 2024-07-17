@@ -16,10 +16,10 @@
   "testSize": 0.2,
   "optimizer": "Adam",
   "lossFunction": "mse",
-  "epochs": 50,
+  "epochs": 3000,
   "batchSize": 128,
-  "activationFunction": "selu",
+  "activationFunction": "relu",
   "dropout": 0.02382519002555714,
   "learningRate": 0.00000783711232114358,
-  "fnnType": "FNN"
+  "fnnType": "REG"
 }
