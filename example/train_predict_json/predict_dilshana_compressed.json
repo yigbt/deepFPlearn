@@ -1,0 +1,11 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "/home/shanavas/PycharmProjects/deepFPlearn/example/data/scaled_data_AR.csv",
+  "outputDir": "example/results_predict_compressed",
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/compressed_scaled_data_AR/AR_saved_model",
+  "compressFeatures": false,
+  "trainAC": false,
+  "trainFNN": false
+}

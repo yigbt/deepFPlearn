@@ -1,0 +1,26 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "/home/shanavas/PycharmProjects/deepFPlearn/example/data/modified_zscore_dilshana-ar.csv",
+  "outputDir": "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/sweep/sweep_comp_unnorm",
+  "ecModelDir": "example/models/generic_encoder/",
+  "type": "smiles",
+  "fpType": "topological",
+  "fpSize": 2048,
+  "encFPSize": 256,
+  "enableMultiLabel": false,
+  "verbose": 2,
+  "trainAC": false,
+  "trainFNN": true,
+  "compressFeatures": true,
+  "kFolds": 5,
+  "testSize": 0.2,
+  "optimizer": "Adam",
+  "lossFunction": "mse",
+  "epochs": 5000,
+  "batchSize":128 ,
+  "activationFunction": "relu",
+  "dropout": 0.03255050361850195, 0.49927554284683895
+  "learningRate": 0.0072522962230743854,0.0031404430185452714
+  "l2reg" : 0.055897054187204545,
+  "fnnType": "REG"        0.09669426134704416
+}

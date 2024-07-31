@@ -1,0 +1,12 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "/home/shanavas/PycharmProjects/deepFPlearn/example/data/modified_zscore_dilshana-ar.csv",
+  "outputDir": "example/predict/uncompressed_sweep_normal",
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/sweep/sweep_uncompressed_AR_np/AR_saved_model",
+  "compressFeatures": false,
+  "trainAC": false,
+  "trainFNN": false,
+  "scalerFilePath": "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/sweep/sweep_uncompressed_AR_np/scaler.pkl"
+}

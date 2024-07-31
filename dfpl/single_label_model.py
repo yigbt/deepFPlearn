@@ -14,6 +14,9 @@ from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
 from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+
+import pickle
 import tensorflow as tf
 from tensorflow.keras import metrics
 from tensorflow.keras import optimizers
@@ -345,6 +348,7 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
     return model
 
 
+
 def acper(y_true, y_pred, t: float = 0.02):
     """
     This function calculates Almost Correct Predictions Error Rate (ACPER)
@@ -567,6 +571,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
         logging.info(f"X training matrix of shape {x.shape} and type {x.dtype}")
         logging.info(f"Y training matrix of shape {y.shape} and type {y.dtype}")
+
+
 
         if opts.kFolds == 1:
             split_random_state = 1 if opts.wabTracking else None

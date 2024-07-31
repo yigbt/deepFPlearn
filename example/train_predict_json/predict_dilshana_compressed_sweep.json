@@ -1,0 +1,11 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "/home/shanavas/PycharmProjects/deepFPlearn/example/data/modified_zscore_dilshana-ar.csv",
+  "outputDir": "example/predict/sweep_comp_unnorm",
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/sweep/sweep_comp_unnorm/AR_saved_model",
+  "compressFeatures": true,
+  "trainAC": false,
+  "trainFNN": false
+}

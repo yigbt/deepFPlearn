@@ -1,0 +1,33 @@
+program: /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py
+command:
+  - ${env}
+  - "python"
+  - ${program}  
+  - "train"
+  - "-f"
+  - "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json"
+  - ${args}
+method: random
+metric:
+  name: val_loss
+  goal: minimize
+parameters:
+  dropout:
+    distribution: uniform
+    min: 0.00001
+    max: 0.5
+  l2reg:
+    distribution: uniform
+    min: 0.00001
+    max: 0.1
+  batchSize:
+    distribution: int_uniform
+    min: 64
+    max: 2048
+  learningRate:
+    distribution: uniform
+    min: 0.00001
+    max: 0.01  
+  wabTarget:
+    value: AR
+
