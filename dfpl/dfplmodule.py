@@ -1,51 +1,29 @@
-import argparse
+"""
+Python module for deepFPlearn tools
+"""
 
-# Python module for deepFPlearn tools
-import re
-import math
+import argparse
 import csv
+import math
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import shutil
-import matplotlib.pyplot as plt
-import matplotlib
-# matplotlib.use('Agg')
-import matplotlib.patches as mpatches
-from matplotlib.colors import LinearSegmentedColormap
-# %matplotlib inline
-# for drawing the heatmaps
-import seaborn as sns
-
-# for fingerprint generation
-from rdkit import Chem
-from rdkit import DataStructs
+import seaborn as sns  # for drawing the heatmaps
+from rdkit import Chem, DataStructs  # for fingerprint generation
 from rdkit.Chem import MACCSkeys
-from rdkit.Chem.AtomPairs import Pairs
-from rdkit.Chem.AtomPairs import Torsions
+from rdkit.Chem.AtomPairs import Pairs, Torsions
+from sklearn.model_selection import train_test_split
+from tensorflow.keras import optimizers, regularizers
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.layers import Dense, Dropout, Input
 
 # for NN model functions
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Input, Dense, Dropout
-from tensorflow.keras.models import Model
-from tensorflow.keras import regularizers
-from tensorflow.keras import optimizers
+from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.callbacks import ReduceLROnPlateau
-import sklearn
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_curve
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import auc
-from sklearn.metrics import matthews_corrcoef
-from sklearn.model_selection import KFold
 
-from time import time
-
-
-###############################################################################
 # GENERAL FUNCTIONS --------------------------------------------------------- #
+
 
 def gather(df, key, value, cols):
     """
@@ -64,8 +42,6 @@ def gather(df, key, value, cols):
     return pd.melt(df, id_vars, id_values, var_name, value_name)
 
 
-# ------------------------------------------------------------------------------------- #
-
 def shuffleDataPriorToTraining(x, y):
     """
     Returns a gathered variant of the input x and y matrices
@@ -79,26 +55,22 @@ def shuffleDataPriorToTraining(x, y):
     # shuffle rows, drop NAs, reset index
     df1 = df0.sample(frac=1).dropna(axis=0).reset_index()
 
-    return (df1.iloc[:, 0:x.shape[1]], df1.iloc[:, x.shape[1]:])
+    return (df1.iloc[:, 0 : x.shape[1]], df1.iloc[:, x.shape[1] :])
 
     # return gather(df0, key="target", value="association",
     #             cols=y.columns)
 
 
-# ------------------------------------------------------------------------------------- #
-
 def str2bool(v):
     if isinstance(v, bool):
         return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+    if v.lower() in ("yes", "true", "t", "y", "1"):
         return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+    elif v.lower() in ("no", "false", "f", "n", "0"):
         return False
     else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+        raise argparse.ArgumentTypeError("Boolean value expected.")
 
-
-# ------------------------------------------------------------------------------------- #
 
 def smi2fp(smile, fptype, size=2048):
     """
@@ -118,24 +90,27 @@ def smi2fp(smile, fptype, size=2048):
     # first transform to canoncial smiles
     try:
         cs = Chem.CanonSmiles(smile)
-    except:
-        print(f'[WARNING]: Not able to transform your smile to a canonical version of it: {smile}')
+    except Exception:
+        print(
+            f"[WARNING]: Not able to transform your smile to a canonical version of it: {smile}"
+        )
     if not cs:
         return None
 
     mol = None
     try:
         mol = Chem.MolFromSmiles(cs)
-    except:
+    except Exception:
         print(
-            f'[WARNING]: Not able to extract molecule from (canonically transformed) SMILES: {cs}\n          Original SMILE: {smile}')
+            f"[WARNING]: Not able to extract molecule from (canonically transformed) SMILES: {cs}\n          Original SMILE: {smile}"
+        )
     if not mol:
         return None
 
     # init fp, any better idea? e.g. calling a constructor?
-    fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
+    # fp = Chem.Mol  # FingerprintMols.FingerprintMol(mol)
 
-    if fptype == 'topological':  # 2048 bits
+    if fptype == "topological":  # 2048 bits
         # Topological Fingerprints:
         # The fingerprinting algorithm used is similar to that used in the Daylight
         # fingerprinter: it identifies and hashes topological paths (e.g. along bonds)
@@ -144,14 +119,14 @@ def smi2fp(smile, fptype, size=2048):
         # folded down until a particular density of set bits is obtained.
         try:
             # fp = Chem.RDKFingerprint(mol, fpSize=size)
-            return (Chem.RDKFingerprint(mol, fpSize=size))
-        except:
-            print('SMILES not convertable to topological fingerprint:')
+            return Chem.RDKFingerprint(mol, fpSize=size)
+        except Exception:
+            print("SMILES not convertable to topological fingerprint:")
             assert isinstance(smile, object)
-            print('SMILES: ' + smile)
-            return (None)
+            print("SMILES: " + smile)
+            return None
 
-    elif fptype == 'MACCS':
+    elif fptype == "MACCS":
         # MACCS Keys:
         # There is a SMARTS-based implementation of the 166 public MACCS keys.
         # The MACCS keys were critically evaluated and compared to other MACCS
@@ -160,14 +135,14 @@ def smi2fp(smile, fptype, size=2048):
 
         try:
             # fp = MACCSkeys.GenMACCSKeys(mol)
-            return (MACCSkeys.GenMACCSKeys(mol))
-        except:
-            print('SMILES not convertable to MACSS fingerprint:')
+            return MACCSkeys.GenMACCSKeys(mol)
+        except Exception:
+            print("SMILES not convertable to MACSS fingerprint:")
             assert isinstance(smile, object)
-            print('SMILES: ' + smile)
-            return (None)
+            print("SMILES: " + smile)
+            return None
 
-    elif fptype == 'atompairs':
+    elif fptype == "atompairs":
         # Atom Pairs:
         # Atom-pair descriptors [3] are available in several different forms.
         # The standard form is as fingerprint including counts for each bit instead
@@ -175,14 +150,14 @@ def smi2fp(smile, fptype, size=2048):
 
         try:
             # fp = Pairs.GetAtomPairFingerprintAsBitVect(mol)
-            return (Pairs.GetAtomPairFingerprintAsBitVect(mol))
+            return Pairs.GetAtomPairFingerprintAsBitVect(mol)
             # counts if features also possible here! needs to be parsed differently
             # fps.update({i:Pairs.GetAtomPairFingerprintAsIntVect(mols[i])})
-        except:
-            print('SMILES not convertable to atompairs fingerprint:')
+        except Exception:
+            print("SMILES not convertable to atompairs fingerprint:")
             assert isinstance(smile, object)
-            print('SMILES: ' + smile)
-            return (None)
+            print("SMILES: " + smile)
+            return None
 
     else:
         # Topological Torsions:
@@ -192,18 +167,23 @@ def smi2fp(smile, fptype, size=2048):
 
         try:
             # fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
-            return (Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol))
-        except:
-            print('SMILES not convertable to torsions fingerprint:')
+            return Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
+        except Exception:
+            print("SMILES not convertable to torsions fingerprint:")
             assert isinstance(smile, object)
-            print('SMILES: ' + smile)
-            return (None)
+            print("SMILES: " + smile)
+            return None
 
 
-# ------------------------------------------------------------------------------------- #
-
-def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = False,
-                   size: int = 2048, verbose: int = 2, returnY: bool = True) -> tuple:
+def XandYfromInput(
+    csvfilename: str,
+    rtype: str,
+    fptype: str,
+    printfp: bool = False,
+    size: int = 2048,
+    verbose: int = 2,
+    returnY: bool = True,
+) -> tuple:
     """
     Return the matrix of features for training and testing NN models (X) as numpy array.
     Provided SMILES are transformed to fingerprints, fingerprint strings are then split
@@ -223,40 +203,47 @@ def XandYfromInput(csvfilename: str, rtype: str, fptype: str, printfp: bool = Fa
     df = pd.read_csv(csvfilename)
     cnames = df.columns
 
-    if not rtype in cnames:
-        print(f'[ERROR:] There is no column named {rtype} in your input training set file')
+    if rtype not in cnames:
+        print(
+            f"[ERROR:] There is no column named {rtype} in your input training set file"
+        )
         exit(0)
 
     dfX = None
-    if rtype == 'smiles':  # transform to canonical smiles, and then to fp
-        dfX = pd.DataFrame(df['smiles'].transform(
-            lambda x: np.array(Chem.RDKFingerprint(Chem.MolFromSmiles(Chem.CanonSmiles(x)),
-                                                   fpSize=size))).to_list())
+    if rtype == "smiles":  # transform to canonical smiles, and then to fp
+        dfX = pd.DataFrame(
+            df["smiles"]
+            .transform(
+                lambda x: np.array(
+                    Chem.RDKFingerprint(
+                        Chem.MolFromSmiles(Chem.CanonSmiles(x)), fpSize=size
+                    )
+                )
+            )
+            .to_list()
+        )
     else:  # split fingerprint into matrix
-        dfX = pd.DataFrame(df['fp'].transform(
-            lambda x: list(x)).to_list())
+        dfX = pd.DataFrame(df["fp"].transform(lambda x: list(x)).to_list())
 
     # add 'id' as rownames of dataframe
-    if 'id' in cnames:
-        dfX.index = df['id']
+    if "id" in cnames:
+        dfX.index = df["id"]
 
     dfY = None
     if returnY:
         # names in Y contain 'id' if present, and all other columns (=target columns)
-        namesY = [c for c in cnames if c not in ['id', 'smiles', 'fp']]
+        namesY = [c for c in cnames if c not in ["id", "smiles", "fp"]]
         dfY = df[namesY]
         # add 'id' as rownames of dataframe
-        if 'id' in cnames:
-            dfY.index = df['id']
+        if "id" in cnames:
+            dfY.index = df["id"]
 
     return (dfX, dfY)
 
 
-# ------------------------------------------------------------------------------------- #
-
 def TrainingDataHeatmap(x, y):
-    x['ID'] = x.index
-    y['ID'] = y.index
+    x["ID"] = x.index
+    y["ID"] = y.index
 
     # xy = pd.merge(x,y,on="ID")
 
@@ -272,7 +259,6 @@ def TrainingDataHeatmap(x, y):
     return 1
 
 
-# ------------------------------------------------------------------------------------- #
 def removeDuplicates(x, y):
     """
     Remove duplicated feature - outcome pairs from feature matrix and outcome vector combination.
@@ -296,10 +282,13 @@ def removeDuplicates(x, y):
     return (x[fpstrings_unique[1]], y[fpstrings_unique[1]])
 
 
-# ------------------------------------------------------------------------------------- #
-
-def defineCallbacks(checkpointpath: str, patience: int, rlrop: bool = False,
-                    rlropfactor: float = 0.1, rlroppatience: int = 50) -> list:
+def defineCallbacks(
+    checkpointpath: str,
+    patience: int,
+    rlrop: bool = False,
+    rlropfactor: float = 0.1,
+    rlroppatience: int = 50,
+) -> list:
     """
 
     :param checkpointpath:
@@ -311,34 +300,53 @@ def defineCallbacks(checkpointpath: str, patience: int, rlrop: bool = False,
     """
 
     # enable this checkpoint to restore the weights of the best performing model
-    checkpoint = ModelCheckpoint(checkpointpath, monitor='val_loss', verbose=1, period=10,
-                                 save_best_only=True, mode='min', save_weights_only=True)
+    checkpoint = ModelCheckpoint(
+        checkpointpath,
+        monitor="val_loss",
+        verbose=1,
+        period=10,
+        save_best_only=True,
+        mode="min",
+        save_weights_only=True,
+    )
 
     # enable early stopping if val_loss is not improving anymore
-    earlystop = EarlyStopping(monitor='val_loss',
-                              min_delta=0,
-                              patience=patience,
-                              verbose=1,
-                              restore_best_weights=True)
+    earlystop = EarlyStopping(
+        monitor="val_loss",
+        min_delta=0,
+        patience=patience,
+        verbose=1,
+        restore_best_weights=True,
+    )
 
     callbacks = []
     if rlrop:
-        rlrop = ReduceLROnPlateau(monitor='val_loss', factor=rlropfactor, patience=rlroppatience)
+        rlrop = ReduceLROnPlateau(
+            monitor="val_loss", factor=rlropfactor, patience=rlroppatience
+        )
         callbacks = [checkpoint, earlystop, rlrop]
     else:
         callbacks = [checkpoint, earlystop]
 
     # Return list of callbacks - collect the callbacks for training
-    return (callbacks)
+    return callbacks
 
 
-# ------------------------------------------------------------------------------------- #
-
-def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2,
-                       activation='relu', optimizer='Adam', lr=0.001, decay=0.01):
-    if optimizer == 'Adam':
-        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
-    elif optimizer == 'SGD':
+def defineNNmodelMulti(
+    inputSize=2048,
+    outputSize=None,
+    l2reg=0.001,
+    dropout=0.2,
+    activation="relu",
+    optimizer="Adam",
+    lr=0.001,
+    decay=0.01,
+):
+    if optimizer == "Adam":
+        myoptimizer = optimizers.Adam(
+            learning_rate=lr, decay=decay
+        )  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+    elif optimizer == "SGD":
         myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
     else:
         myoptimizer = optimizer
@@ -347,37 +355,52 @@ def defineNNmodelMulti(inputSize=2048, outputSize=None, l2reg=0.001, dropout=0.2
 
     model = Sequential()
     # From input to 1st hidden layer
-    model.add(Dense(units=int(inputSize / 2), input_dim=inputSize,
-                    activation=activation,
-                    kernel_regularizer=regularizers.l2(l2reg)))
+    model.add(
+        Dense(
+            units=int(inputSize / 2),
+            input_dim=inputSize,
+            activation=activation,
+            kernel_regularizer=regularizers.l2(l2reg),
+        )
+    )
     model.add(Dropout(dropout))
     # next hidden layers
     for i in range(1, nhl):
         factorunits = 2 ** (i + 1)
         factordropout = 2 * i
-        model.add(Dense(units=int(inputSize / factorunits),
-                        activation=activation,
-                        kernel_regularizer=regularizers.l2(l2reg)))
+        model.add(
+            Dense(
+                units=int(inputSize / factorunits),
+                activation=activation,
+                kernel_regularizer=regularizers.l2(l2reg),
+            )
+        )
         model.add(Dropout(dropout / factordropout))
     # multi-class output layer
     # use sigmoid to get independent probabilities for each output node
     # (need not add up to one, as they would using softmax)
     # https://www.depends-on-the-definition.com/guide-to-multi-label-classification-with-neural-networks/
-    model.add(Dense(units=outputSize, activation='sigmoid'))
+    model.add(Dense(units=outputSize, activation="sigmoid"))
 
     model.summary()
 
     # compile model
-    model.compile(loss="binary_crossentropy", optimizer=myoptimizer, metrics=['accuracy'])
+    model.compile(
+        loss="binary_crossentropy", optimizer=myoptimizer, metrics=["accuracy"]
+    )
 
     return model
 
 
-# ------------------------------------------------------------------------------------- #
-
-def defineNNmodel(inputSize: int = 2048, l2reg: float = 0.001, dropout: float = 0.2,
-                  activation: str = 'relu', optimizer: str = 'Adam', lr: float = 0.001,
-                  decay: float = 0.01) -> Model:
+def defineNNmodel(
+    inputSize: int = 2048,
+    l2reg: float = 0.001,
+    dropout: float = 0.2,
+    activation: str = "relu",
+    optimizer: str = "Adam",
+    lr: float = 0.001,
+    decay: float = 0.01,
+) -> Model:
     """
 
     :param inputSize:
@@ -390,9 +413,11 @@ def defineNNmodel(inputSize: int = 2048, l2reg: float = 0.001, dropout: float = 
     :return:
     """
 
-    if optimizer == 'Adam':
-        myoptimizer = optimizers.Adam(learning_rate=lr, decay=decay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
-    elif optimizer == 'SGD':
+    if optimizer == "Adam":
+        myoptimizer = optimizers.Adam(
+            learning_rate=lr, decay=decay
+        )  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+    elif optimizer == "SGD":
         myoptimizer = SGD(lr=lr, momentum=0.9, decay=decay)
     else:
         myoptimizer = optimizer
@@ -407,33 +432,45 @@ def defineNNmodel(inputSize: int = 2048, l2reg: float = 0.001, dropout: float = 
 
     model = Sequential()
     # From input to 1st hidden layer
-    model.add(Dense(units=int(inputSize / 2), input_dim=inputSize,
-                    activation=activation,
-                    kernel_regularizer=regularizers.l2(l2reg)))
+    model.add(
+        Dense(
+            units=int(inputSize / 2),
+            input_dim=inputSize,
+            activation=activation,
+            kernel_regularizer=regularizers.l2(l2reg),
+        )
+    )
     model.add(Dropout(dropout))
     # next hidden layers
     for i in range(1, nhl):
         factorunits = 2 ** (i + 1)
         factordropout = 2 * i
-        model.add(Dense(units=int(inputSize / factorunits),
-                        activation=activation,
-                        kernel_regularizer=regularizers.l2(l2reg)))
+        model.add(
+            Dense(
+                units=int(inputSize / factorunits),
+                activation=activation,
+                kernel_regularizer=regularizers.l2(l2reg),
+            )
+        )
         model.add(Dropout(dropout / factordropout))
     # output layer
-    model.add(Dense(units=1, activation='sigmoid'))
+    model.add(Dense(units=1, activation="sigmoid"))
 
     model.summary()
 
     # compile model
-    model.compile(loss="mse", optimizer=myoptimizer, metrics=['accuracy'])
+    model.compile(loss="mse", optimizer=myoptimizer, metrics=["accuracy"])
 
     return model
 
 
-# ------------------------------------------------------------------------------------- #
-
-def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: object = 'binary_crossentropy',
-                     mylr: float = 0.001, mydecay: float = 0.01) -> tuple:
+def autoencoderModel(
+    input_size: int = 2048,
+    encoding_dim: int = 256,
+    myloss: object = "binary_crossentropy",
+    mylr: float = 0.001,
+    mydecay: float = 0.01,
+) -> tuple:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -445,7 +482,9 @@ def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: ob
     :return: a tuple of autoencoder and encoder models
     """
 
-    myoptimizer = optimizers.Adam(learning_rate=mylr, decay=mydecay)  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
+    myoptimizer = optimizers.Adam(
+        learning_rate=mylr, decay=mydecay
+    )  # , beta_1=0.9, beta_2=0.999, amsgrad=False)
 
     # get the number of meaningful hidden layers (latent space included)
     nhl = round(math.log2(input_size / encoding_dim))
@@ -455,34 +494,38 @@ def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: ob
 
     # 1st hidden layer, that receives weights from input layer
     # equals bottle neck layer, if nhl==1!
-    encoded = Dense(units=int(input_size / 2), activation='relu')(input_vec)
+    encoded = Dense(units=int(input_size / 2), activation="relu")(input_vec)
 
     if nhl > 1:
         # encoding layers, incl. bottle neck
         for i in range(1, nhl):
             factorunits = 2 ** (i + 1)
             # print(f'{factorunits}: {int(input_size / factorunits)}')
-            encoded = Dense(units=int(input_size / factorunits), activation='relu')(encoded)
+            encoded = Dense(units=int(input_size / factorunits), activation="relu")(
+                encoded
+            )
 
         #        encoding_dim = int(input_size/factorunits)
 
         # 1st decoding layer
         factorunits = 2 ** (nhl - 1)
-        decoded = Dense(units=int(input_size / factorunits), activation='relu')(encoded)
+        decoded = Dense(units=int(input_size / factorunits), activation="relu")(encoded)
 
         # decoding layers
         for i in range(nhl - 2, 0, -1):
-            factorunits = 2 ** i
+            factorunits = 2**i
             # print(f'{factorunits}: {int(input_size/factorunits)}')
-            decoded = Dense(units=int(input_size / factorunits), activation='relu')(decoded)
+            decoded = Dense(units=int(input_size / factorunits), activation="relu")(
+                decoded
+            )
 
         # output layer
         # The output layer needs to predict the probability of an output which needs to either 0 or 1 and hence we use sigmoid activation function.
-        decoded = Dense(units=input_size, activation='sigmoid')(decoded)
+        decoded = Dense(units=input_size, activation="sigmoid")(decoded)
 
     else:
         # output layer
-        decoded = Dense(units=input_size, activation='sigmoid')(encoded)
+        decoded = Dense(units=input_size, activation="sigmoid")(encoded)
 
     autoencoder = Model(input_vec, decoded)
     encoder = Model(input_vec, encoded)
@@ -496,8 +539,6 @@ def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: ob
 
     return (autoencoder, encoder)
 
-
-# ------------------------------------------------------------------------------------- #
 
 # def predict_values(ac_model_file_path, model_file_path, pdx):
 #     """
@@ -548,10 +589,15 @@ def autoencoderModel(input_size: int = 2048, encoding_dim: int = 256, myloss: ob
 #     return (df)
 
 
-# ------------------------------------------------------------------------------------- #
-
-def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs: int = 0,
-                encdim: int = 256, checkpointpath: str = None, verbose: int = 0) -> Model:
+def trainfullac(
+    X: pd.DataFrame,
+    y: pd.DataFrame,
+    useweights: str = None,
+    epochs: int = 0,
+    encdim: int = 256,
+    checkpointpath: str = None,
+    verbose: int = 0,
+) -> Model:
     """
     Train an autoencoder on the given feature matrix X. Response matrix is only used to
     split meaningfully in test and train data set.
@@ -568,43 +614,50 @@ def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs
     """
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
-    (autoencoder, encoder) = autoencoderModel(input_size=X.shape[1], encoding_dim=encdim)
+    (autoencoder, encoder) = autoencoderModel(
+        input_size=X.shape[1], encoding_dim=encdim
+    )
 
     if useweights:  # don't train, use existing weights file and load it into AC model
-        #autoencoder.load_weights(useweights)
+        # autoencoder.load_weights(useweights)
         encoder.load_weights(useweights)
     else:
         # collect the callbacks for training
-        callback_list = defineCallbacks(checkpointpath=checkpointpath,
-                                        patience=20, rlrop=False)
+        callback_list = defineCallbacks(
+            checkpointpath=checkpointpath, patience=20, rlrop=False
+        )
 
         # split data into test and training data
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
         # Fit the AC
-        autohist = autoencoder.fit(X_train, X_train,
-                                   callbacks=callback_list,
-                                   epochs=epochs,
-                                   batch_size=256,
-                                   shuffle=True,
-                                   verbose=verbose,
-                                   validation_data=(X_test, X_test))
+        autohist = autoencoder.fit(
+            X_train,
+            X_train,
+            callbacks=callback_list,
+            epochs=epochs,
+            batch_size=256,
+            shuffle=True,
+            verbose=verbose,
+            validation_data=(X_test, X_test),
+        )
         # history
-        ac_loss = autohist.history['loss']
-        ac_val_loss = autohist.history['val_loss']
+        ac_loss = autohist.history["loss"]
+        ac_val_loss = autohist.history["val_loss"]
         ac_epochs = range(ac_loss.__len__())
-        pd.DataFrame(data={'loss': ac_loss,
-                           'val_loss': ac_val_loss,
-                           'epoch': ac_epochs}).to_csv(checkpointpath.replace(".hdf5",
-                                                                              "_trainValLoss_AC.csv"), index=False)
+        pd.DataFrame(
+            data={"loss": ac_loss, "val_loss": ac_val_loss, "epoch": ac_epochs}
+        ).to_csv(checkpointpath.replace(".hdf5", "_trainValLoss_AC.csv"), index=False)
         # generate a figure of the losses for this fold
         plt.figure()
-        plt.plot(ac_epochs, ac_loss, 'bo', label='Training loss')
-        plt.plot(ac_epochs, ac_val_loss, 'b', label='Validation loss')
-        plt.title('Training and validation loss of AC')
+        plt.plot(ac_epochs, ac_loss, "bo", label="Training loss")
+        plt.plot(ac_epochs, ac_val_loss, "b", label="Validation loss")
+        plt.title("Training and validation loss of AC")
         plt.legend()
-        plt.savefig(fname=checkpointpath.replace(".hdf5",
-                                                 "_trainValLoss_AC.svg"),
-                    format='svg')
+        plt.savefig(
+            fname=checkpointpath.replace(".hdf5", "_trainValLoss_AC.svg"), format="svg"
+        )
         plt.close()
         # write the losses to .csv file for later data visualization
 
@@ -612,7 +665,6 @@ def trainfullac(X: pd.DataFrame, y: pd.DataFrame, useweights: str = None, epochs
     # use encode() of train data as input for DL model to associate to chemical
     return encoder
 
-# ------------------------------------------------------------------------------------- #
 
 def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
     """
@@ -626,52 +678,48 @@ def plotTrainHistory(hist, target, fileAccuracy, fileLoss):
 
     # plot accuracy
     plt.figure()
-    plt.plot(hist.history['accuracy'])
-    if 'val_accuracy' in hist.history.keys():
-        plt.plot(hist.history['val_accuracy'])
-    plt.title('Model accuracy - ' + target)
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    if 'val_accuracy' in hist.history.keys():
-        plt.legend(['Train', 'Test'], loc='upper left')
+    plt.plot(hist.history["accuracy"])
+    if "val_accuracy" in hist.history.keys():
+        plt.plot(hist.history["val_accuracy"])
+    plt.title("Model accuracy - " + target)
+    plt.ylabel("Accuracy")
+    plt.xlabel("Epoch")
+    if "val_accuracy" in hist.history.keys():
+        plt.legend(["Train", "Test"], loc="upper left")
     else:
-        plt.legend(['Train'], loc='upper_left')
-    plt.savefig(fname=fileAccuracy, format='svg')
+        plt.legend(["Train"], loc="upper_left")
+    plt.savefig(fname=fileAccuracy, format="svg")
 
     # Plot training & validation loss values
     plt.figure()
-    plt.plot(hist.history['loss'])
-    plt.plot(hist.history['val_loss'])
-    plt.title('Model loss - ' + target)
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.plot(hist.history["loss"])
+    plt.plot(hist.history["val_loss"])
+    plt.title("Model loss - " + target)
+    plt.ylabel("Loss")
+    plt.xlabel("Epoch")
+    plt.legend(["Train", "Test"], loc="upper left")
     #        plt.show()
-    plt.savefig(fname=fileLoss, format='svg')
+    plt.savefig(fname=fileLoss, format="svg")
     plt.close()
 
-
-# ------------------------------------------------------------------------------------- #
 
 def plotAUC(fpr, tpr, auc, target, filename, title=""):
     plt.figure()
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.plot(fpr, tpr, label='Keras (area = {:.3f})'.format(auc))
-    plt.xlabel('False positive rate')
-    plt.ylabel('True positive rate')
-    plt.title(f'ROC curve {target}')
-    plt.legend(loc='best')
-    plt.savefig(fname=filename, format='svg')
+    plt.plot([0, 1], [0, 1], "k--")
+    plt.plot(fpr, tpr, label=f"Keras (area = {auc:.3f})")
+    plt.xlabel("False positive rate")
+    plt.ylabel("True positive rate")
+    plt.title(f"ROC curve {target}")
+    plt.legend(loc="best")
+    plt.savefig(fname=filename, format="svg")
     plt.close()
 
 
-# ------------------------------------------------------------------------------------- #
-
 def plotHeatmap(matrix, filename, title=""):
     plt.figure()
-    plt.imshow(matrix, cmap='Greys', interpolation='nearest')
+    plt.imshow(matrix, cmap="Greys", interpolation="nearest")
     plt.title(title)
-    plt.savefig(fname=filename, format='svg')
+    plt.savefig(fname=filename, format="svg")
     plt.close()
 
 
@@ -784,7 +832,6 @@ def plotHeatmap(matrix, filename, title=""):
 #     plt.close()
 #
 
-# ------------------------------------------------------------------------------------- #
 
 def drawHeatmap(data, anno):
     # (data=pd.DataFrame(Xt), anno = pd.DataFrame(Yt.astype(int)))
@@ -793,14 +840,23 @@ def drawHeatmap(data, anno):
     my_ann_colors = dict(zip(anno[0].unique(), ["blue", "red"]))
     row_colors = anno[0].map(my_ann_colors)
 
-    cl = sns.clustermap(data, metric="euclidean", method="single", z_score=None, standard_scale=None,
-                        col_cluster=False, cmap="Greys", row_colors=row_colors, yticklabels=False)
-    cl.fig.suptitle('Distributions of [1,0] in fingerprints of target: AR')
+    cl = sns.clustermap(
+        data,
+        metric="euclidean",
+        method="single",
+        z_score=None,
+        standard_scale=None,
+        col_cluster=False,
+        cmap="Greys",
+        row_colors=row_colors,
+        yticklabels=False,
+    )
+    cl.fig.suptitle("Distributions of [1,0] in fingerprints of target: AR")
 
-    url = 'https://python-graph-gallery.com/wp-content/uploads/mtcars.csv'
+    url = "https://python-graph-gallery.com/wp-content/uploads/mtcars.csv"
     df = pd.read_csv(url)
     # set df index using existing columns
-    df = df.set_index('model')
+    df = df.set_index("model")
     # remove name of index column, numbered rows have been the index before, they are gone now
     del df.index.name
     df
@@ -812,7 +868,14 @@ def drawHeatmap(data, anno):
 
     # Clustermethods
     my_palette = dict()
-    sns.clustermap(df, metric="correlation", standard_scale=1, method="single", cmap="Blues", row_colors=row_colors)
+    sns.clustermap(
+        df,
+        metric="correlation",
+        standard_scale=1,
+        method="single",
+        cmap="Blues",
+        row_colors=row_colors,
+    )
 
 
 ###############################################################################
@@ -831,29 +894,41 @@ def defineOutfileNames(pathprefix: str, target: str, fold: int) -> tuple:
     :return: A tuple of 14 output file names.
     """
 
-    modelname = target + '.Fold-' + str(fold)
+    modelname = target + ".Fold-" + str(fold)
 
-    modelfilepathW = str(pathprefix) + '.' + modelname + '.weights.h5'
-    modelfilepathM = str(pathprefix) + '.' + modelname + '.json'
-    modelhistplotpathL = str(pathprefix) + '.' + modelname + '.loss.svg'
-    modelhistplotpathA = str(pathprefix) + '.' + modelname + '.acc.svg'
-    modelhistplotpath = str(pathprefix) + '.' + modelname + '.history.svg'
-    modelhistcsvpath = str(pathprefix) + '.' + modelname + '.history.csv'
-    modelvalidation = str(pathprefix) + '.' + modelname + '.validation.csv'
-    modelAUCfile = str(pathprefix) + '.' + modelname + '.auc_value.svg'
-    modelAUCfiledata = str(pathprefix) + '.' + modelname + '.auc_value.data.csv'
-    outfilepath = str(pathprefix) + '.' + modelname + '.trainingResults.txt'
-    checkpointpath = str(pathprefix) + '.' + modelname + '.checkpoint.model.hdf5'
-    modelheatmapX = str(pathprefix) + '.' + modelname + '.heatmap.X.svg'
-    modelheatmapZ = str(pathprefix) + '.' + modelname + '.AC.heatmap.Z.svg'
+    modelfilepathW = str(pathprefix) + "." + modelname + ".weights.h5"
+    modelfilepathM = str(pathprefix) + "." + modelname + ".json"
+    modelhistplotpathL = str(pathprefix) + "." + modelname + ".loss.svg"
+    modelhistplotpathA = str(pathprefix) + "." + modelname + ".acc.svg"
+    modelhistplotpath = str(pathprefix) + "." + modelname + ".history.svg"
+    modelhistcsvpath = str(pathprefix) + "." + modelname + ".history.csv"
+    modelvalidation = str(pathprefix) + "." + modelname + ".validation.csv"
+    modelAUCfile = str(pathprefix) + "." + modelname + ".auc_value.svg"
+    modelAUCfiledata = str(pathprefix) + "." + modelname + ".auc_value.data.csv"
+    outfilepath = str(pathprefix) + "." + modelname + ".trainingResults.txt"
+    checkpointpath = str(pathprefix) + "." + modelname + ".checkpoint.model.hdf5"
+    modelheatmapX = str(pathprefix) + "." + modelname + ".heatmap.X.svg"
+    modelheatmapZ = str(pathprefix) + "." + modelname + ".AC.heatmap.Z.svg"
 
-    return (modelfilepathW, modelfilepathM, modelhistplotpathL, modelhistplotpathA,
-            modelhistplotpath, modelhistcsvpath, modelvalidation, modelAUCfile,
-            modelAUCfiledata, outfilepath, checkpointpath,
-            modelheatmapX, modelheatmapZ)
+    return (
+        modelfilepathW,
+        modelfilepathM,
+        modelhistplotpathL,
+        modelhistplotpathA,
+        modelhistplotpath,
+        modelhistcsvpath,
+        modelvalidation,
+        modelAUCfile,
+        modelAUCfiledata,
+        outfilepath,
+        checkpointpath,
+        modelheatmapX,
+        modelheatmapZ,
+    )
 
 
 # ------------------------------------------------------------------------------------- #
+
 
 def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
     """
@@ -874,7 +949,9 @@ def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
     else:
         unique, counts = np.unique(Yt, return_counts=True)
         perc = round(100 / len(Yt) * counts[1])
-        print(f"[INFO:] Percentage of '1' values in outcome variable (whole dataset): {perc}\n")
+        print(
+            f"[INFO:] Percentage of '1' values in outcome variable (whole dataset): {perc}\n"
+        )
 
         uniqueRtr, countsRtr = np.unique(y_train, return_counts=True)
         uniqueRte, countsRte = np.unique(y_test, return_counts=True)
@@ -884,11 +961,13 @@ def eval01Distributions(Xt, Yt, y_train, y_test, verbosity=0):
         print(f"[INFO:] Percentage of '1' values in test outcomes: {perc}\n")
 
         print(
-            f"[INFO:] Average percentage of '0' positions in fingerprints: {round(np.sum(Xt == 0) / (np.sum(Xt == 0) + np.sum(Xt == 1)), ndigits=4)}")
+            f"[INFO:] Average percentage of '0' positions in fingerprints: {round(np.sum(Xt == 0) / (np.sum(Xt == 0) + np.sum(Xt == 1)), ndigits=4)}"
+        )
     return
 
 
 # ------------------------------------------------------------------------------------- #
+
 
 def prepareDataSet(y: pd.DataFrame, x: pd.DataFrame, t: str) -> tuple:
     """
@@ -902,7 +981,7 @@ def prepareDataSet(y: pd.DataFrame, x: pd.DataFrame, t: str) -> tuple:
     """
 
     # which rows contain 'NA' in target column
-    tmp = y[t].astype('category')
+    tmp = y[t].astype("category")
     Y = np.asarray(tmp)
     naRows = np.isnan(Y)
 
@@ -1306,6 +1385,7 @@ def prepareDataSet(y: pd.DataFrame, x: pd.DataFrame, t: str) -> tuple:
 
 # ------------------------------------------------------------------------------------- #
 
+
 def smilesSet2fpSet(csvfilename, outfilename, fptype):
     """
 
@@ -1317,19 +1397,17 @@ def smilesSet2fpSet(csvfilename, outfilename, fptype):
     # outfilename = "/data/bioinf/projects/data/2019_Sun-etal_Supplement/results/05_04_dataKS.fp.csv"
 
     # read csv and generate/add fingerprints to dict
-    with open(csvfilename, 'r') as f:
-        reader = csv.DictReader(f, delimiter=';')
+    with open(csvfilename, "r") as f:
+        reader = csv.DictReader(f, delimiter=";")
 
-        feature = 'smiles'
+        feature = "smiles"
 
-        with open(outfilename, 'w', newline='') as out:
-            writer = csv.DictWriter(out, fieldnames=['fp'])
+        with open(outfilename, "w", newline="") as out:
+            writer = csv.DictWriter(out, fieldnames=["fp"])
             writer.writeheader()
             for row in reader:
                 # smiles, need to be converted to fp first
                 fp = smi2fp(smile=row[feature], fptype=fptype)
-                writer.writerow({'fp': DataStructs.BitVectToText(fp)})
+                writer.writerow({"fp": DataStructs.BitVectToText(fp)})
 
     return
-
-

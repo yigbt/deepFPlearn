@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 """Calculate fingerprints"""
 import os
+from functools import partial
 from os.path import isfile, join
+from typing import Any, Callable, List
 
 import pandas as pd
 import numpy as np
-from rdkit import Chem
-from rdkit import RDLogger
+from rdkit import Chem, DataStructs, RDLogger
 from rdkit.Chem import AllChem
-from rdkit import DataStructs
-from typing import Any, List
 import multiprocessing
-from functools import partial
-from typing import Callable
 import logging
 
 # import settings
@@ -47,13 +44,16 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         # from rdkit import DataStructs
         # DataStructs.ConvertToNumpyArray(morgan, npa)
 
-        npa = np.zeros((0,), dtype=np.bool)
+        npa = np.zeros((0,), dtype=np.bool_)
         try:
             DataStructs.ConvertToNumpyArray(
-                AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(smile), 2, nBits=fp_size),
-                npa)
+                AllChem.GetMorganFingerprintAsBitVect(
+                    Chem.MolFromSmiles(smile), 2, nBits=fp_size
+                ),
+                npa,
+            )
             return npa
-        except:
+        except Exception:
             return None
 
         # try:
@@ -74,8 +74,10 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         try:
             return np.array(
                 Chem.RDKFingerprint(Chem.MolFromInchi(inchi), fpSize=fp_size),
-                dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
-        except:
+                dtype=settings.df_fp_numpy_type,
+                copy=settings.numpy_copy_values,
+            )
+        except Exception:
             # Note: We don't need to log here since rdkit already logs
             return None
 
@@ -141,7 +143,9 @@ def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
 
 
 conversion_rules = {
-    # "S_dataset.csv": importSmilesCSV,
+    "S_dataset.csv": importSmilesCSV,
+    "smiles.csv": importSmilesCSV,
+    "inchi.tsv": importDstoxTSV,
     # "S_dataset_extended.csv": importSmilesCSV,
     # "D_dataset.tsv": importDstoxTSV,
     # "train_data.csv": importSmilesCSV,
@@ -154,8 +158,12 @@ conversion_rules = {
 
 
 def convert_all(directory: str) -> List[str]:
-    files = [f for f in os.listdir(directory) for key, value in conversion_rules.items()
-             if isfile(join(directory, f)) and f in key]
+    files = [
+        f
+        for f in os.listdir(directory)
+        for key, value in conversion_rules.items()
+        if isfile(join(directory, f)) and f in key
+    ]
     logging.info(f"Found {len(files)} files to convert")
     for f in files:
         path = join(directory, f)

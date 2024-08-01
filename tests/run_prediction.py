@@ -1,51 +1,67 @@
-import pathlib
 import logging
+import pathlib
 from os import path
 
-import dfpl.options as opt
-import dfpl.fingerprint as fp
 import dfpl.autoencoder as ac
+import dfpl.fingerprint as fp
+import dfpl.options as opt
 import dfpl.predictions as p
+import dfpl.utils as utils
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_predict_args = opt.PredictOptions(
-    inputFile=f"{project_directory}/data/Sun_etal_dataset.cids.predictionSet.csv",
-    outputDir=f"{project_directory}/validation/case_01/results/",
-    acFile=f"{project_directory}/validation/case_01/results/Sun_etal_dataset.AC.encoder.weights.hdf5",
-    model=f"{project_directory}/validation/case_01/results/AR_compressed-True.full.FNN-.model.hdf5",
-    target="AR",
+test_predict_args = opt.Options(
+    inputFile=f"{project_directory}/data/smiles.csv",
+    outputDir=f"{project_directory}/preds/",
+    ecModelDir=utils.makePathAbsolute(f"{project_directory}/output/"),
+    ecWeightsFile=utils.makePathAbsolute(
+        f"{project_directory}/output/D_datasetdeterministicrandom.autoencoder.weightsrandom.autoencoder.weights.hdf5"
+    ),
+    fnnModelDir=f"{project_directory}/output/fnnTrainingCompressed/AR_saved_model",
     fpSize=2048,
     type="smiles",
-    fpType="topological"
+    fpType="topological",
 )
 
 
-def test_predictions():
+def test_predictions(opts: opt.Options):
     opts = test_predict_args
 
-    logging.basicConfig(format="DFPL-%(levelname)s: %(message)s", level=logging.INFO)
-    logging.info(f"Predicting compounds in the input file {opts.inputFile} for association with target {opts.target}")
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
+    logging.info(f"Predicting compounds in the input file {opts.inputFile}")
 
-    df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
+    df = fp.importDataFile(
+        opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
+    )
 
-    use_compressed = False
-    if opts.acFile:
-        use_compressed = True
+    # use_compressed = False
+    if opts.ecWeightsFile:
+        # use_compressed = True
         # load trained model for autoencoder
-        (_, encoder) = ac.define_ac_model(input_size=opts.fpSize, encoding_dim=opts.encFPSize)
-        encoder.load_weights(opts.acFile)
+        (autoencoder, encoder) = ac.define_ac_model(opts, output_bias=None)
+        autoencoder.load_weights(opts.ecWeightsFile)
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-
+    # model = tensorflow.keras.models.load_model(opts.fnnModelDir, compile=False)
+    # model.compile(loss=opts.lossFunction, optimizer=opts.optimizer)
     # predict
-    df2 = p.predict_values(df=df,
-                           opts=opts,
-                           use_compressed=use_compressed)
+    df2 = p.predict_values(df=df, opts=opts)
 
-    names_columns = [c for c in df2.columns if c not in ['fp', 'fpcompressed']]
+    names_columns = [c for c in df2.columns if c not in ["fp", "fpcompressed"]]
 
-    output_file = path.join(opts.outputDir,
-                            path.basename(path.splitext(opts.inputFile)[0]) + ".predictions.csv")
+    output_file = path.join(
+        opts.outputDir,
+        path.basename(path.splitext(opts.inputFile)[0]) + ".predictions.csv",
+    )
     df2[names_columns].to_csv(path_or_buf=output_file)
 
     logging.info(f"Predictions done.\nResults written to '{output_file}'.")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
+    )
+    utils.createDirectory(test_predict_args.outputDir)
+    test_predictions(test_predict_args)

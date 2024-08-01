@@ -8,17 +8,6 @@ Trained models that are used in the prediction mode are stored in the `models` f
 
 **NOTE**: Before you proceed calling `deepFPlearn` activate the conda environment or use the container as described in the main `README.md` of the repository.
 
-You may need to build the `dfpl` package before you start.
-To do so, move to the root directory of `dfpl` and run:
-```
-python build dfpl
-```
-Get help:
-```
-python -m dfpl train --help
-python -m dfpl predict --help
-```
-
 ## Train
 
 The training data contains three targets and you may train models for each using the following command.
