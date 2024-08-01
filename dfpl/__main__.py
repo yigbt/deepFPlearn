@@ -7,6 +7,7 @@ from os import path
 
 import chemprop as cp
 import pandas as pd
+import wandb
 from keras.models import load_model
 
 from dfpl import autoencoder as ac
@@ -128,8 +129,6 @@ def train(opts: options.Options):
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)  # why? we just created that directory in the function before??
 
-    encoder = None
-    autoencoder = None
     if opts.trainAC:
         if opts.aeType == "deterministic":
             encoder, train_indices, test_indices = ac.train_full_ac(df, opts)
@@ -137,30 +136,25 @@ def train(opts: options.Options):
             encoder, train_indices, test_indices = vae.train_full_vae(df, opts)
         else:
             raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
+    else:
+        if opts.aeType == "deterministic":
+            (autoencoder, encoder) = ac.define_ac_model(opts=opts)
+        elif opts.aeType == "variational":
+            (autoencoder, encoder) = vae.define_vae_model(opts=opts)
+        else:
+            raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
+
+        if opts.ecWeightsFile == "":
+            encoder = load_model(opts.ecModelDir)
+        else:
+            autoencoder.load_weights(
+                os.path.join(opts.ecModelDir, opts.ecWeightsFile)
+            )
 
     if opts.compressFeatures:
-
-        if not opts.trainAC:
-            if opts.aeType == "deterministic":
-                (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
-            elif opts.aeType == "variational":
-                (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
-            elif opts.ecWeightsFile == "":
-                encoder = load_model(opts.ecModelDir)
-            else:
-                autoencoder.load_weights(
-                    os.path.join(opts.ecModelDir, opts.ecWeightsFile)
-                )
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        # ac.visualize_fingerprints(
-        #     df,
-        #     before_col="fp",
-        #     after_col="fpcompressed",
-        #     train_indices=train_indices,
-        #     test_indices=test_indices,
-        #     save_as=f"UMAP_{opts.aeSplitType}.png",
-        # )
+
     # train single label models if requested
     if opts.trainFNN:
         # train multi-label models if requested
@@ -185,8 +179,11 @@ def predict(opts: options.Options) -> None:
         # load trained model for autoencoder
         if opts.aeType == "deterministic":
             (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
-        if opts.aeType == "variational":
+        elif opts.aeType == "variational":
             (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
+        else:
+            raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
+
         # Load trained model for autoencoder
         if opts.ecWeightsFile == "":
             encoder = load_model(opts.ecModelDir)

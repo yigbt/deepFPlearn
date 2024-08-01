@@ -8,3 +8,15 @@ pip~=22.0.4
 pytest~=7.1.1
 
 -e .
+numpy~=1.19.5
+pandas~=1.4.2
+tensorflow~=2.6.0
+wandb~=0.12.11
+keras~=2.6.0
+scikit-learn~=1.0.2
+matplotlib~=3.5.1
+rdkit~=2022.03.1
+tqdm~=4.66.4
+jsonpickle~=2.1.0
+setuptools~=65.6.3
+chemprop~=1.6.1
