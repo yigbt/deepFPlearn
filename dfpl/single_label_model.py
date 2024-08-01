@@ -465,7 +465,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     """
 
     # find target columns
-    names_y = [c for c in df.columns if c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if c not in
+               ['cid', 'ID', 'id', 'mol_id', 'smiles', 'SMILES', 'fp', 'inchi', 'fpcompressed']]
 
     if opts.wabTracking:
         # For W&B tracking, we only train one target that's specified as wabTarget "ER".
