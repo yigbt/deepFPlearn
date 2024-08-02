@@ -6,7 +6,7 @@
   "ecWeightsFile": "random_autoencoder.hdf5",
   "verbose": 2,
 
-  "trainAC": true,
+  "trainAC": false,
   "compressFeatures": true,
   "encFPSize": 256,
 
