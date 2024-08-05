@@ -162,6 +162,19 @@ ggplot(data = challenge_data_fp %>%
 ```
 Perform a linear min-max scaling to 0-1 for the regression
 ```{r}
+scale_0_1 <- function(vector, min = NULL, max = NULL) {
+  if (is.null(min)) min <- min(vector)
+  if (is.null(max)) max <- max(vector)
+  return(vector - min / (max - min))
+}
+descale_0_1 <- function(vector, min = NULL, max = NULL) {
+  if (is.null(min)) min <- min(vector)
+  if (is.null(max)) max <- max(vector)
+  return((vector * (max - min)) + min)
+}
+```
+```{r}
+
 process <- preProcess(x = challenge_data_fp %>%
   filter(origin == "train") %>%
   select(activity), method = "range")

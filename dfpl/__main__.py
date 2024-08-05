@@ -17,28 +17,27 @@ from dfpl import single_label_model as sl
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
-    inputFile=f'{project_directory}/input_datasets/tox24_challenge/tox24_challenge_train.csv',
+    inputFile=f'{project_directory}/data/input_datasets/tox24_challenge/tox24_challenge_train.csv',
     outputDir=f'{project_directory}/output/tox24_challenge/',
-    ecWeightsFile=f'{project_directory}/output_data/case_regression_01/AR/ae.encoder.hdf5',
-    ecModelDir=f'{project_directory}/output_data/case_regression_01/AR/saved_model',
-    type='inchi',
+    ecModelDir=f'{project_directory}/example/models/generic_encoder/',
+    type='smiles',
     fpType='topological',
-    epochs=100,
-    batchSize=1024,
+    epochs=10,
+    batchSize=47,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
     testSize=0.2,
-    kFolds=1,
+    kFolds=2,
     verbose=2,
     trainAC=False,
     trainFNN=True,
-    compressFeatures=False,
-    activationFunction="selu",
-    lossFunction='mae',
+    compressFeatures=True,
+    activationFunction="tanh",
+    lossFunction='rsme',
     optimizer='Adam',
     fnnType='REG',  # todo: replace useRegressionModel with fnnType variable
-    wabTarget='AR',
+    wabTarget='activity_scaled',
     wabTracking=True
 )
 

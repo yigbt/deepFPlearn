@@ -17,12 +17,12 @@ from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow.keras import metrics
+from tensorflow.keras import losses
 from tensorflow.keras import optimizers
 from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Dense, Dropout, AlphaDropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError, MeanAbsoluteError
 
 from dfpl import callbacks as cb
 from dfpl import options
@@ -171,83 +171,26 @@ def build_snn_network(input_size: int, opts: options.Options, output_bias=None) 
     return model
 
 
-def get_model_2048(opts: options.Options, output_bias=None) -> Model:
-    model_2048 = Sequential([
-        Dense(1024, input_dim=2048, activation=opts.activationFunction,
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Initial layer size is large
-        Dropout(opts.dropout),  # Add dropout for regularization
-        Dense(512, activation=opts.activationFunction,
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Reduce the size
-        Dropout(opts.dropout),  # Add dropout
-        Dense(256, activation=opts.activationFunction,
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Further reduce the size
-        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
-    ])
-    model_2048.compile(optimizer='adam', loss='root_mean_squared_error')
-
-    return model_2048
-
-
-def get_model_1024(opts: options.Options, output_bias=None) -> Model:
-    model_1024 = Sequential([
-        Dense(512, input_dim=1024, activation='relu',
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Start with a moderately large size
-        Dropout(opts.dropout),  # Add dropout for regularization
-        Dense(256, activation='relu',
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Reduce the size
-        Dropout(opts.dropout),  # Add dropout
-        Dense(128, activation='relu',
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Further reduce the size
-        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
-    ])
-
-    model_1024.compile(optimizer='adam', loss='root_mean_squared_error')
-
-    return model_1024
-
-
-def get_model_256(opts: options.Options, output_bias=None) -> Model:
-    model_256 = Sequential([
-        Dense(128, input_dim=256, activation='relu',
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Start with a moderate size
-        Dropout(opts.dropout),  # Add dropout for regularization
-        Dense(64, activation='relu',
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Reduce the size
-        Dropout(opts.dropout),  # Add dropout
-        Dense(32, activation='relu',
-              kernel_regularizer=regularizers.l2(opts.l2reg),
-              kernel_initializer="he_uniform"),  # Further reduce the size
-        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
-    ])
-
-    model_256.compile(optimizer='adam', loss='root_mean_squared_error')
-
-    return model_256
-
-
 def build_simple_regression_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
 
-    match input_size:
-        case 2048:
-            return get_model_2048(opts, output_bias)
-        case 1024:
-            return get_model_1024(opts, output_bias)
-        case 256:
-            return get_model_256(opts, output_bias)
-        case _:
-            logging.error(
-                "Only fingerprints of sizes 2048, 1024, or 256 are supported for regression model generation.")
-            sys.exit(-1)
+    model = Sequential([
+        Dense(round(input_size / 2, ndigits=0), input_dim=input_size, activation=opts.activationFunction,
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Start with a moderate size
+        Dropout(opts.dropout),  # Add dropout for regularization
+        Dense(round(input_size / 4, ndigits=0), activation=opts.activationFunction,
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Reduce the size
+        Dropout(opts.dropout),  # Add dropout
+        Dense(round(input_size / 8, ndigits=0), activation=opts.activationFunction,
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Further reduce the size
+        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
+    ])
+
+    return model
 
 
 def build_regression_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
@@ -302,13 +245,13 @@ def build_regression_network(input_size: int, opts: options.Options, output_bias
 
 def define_single_label_model(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if opts.lossFunction == "bce":
-        loss_function = BinaryCrossentropy()
+        loss_function = losses.BinaryCrossentropy()
     elif opts.lossFunction == "mse":
-        loss_function = MeanSquaredError()
+        loss_function = losses.MeanSquaredError()
     elif opts.lossFunction == "rmse":
-        loss_function = RootMeanSquaredError()
+        loss_function = losses.RootMeanSquaredError()
     elif opts.lossFunction == 'mae':
-        loss_function = MeanAbsoluteError()
+        loss_function = losses.MeanAbsoluteError()
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")
@@ -335,8 +278,12 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
 
     if opts.fnnType == "REG":
         model.compile(loss=loss_function,
-                      optimizer=my_optimizer  # ,
-                      # metrics=[metrics.MeanAbsoluteError, 'loss', 'val_loss']
+                      optimizer=my_optimizer,
+                      metrics=[
+                          metrics.RootMeanSquaredError(name="rmse"),
+                          metrics.MeanSquaredError(name="mse"),
+                          metrics.MeanAbsoluteError(name="mae")
+                      ]
                       )
     else:
         model.compile(loss=loss_function,
@@ -391,6 +338,7 @@ def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray, file_prefi
     logging.info(f"Evaluating trained model '{name}' on test data")
 
     y_predict = model.predict(x_test).flatten()
+    pd.DataFrame(y_predict).to_csv(path_or_buf=f"{file_prefix}.y_test_predict.csv")
 
     error = np.array(y_predict) - np.array(y_test)
     abs_error = abs(error)
@@ -517,6 +465,10 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
 
     # save and plot history
     pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
+    pd.DataFrame(x_train).to_csv(path_or_buf=f"{model_file_prefix}.x_train.csv")
+    pd.DataFrame(y_train).to_csv(path_or_buf=f"{model_file_prefix}.y_train.csv")
+    pd.DataFrame(x_test).to_csv(path_or_buf=f"{model_file_prefix}.x_test.csv")
+    pd.DataFrame(y_test).to_csv(path_or_buf=f"{model_file_prefix}.y_test.csv")
 
     # use callback model for evaluation
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
