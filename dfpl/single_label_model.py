@@ -248,8 +248,6 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
         loss_function = losses.BinaryCrossentropy()
     elif opts.lossFunction == "mse":
         loss_function = losses.MeanSquaredError()
-    elif opts.lossFunction == "rmse":
-        loss_function = losses.RootMeanSquaredError()
     elif opts.lossFunction == 'mae':
         loss_function = losses.MeanAbsoluteError()
     else:
