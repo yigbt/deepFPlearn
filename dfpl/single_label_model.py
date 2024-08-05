@@ -170,6 +170,85 @@ def build_snn_network(input_size: int, opts: options.Options, output_bias=None) 
     return model
 
 
+def get_model_2048(opts: options.Options, output_bias=None) -> Model:
+    model_2048 = Sequential([
+        Dense(1024, input_dim=2048, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Initial layer size is large
+        Dropout(opts.dropout),  # Add dropout for regularization
+        Dense(512, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Reduce the size
+        Dropout(opts.dropout),  # Add dropout
+        Dense(256, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Further reduce the size
+        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
+    ])
+    model_2048.compile(optimizer='adam', loss='mean_squared_error')
+
+    return model_2048
+
+
+def get_model_1024(opts: options.Options, output_bias=None) -> Model:
+    model_1024 = Sequential([
+        Dense(512, input_dim=1024, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Start with a moderately large size
+        Dropout(opts.dropout),  # Add dropout for regularization
+        Dense(256, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Reduce the size
+        Dropout(opts.dropout),  # Add dropout
+        Dense(128, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Further reduce the size
+        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
+    ])
+
+    model_1024.compile(optimizer='adam', loss='mean_squared_error')
+
+    return model_1024
+
+
+def get_model_256(opts: options.Options, output_bias=None) -> Model:
+    model_256 = Sequential([
+        Dense(128, input_dim=256, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Start with a moderate size
+        Dropout(opts.dropout),  # Add dropout for regularization
+        Dense(64, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Reduce the size
+        Dropout(opts.dropout),  # Add dropout
+        Dense(32, activation='relu',
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Further reduce the size
+        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
+    ])
+
+    model_256.compile(optimizer='adam', loss='mean_squared_error')
+
+    return model_256
+
+
+def build_simple_regression_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
+    if output_bias is not None:
+        output_bias = tf.keras.initializers.Constant(output_bias)
+
+    match input_size:
+        case 2048:
+            return get_model_2048(opts, output_bias)
+        case 1024:
+            return get_model_1024(opts, output_bias)
+        case 256:
+            return get_model_256(opts, output_bias)
+        case _:
+            logging.error(
+                "Only fingerprints of sizes 2048, 1024, or 256 are supported for regression model generation.")
+            sys.exit(-1)
+
+
 def build_regression_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
@@ -244,7 +323,8 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
     elif opts.fnnType == "SNN":
         model = build_snn_network(input_size, opts, output_bias)
     elif opts.fnnType == "REG":
-        model = build_regression_network(input_size, opts, output_bias)
+        # model = build_regression_network(input_size, opts, output_bias)
+        model = build_simple_regression_network(input_size, opts, output_bias)
     else:
         raise ValueError(f"Option FNN Type is not \"FNN\", \"SNN\", or \"REG\", but {opts.fnnType}.")
     logging.info(f"Network type: {opts.fnnType}")
