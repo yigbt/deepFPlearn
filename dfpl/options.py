@@ -255,7 +255,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--lossFunction',
                         metavar="character",
                         type=str,
-                        choices=["mse", "bce"],
+                        choices=["rmse", "mse", "bce"],
                         help="Loss function to use during training. "
                              "mse - mean squared error, bce - binary cross entropy.",
                         default=argparse.SUPPRESS)
@@ -285,7 +285,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--aeActivationFunction',
                         metavar="STRING",
                         type=str,
-                        choices=["relu", "tanh", "selu", "elu"],
+                        choices=["relu", "tanh", "selu", "elu", "smht"],
                         help="The activation function for hidden layers in the autoencoder.",
                         default=argparse.SUPPRESS)
     parser.add_argument('--aeLearningRate',

@@ -7,6 +7,7 @@ from time import time
 
 import numpy as np
 import pandas as pd
+from keras.metrics import RootMeanSquaredError
 from sklearn.metrics import auc
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -172,20 +173,20 @@ def build_snn_network(input_size: int, opts: options.Options, output_bias=None) 
 
 def get_model_2048(opts: options.Options, output_bias=None) -> Model:
     model_2048 = Sequential([
-        Dense(1024, input_dim=2048, activation='relu',
+        Dense(1024, input_dim=2048, activation=opts.activationFunction,
               kernel_regularizer=regularizers.l2(opts.l2reg),
               kernel_initializer="he_uniform"),  # Initial layer size is large
         Dropout(opts.dropout),  # Add dropout for regularization
-        Dense(512, activation='relu',
+        Dense(512, activation=opts.activationFunction,
               kernel_regularizer=regularizers.l2(opts.l2reg),
               kernel_initializer="he_uniform"),  # Reduce the size
         Dropout(opts.dropout),  # Add dropout
-        Dense(256, activation='relu',
+        Dense(256, activation=opts.activationFunction,
               kernel_regularizer=regularizers.l2(opts.l2reg),
               kernel_initializer="he_uniform"),  # Further reduce the size
         Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
     ])
-    model_2048.compile(optimizer='adam', loss='mean_squared_error')
+    model_2048.compile(optimizer='adam', loss='root_mean_squared_error')
 
     return model_2048
 
@@ -206,7 +207,7 @@ def get_model_1024(opts: options.Options, output_bias=None) -> Model:
         Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
     ])
 
-    model_1024.compile(optimizer='adam', loss='mean_squared_error')
+    model_1024.compile(optimizer='adam', loss='root_mean_squared_error')
 
     return model_1024
 
@@ -227,7 +228,7 @@ def get_model_256(opts: options.Options, output_bias=None) -> Model:
         Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
     ])
 
-    model_256.compile(optimizer='adam', loss='mean_squared_error')
+    model_256.compile(optimizer='adam', loss='root_mean_squared_error')
 
     return model_256
 
@@ -304,6 +305,8 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
         loss_function = BinaryCrossentropy()
     elif opts.lossFunction == "mse":
         loss_function = MeanSquaredError()
+    elif opts.lossFunction == "rmse":
+        loss_function = RootMeanSquaredError()
     elif opts.lossFunction == 'mae':
         loss_function = MeanAbsoluteError()
     else:
@@ -608,14 +611,22 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # now next fold
 
         # select and copy best model - how to define the best model?
-        best_fold = (
-            pd
-            .concat(performance_list, ignore_index=True)
-            .sort_values(
-                by=['p_1', 'r_1', 'MCC'],
-                ascending=False,
-                ignore_index=True)['fold'][0]
-        )
+        if opts.fnnType == 'REG':
+            best_fold = (
+                pd.concat(
+                    performance_list, ignore_index=True).sort_values(
+                    by=['value'],
+                    ascending=False,
+                    ignore_index=True)['fold'][0]
+            )
+        else:
+            best_fold = (
+                pd.concat(
+                    performance_list, ignore_index=True).sort_values(
+                    by=['p_1', 'r_1', 'MCC'],
+                    ascending=False,
+                    ignore_index=True)['fold'][0]
+            )
 
         # copy checkpoint model weights
         shutil.copy(
