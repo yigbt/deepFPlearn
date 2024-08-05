@@ -1,0 +1,254 @@
+---
+title: "Diving into the data of the Tox24 Challenge"
+output: html_notebook
+---
+
+```{r}
+library("tidyverse")
+library("readxl")
+library("ggplot2")
+library("M3C")
+library("caret")
+library("ggVennDiagram")
+```
+# Load the data
+
+Get the data provided on the Challenge website for training and testing.
+
+```{r}
+challenge_data <- rbind(
+  read_csv(file = "/data/bioinf/projects/data/2022_deepFPlearn/input_datasets/tox24_challenge/tox24_challenge_train.csv") %>%
+    mutate("origin" = "train"),
+  read_csv(file = "/data/bioinf/projects/data/2022_deepFPlearn/input_datasets/tox24_challenge/tox24_challenge_test.csv") %>%
+    mutate("activity" = NA, "origin" = "test")
+)
+challenge_data %>% group_by(origin) %>% tally()
+```
+Any NAs in the feature space?
+```{r}
+challenge_data %>% filter(is.na(SMILES))
+```
+No.
+Any duplicated features here?
+```{r}
+challenge_data_dupl_smiles <- challenge_data$SMILES[duplicated(challenge_data$SMILES)]
+challenge_data %>% filter(SMILES %in% challenge_data_dupl_smiles)
+```
+Yes, with two different `activity` values.
+Keep this in mind
+
+There are `1012` substances with activity for training (incl. duplicated SMILES).
+
+Load the data from the supplementary information of the Transthyretin paper to get more information about the
+substances and the experimental setup:
+https://chemrxiv.org/engage/chemrxiv/article-details/664cab3b91aefa6ce1976a1e
+```{r}
+supp_data_s4 <- read_excel(
+  path = "/data/bioinf/projects/data/2022_deepFPlearn/input_datasets/tox24_challenge/ttr-supplemental-tables.xlsx",
+  sheet = 6) %>%
+  rename("activity" = "Median % activity")
+supp_data_s4 %>%
+  mutate("has_SMILES" = !is.na(SMILES)) %>%
+  group_by(dataset, has_SMILES) %>%
+  tally()
+```
+There are again `1012` substances associated to the *training* dataset.
+
+Any NAs in the feature space, that have an `activity` and are part of the training set, here?
+```{r}
+supp_data_s4_no_smiles <- supp_data_s4 %>%
+  filter(is.na(SMILES), !is.na(activity), dataset == "training")
+supp_data_s4_no_smiles %>% nrow()
+```
+Yes!
+No idea (so far) to which SMILES in the challenge data they could belong.
+We may resolve this by comparing the activity values, but we don't do this for now.
+
+There have to be some SMILES from the challenge dataset which are not part of the supplementary material.
+```{r}
+supp_data_s4_smiles_train <- supp_data_s4 %>%
+  filter(!is.na(SMILES), dataset == "training", !is.na("Median % activity")) %>%
+  drop_na() %>%
+  pull(SMILES)
+challenge_data_smiles_train <- challenge_data %>%
+  filter(origin == "train") %>%
+  drop_na() %>%
+  pull(SMILES) %>%
+  unique()
+ggVennDiagram(x = list("supp" = supp_data_s4_smiles_train,
+                       "challenge" = challenge_data_smiles_train))
+```
+
+```{r}
+ggVennDiagram(x = list("supp" = supp_data_s4_smiles_train,
+                       "challenge" = challenge_data_smiles_train), force_upset = TRUE)
+```
+
+It is very strange that the total numbers 1012 substances for training, 500 for testing (300 + 200) are correct,
+but the SMILES don't fit between the datasets.
+
+For now, proceed with the Challenge data and ignore this fact.
+
+Load the fingerprints for the train and test data
+
+```{r}
+challenge_data_fp <- rbind(
+  read_csv(file = "/data/bioinf/projects/data/2022_deepFPlearn/input_datasets/tox24_challenge/tox24_challenge_train_fp.csv") %>%
+    mutate("origin" = "train"),
+  read_csv(file = "/data/bioinf/projects/data/2022_deepFPlearn/input_datasets/tox24_challenge/tox24_challenge_test_fp.csv") %>%
+    mutate("activity" = NA, "origin" = "test")
+)
+```
+Any NAs for the fingerprints?
+```{r}
+challenge_data_fp %>% filter(is.na(fp_0))
+```
+No!
+
+## Action 1 - rm duplicated entry
+
+```{r}
+supp_data_s4 %>% filter(SMILES %in% challenge_data_dupl_smiles)
+```
+```{r}
+challenge_data_fp %>%
+  filter(SMILES %in% challenge_data_dupl_smiles) %>%
+  select(-starts_with("fp_"))
+```
+Discard the second entry, since the probably true value is the one from the publication.
+```{r}
+challenge_data_fp <- challenge_data_fp %>%
+  filter(!(SMILES %in% challenge_data_dupl_smiles & activity < 0))
+```
+
+## Distribution of target values
+```{r}
+challenge_data_fp$activity %>% summary()
+```
+**Observations:**
+
+- the 500 NA's are the test values for which we don't have an activity yet
+- there are negative values and values > 100 for a column representing `Median % activity`
+
+I discussed the paper and those values with Charlie and found a potential categorization:
+```{r}
+challenge_data_fp <- challenge_data_fp %>%
+  mutate("range" = ifelse(activity < -20,
+                          yes = "very_strong_binding",
+                          no = ifelse(between(activity, -20, 0),
+                                      yes = "low_moderate_binding",
+                                      no = ifelse(between(activity, 0, 20),
+                                                  yes = "no_minimal_binding",
+                                                  no = ifelse(between(activity, 20, 85),
+                                                              yes = "moderate_strong_binding",
+                                                              no = ifelse(activity > 100, yes = "over_binding_or_artifact",
+                                                                          no = "strong_binding")))))) %>%
+  select(SMILES, activity, origin, range, starts_with("fp_")) %>%
+  arrange(origin) %>%
+  mutate("range" = factor(range, levels = c("very_strong_binding", "low_moderate_binding", "no_minimal_binding",
+                                            "moderate_strong_binding", "strong_binding", "over_binding_or_artifact")))
+```
+```{r}
+ggplot(data = challenge_data_fp %>%
+  filter(origin == "train") %>%
+  select(activity, range),
+       aes(x = activity, fill = range)) +
+  geom_histogram(bins = 100) +
+  scale_fill_manual(values = c("darkred", "orange", "green3", "goldenrod1", "red", "purple")) +
+  theme_classic() +
+  theme(
+    legend.position = "top"
+  )
+```
+Perform a linear min-max scaling to 0-1 for the regression
+```{r}
+process <- preProcess(x = challenge_data_fp %>%
+  filter(origin == "train") %>%
+  select(activity), method = "range")
+challenge_data_fp <- challenge_data_fp %>%
+  mutate("activity_scaled" = predict(process, challenge_data_fp %>% select(activity))$activity)
+```
+```{r}
+ggplot(data = challenge_data_fp %>%
+  filter(origin == "train") %>%
+  select(activity_scaled, range),
+       aes(x = activity_scaled, fill = range)) +
+  geom_histogram(bins = 100) +
+  scale_fill_manual(values = c("darkred", "orange", "green3", "goldenrod1", "red", "purple")) +
+  theme_classic() +
+  theme(
+    legend.position = "top"
+  )
+```
+Save scaled data to disk
+```{r}
+write_csv(x = challenge_data_fp %>%
+  filter(origin == "train") %>%
+  select(SMILES, activity_scaled),
+          file = "/data/bioinf/projects/data/2022_deepFPlearn/input_datasets/tox24_challenge/tox24_challenge_train_scaled.csv")
+```
+Cluster fingerprints and colorize by range and/or test set.
+
+The `M3C::tsne()` function requires the samples in the columns, and the features in the rows.
+So, we need to adjust our data.
+
+Any duplicates for the fingerprint?
+```{r}
+challenge_data_fp_no_duplicates <- challenge_data_fp %>%
+  filter(!duplicated(select(challenge_data_fp, starts_with("fp_"))))
+challenge_data_fp_no_duplicates_train <- challenge_data_fp_no_duplicates %>%
+  filter(origin == "train")
+```
+We need to discard the duplicated fingerprints for t-sne plotting.
+However, we maybe should include them in the model training
+```{r}
+# create an index for the rows and a mapping to SMILES to avoid having the SMILES as column names
+index <- as.character(1:nrow(challenge_data_fp_no_duplicates))
+mapping <- challenge_data_fp_no_duplicates$SMILES
+names(mapping) <- index
+# transpose dataframe
+challenge_data_fp_long <- challenge_data_fp_no_duplicates %>%
+  rowid_to_column("idx") %>%
+  select(idx, starts_with("fp_")) %>%
+  pivot_longer(cols = starts_with("fp_"), names_to = "feature", values_to = "value")
+challenge_data_fp_wide <- challenge_data_fp_long %>%
+  pivot_wider(names_from = "idx", values_from = "value")
+```
+Collect all information for TSNE plotting in an object
+```{r}
+info <- list()
+info$mapping <- mapping
+info$data <- challenge_data_fp_wide %>% select(-feature)
+info$class <- challenge_data_fp_no_duplicates$range
+info$dataset <- challenge_data_fp_no_duplicates$origin
+info$activity <- challenge_data_fp_no_duplicates$activity
+```
+Now, we can run the t-SNE.
+```{r}
+# by dataset
+tsne(mydata = info$data, labels = as.factor(info$dataset), dotsize = 1)
+```
+Nice!
+
+```{r}
+index2 <- as.character(1:nrow(challenge_data_fp_no_duplicates_train))
+mapping2 <- challenge_data_fp_no_duplicates_train$SMILES
+names(mapping2) <- index2
+# transpose dataframe
+challenge_data_fp_long2 <- challenge_data_fp_no_duplicates_train %>%
+  rowid_to_column("idx") %>%
+  select(idx, starts_with("fp_")) %>%
+  pivot_longer(cols = starts_with("fp_"), names_to = "feature", values_to = "value")
+challenge_data_fp_wide2 <- challenge_data_fp_long2 %>%
+  pivot_wider(names_from = "idx", values_from = "value")
+info2 <- list()
+info2$mapping <- mapping2
+info2$data <- challenge_data_fp_wide2 %>% select(-feature)
+info2$class <- challenge_data_fp_no_duplicates_train$range
+info2$dataset <- challenge_data_fp_no_duplicates_train$origin
+info2$activity <- challenge_data_fp_no_duplicates_train$activity
+# by activity
+tsne(mydata = info2$data, labels = as.factor(info2$class), dotsize = 2)
+```
+
+

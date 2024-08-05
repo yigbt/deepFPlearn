@@ -82,6 +82,9 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
     if "smiles" in data_frame:
         func = smile2fp
         accessor = "smiles"
+    elif "SMILES" in data_frame:
+        func = smile2fp
+        accessor = "SMILES"
     else:
         if "inchi" in data_frame:
             func = inchi2fp

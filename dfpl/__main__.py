@@ -17,8 +17,8 @@ from dfpl import single_label_model as sl
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
-    inputFile=f'{project_directory}/input_datasets/toxcast_regression_AR.csv',
-    outputDir=f'{project_directory}/output_data/console_test',
+    inputFile=f'{project_directory}/input_datasets/tox24_challenge/tox24_challenge_train.csv',
+    outputDir=f'{project_directory}/output/tox24_challenge/',
     ecWeightsFile=f'{project_directory}/output_data/case_regression_01/AR/ae.encoder.hdf5',
     ecModelDir=f'{project_directory}/output_data/case_regression_01/AR/saved_model',
     type='inchi',
