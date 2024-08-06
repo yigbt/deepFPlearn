@@ -1,26 +1,28 @@
 import logging
 import math
 import os.path
+from os.path import basename
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import umap.umap_ as umap
+import umap
 import wandb
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses, optimizers
 from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.models import Model
 
 from dfpl import callbacks
 from dfpl import history as ht
-from dfpl import options, settings
+from dfpl import settings
+from dfpl.train import TrainOptions
 from dfpl.utils import ae_scaffold_split, weight_split
 
 
-def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Model]:
+def define_ac_model(opts: TrainOptions, output_bias=None) -> Tuple[Model, Model]:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -31,13 +33,9 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     """
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    lr_schedule = optimizers.schedules.ExponentialDecay(
-        opts.aeLearningRate,
-        decay_steps=1000,
-        decay_rate=opts.aeLearningRateDecay,
-        staircase=True,
+    ac_optimizer = optimizers.Adam(
+        learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay
     )
-    ac_optimizer = optimizers.legacy.Adam(learning_rate=lr_schedule)
 
     if output_bias is not None:
         output_bias = initializers.Constant(output_bias)
@@ -107,6 +105,7 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
                 )(decoded)
 
         # output layer
+        # to either 0 or 1 and hence we use sigmoid activation function.
         decoded = Dense(
             units=input_size, activation="sigmoid", bias_initializer=output_bias
         )(decoded)
@@ -133,12 +132,12 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     return autoencoder, encoder
 
 
-def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
+def train_full_ac(df: pd.DataFrame, opts: TrainOptions) -> Model:
     """
     Trains an autoencoder on the given feature matrix X. The response matrix is only used to
     split the data into meaningful test and train sets.
 
-    :param opts: Command line arguments as defined in options.py
+    :param opts: Command line arguments
     :param df: Pandas dataframe that contains the SMILES/InChI data for training the autoencoder
     :return: The encoder model of the trained autoencoder
     """
@@ -147,8 +146,37 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     if opts.aeWabTracking and not opts.wabTracking:
         wandb.init(project=f"AE_{opts.aeSplitType}")
 
-    save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_split_autoencoder")
+    # Define output files for autoencoder and encoder weights
+    if opts.ecWeightsFile == "":
+        # If no encoder weights file is specified, use the input file name to generate a default file name
+        logging.info("No AE encoder weights file specified")
+        base_file_name = (
+            os.path.splitext(basename(opts.inputFile))[0] + opts.aeSplitType
+        )
+        logging.info(
+            f"(auto)encoder weights will be saved in {base_file_name}.autoencoder.hdf5"
+        )
+        ac_weights_file = os.path.join(
+            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
+        )
+        # ec_weights_file = os.path.join(
+        #     opts.outputDir, base_file_name + ".encoder.weights.hdf5"
+        # )
+    else:
+        # If an encoder weights file is specified, use it as the encoder weights file name
+        logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
+        base_file_name = (
+            os.path.splitext(basename(opts.ecWeightsFile))[0] + opts.aeSplitType
+        )
+        ac_weights_file = os.path.join(
+            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
+        )
+        # ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
+
     # Collect the callbacks for training
+    callback_list = callbacks.autoencoder_callback(
+        checkpoint_path=ac_weights_file, opts=opts
+    )
 
     # Select all fingerprints that are valid and turn them into a numpy array
     fp_matrix = np.array(
@@ -259,35 +287,30 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = define_ac_model(opts, output_bias=initial_bias)
-    callback_list = callbacks.autoencoder_callback(checkpoint_path=save_path, opts=opts)
+
     # Train the autoencoder on the training data
     auto_hist = autoencoder.fit(
         x_train,
         x_train,
-        callbacks=[callback_list],
+        callbacks=callback_list,
         epochs=opts.aeEpochs,
         batch_size=opts.aeBatchSize,
         verbose=opts.verbose,
         validation_data=(x_test, x_test) if opts.testSize > 0.0 else None,
     )
+    logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
     # Store the autoencoder training history and plot the metrics
     ht.store_and_plot_history(
-        base_file_name=save_path,
+        base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
         hist=auto_hist,
     )
 
     # Save the autoencoder callback model to disk
+    save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_autoencoder")
     if opts.testSize > 0.0:
-        # Re-define autoencoder and encoder using your function
-        callback_autoencoder = load_model(filepath=save_path)
-        _, callback_encoder = define_ac_model(opts)
-        for i, layer in enumerate(callback_encoder.layers):
-            layer.set_weights(callback_autoencoder.layers[i].get_weights())
-
-        # Save the encoder model
-        encoder_save_path = os.path.join(save_path, "encoder_model")
-        callback_encoder.save(filepath=encoder_save_path)
+        (callback_autoencoder, callback_encoder) = define_ac_model(opts)
+        callback_encoder.save(filepath=save_path)
     else:
         encoder.save(filepath=save_path)
     # Return the encoder model of the trained autoencoder

@@ -16,9 +16,10 @@ from tensorflow.keras.layers import Dense, Dropout
 # for NN model functions
 from tensorflow.keras.models import Model, Sequential
 
+from dfpl.train import TrainOptions
 from dfpl import callbacks as cb
 from dfpl import history as ht
-from dfpl import options, settings
+from dfpl import settings
 
 
 def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tuple:
@@ -67,18 +68,12 @@ def define_out_file_names(path_prefix: str, target: str, fold: int = -1) -> tupl
 
 
 def define_nn_multi_label_model(
-    input_size: int, output_size: int, opts: options.Options
+    input_size: int, output_size: int, opts: TrainOptions
 ) -> Model:
-    lr_schedule = optimizers.schedules.ExponentialDecay(
-        opts.aeLearningRate,
-        decay_steps=1000,
-        decay_rate=opts.aeLearningRateDecay,
-        staircase=True,
-    )
     if opts.optimizer == "Adam":
-        my_optimizer = optimizers.legacy.Adam(learning_rate=lr_schedule)
+        my_optimizer = optimizers.Adam(learning_rate=opts.learningRate)
     elif opts.optimizer == "SGD":
-        my_optimizer = optimizers.legacy.SGD(lr=lr_schedule, momentum=0.9)
+        my_optimizer = optimizers.SGD(lr=opts.learningRate, momentum=0.9)
     else:
         logging.error(f"Your selected optimizer is not supported:{opts.optimizer}.")
         sys.exit("Unsupported optimizer.")
@@ -138,9 +133,9 @@ def define_nn_model_multi(
     decay: float = 0.01,
 ) -> Model:
     if optimizer == "Adam":
-        my_optimizer = optimizers.legacy.Adam(learning_rate=lr, decay=decay)
+        my_optimizer = optimizers.Adam(learning_rate=lr, decay=decay)
     elif optimizer == "SGD":
-        my_optimizer = optimizers.legacy.SGD(lr=lr, momentum=0.9, decay=decay)
+        my_optimizer = optimizers.SGD(lr=lr, momentum=0.9, decay=decay)
     else:
         my_optimizer = optimizer
 
@@ -237,7 +232,7 @@ def validate_multi_model_on_test_data(
     return [f1_random, f1_trained]
 
 
-def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
+def train_nn_models_multi(df: pd.DataFrame, opts: TrainOptions) -> None:
     # find target columns
     names_y = [
         c
@@ -300,8 +295,6 @@ def train_nn_models_multi(df: pd.DataFrame, opts: options.Options) -> None:
                 model_file_path_weights,
                 model_file_path_json,
                 model_hist_path,
-                model_hist_csv_path,
-                model_predict_valset_csv_path,
                 model_validation,
                 model_auc_file,
                 model_auc_file_data,

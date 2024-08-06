@@ -1,5 +1,4 @@
 {
-  "py/object": "dfpl.options.GnnOptions",
   "data_path": "tests/data/S_dataset.csv",
   "save_dir": "dmpnn-random/",
   "epochs": 4,

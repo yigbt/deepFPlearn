@@ -1,5 +1,4 @@
 {
-  "py/object": "dfpl.options.Options",
   "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/results_predict/",
   "outputFile": "smiles.csv",

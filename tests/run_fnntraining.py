@@ -3,12 +3,12 @@ import pathlib
 
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
-import dfpl.options as opt
 import dfpl.single_label_model as fNN
 import dfpl.utils as utils
+from dfpl.train import TrainOptions
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_train_args = opt.Options(
+test_train_args = TrainOptions(
     inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
     ecModelDir=utils.makePathAbsolute(
         f"{project_directory}/output/fnnTrainingCompressed/"
@@ -29,7 +29,7 @@ test_train_args = opt.Options(
 )
 
 
-def run_single_label_training(opts: opt.Options) -> None:
+def run_single_label_training(opts: TrainOptions) -> None:
     logging.basicConfig(
         format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
     )
