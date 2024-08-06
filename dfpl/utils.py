@@ -51,7 +51,7 @@ def parseCmdArgs(cls: Type[T], args: argparse.Namespace) -> T:
                 for key, value in vars(content).items():
                     setattr(result, key, value)
         else:
-            raise ValueError("Could not find JSON input file")
+            raise ValueError(f"Could not find JSON input file {jsonFile}")
 
     # Override with user-provided command-line arguments
     for key in arg_flags:
