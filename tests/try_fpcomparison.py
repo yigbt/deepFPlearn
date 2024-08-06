@@ -4,8 +4,10 @@ from rdkit import Chem, DataStructs
 from rdkit.Chem import Draw
 
 import dfpl.fingerprint as fp
+import dfpl.predict
+import dfpl.train
 from dfpl import autoencoder as ac
-from dfpl import options as opt
+from dfpl import convert as opt
 from dfpl import predictions
 
 # read both datasets
@@ -80,7 +82,7 @@ img.save("cidVStoxid.structures.png")
 img.show()
 
 project_directory = ""
-opts = opt.PredictOptions(
+opts = dfpl.predict.PredictOptions(
     inputFile=f"",
     outputDir=f"/home/hertelj/tmp/",
     model=f"/home/hertelj/git-hertelj/deepFPlearn_CODE/validation/case_03/results/ER_compressed-True_sampled-None.best.FNN.model.hdf5",

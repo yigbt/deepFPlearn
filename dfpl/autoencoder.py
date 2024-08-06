@@ -17,11 +17,12 @@ from tensorflow.keras.models import Model
 
 from dfpl import callbacks
 from dfpl import history as ht
-from dfpl import options, settings
+from dfpl import settings
+from dfpl.train import TrainOptions
 from dfpl.utils import ae_scaffold_split, weight_split
 
 
-def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Model]:
+def define_ac_model(opts: TrainOptions, output_bias=None) -> Tuple[Model, Model]:
     """
     This function provides an autoencoder model to reduce a certain input to a compressed version.
 
@@ -131,12 +132,12 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     return autoencoder, encoder
 
 
-def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
+def train_full_ac(df: pd.DataFrame, opts: TrainOptions) -> Model:
     """
     Trains an autoencoder on the given feature matrix X. The response matrix is only used to
     split the data into meaningful test and train sets.
 
-    :param opts: Command line arguments as defined in options.py
+    :param opts: Command line arguments
     :param df: Pandas dataframe that contains the SMILES/InChI data for training the autoencoder
     :return: The encoder model of the trained autoencoder
     """

@@ -2,12 +2,12 @@ import logging
 import pathlib
 
 import dfpl.fingerprint as fp
-import dfpl.options as opt
+from dfpl.train import TrainOptions
 import dfpl.utils as utils
 import dfpl.vae as vae
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_train_args = opt.Options(
+test_train_args = TrainOptions(
     inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
     ecModelDir=utils.makePathAbsolute(f"{project_directory}/data"),
     outputDir=utils.makePathAbsolute(f"{project_directory}/output"),
@@ -29,7 +29,7 @@ test_train_args = opt.Options(
 )
 
 
-def runVae(opts: opt.Options) -> None:
+def runVae(opts: TrainOptions) -> None:
     """
     Run and test auto-encoder
     """

@@ -1,0 +1,14 @@
+{
+    "fpSize": 2048,
+    "encFPSize": 256,
+    "aeLearningRate": 0.001,
+    "aeLearningRateDecay": 0.96,
+    "aeActivationFunction": "selu",
+    "ecWeightsFile": "",
+    "ecModelDir": "",
+    "aeType": "deterministic",
+    "aeEpochs": 100,
+    "aeBatchSize": 512,
+    "aeSplitType": "random",
+    "visualizeLatent": false
+}

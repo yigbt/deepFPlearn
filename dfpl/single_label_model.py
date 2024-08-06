@@ -29,15 +29,15 @@ from tensorflow.keras.losses import (
 )
 from tensorflow.keras.models import Model, Sequential
 
+from dfpl.train import TrainOptions
 from dfpl import callbacks as cb
-from dfpl import options
 from dfpl import plot as pl
 from dfpl import settings
 from dfpl.utils import ae_scaffold_split, weight_split
 
 
 def prepare_nn_training_data(
-    df: pd.DataFrame, target: str, opts: options.Options, return_dataframe: bool = False
+    df: pd.DataFrame, target: str, opts: TrainOptions, return_dataframe: bool = False
 ) -> Union[Tuple[np.ndarray, np.ndarray], pd.DataFrame]:
     # Check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
@@ -180,7 +180,7 @@ def prepare_nn_training_data(
 
 # This function defines a feedforward neural network (FNN) with the given input size, options, and output bias
 def build_fnn_network(
-    input_size: int, opts: options.Options, output_bias=None
+    input_size: int, opts: TrainOptions, output_bias=None
 ) -> Model:
     # Set the output bias if it is provided
     if output_bias is not None:
@@ -256,7 +256,7 @@ def build_fnn_network(
 
 # This function defines a shallow neural network (SNN) with the given input size, options, and output bias
 def build_snn_network(
-    input_size: int, opts: options.Options, output_bias=None
+    input_size: int, opts: TrainOptions, output_bias=None
 ) -> Model:
     # Set the output bias if it is provided
     if output_bias is not None:
@@ -310,14 +310,14 @@ def balanced_accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> np.float64:
 
 
 def define_single_label_model(
-    input_size: int, opts: options.Options, output_bias=None
+    input_size: int, opts: TrainOptions, output_bias=None
 ) -> Model:
     """
     Defines and compiles the single-label neural network model.
 
     Args:
         input_size (int): The size of the input layer.
-        opts (options.Options): The options used in the model.
+        opts (dfpl.train.TrainOptions): The options used in the model.
         output_bias (float): The initial bias for the last sigmoid layer of the model.
 
     Returns:
@@ -489,7 +489,7 @@ def fit_and_evaluate_model(
     y_test: np.ndarray,
     fold: int,
     target: str,
-    opts: options.Options,
+    opts: TrainOptions,
 ) -> pd.DataFrame:
     # Print info about training
     logging.info(f"Training of fold number: {fold}")
@@ -561,7 +561,7 @@ def get_x_y(
     target: str,
     train_set: pd.DataFrame,
     test_set: pd.DataFrame,
-    opts: options.Options,
+    opts: TrainOptions,
 ):
     train_indices = train_set.index
     test_indices = test_set.index
@@ -584,7 +584,7 @@ def get_x_y(
     return x_train, y_train, x_test, y_test
 
 
-def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
+def train_single_label_models(df: pd.DataFrame, opts: TrainOptions) -> None:
     """
     Train individual models for all targets (columns) present in the provided target data (y) and a multi-label
     model that classifies all targets at once. For each individual target the data is first subset to exclude NA

@@ -4,7 +4,7 @@ import pathlib
 import numpy as np
 
 from dfpl import fingerprint as fp
-from dfpl import options as opts
+from dfpl import convert as opts
 from dfpl import single_label_model as fNN
 
 

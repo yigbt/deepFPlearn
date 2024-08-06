@@ -4,10 +4,11 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 # for testing in Weights & Biases
 from wandb.keras import WandbCallback
 
-from dfpl import options, settings
+from dfpl import settings
+from dfpl.train import TrainOptions
 
 
-def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
+def autoencoder_callback(checkpoint_path: str, opts: TrainOptions) -> list:
     """
     Callbacks for fitting the autoencoder
 
@@ -49,7 +50,7 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
     return callbacks
 
 
-def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
+def nn_callback(checkpoint_path: str, opts: TrainOptions) -> list:
     """
     Callbacks for fitting the feed forward network (FNN)
 

@@ -3,11 +3,11 @@ import pathlib
 
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
-import dfpl.options as opt
+from dfpl.train import TrainOptions
 import dfpl.utils as utils
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_train_args = opt.Options(
+test_train_args = TrainOptions(
     inputFile=utils.makePathAbsolute(f"{project_directory}/data/S_dataset.csv"),
     ecModelDir=utils.makePathAbsolute(f"{project_directory}/data"),
     outputDir=utils.makePathAbsolute(f"{project_directory}/output"),
@@ -26,7 +26,7 @@ test_train_args = opt.Options(
 )
 
 
-def runAutoencoder(opts: opt.Options) -> None:
+def runAutoencoder(opts: TrainOptions) -> None:
     """
     Run and test auto-encoder
     """

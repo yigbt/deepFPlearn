@@ -5,7 +5,7 @@ import pathlib
 import pandas as pd
 from chemprop import args, train
 
-import dfpl.options as opt
+from dfpl.traingnn import GnnOptions
 import dfpl.utils as utils
 
 project_directory = pathlib.Path(__file__).parent.absolute()
@@ -13,13 +13,13 @@ example_directory = (
     project_directory.parent / "example"
 )  # Path to the example directory
 
-test_predict_args = opt.GnnOptions(
+test_predict_args = GnnOptions(
     configFile=utils.makePathAbsolute(f"{example_directory}/predictgnn.json"),
     save_dir=utils.makePathAbsolute(f"{project_directory}/output"),
 )
 
 
-def test_predictdmpnn(opts: opt.GnnOptions) -> None:
+def test_predictdmpnn(opts: GnnOptions) -> None:
     print("Running predictdmpnn test...")
     logging.basicConfig(
         format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
