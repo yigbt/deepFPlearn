@@ -15,7 +15,6 @@ from matplotlib.colors import LinearSegmentedColormap
 # %matplotlib inline
 # for drawing the heatmaps
 import seaborn as sns
-import normalization
 
 # for fingerprint generation
 from rdkit import Chem
@@ -1332,4 +1331,5 @@ def smilesSet2fpSet(csvfilename, outfilename, fptype):
                 writer.writerow({'fp': DataStructs.BitVectToText(fp)})
 
     return
+
 

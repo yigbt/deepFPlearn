@@ -3,11 +3,9 @@ from dataclasses import dataclass
 import jsonpickle
 import argparse
 from pathlib import Path
-import pickle
+
 from dfpl.utils import makePathAbsolute
-import json
-from sklearn.preprocessing import MinMaxScaler
-import pandas as pd
+
 
 @dataclass
 class Options:
@@ -23,8 +21,6 @@ class Options:
     fnnModelDir: str = "modeltraining"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
-    scalerFilePath: str = ""  # dilshana
-
 
     epochs: int = 50
     fpSize: int = 2048
@@ -38,8 +34,6 @@ class Options:
     compressFeatures: bool = True
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
-    normalizeACC: bool = False #dilshana
-
 
     aeEpochs: int = 30
     aeBatchSize: int = 512
@@ -59,7 +53,6 @@ class Options:
     snnWidth = 50
     wabTracking: bool = True  # Wand & Biases tracking
     wabTarget: str = "ARR"  # Wand & Biases target used for showing training progress
-
 
     def saveToFile(self, file: str) -> None:
         """
@@ -262,7 +255,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--lossFunction',
                         metavar="character",
                         type=str,
-                        choices=["mse", "bce"],
+                        choices=["rmse", "mse", "bce"],
                         help="Loss function to use during training. "
                              "mse - mean squared error, bce - binary cross entropy.",
                         default=argparse.SUPPRESS)
@@ -276,11 +269,6 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         metavar="INT",
                         type=int,
                         help="Batch size in FNN training.",
-                        default=argparse.SUPPRESS)
-    parser.add_argument('--normalizeACC', #dilshana
-                        metavar='BOOL',
-                        type=bool,
-                        help='Normalize ACC values using MinMaxScaler',
                         default=argparse.SUPPRESS)
 
     # Specific options for AE training
@@ -297,7 +285,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--aeActivationFunction',
                         metavar="STRING",
                         type=str,
-                        choices=["relu", "tanh", "selu", "elu"],
+                        choices=["relu", "tanh", "selu", "elu", "smht"],
                         help="The activation function for hidden layers in the autoencoder.",
                         default=argparse.SUPPRESS)
     parser.add_argument('--aeLearningRate',
@@ -465,11 +453,6 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                         metavar='DIR',
                         help='The directory where the full model of the fnn is loaded from. '
                              'Provide a full path here.',
-                        default=argparse.SUPPRESS)
-    parser.add_argument("--scalerFilePath",  #dilshana
-                        type=str,
-                        metavar='FILE',
-                        help='Path to the scaler file used for normalization.',
                         default=argparse.SUPPRESS)
 
 

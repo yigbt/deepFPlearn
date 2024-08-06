@@ -303,3 +303,4 @@ if __name__ == '__main__':
             sys.stderr.write("ERROR: the target that you provide (%s) "
                   "is not contained in your data file (%s)" %
                   (target, args.i[0]))
+

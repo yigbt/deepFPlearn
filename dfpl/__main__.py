@@ -1,11 +1,8 @@
-import os
 from argparse import Namespace
 import logging
 import pathlib
 import dataclasses
 from os import path
-
-
 
 from tensorflow import keras
 import wandb
@@ -17,44 +14,31 @@ from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import predictions
 from dfpl import single_label_model as sl
-from dfpl import normalization
-from sklearn.preprocessing import MinMaxScaler
-import pandas as pd
-import pickle
-import jsonpickle
-from pathlib import Path
-import sys
-sys.path.append("/home/shanavas/PycharmProjects/deepFPlearn/dfpl/")
-from normalization import normalize_acc_values, inverse_transform_predictions
-
-wandb.init()
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
-    inputFile=f'{project_directory}/input_datasets/toxcast_regression_AR.csv',
-    outputDir=f'{project_directory}/output_data/console_test',
-    ecWeightsFile=f'{project_directory}/output_data/case_regression_01/AR/ae.encoder.hdf5',
-    ecModelDir=f'{project_directory}/output_data/case_regression_01/AR/saved_model',
-    type='inchi',
+    inputFile=f'{project_directory}/data/input_datasets/tox24_challenge/tox24_challenge_train.csv',
+    outputDir=f'{project_directory}/output/tox24_challenge/',
+    ecModelDir=f'{project_directory}/example/models/generic_encoder/',
+    type='smiles',
     fpType='topological',
-    epochs=100,
-    batchSize=1024,
+    epochs=10,
+    batchSize=47,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
     testSize=0.2,
-    kFolds=1,
+    kFolds=2,
     verbose=2,
     trainAC=False,
     trainFNN=True,
-    compressFeatures=False,
-    activationFunction="selu",
-    lossFunction='mae',
+    compressFeatures=True,
+    activationFunction="tanh",
+    lossFunction='rsme',
     optimizer='Adam',
     fnnType='REG',  # todo: replace useRegressionModel with fnnType variable
-    wabTarget='AR',
-    wabTracking=True,
-    normalizeACC = False #dilshana
+    wabTarget='activity_scaled',
+    wabTracking=True
 )
 
 test_pred_opts = options.Options(
@@ -83,12 +67,8 @@ def train(opts: options.Options):
 
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)  # why? we just created that directory in the function before??
+
     encoder = None
-
-
-
-
-
     if opts.trainAC:
         # train an autoencoder on the full feature matrix
         encoder = ac.train_full_ac(df, opts)
@@ -102,9 +82,6 @@ def train(opts: options.Options):
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
-    if opts.normalizeACC:   #dilshana
-        df, scaler_path = normalize_acc_values(df, column_name='AR', output_dir=opts.outputDir)
-
     if opts.trainFNN:
         # train single label models
         # fNN.train_single_label_models(df=df, opts=opts)
@@ -115,15 +92,13 @@ def train(opts: options.Options):
         fNN.train_nn_models_multi(df=df, opts=opts)
 
 
-#dilshana
-
 def predict(opts: options.Options) -> None:
     """
     Run prediction given specific options
     :param opts: Options defining the details of the prediction
     """
     df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
-
+    # df = fp.importDataFile(opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize)
 
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)
@@ -131,37 +106,17 @@ def predict(opts: options.Options) -> None:
     if opts.compressFeatures:
         # load trained model for autoencoder
         encoder = keras.models.load_model(opts.ecModelDir)
-       # compress the fingerprints using the autoencoder
+        # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
-    logging.info(f"Raw predictions: {df.head()}")
     # predict
-    df2 = predictions.predict_values(df=df, opts=opts)
-    print(df2.head())
-    logging.info(f"Raw predictions: {df2['predicted'].head()}")
-
-
-    if opts.scalerFilePath:
-
-
-        df2['predicted'] = inverse_transform_predictions(df2['predicted'].values, opts.scalerFilePath)
-
-        #normalized_file = os.path.join(opts.outputDir, "normalized_predictions.csv")
-        #logging.info(f"Saving normalized predictions to {normalized_file}")
-        #df2.to_csv(path_or_buf=normalized_file, index=False)
-
-    else:
-        logging.warning("Normalization is enabled but scalerFilePath is not provided in the options. Skipping normalization step.")
-
+    df2 = predictions.predict_values(df=df,
+                                     opts=opts)
 
     names_columns = [c for c in df2.columns if c not in ['fp', 'fpcompressed']]
 
     df2[names_columns].to_csv(path_or_buf=path.join(opts.outputDir, opts.outputFile))
     logging.info(f"Prediction successful. Results written to '{path.join(opts.outputDir, opts.outputFile)}'")
-
-
-
-
 
 
 def createLogger(filename: str) -> None:
