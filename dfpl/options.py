@@ -445,6 +445,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         help="Fraction of the dataset that should be used for testing. Value in [0,1].",
         default=argparse.SUPPRESS,
     )
+    autoencoder_args.add_argument(
+        "--fnnType",
+        type=str,
+        choices=["FNN", "SNN"],
+        help="The type of the feedforward neural network.",
+        default="FNN",
+    )
     training_args.add_argument(
         "-K",
         "--kFolds",
