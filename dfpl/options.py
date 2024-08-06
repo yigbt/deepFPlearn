@@ -338,11 +338,11 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         default=2048,
     )
     general_args.add_argument(
+        "-c",
         "--compressFeatures",
-        metavar="BOOL",
-        type=bool,
+        action="store_true",
+        default=False,
         help="Should the fingerprints be compressed or not. Activates the autoencoder. ",
-        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
         "--enableMultiLabel",
