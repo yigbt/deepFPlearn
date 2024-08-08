@@ -20,14 +20,8 @@ from sklearn.metrics import (
     roc_curve,
 )
 from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
-from tensorflow.keras import metrics, optimizers, regularizers
+from tensorflow.keras import losses, metrics, optimizers, regularizers
 from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
-from tensorflow.keras.losses import (
-    BinaryCrossentropy,
-    BinaryFocalCrossentropy,
-    MeanSquaredError,
-    MeanAbsoluteError
-)
 from tensorflow.keras.models import Model, Sequential
 
 from dfpl import callbacks as cb
@@ -38,7 +32,7 @@ from dfpl.utils import ae_scaffold_split, weight_split
 
 
 def prepare_nn_training_data(
-    df: pd.DataFrame, target: str, opts: options.Options, return_dataframe: bool = False
+        df: pd.DataFrame, target: str, opts: options.Options, return_dataframe: bool = False
 ) -> Union[Tuple[np.ndarray, np.ndarray], pd.DataFrame]:
     # Check the value counts and abort if too imbalanced
     allowed_imbalance = 0.1
@@ -181,7 +175,7 @@ def prepare_nn_training_data(
 
 # This function defines a feedforward neural network (FNN) with the given input size, options, and output bias
 def build_fnn_network(
-    input_size: int, opts: options.Options, output_bias=None
+        input_size: int, opts: options.Options, output_bias=None
 ) -> Model:
     # Set the output bias if it is provided
     if output_bias is not None:
@@ -258,7 +252,7 @@ def build_fnn_network(
 
 # This function defines a shallow neural network (SNN) with the given input size, options, and output bias
 def build_snn_network(
-    input_size: int, opts: options.Options, output_bias=None
+        input_size: int, opts: options.Options, output_bias=None
 ) -> Model:
     # Set the output bias if it is provided
     if output_bias is not None:
@@ -291,6 +285,28 @@ def build_snn_network(
     return model
 
 
+def build_simple_regression_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
+    if output_bias is not None:
+        output_bias = tf.keras.initializers.Constant(output_bias)
+
+    model = Sequential([
+        Dense(round(input_size / 2, ndigits=0), input_dim=input_size, activation=opts.activationFunction,
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Start with a moderate size
+        Dropout(opts.dropout),  # Add dropout for regularization
+        Dense(round(input_size / 4, ndigits=0), activation=opts.activationFunction,
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Reduce the size
+        Dropout(opts.dropout),  # Add dropout
+        Dense(round(input_size / 8, ndigits=0), activation=opts.activationFunction,
+              kernel_regularizer=regularizers.l2(opts.l2reg),
+              kernel_initializer="he_uniform"),  # Further reduce the size
+        Dense(1, activation='linear', bias_initializer=output_bias)  # Output layer for regression
+    ])
+
+    return model
+
+
 def balanced_accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> np.float64:
     """
     Computes the balanced accuracy metric.
@@ -312,7 +328,7 @@ def balanced_accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> np.float64:
 
 
 def define_single_label_model(
-    input_size: int, opts: options.Options, output_bias=None
+        input_size: int, opts: options.Options, output_bias=None
 ) -> Model:
     """
     Defines and compiles the single-label neural network model.
@@ -326,6 +342,8 @@ def define_single_label_model(
         tensorflow.keras.Model: The compiled model.
     """
     # Set the loss function according to the option selected
+
+
 def build_regression_network(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
@@ -378,13 +396,13 @@ def build_regression_network(input_size: int, opts: options.Options, output_bias
 
 def define_single_label_model(input_size: int, opts: options.Options, output_bias=None) -> Model:
     if opts.lossFunction == "bce":
-        loss_function = BinaryCrossentropy()
+        loss_function = losses.BinaryCrossentropy()
     elif opts.lossFunction == "mse":
-        loss_function = MeanSquaredError()
+        loss_function = losses.MeanSquaredError()
     elif opts.lossFunction == 'mae':
-        loss_function = MeanAbsoluteError()
+        loss_function = losses.MeanAbsoluteError()
     elif opts.lossFunction == "focal":
-        loss_function = BinaryFocalCrossentropy()
+        loss_function = losses.BinaryFocalCrossentropy()
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")
@@ -404,7 +422,8 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
     elif opts.fnnType == "SNN":
         model = build_snn_network(input_size, opts, output_bias)
     elif opts.fnnType == "REG":
-        model = build_regression_network(input_size, opts, output_bias)
+        # model = build_regression_network(input_size, opts, output_bias)
+        model = build_simple_regression_network(input_size, opts, output_bias)
     else:
         raise ValueError(f"Option FNN Type is not \"FNN\", \"SNN\", or \"REG\", but {opts.fnnType}.")
     logging.info(f"Network type: {opts.fnnType}")
@@ -412,8 +431,12 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
 
     if opts.fnnType == "REG":
         model.compile(loss=loss_function,
-                      optimizer=my_optimizer  # ,
-                      # metrics=[metrics.MeanAbsoluteError, 'loss', 'val_loss']
+                      optimizer=my_optimizer,
+                      metrics=[
+                          metrics.RootMeanSquaredError(name="rmse"),
+                          metrics.MeanSquaredError(name="mse"),
+                          metrics.MeanAbsoluteError(name="mae")
+                      ]
                       )
     else:
         # Compile the model with the defined options
@@ -474,6 +497,7 @@ def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray, file_prefi
     logging.info(f"Evaluating trained model '{name}' on test data")
 
     y_predict = model.predict(x_test).flatten()
+    pd.DataFrame(y_predict).to_csv(path_or_buf=f"{file_prefix}.y_test_predict.csv")
 
     error = np.array(y_predict) - np.array(y_test)
     abs_error = abs(error)
@@ -665,6 +689,12 @@ def fit_and_evaluate_model(
 
     # Save and plot model history
     pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
+    pd.DataFrame(x_train).to_csv(path_or_buf=f"{model_file_prefix}.x_train.csv")
+    pd.DataFrame(y_train).to_csv(path_or_buf=f"{model_file_prefix}.y_train.csv")
+    pd.DataFrame(x_test).to_csv(path_or_buf=f"{model_file_prefix}.x_test.csv")
+    pd.DataFrame(y_test).to_csv(path_or_buf=f"{model_file_prefix}.y_test.csv")
+
+    # use callback model for evaluation
     pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
     # Evaluate model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
@@ -721,26 +751,18 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     """
 
     # find target columns
-    targets = [
-        c
-        for c in df.columns
-        if c in ["AR", "ER", "ED", "TR", "GR", "PPARg", "Aromatase"]
-    ]
-    # names_y = [c for c in df.columns if c not in
-    #            ['cid', 'ID', 'id', 'mol_id', 'smiles', 'SMILES', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'SMILES', 'fp', 'inchi', 'fpcompressed']]
 
-    if opts.wabTracking and opts.wabTarget != "":
+    if opts.wabTracking:
         # For W&B tracking, we only train one target that's specified as wabTarget "ER".
         # In case it's not there, we use the first one available
-        if opts.wabTarget in targets:
-            targets = [opts.wabTarget]
-        elif opts.wabTarget == "":
-            targets = targets
+        if opts.wabTarget != "" and opts.wabTarget in names_y:
+            names_y = [opts.wabTarget]
         else:
-            logging.error(
-                f"The specified wabTarget for Weights & Biases tracking does not exist: {opts.wabTarget}"
-            )
-            targets = [targets[0]]
+            logging.error(f"The specified wabTarget for Weights & Biases tracking does not exist: {opts.wabTarget}")
+            names_y = [names_y[0]]
+
+    targets = names_y
 
     # Collect metrics for each fold and target
     performance_list = []
@@ -809,7 +831,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     filepath=path.join(opts.outputDir, f"{target}_saved_model")
                 )
 
-            elif 1 < opts.kFolds < 10:  # int(x.shape[0] / 100):
+            elif 1 < opts.kFolds < int(x.shape[0] / 100):
                 # do a kfold cross-validation
                 kfold_c_validator = StratifiedKFold(
                     n_splits=opts.kFolds, shuffle=True, random_state=42
@@ -874,26 +896,35 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     fold_no += 1
 
                 # select and copy best model - how to define the best model?
-                best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
-                    by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
-                )["fold"][0]
-                # rename the fold to best fold
-                src = os.path.join(
-                    opts.outputDir,
-                    f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
-                )
-                dst = os.path.join(
-                    opts.outputDir,
-                    f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
-                )
-                os.rename(src, dst)
+                if opts.fnnType == 'REG':
+                    best_fold = (
+                        pd.concat(
+                            performance_list, ignore_index=True).sort_values(
+                            by=['value'],
+                            ascending=False,
+                            ignore_index=True)['fold'][0]
+                    )
+                else:
+                    best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
+                        by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
+                    )["fold"][0]
+                    # rename the fold to best fold
+                    src = os.path.join(
+                        opts.outputDir,
+                        f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
+                    )
+                    dst = os.path.join(
+                        opts.outputDir,
+                        f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
+                    )
+                    os.rename(src, dst)
 
-                src_dir = os.path.join(
-                    opts.outputDir, f"{target}-{best_fold}_saved_model"
-                )
-                dst_dir = os.path.join(
-                    opts.outputDir, f"{target}-{best_fold}_best_saved_model"
-                )
+                    src_dir = os.path.join(
+                        opts.outputDir, f"{target}-{best_fold}_saved_model"
+                    )
+                    dst_dir = os.path.join(
+                        opts.outputDir, f"{target}-{best_fold}_best_saved_model"
+                    )
 
                 if path.isdir(dst_dir):
                     shutil.rmtree(dst_dir)

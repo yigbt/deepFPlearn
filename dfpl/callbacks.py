@@ -2,7 +2,7 @@
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # for testing in Weights & Biases
-from wandb.keras import WandbCallback
+from wandb.integration.keras import WandbCallback
 
 from dfpl import options, settings
 

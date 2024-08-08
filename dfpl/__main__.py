@@ -10,24 +10,25 @@ import pandas as pd
 import wandb
 from keras.models import load_model
 
+from dfpl.utils import makePathAbsolute, createDirectory
+from dfpl import options
+from dfpl import fingerprint as fp
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
-from dfpl import fingerprint as fp
-from dfpl import options, predictions
+from dfpl import predictions
 from dfpl import single_label_model as sl
 from dfpl import vae as vae
 from dfpl.utils import createArgsFromJson, createDirectory, makePathAbsolute
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
-    inputFile=f"{project_directory}/input_datasets/S_dataset.pkl",
-    outputDir=f"{project_directory}/output_data/console_test",
-    ecWeightsFile=f"{project_directory}/output_data/case_00/AE_S/ae_S.encoder.hdf5",
-    ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
-    type="smiles",
-    fpType="topological",
-    epochs=100,
-    batchSize=1024,
+    inputFile=f'{project_directory}/data/input_datasets/tox24_challenge/tox24_challenge_train.csv',
+    outputDir=f'{project_directory}/output/tox24_challenge/',
+    ecModelDir=f'{project_directory}/example/models/generic_encoder/',
+    type='smiles',
+    fpType='topological',
+    epochs=10,
+    batchSize=47,
     fpSize=2048,
     encFPSize=256,
     enableMultiLabel=False,
@@ -37,10 +38,12 @@ test_train_opts = options.Options(
     trainAC=False,
     trainFNN=True,
     compressFeatures=True,
-    activationFunction="selu",
-    lossFunction="bce",
-    optimizer="Adam",
-    fnnType="FNN",
+    activationFunction="tanh",
+    lossFunction='rsme',
+    optimizer='Adam',
+    fnnType='REG',  # todo: replace useRegressionModel with fnnType variable
+    wabTarget='activity_scaled',
+    wabTracking=True
 )
 
 test_pred_opts = options.Options(
@@ -50,7 +53,7 @@ test_pred_opts = options.Options(
     ecModelDir=f"{project_directory}/output_data/case_00/AE_S/saved_model",
     fnnModelDir=f"{project_directory}/output_data/console_test/ER_saved_model",
     type="smiles",
-    fpType="topological",
+    fpType="topological"
 )
 
 
@@ -129,6 +132,7 @@ def train(opts: options.Options):
     # Create output dir if it doesn't exist
     createDirectory(opts.outputDir)  # why? we just created that directory in the function before??
 
+    encoder = None
     if opts.trainAC:
         if opts.aeType == "deterministic":
             encoder, train_indices, test_indices = ac.train_full_ac(df, opts)
