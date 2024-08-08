@@ -502,13 +502,15 @@ def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray, file_prefi
     error = np.array(y_predict) - np.array(y_test)
     abs_error = abs(error)
 
-    regression_metrics = ['MSE', 'MAE', 'MdAE', 'ACPER', 'MAPE', 'RMSE']
+    regression_metrics = ['MSE', 'MAE', 'MdAE', 'ACPER',
+                          # 'MAPE',
+                          'RMSE']
     metric_values = [
         np.mean(abs_error ** 2, axis=0),
         np.mean(abs_error, axis=0),
         np.median(abs_error, axis=0),
         sum(list(acper(y_true=y_test, y_pred=y_predict, t=threshold))) / len(y_test),
-        np.mean(abs_error / np.array(y_test), axis=0),
+        # np.mean(abs_error / np.array(y_test), axis=0),
         np.sqrt(np.mean(abs_error ** 2, axis=0))
     ]
 
@@ -516,12 +518,12 @@ def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray, file_prefi
 
 
 def evaluate_model(
-    x_test: np.ndarray,
-    y_test: np.ndarray,
-    file_prefix: str,
-    model: Model,
-    target: str,
-    fold: int,
+        x_test: np.ndarray,
+        y_test: np.ndarray,
+        file_prefix: str,
+        model: Model,
+        target: str,
+        fold: int,
 ) -> pd.DataFrame:
     # Log that we're evaluating the model on the test data
     name = path.basename(file_prefix).replace("_", " ")
@@ -630,13 +632,13 @@ def evaluate_model(
 
 
 def fit_and_evaluate_model(
-    x_train: np.ndarray,
-    x_test: np.ndarray,
-    y_train: np.ndarray,
-    y_test: np.ndarray,
-    fold: int,
-    target: str,
-    opts: options.Options,
+        x_train: np.ndarray,
+        x_test: np.ndarray,
+        y_train: np.ndarray,
+        y_test: np.ndarray,
+        fold: int,
+        target: str,
+        opts: options.Options,
 ) -> pd.DataFrame:
     # Print info about training
     logging.info(f"Training of fold number: {fold}")
@@ -653,7 +655,7 @@ def fit_and_evaluate_model(
     count_dict = dict(zip(ids, counts))
 
     # Set initial bias for last sigmoid layer to counter class imbalance
-    if count_dict[0] == 0:
+    if opts.fnnType == 'REG' or count_dict[0] == 0:
         initial_bias = None
         logging.info("No zeroes in training labels. Setting initial_bias to None.")
     else:
@@ -695,28 +697,29 @@ def fit_and_evaluate_model(
     pd.DataFrame(y_test).to_csv(path_or_buf=f"{model_file_prefix}.y_test.csv")
 
     # use callback model for evaluation
-    pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
-    # Evaluate model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)
-    performance = evaluate_model(
-        x_test=x_test,
-        y_test=y_test,
-        file_prefix=model_file_prefix,
-        model=callback_model,
-        target=target,
-        fold=fold,
-    )
+
+    if opts.fnnType == 'REG':
+        pl.plot_loss(hist=hist, file=f"{model_file_prefix}.history.jpg")
+        performance = evaluate_regression_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix,
+                                                model=callback_model,
+                                                target=target, fold=fold)
+
+    else:
+        pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
+        performance = evaluate_model(x_test=x_test, y_test=y_test, file_prefix=model_file_prefix, model=callback_model,
+                                     target=target, fold=fold)
 
     return performance
 
 
 def get_x_y(
-    df: pd.DataFrame,
-    target: str,
-    train_set: pd.DataFrame,
-    test_set: pd.DataFrame,
-    opts: options.Options,
+        df: pd.DataFrame,
+        target: str,
+        train_set: pd.DataFrame,
+        test_set: pd.DataFrame,
+        opts: options.Options,
 ):
     train_indices = train_set.index
     test_indices = test_set.index
@@ -751,7 +754,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     """
 
     # find target columns
-    names_y = [c for c in df.columns if c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'SMILES', 'fp', 'inchi', 'fpcompressed']]
+    names_y = [c for c in df.columns if
+               c not in ['cid', 'ID', 'id', 'mol_id', 'smiles', 'SMILES', 'fp', 'inchi', 'fpcompressed']]
 
     if opts.wabTracking:
         # For W&B tracking, we only train one target that's specified as wabTarget "ER".
@@ -896,6 +900,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     fold_no += 1
 
                 # select and copy best model - how to define the best model?
+                best_fold = 0
                 if opts.fnnType == 'REG':
                     best_fold = (
                         pd.concat(
@@ -908,23 +913,24 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
                         by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
                     )["fold"][0]
-                    # rename the fold to best fold
-                    src = os.path.join(
-                        opts.outputDir,
-                        f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
-                    )
-                    dst = os.path.join(
-                        opts.outputDir,
-                        f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
-                    )
-                    os.rename(src, dst)
 
-                    src_dir = os.path.join(
-                        opts.outputDir, f"{target}-{best_fold}_saved_model"
-                    )
-                    dst_dir = os.path.join(
-                        opts.outputDir, f"{target}-{best_fold}_best_saved_model"
-                    )
+                # rename the fold to best fold
+                src = os.path.join(
+                    opts.outputDir,
+                    f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
+                )
+                dst = os.path.join(
+                    opts.outputDir,
+                    f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
+                )
+                os.rename(src, dst)
+
+                src_dir = os.path.join(
+                    opts.outputDir, f"{target}-{best_fold}_saved_model"
+                )
+                dst_dir = os.path.join(
+                    opts.outputDir, f"{target}-{best_fold}_best_saved_model"
+                )
 
                 if path.isdir(dst_dir):
                     shutil.rmtree(dst_dir)
