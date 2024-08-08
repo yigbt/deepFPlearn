@@ -1,7 +1,7 @@
 # for NN model functions
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 # for testing in Weights & Biases
-from wandb.keras import WandbCallback
+from wandb.integration.keras import WandbCallback
 
 from dfpl import options
 from dfpl import settings

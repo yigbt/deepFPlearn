@@ -91,7 +91,7 @@ class Options:
                     content = f.read()
                     result = jsonpickle.decode(content)
             else:
-                raise ValueError(f"Could not find JSON input file: {jsonFile}")
+                raise ValueError("Could not find JSON input file.")
 
         for key, value in vars(args).items():
             # The args dict will contain a "method" key from the subparser.
