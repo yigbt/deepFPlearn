@@ -98,7 +98,7 @@ for target in dataset.columns[1:7]:
     epochs = [30, 100]
     inits = ['glorot_uniform', 'normal', 'uniform']
     optimizers = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
-    activation_functions = ['sigmoid', 'tanh', 'relu']
+    activation_functions = ['sigmoid', 'tanh', 'relu','smht']
     parameters = {'batch_size': batch_sizes,
                   'epochs': epochs,
                   'optimizer': optimizers,

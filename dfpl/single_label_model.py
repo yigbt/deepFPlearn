@@ -250,6 +250,7 @@ def define_single_label_model(input_size: int, opts: options.Options, output_bia
         loss_function = losses.MeanSquaredError()
     elif opts.lossFunction == 'mae':
         loss_function = losses.MeanAbsoluteError()
+
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")

@@ -16,7 +16,7 @@ def normalize_acc_values(df, column_name='AR', output_dir='.'):
     """
     logging.info("Normalizing ACC values...")
     print("Normalizing ACC values...")
-    scaler = MinMaxScaler(feature_range=(-1, 1))
+    scaler = MinMaxScaler(feature_range=(0, 1))
     acc_values = df[column_name].values.reshape(-1, 1)
     scaled_acc_values = scaler.fit_transform(acc_values)
     df[column_name] = scaled_acc_values
@@ -31,14 +31,15 @@ def normalize_acc_values(df, column_name='AR', output_dir='.'):
     return df, scaler_path
 
 def inverse_transform_predictions(prediction, scaler_path):
-
-
     if os.path.exists(scaler_path):
         logging.info(f"Loading scaler from {scaler_path}")
         with open(scaler_path, "rb") as f:
             scaler = pickle.load(f)
         logging.info("Applying inverse transformation to get pre-normalized values")
+        print(prediction)
         return scaler.inverse_transform(prediction.reshape(-1, 1))
     else:
         logging.warning(f"Scaler file not found at {scaler_path}. Skipping normalization step.")
         return prediction
+
+

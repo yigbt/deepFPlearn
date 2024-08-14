@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "/home/shanavas/PycharmProjects/deepFPlearn/example/data/modified_zscore_dilshana-ar.csv",
-  "outputDir": "/home/shanavas/PycharmProjects/deepFPlearn/example/sweep-results_uncomp",
+  "inputFile": "/home/shanavas/PycharmProjects/deepFPlearn/example/data/regulation_transpcription_m_zscore.csv",
+  "outputDir": "/home/shanavas/PycharmProjects/deepFPlearn/example/sweep-regtransc-uncomp",
   "ecModelDir": "example/models/generic_encoder/",
   "type": "smiles",
   "fpType": "topological",
@@ -12,14 +12,13 @@
   "trainAC": false,
   "trainFNN": true,
   "compressFeatures": false,
-  "kFolds": 3,
+  "kFolds": 1,
   "testSize": 0.2,
   "optimizer": "Adam",
   "batchSize": 128,
   "lossFunction": "mse",
   "epochs": 5000,
-  "activationFunction": "relu",
+  "activationFunction": "tanh",
   "fnnType": "REG",
-  "wabTracking": true,
-  "normalizeACC" : true
+  "wabTracking": true
 }

@@ -24,7 +24,11 @@ parameters:
   learningRate:
     distribution: uniform
     min: 0.00001
-    max: 0.01  
+    max: 0.01
+  batchSize:
+    distribution: int_uniform
+    min: 64
+    max: 1024
   wabTarget:
     value: AR
 

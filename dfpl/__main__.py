@@ -3,7 +3,9 @@ import logging
 import pathlib
 import dataclasses
 from os import path
-
+import sys
+import os
+import pickle
 from tensorflow import keras
 import wandb
 
@@ -14,6 +16,8 @@ from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import predictions
 from dfpl import single_label_model as sl
+sys.path.append("/home/shanavas/PycharmProjects/deepFPlearn/dfpl/")
+from dfpl.normalization import normalize_acc_values, inverse_transform_predictions #Dilshana
 
 project_directory = pathlib.Path(".").parent.parent.absolute()
 test_train_opts = options.Options(
@@ -34,7 +38,7 @@ test_train_opts = options.Options(
     trainFNN=True,
     compressFeatures=True,
     activationFunction="tanh",
-    lossFunction='rsme',
+    lossFunction='rmse',
     optimizer='Adam',
     fnnType='REG',  # todo: replace useRegressionModel with fnnType variable
     wabTarget='activity_scaled',
@@ -82,6 +86,9 @@ def train(opts: options.Options):
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
+    #if opts.normalize:
+    #    df, scaler_path = normalize_acc_values(df, column_name='AR', output_dir=opts.outputDir)
+
     if opts.trainFNN:
         # train single label models
         # fNN.train_single_label_models(df=df, opts=opts)
@@ -110,9 +117,24 @@ def predict(opts: options.Options) -> None:
         df = ac.compress_fingerprints(df, encoder)
 
     # predict
-    df2 = predictions.predict_values(df=df,
-                                     opts=opts)
+    df2 = predictions.predict_values(df=df,opts=opts)
 
+    scaler_path = None
+   # if opts.scalerFilePath:
+    #    scaler_path = opts.scalerFilePath
+     #   if os.path.exists(scaler_path):
+     #       logging.info(f"Loading scaler from {scaler_path}")
+      #      with open(scaler_path, "rb") as f:
+      #          scaler = pickle.load(f)
+       #     logging.info("Applying inverse transformation to get pre-normalized values")
+       #     df2['predicted'] = scaler.inverse_transform(df2['predicted'].values.reshape(-1, 1))
+      #      normalized_file = os.path.join(opts.outputDir, "normalized_predictions.csv")
+        #    logging.info(f"Saving normalized predictions to {normalized_file}")
+       #     df2.to_csv(path_or_buf=normalized_file, index=False)
+       # else:
+        #    logging.warning(f"Scaler file not found at {scaler_path}. Skipping normalization step.")
+   # else:
+    #    logging.warning("Normalization is enabled but scalerFilePath is not provided in the options. Skipping normalization step.")
     names_columns = [c for c in df2.columns if c not in ['fp', 'fpcompressed']]
 
     df2[names_columns].to_csv(path_or_buf=path.join(opts.outputDir, opts.outputFile))

@@ -21,6 +21,7 @@ class Options:
     fnnModelDir: str = "modeltraining"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
+    scalerFilePath: str = ""  # dilshana
 
     epochs: int = 50
     fpSize: int = 2048
@@ -34,6 +35,7 @@ class Options:
     compressFeatures: bool = True
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
+    normalize: bool = False #dilshana
 
     aeEpochs: int = 30
     aeBatchSize: int = 512
@@ -270,6 +272,11 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
                         type=int,
                         help="Batch size in FNN training.",
                         default=argparse.SUPPRESS)
+    parser.add_argument('--normalize', #dilshana
+                        metavar='BOOL',
+                        type=bool,
+                        help='Normalize ACC values using MinMaxScaler',
+                        default=argparse.SUPPRESS)
 
     # Specific options for AE training
     parser.add_argument('--aeEpochs',
@@ -307,7 +314,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--activationFunction',
                         metavar="character",
                         type=str,
-                        choices=["relu", "tanh", "selu", "elu", "exponential"],
+                        choices=["relu", "tanh", "selu", "elu", "exponential","smht"],
                         help="The activation function for hidden layers in the FNN.",
                         default=argparse.SUPPRESS)
     parser.add_argument('--l2reg',
@@ -453,6 +460,11 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
                         metavar='DIR',
                         help='The directory where the full model of the fnn is loaded from. '
                              'Provide a full path here.',
+                        default=argparse.SUPPRESS)
+    parser.add_argument("--scalerFilePath",  #dilshana
+                        type=str,
+                        metavar='FILE',
+                        help='Path to the scaler file used for normalization.',
                         default=argparse.SUPPRESS)
 
 
