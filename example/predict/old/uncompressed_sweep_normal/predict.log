@@ -1,0 +1,18 @@
+2024-07-31 11:01:20,610 - root - INFO - The following arguments are received or filled with default values:
+Namespace(method='predict', configFile='/home/shanavas/PycharmProjects/deepFPlearn/example/predict_dilshana_compressed_sweep_normalisation.json')
+2024-07-31 11:01:21,249 - root - INFO - Raw predictions:                                               smiles          AR                                                 fp
+0                [Cl-].CCCCCCCCCCCCCCCCCC[N+](C)(C)C   17.396459  [False, False, False, False, False, False, Fal...
+1  [H][C@@]12CC[C@](OC(C)=O)(C(C)=O)[C@@]1(C)CC[C...    0.001301  [False, False, False, False, False, False, Fal...
+2  [H][C@@]12CC[C@@](O)(C#C)[C@@]1(CC)CC[C@]1([H]...    0.255778  [False, False, False, False, False, False, Fal...
+3  [O-][N+](=O)C1=CC(=C(Cl)C(=C1Cl)[N+]([O-])=O)C...   40.037183  [False, False, False, False, False, False, Fal...
+4                CC1=CC(=C(O)C(=C1)C(C)(C)C)C(C)(C)C  192.904040  [False, False, False, False, True, False, Fals...
+2024-07-31 11:01:21,613 - root - INFO - Uncompressed FP matrix with shape (4129, 2048) and type float32
+2024-07-31 11:01:22,642 - root - INFO - Raw predictions: 0   -0.098124
+1   -0.118691
+2   -0.116881
+3   -0.104263
+4   -0.103582
+Name: predicted, dtype: float32
+2024-07-31 11:01:22,642 - root - INFO - Loading scaler from /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/sweep/sweep_uncompressed_AR_np/scaler.pkl
+2024-07-31 11:01:22,642 - root - INFO - Applying inverse transformation to get pre-normalized values
+2024-07-31 11:01:22,669 - root - INFO - Prediction successful. Results written to '/home/shanavas/PycharmProjects/deepFPlearn/example/predict/uncompressed_sweep_normal/predict_data_AR.csv'

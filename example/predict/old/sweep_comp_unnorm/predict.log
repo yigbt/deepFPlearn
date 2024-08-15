@@ -1,0 +1,9 @@
+2024-07-30 10:49:42,665 - root - INFO - The following arguments are received or filled with default values:
+Namespace(method='predict', configFile='/home/shanavas/PycharmProjects/deepFPlearn/example/predict_dilshana_compressed_sweep.json')
+2024-07-30 10:49:43,431 - tensorflow - WARNING - No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2024-07-30 10:49:43,431 - root - INFO - Adding compressed fingerprints
+2024-07-30 10:49:43,438 - root - INFO - Using input matrix of shape (4129, 2048) with type bool
+2024-07-30 10:49:43,438 - root - INFO - Compressed fingerprints are added to input dataframe.
+2024-07-30 10:49:45,100 - root - INFO - Compressed FP matrix with shape (4129, 256) and type float32
+2024-07-30 10:49:45,361 - root - WARNING - Normalization is enabled but scalerFilePath is not provided in the options. Skipping normalization step.
+2024-07-30 10:49:45,386 - root - INFO - Prediction successful. Results written to '/home/shanavas/PycharmProjects/deepFPlearn/example/predict/sweep_comp_unnorm/predict_data_AR.csv'

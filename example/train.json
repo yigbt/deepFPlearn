@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "tests/data/S_dataset.csv",
-  "outputDir": "example/results_train/",
+  "inputFile": "tests/data/S_dataset.csv",data_path
+  "outputDir": "example/results_train/",save_dir
   "ecModelDir": "example/results_train/",
   "ecWeightsFile": "random_autoencoder.hdf5",
   "verbose": 2,

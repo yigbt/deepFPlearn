@@ -1,0 +1,4 @@
+2024-07-25 12:47:29,051 - root - INFO - The following arguments are received or filled with default values:
+Namespace(method='predict', configFile='/home/shanavas/PycharmProjects/deepFPlearn/example/predict_dilshana_uncompressed_sweep.json')
+2024-07-25 12:47:29,997 - root - INFO - Uncompressed FP matrix with shape (4129, 2048) and type float32
+2024-07-25 12:47:30,943 - root - INFO - Prediction successful. Results written to '/home/shanavas/PycharmProjects/deepFPlearn/example/predict/results_predict_uncompressed_sweep_1/predict_data_AR_uncompressed_sweep.csv'

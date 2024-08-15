@@ -1,0 +1,5 @@
+[default]
+entity = dilshana-ufz
+project = sweeps_demo_6
+base_url = https://api.wandb.ai
+

@@ -1,0 +1,14 @@
+wandb_version: 1
+
+activationFunction:
+  value: selu
+batchSize:
+  value: 735
+dropout:
+  value: 0.02002433738529098
+l2reg:
+  value: 0.03909862251072986
+learningRate:
+  value: 0.006979267100560345
+wabTarget:
+  value: AR

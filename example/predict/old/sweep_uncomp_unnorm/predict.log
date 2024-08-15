@@ -1,0 +1,5 @@
+2024-07-30 10:51:39,979 - root - INFO - The following arguments are received or filled with default values:
+Namespace(method='predict', configFile='/home/shanavas/PycharmProjects/deepFPlearn/example/predict_dilshana_uncompressed_sweep.json')
+2024-07-30 10:51:41,045 - root - INFO - Uncompressed FP matrix with shape (4129, 2048) and type float32
+2024-07-30 10:51:42,284 - root - WARNING - Normalization is enabled but scalerFilePath is not provided in the options. Skipping normalization step.
+2024-07-30 10:51:42,310 - root - INFO - Prediction successful. Results written to '/home/shanavas/PycharmProjects/deepFPlearn/example/predict/sweep_uncomp_unnorm/predict_data_AR.csv'

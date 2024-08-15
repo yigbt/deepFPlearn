@@ -1,0 +1,8 @@
+2024-07-16 16:21:44,642 - root - INFO - The following arguments are received or filled with default values:
+Namespace(method='predict', configFile='/home/shanavas/PycharmProjects/deepFPlearn/example/predict_dilshana_compressed.json')
+2024-07-16 16:21:45,189 - tensorflow - WARNING - No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2024-07-16 16:21:45,190 - root - INFO - Adding compressed fingerprints
+2024-07-16 16:21:45,195 - root - INFO - Using input matrix of shape (4128, 2048) with type bool
+2024-07-16 16:21:45,196 - root - INFO - Compressed fingerprints are added to input dataframe.
+2024-07-16 16:21:46,309 - root - INFO - Compressed FP matrix with shape (4128, 256) and type float32
+2024-07-16 16:21:46,486 - root - INFO - Prediction successful. Results written to '/home/shanavas/PycharmProjects/deepFPlearn/example/results_predict_compressed/predict_data_AR.csv'

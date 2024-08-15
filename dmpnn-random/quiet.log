@@ -1,0 +1,40 @@
+Fold 0
+Model 0 best validation accuracy = 0.845552 on epoch 1
+Model 0 test true_positives = 14.714286
+Model 0 test false_positives = 9.571429
+Model 0 test true_negatives = 487.714286
+Model 0 test false_negatives = 86.000000
+Model 0 test accuracy = 0.845786
+Model 0 test balanced_accuracy = 0.530612
+Model 0 test auc = 0.757105
+Model 0 test f1 = 0.120522
+Model 0 test mcc = 0.097442
+Model 0 test recall = 0.081186
+Model 0 test specificity = 0.980038
+Model 0 test precision = 0.284581
+Ensemble test true_positives = 14.714286
+Ensemble test false_positives = 9.571429
+Ensemble test true_negatives = 487.714286
+Ensemble test false_negatives = 86.000000
+Ensemble test accuracy = 0.845786
+Ensemble test balanced_accuracy = 0.530612
+Ensemble test auc = 0.757105
+Ensemble test f1 = 0.120522
+Ensemble test mcc = 0.097442
+Ensemble test recall = 0.081186
+Ensemble test specificity = 0.980038
+Ensemble test precision = 0.284581
+Fold 1
+Fold 0
+Model 0 best validation rmse = 29.867419 on epoch 1
+Model 0 test true_positives = 0.000000
+Model 0 test false_positives = 0.000000
+Model 0 test true_negatives = 0.000000
+Model 0 test false_negatives = 0.000000
+Model 0 test rmse = 30.719911
+Ensemble test true_positives = 0.000000
+Ensemble test false_positives = 0.000000
+Ensemble test true_negatives = 0.000000
+Ensemble test false_negatives = 0.000000
+Ensemble test rmse = 30.719911
+Fold 1

@@ -1,0 +1,14 @@
+wandb_version: 1
+
+activationFunction:
+  value: relu
+batchSize:
+  value: 596
+dropout:
+  value: 0.4693367347366872
+l2reg:
+  value: 0.08698144055738201
+learningRate:
+  value: 0.008632907210186797
+wabTarget:
+  value: AR

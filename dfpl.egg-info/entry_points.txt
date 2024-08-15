@@ -1,0 +1,3 @@
+[console_scripts]
+dfpl = dfpl.__main__:main
+

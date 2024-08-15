@@ -1,0 +1,10 @@
+wandb_version: 1
+
+batchSize:
+  value: 782
+dropout:
+  value: 0.3784807617339607
+l2reg:
+  value: 0.01566781549762414
+learningRate:
+  value: 0.00895473319427349
