@@ -65,6 +65,10 @@ def traindmpnn(opts: options.GnnOptions):
     Returns:
     - None
     """
+    if opts.wabTracking:
+        wandb.init(project=f"dfpl-reg-training-{opts.wabTarget}", entity="dfpl_regression", config=vars(opts))
+        # opts = wandb.config
+
     os.environ["CUDA_VISIBLE_DEVICES"] = f"{opts.gpu}"
     ignore_elements = ["py/object"]
     # Load options from a JSON file and replace the relevant attributes in `opts`

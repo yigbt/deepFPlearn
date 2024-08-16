@@ -1,0 +1,25 @@
+program: dfpl
+command:
+  - ${env}
+  - "/home/shanavas/miniforge3/envs/dfpl_env/bin/python"
+  - "-m"  
+  -  ${program} 
+  -  "traingnn" 
+  -  "-f" 
+  -  "/home/shanavas/PycharmProjects/deepFPlearn/train_sweep.json"
+  -  ${args}
+method: random
+metric:
+  name: loss_function
+  goal: minimize
+parameters:
+  dropout:
+    distribution: uniform
+    min: 0.00001
+    max: 0.5
+  batch_size:
+    distribution: int_uniform
+    min: 64
+    max: 1024
+
+

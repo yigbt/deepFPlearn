@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "data_path": "example/data/modified_zscore_dilshana-ar.csv",
-  "save_dir": "dmpnn-random_1/",
+  "data_path": "example/data/tox24/tox24_challenge_train_scaled.csv",
+  "save_dir": "dmpnn-tox24/",
   "epochs": 100,
   "num_folds": 5,
   "metric": "rmse",
@@ -10,7 +10,7 @@
   "activation"  : "tanh",
   "dataset_type": "regression",
   "smiles_columns": "smiles",
-  "dropout" : 0.0107,
-  "batch_size" : 128,
+  "dropout" : 0.09843302295577128,
+  "batch_size" : 302,
   "hidden_size": 256
 }

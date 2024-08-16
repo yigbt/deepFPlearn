@@ -1,0 +1,19 @@
+{
+  "py/object": "dfpl.options.GnnOptions",
+  "data_path": "example/data/modified_zscore_dilshana-ar.csv",
+  "save_dir": "dmpnn-sweep/",
+  "epochs": 100,
+  "num_folds": 1,
+  "metric": "rmse",
+  "loss_function": "mse",
+  "split_type": "scaffold_balanced",
+  "activation"  : "tanh",
+  "dataset_type": "regression",
+  "smiles_columns": "smiles",
+  "dropout" : 0.0107,
+  "batch_size" : 128,
+  "hidden_size": 256,
+  "wabTracking": true,
+  "wabTarget" : "AR"
+}
+

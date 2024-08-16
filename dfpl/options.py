@@ -135,6 +135,8 @@ class GnnOptions(TrainArgs):
     preds_path: str = "./tox21dmpnn.csv"
     test_path: str = ""
     save_preds: bool = True
+    wabTracking : bool = True,
+    wabTarget : str = ""
 
     @classmethod
     def fromCmdArgs(cls, args: argparse.Namespace) -> GnnOptions:
@@ -537,7 +539,7 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     files_args = parser.add_argument_group("Files")
     model_args = parser.add_argument_group("Model arguments")
     training_args = parser.add_argument_group("Training Configuration")
-
+    tracking_args = parser.add_argument_group("wandb tracking")
     # General arguments
     general_args.add_argument("--split_key_molecule", type=int)
     general_args.add_argument("--pytorch_seed", type=int)
@@ -1035,7 +1037,21 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         default=1,
         help="Number of folds when performing cross validation",
     )
-
+    tracking_args.add_argument(
+        "--wabTracking",
+        metavar="BOOL",
+        type=bool,
+        help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
+        default=argparse.SUPPRESS,
+    )
+    tracking_args.add_argument(
+        "--wabTarget",
+        metavar="STRING",
+        type=str,
+        choices=["AR", "ER", "ED", "GR", "TR", "PPARg", "Aromatase"],
+        help="Which target to use for tracking performance via Weights & Biases, see https://wandb.ai.",
+        default=argparse.SUPPRESS,
+    )
 
 def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     """

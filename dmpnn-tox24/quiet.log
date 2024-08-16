@@ -1,0 +1,92 @@
+Fold 0
+Model 0 best validation rmse = 0.174614 on epoch 70
+Model 0 test true_positives = 0.000000
+Model 0 test false_positives = 0.000000
+Model 0 test true_negatives = 0.000000
+Model 0 test false_negatives = 0.000000
+Model 0 test rmse = 0.184711
+Ensemble test true_positives = 0.000000
+Ensemble test false_positives = 0.000000
+Ensemble test true_negatives = 0.000000
+Ensemble test false_negatives = 0.000000
+Ensemble test rmse = 0.184711
+Fold 1
+Model 0 best validation rmse = 0.159728 on epoch 82
+Model 0 test true_positives = 0.000000
+Model 0 test false_positives = 0.000000
+Model 0 test true_negatives = 0.000000
+Model 0 test false_negatives = 0.000000
+Model 0 test rmse = 0.176377
+Ensemble test true_positives = 0.000000
+Ensemble test false_positives = 0.000000
+Ensemble test true_negatives = 0.000000
+Ensemble test false_negatives = 0.000000
+Ensemble test rmse = 0.176377
+Fold 2
+Model 0 best validation rmse = 0.194697 on epoch 58
+Model 0 test true_positives = 0.000000
+Model 0 test false_positives = 0.000000
+Model 0 test true_negatives = 0.000000
+Model 0 test false_negatives = 0.000000
+Model 0 test rmse = 0.188601
+Ensemble test true_positives = 0.000000
+Ensemble test false_positives = 0.000000
+Ensemble test true_negatives = 0.000000
+Ensemble test false_negatives = 0.000000
+Ensemble test rmse = 0.188601
+Fold 3
+Model 0 best validation rmse = 0.188705 on epoch 96
+Model 0 test true_positives = 0.000000
+Model 0 test false_positives = 0.000000
+Model 0 test true_negatives = 0.000000
+Model 0 test false_negatives = 0.000000
+Model 0 test rmse = 0.183324
+Ensemble test true_positives = 0.000000
+Ensemble test false_positives = 0.000000
+Ensemble test true_negatives = 0.000000
+Ensemble test false_negatives = 0.000000
+Ensemble test rmse = 0.183324
+Fold 4
+Model 0 best validation rmse = 0.188051 on epoch 10
+Model 0 test true_positives = 0.000000
+Model 0 test false_positives = 0.000000
+Model 0 test true_negatives = 0.000000
+Model 0 test false_negatives = 0.000000
+Model 0 test rmse = 0.211139
+Ensemble test true_positives = 0.000000
+Ensemble test false_positives = 0.000000
+Ensemble test true_negatives = 0.000000
+Ensemble test false_negatives = 0.000000
+Ensemble test rmse = 0.211139
+5-fold cross validation
+	Seed 0 ==> test true_positives = 0.000000
+	Seed 0 ==> test false_positives = 0.000000
+	Seed 0 ==> test true_negatives = 0.000000
+	Seed 0 ==> test false_negatives = 0.000000
+	Seed 0 ==> test rmse = 0.184711
+	Seed 1 ==> test true_positives = 0.000000
+	Seed 1 ==> test false_positives = 0.000000
+	Seed 1 ==> test true_negatives = 0.000000
+	Seed 1 ==> test false_negatives = 0.000000
+	Seed 1 ==> test rmse = 0.176377
+	Seed 2 ==> test true_positives = 0.000000
+	Seed 2 ==> test false_positives = 0.000000
+	Seed 2 ==> test true_negatives = 0.000000
+	Seed 2 ==> test false_negatives = 0.000000
+	Seed 2 ==> test rmse = 0.188601
+	Seed 3 ==> test true_positives = 0.000000
+	Seed 3 ==> test false_positives = 0.000000
+	Seed 3 ==> test true_negatives = 0.000000
+	Seed 3 ==> test false_negatives = 0.000000
+	Seed 3 ==> test rmse = 0.183324
+	Seed 4 ==> test true_positives = 0.000000
+	Seed 4 ==> test false_positives = 0.000000
+	Seed 4 ==> test true_negatives = 0.000000
+	Seed 4 ==> test false_negatives = 0.000000
+	Seed 4 ==> test rmse = 0.211139
+Overall test true_positives = 0.000000 +/- 0.000000
+Overall test false_positives = 0.000000 +/- 0.000000
+Overall test true_negatives = 0.000000 +/- 0.000000
+Overall test false_negatives = 0.000000 +/- 0.000000
+Overall test rmse = 0.188830 +/- 0.011833
+Elapsed time = 0:10:45

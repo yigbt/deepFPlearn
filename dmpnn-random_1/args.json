@@ -12,7 +12,7 @@
     "atom_features_size": 0,
     "atom_messages": false,
     "atom_targets": [],
-    "batch_size": 128,
+    "batch_size": 302,
     "bias": false,
     "bias_solvent": false,
     "bond_constraints": [],
@@ -44,7 +44,7 @@
         "_type": "python_object (type = device)",
         "_value": "gASVHgAAAAAAAACMBXRvcmNolIwGZGV2aWNllJOUjANjcHWUhZRSlC4="
     },
-    "dropout": 0.0107,
+    "dropout": 0.09843302295577128,
     "dynamic_depth": null,
     "empty_cache": false,
     "ensemble_size": 1,
@@ -106,8 +106,8 @@
         "command_line": "python /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py traingnn -f /home/shanavas/PycharmProjects/deepFPlearn/example/traingnn.json",
         "git_has_uncommitted_changes": true,
         "git_root": "/home/shanavas/PycharmProjects/deepFPlearn",
-        "git_url": "https://github.com/yigbt/deepFPl/tree/1dd1f274a4d01753626e86d2a23cb45664446c30",
-        "time": "Thu Aug 15 13:29:20 2024"
+        "git_url": "https://github.com/yigbt/deepFPl/tree/5a7837cfdc1fdca5e547b306d4882a4528ffcaff",
+        "time": "Thu Aug 15 17:27:07 2024"
     },
     "resume_experiment": false,
     "save_dir": "dmpnn-random_1/",
