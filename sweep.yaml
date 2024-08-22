@@ -15,19 +15,19 @@ metric:
 parameters:
   dropout:
     distribution: uniform
-    min: 0.00001
-    max: 0.5
+    min: 0.01
+    max: 0.3
   l2reg:
     distribution: uniform
-    min: 0.00001
-    max: 0.1
+    min: 0.0001
+    max: 0.001
   learningRate:
     distribution: uniform
-    min: 0.00001
+    min: 0.0001
     max: 0.01
   batchSize:
     distribution: int_uniform
-    min: 64
+    min: 32
     max: 1024
   wabTarget:
     value: AR

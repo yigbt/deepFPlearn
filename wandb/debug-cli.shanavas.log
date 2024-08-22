@@ -24067,3 +24067,2522 @@ PermissionError: [Errno 13] Permission denied: '/home/shanavas/miniforge3/envs/d
 	wabTarget: AR
 2024-08-13 15:35:35 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=774 --dropout=0.2039080018102739 --l2reg=0.07723134175679457 --learningRate=0.0007641536094661046 --wabTarget=AR
 2024-08-13 15:35:40 INFO Running runs: ['r8ztpwqv']
+2024-08-20 16:38:29 INFO Running runs: []
+2024-08-20 16:38:30 INFO Agent received command: run
+2024-08-20 16:38:30 INFO Agent starting run with config:
+	batchSize: 433
+	dropout: 0.18227293362994337
+	l2reg: 0.08111387005788635
+	learningRate: 0.008256445512505985
+	wabTarget: AR
+2024-08-20 16:38:30 INFO About to run command: /bin/bash -c "source /home/shanavas/miniforge3/bin/activate /home/shanavas/miniforge3/envs/dfpl_env" /home/shanavas/miniforge3/envs/dfpl_env/bin/python /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=433 --dropout=0.18227293362994337 --l2reg=0.08111387005788635 --learningRate=0.008256445512505985 --wabTarget=AR
+2024-08-20 16:38:35 INFO Running runs: ['zhlr5lfx']
+2024-08-20 16:38:35 INFO Cleaning up finished run: zhlr5lfx
+2024-08-20 16:38:36 INFO Agent received command: run
+2024-08-20 16:38:36 INFO Agent starting run with config:
+	batchSize: 137
+	dropout: 0.23500935216148877
+	l2reg: 0.09261359696254134
+	learningRate: 0.0053185878924998835
+	wabTarget: AR
+2024-08-20 16:38:36 INFO About to run command: /bin/bash -c "source /home/shanavas/miniforge3/bin/activate /home/shanavas/miniforge3/envs/dfpl_env" /home/shanavas/miniforge3/envs/dfpl_env/bin/python /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=137 --dropout=0.23500935216148877 --l2reg=0.09261359696254134 --learningRate=0.0053185878924998835 --wabTarget=AR
+2024-08-20 16:38:41 INFO Running runs: ['1de54f8d']
+2024-08-20 16:38:41 INFO Cleaning up finished run: 1de54f8d
+2024-08-20 16:38:41 INFO Agent received command: run
+2024-08-20 16:38:41 INFO Agent starting run with config:
+	batchSize: 200
+	dropout: 0.29360066854550965
+	l2reg: 0.0196472395589386
+	learningRate: 0.002075617586513921
+	wabTarget: AR
+2024-08-20 16:38:41 INFO About to run command: /bin/bash -c "source /home/shanavas/miniforge3/bin/activate /home/shanavas/miniforge3/envs/dfpl_env" /home/shanavas/miniforge3/envs/dfpl_env/bin/python /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=200 --dropout=0.29360066854550965 --l2reg=0.0196472395589386 --learningRate=0.002075617586513921 --wabTarget=AR
+2024-08-20 16:38:46 INFO Running runs: ['e5ao72dm']
+2024-08-20 16:38:46 INFO Cleaning up finished run: e5ao72dm
+2024-08-20 16:38:47 INFO Agent received command: run
+2024-08-20 16:38:47 INFO Agent starting run with config:
+	batchSize: 78
+	dropout: 0.21285908630281752
+	l2reg: 0.034475373400642315
+	learningRate: 0.00894268553073377
+	wabTarget: AR
+2024-08-20 16:38:47 INFO About to run command: /bin/bash -c "source /home/shanavas/miniforge3/bin/activate /home/shanavas/miniforge3/envs/dfpl_env" /home/shanavas/miniforge3/envs/dfpl_env/bin/python /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=78 --dropout=0.21285908630281752 --l2reg=0.034475373400642315 --learningRate=0.00894268553073377 --wabTarget=AR
+2024-08-20 16:38:52 INFO Running runs: ['brhu3fjj']
+2024-08-20 16:38:52 INFO Cleaning up finished run: brhu3fjj
+2024-08-20 16:38:52 INFO Agent received command: run
+2024-08-20 16:38:52 INFO Agent starting run with config:
+	batchSize: 1094
+	dropout: 0.2969977515136904
+	l2reg: 0.06741613602718989
+	learningRate: 0.008423896575249602
+	wabTarget: AR
+2024-08-20 16:38:52 INFO About to run command: /bin/bash -c "source /home/shanavas/miniforge3/bin/activate /home/shanavas/miniforge3/envs/dfpl_env" /home/shanavas/miniforge3/envs/dfpl_env/bin/python /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=1094 --dropout=0.2969977515136904 --l2reg=0.06741613602718989 --learningRate=0.008423896575249602 --wabTarget=AR
+2024-08-20 16:38:57 INFO Running runs: ['yfcdduhq']
+2024-08-20 16:38:57 INFO Cleaning up finished run: yfcdduhq
+2024-08-20 16:38:58 INFO Agent received command: run
+2024-08-20 16:38:58 INFO Agent starting run with config:
+	batchSize: 1311
+	dropout: 0.2995843373639419
+	l2reg: 0.020690378150619144
+	learningRate: 0.007066630904002852
+	wabTarget: AR
+2024-08-20 16:38:58 INFO About to run command: /bin/bash -c "source /home/shanavas/miniforge3/bin/activate /home/shanavas/miniforge3/envs/dfpl_env" /home/shanavas/miniforge3/envs/dfpl_env/bin/python /home/shanavas/PycharmProjects/deepFPlearn/dfpl/__main__.py train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=1311 --dropout=0.2995843373639419 --l2reg=0.020690378150619144 --learningRate=0.007066630904002852 --wabTarget=AR
+2024-08-21 09:38:07 INFO Running runs: []
+2024-08-21 09:38:08 INFO Agent received command: run
+2024-08-21 09:38:08 INFO Agent starting run with config:
+	batchSize: 423
+	dropout: 0.15451822916485547
+	l2reg: 0.06412284258309923
+	learningRate: 0.004472988401801359
+	wabTarget: AR
+2024-08-21 09:38:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=423 --dropout=0.15451822916485547 --l2reg=0.06412284258309923 --learningRate=0.004472988401801359 --wabTarget=AR
+2024-08-21 09:38:13 INFO Running runs: ['tnuq64et']
+2024-08-21 09:39:05 INFO Cleaning up finished run: tnuq64et
+2024-08-21 09:39:05 INFO Agent received command: run
+2024-08-21 09:39:05 INFO Agent starting run with config:
+	batchSize: 151
+	dropout: 0.18576164277806423
+	l2reg: 0.04094043153874491
+	learningRate: 0.0042832735924930605
+	wabTarget: AR
+2024-08-21 09:39:05 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=151 --dropout=0.18576164277806423 --l2reg=0.04094043153874491 --learningRate=0.0042832735924930605 --wabTarget=AR
+2024-08-21 09:39:10 INFO Running runs: ['msw7al6d']
+2024-08-21 09:40:13 INFO Cleaning up finished run: msw7al6d
+2024-08-21 09:40:13 INFO Agent received command: run
+2024-08-21 09:40:13 INFO Agent starting run with config:
+	batchSize: 164
+	dropout: 0.03416732539602193
+	l2reg: 0.06627505500383744
+	learningRate: 0.005449621356820794
+	wabTarget: AR
+2024-08-21 09:40:13 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=164 --dropout=0.03416732539602193 --l2reg=0.06627505500383744 --learningRate=0.005449621356820794 --wabTarget=AR
+2024-08-21 09:40:18 INFO Running runs: ['0isqwq6z']
+2024-08-21 09:41:31 INFO Cleaning up finished run: 0isqwq6z
+2024-08-21 09:41:31 INFO Agent received command: run
+2024-08-21 09:41:31 INFO Agent starting run with config:
+	batchSize: 885
+	dropout: 0.4157080157775332
+	l2reg: 0.028433160515086976
+	learningRate: 0.002305299827906841
+	wabTarget: AR
+2024-08-21 09:41:31 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=885 --dropout=0.4157080157775332 --l2reg=0.028433160515086976 --learningRate=0.002305299827906841 --wabTarget=AR
+2024-08-21 09:41:36 INFO Running runs: ['bpkli26r']
+2024-08-21 09:42:49 INFO Cleaning up finished run: bpkli26r
+2024-08-21 09:42:49 INFO Agent received command: run
+2024-08-21 09:42:49 INFO Agent starting run with config:
+	batchSize: 736
+	dropout: 0.4816078090837927
+	l2reg: 0.03292205725177118
+	learningRate: 0.00069872085660792
+	wabTarget: AR
+2024-08-21 09:42:49 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=736 --dropout=0.4816078090837927 --l2reg=0.03292205725177118 --learningRate=0.00069872085660792 --wabTarget=AR
+2024-08-21 09:42:54 INFO Running runs: ['07hqiqy4']
+2024-08-21 09:44:02 INFO Cleaning up finished run: 07hqiqy4
+2024-08-21 09:44:02 INFO Agent received command: run
+2024-08-21 09:44:02 INFO Agent starting run with config:
+	batchSize: 552
+	dropout: 0.14168617164314898
+	l2reg: 0.003274609835482975
+	learningRate: 0.0025709836666553848
+	wabTarget: AR
+2024-08-21 09:44:02 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=552 --dropout=0.14168617164314898 --l2reg=0.003274609835482975 --learningRate=0.0025709836666553848 --wabTarget=AR
+2024-08-21 09:44:07 INFO Running runs: ['6hnyp59h']
+2024-08-21 09:46:38 INFO Cleaning up finished run: 6hnyp59h
+2024-08-21 09:46:38 INFO Agent received command: run
+2024-08-21 09:46:38 INFO Agent starting run with config:
+	batchSize: 573
+	dropout: 0.40059794542464
+	l2reg: 0.07608973141775276
+	learningRate: 0.0004522146590899999
+	wabTarget: AR
+2024-08-21 09:46:38 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=573 --dropout=0.40059794542464 --l2reg=0.07608973141775276 --learningRate=0.0004522146590899999 --wabTarget=AR
+2024-08-21 09:46:43 INFO Running runs: ['dqy8jhjh']
+2024-08-21 09:47:46 INFO Cleaning up finished run: dqy8jhjh
+2024-08-21 09:47:46 INFO Agent received command: run
+2024-08-21 09:47:46 INFO Agent starting run with config:
+	batchSize: 295
+	dropout: 0.40809293180282585
+	l2reg: 0.0365376952741985
+	learningRate: 0.003134290607808439
+	wabTarget: AR
+2024-08-21 09:47:46 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=295 --dropout=0.40809293180282585 --l2reg=0.0365376952741985 --learningRate=0.003134290607808439 --wabTarget=AR
+2024-08-21 09:47:51 INFO Running runs: ['tfn7wl46']
+2024-08-21 09:48:54 INFO Cleaning up finished run: tfn7wl46
+2024-08-21 09:48:54 INFO Agent received command: run
+2024-08-21 09:48:54 INFO Agent starting run with config:
+	batchSize: 143
+	dropout: 0.38841181239935624
+	l2reg: 0.08628794685677922
+	learningRate: 0.003231073263671535
+	wabTarget: AR
+2024-08-21 09:48:54 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=143 --dropout=0.38841181239935624 --l2reg=0.08628794685677922 --learningRate=0.003231073263671535 --wabTarget=AR
+2024-08-21 09:48:59 INFO Running runs: ['nwi0nhqj']
+2024-08-21 09:49:52 INFO Cleaning up finished run: nwi0nhqj
+2024-08-21 09:49:53 INFO Agent received command: run
+2024-08-21 09:49:53 INFO Agent starting run with config:
+	batchSize: 747
+	dropout: 0.2342914001024922
+	l2reg: 0.021043103223619897
+	learningRate: 0.006681496327808846
+	wabTarget: AR
+2024-08-21 09:49:53 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=747 --dropout=0.2342914001024922 --l2reg=0.021043103223619897 --learningRate=0.006681496327808846 --wabTarget=AR
+2024-08-21 09:49:58 INFO Running runs: ['fy74al9c']
+2024-08-21 09:51:37 INFO Cleaning up finished run: fy74al9c
+2024-08-21 09:51:37 INFO Agent received command: run
+2024-08-21 09:51:37 INFO Agent starting run with config:
+	batchSize: 791
+	dropout: 0.4500162707764765
+	l2reg: 0.02661346053095398
+	learningRate: 0.007956474534266433
+	wabTarget: AR
+2024-08-21 09:51:37 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=791 --dropout=0.4500162707764765 --l2reg=0.02661346053095398 --learningRate=0.007956474534266433 --wabTarget=AR
+2024-08-21 09:51:42 INFO Running runs: ['m6vka2qa']
+2024-08-21 09:52:55 INFO Cleaning up finished run: m6vka2qa
+2024-08-21 09:52:55 INFO Agent received command: run
+2024-08-21 09:52:55 INFO Agent starting run with config:
+	batchSize: 67
+	dropout: 0.0632107339356572
+	l2reg: 0.02982881254219957
+	learningRate: 0.0062271413042721485
+	wabTarget: AR
+2024-08-21 09:52:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=67 --dropout=0.0632107339356572 --l2reg=0.02982881254219957 --learningRate=0.0062271413042721485 --wabTarget=AR
+2024-08-21 09:53:00 INFO Running runs: ['9zb0cxxf']
+2024-08-21 09:54:19 INFO Cleaning up finished run: 9zb0cxxf
+2024-08-21 09:54:19 INFO Agent received command: run
+2024-08-21 09:54:19 INFO Agent starting run with config:
+	batchSize: 705
+	dropout: 0.2311751496476876
+	l2reg: 0.00806347189422906
+	learningRate: 0.00648819272543285
+	wabTarget: AR
+2024-08-21 09:54:19 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=705 --dropout=0.2311751496476876 --l2reg=0.00806347189422906 --learningRate=0.00648819272543285 --wabTarget=AR
+2024-08-21 09:54:24 INFO Running runs: ['o1b3bqln']
+2024-08-21 09:56:44 INFO Cleaning up finished run: o1b3bqln
+2024-08-21 09:56:45 INFO Agent received command: run
+2024-08-21 09:56:45 INFO Agent starting run with config:
+	batchSize: 140
+	dropout: 0.09610209148762504
+	l2reg: 0.09926858596692144
+	learningRate: 0.004580533950319395
+	wabTarget: AR
+2024-08-21 09:56:45 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=140 --dropout=0.09610209148762504 --l2reg=0.09926858596692144 --learningRate=0.004580533950319395 --wabTarget=AR
+2024-08-21 09:56:50 INFO Running runs: ['vjp5dxfa']
+2024-08-21 09:57:47 INFO Cleaning up finished run: vjp5dxfa
+2024-08-21 09:57:48 INFO Agent received command: run
+2024-08-21 09:57:48 INFO Agent starting run with config:
+	batchSize: 636
+	dropout: 0.09052682182397656
+	l2reg: 0.013407508403299883
+	learningRate: 0.009291454582132012
+	wabTarget: AR
+2024-08-21 09:57:48 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=636 --dropout=0.09052682182397656 --l2reg=0.013407508403299883 --learningRate=0.009291454582132012 --wabTarget=AR
+2024-08-21 09:57:53 INFO Running runs: ['0ggbm33f']
+2024-08-21 09:59:27 INFO Cleaning up finished run: 0ggbm33f
+2024-08-21 09:59:27 INFO Agent received command: run
+2024-08-21 09:59:27 INFO Agent starting run with config:
+	batchSize: 888
+	dropout: 0.41993341799498674
+	l2reg: 0.05790848074877323
+	learningRate: 0.008664036425414447
+	wabTarget: AR
+2024-08-21 09:59:27 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=888 --dropout=0.41993341799498674 --l2reg=0.05790848074877323 --learningRate=0.008664036425414447 --wabTarget=AR
+2024-08-21 09:59:32 INFO Running runs: ['fm9ogjlw']
+2024-08-21 10:00:29 INFO Cleaning up finished run: fm9ogjlw
+2024-08-21 10:00:30 INFO Agent received command: run
+2024-08-21 10:00:30 INFO Agent starting run with config:
+	batchSize: 635
+	dropout: 0.3571174187549418
+	l2reg: 0.0005524152487159542
+	learningRate: 0.005474887204055808
+	wabTarget: AR
+2024-08-21 10:00:30 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=635 --dropout=0.3571174187549418 --l2reg=0.0005524152487159542 --learningRate=0.005474887204055808 --wabTarget=AR
+2024-08-21 10:00:35 INFO Running runs: ['dsslb629']
+2024-08-21 10:05:11 INFO Cleaning up finished run: dsslb629
+2024-08-21 10:05:12 INFO Agent received command: run
+2024-08-21 10:05:12 INFO Agent starting run with config:
+	batchSize: 351
+	dropout: 0.049977248633171746
+	l2reg: 0.0017162041427429542
+	learningRate: 0.002210818689536394
+	wabTarget: AR
+2024-08-21 10:05:12 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=351 --dropout=0.049977248633171746 --l2reg=0.0017162041427429542 --learningRate=0.002210818689536394 --wabTarget=AR
+2024-08-21 10:05:17 INFO Running runs: ['xqig25vk']
+2024-08-21 10:07:43 INFO Cleaning up finished run: xqig25vk
+2024-08-21 10:07:44 INFO Agent received command: run
+2024-08-21 10:07:44 INFO Agent starting run with config:
+	batchSize: 465
+	dropout: 0.4993748329091665
+	l2reg: 0.09544072111347313
+	learningRate: 0.007794702199536044
+	wabTarget: AR
+2024-08-21 10:07:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=465 --dropout=0.4993748329091665 --l2reg=0.09544072111347313 --learningRate=0.007794702199536044 --wabTarget=AR
+2024-08-21 10:07:49 INFO Running runs: ['s0ne3zuk']
+2024-08-21 10:08:36 INFO Cleaning up finished run: s0ne3zuk
+2024-08-21 10:08:36 INFO Agent received command: run
+2024-08-21 10:08:36 INFO Agent starting run with config:
+	batchSize: 612
+	dropout: 0.027373140216704003
+	l2reg: 0.09263913374621482
+	learningRate: 0.009272908630474927
+	wabTarget: AR
+2024-08-21 10:08:36 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=612 --dropout=0.027373140216704003 --l2reg=0.09263913374621482 --learningRate=0.009272908630474927 --wabTarget=AR
+2024-08-21 10:08:41 INFO Running runs: ['humhwoa3']
+2024-08-21 10:09:33 INFO Cleaning up finished run: humhwoa3
+2024-08-21 10:09:34 INFO Agent received command: run
+2024-08-21 10:09:34 INFO Agent starting run with config:
+	batchSize: 745
+	dropout: 0.4360976696414016
+	l2reg: 0.026312463551127988
+	learningRate: 0.009883559611660427
+	wabTarget: AR
+2024-08-21 10:09:34 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=745 --dropout=0.4360976696414016 --l2reg=0.026312463551127988 --learningRate=0.009883559611660427 --wabTarget=AR
+2024-08-21 10:09:39 INFO Running runs: ['r1lmcu3d']
+2024-08-21 10:10:46 INFO Cleaning up finished run: r1lmcu3d
+2024-08-21 10:10:47 INFO Agent received command: run
+2024-08-21 10:10:47 INFO Agent starting run with config:
+	batchSize: 162
+	dropout: 0.4266805957241439
+	l2reg: 0.047976591071961824
+	learningRate: 0.00909919880460838
+	wabTarget: AR
+2024-08-21 10:10:47 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=162 --dropout=0.4266805957241439 --l2reg=0.047976591071961824 --learningRate=0.00909919880460838 --wabTarget=AR
+2024-08-21 10:10:52 INFO Running runs: ['cvcqcxue']
+2024-08-21 10:11:54 INFO Cleaning up finished run: cvcqcxue
+2024-08-21 10:11:55 INFO Agent received command: run
+2024-08-21 10:11:55 INFO Agent starting run with config:
+	batchSize: 580
+	dropout: 0.4241187543243263
+	l2reg: 0.09523649349034036
+	learningRate: 0.0011838840471835954
+	wabTarget: AR
+2024-08-21 10:11:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=580 --dropout=0.4241187543243263 --l2reg=0.09523649349034036 --learningRate=0.0011838840471835954 --wabTarget=AR
+2024-08-21 10:12:00 INFO Running runs: ['e2s2ypl2']
+2024-08-21 10:12:41 INFO Cleaning up finished run: e2s2ypl2
+2024-08-21 10:12:42 INFO Agent received command: run
+2024-08-21 10:12:42 INFO Agent starting run with config:
+	batchSize: 938
+	dropout: 0.09885446080177324
+	l2reg: 0.01956916552823543
+	learningRate: 0.004159276134382032
+	wabTarget: AR
+2024-08-21 10:12:42 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=938 --dropout=0.09885446080177324 --l2reg=0.01956916552823543 --learningRate=0.004159276134382032 --wabTarget=AR
+2024-08-21 10:12:47 INFO Running runs: ['gkbo3fkv']
+2024-08-21 10:14:47 INFO Cleaning up finished run: gkbo3fkv
+2024-08-21 10:14:47 INFO Agent received command: run
+2024-08-21 10:14:47 INFO Agent starting run with config:
+	batchSize: 900
+	dropout: 0.3006621478253929
+	l2reg: 0.05974747119825239
+	learningRate: 0.005789447451172939
+	wabTarget: AR
+2024-08-21 10:14:47 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=900 --dropout=0.3006621478253929 --l2reg=0.05974747119825239 --learningRate=0.005789447451172939 --wabTarget=AR
+2024-08-21 10:14:52 INFO Running runs: ['7evetyqi']
+2024-08-21 10:16:00 INFO Cleaning up finished run: 7evetyqi
+2024-08-21 10:16:00 INFO Agent received command: run
+2024-08-21 10:16:00 INFO Agent starting run with config:
+	batchSize: 720
+	dropout: 0.40793855070227264
+	l2reg: 0.08520586843456039
+	learningRate: 0.003204559412763882
+	wabTarget: AR
+2024-08-21 10:16:00 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=720 --dropout=0.40793855070227264 --l2reg=0.08520586843456039 --learningRate=0.003204559412763882 --wabTarget=AR
+2024-08-21 10:16:05 INFO Running runs: ['bbyi3ibd']
+2024-08-21 10:16:42 INFO Cleaning up finished run: bbyi3ibd
+2024-08-21 10:16:42 INFO Agent received command: run
+2024-08-21 10:16:42 INFO Agent starting run with config:
+	batchSize: 307
+	dropout: 0.4737806365703396
+	l2reg: 0.024466972617826432
+	learningRate: 0.006868966297307816
+	wabTarget: AR
+2024-08-21 10:16:42 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=307 --dropout=0.4737806365703396 --l2reg=0.024466972617826432 --learningRate=0.006868966297307816 --wabTarget=AR
+2024-08-21 10:16:47 INFO Running runs: ['zeb8euxw']
+2024-08-21 10:18:00 INFO Cleaning up finished run: zeb8euxw
+2024-08-21 10:18:01 INFO Agent received command: run
+2024-08-21 10:18:01 INFO Agent starting run with config:
+	batchSize: 466
+	dropout: 0.2106376309362407
+	l2reg: 0.09915612425535056
+	learningRate: 0.00164273768985256
+	wabTarget: AR
+2024-08-21 10:18:01 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=466 --dropout=0.2106376309362407 --l2reg=0.09915612425535056 --learningRate=0.00164273768985256 --wabTarget=AR
+2024-08-21 10:18:06 INFO Running runs: ['8tqnncf8']
+2024-08-21 10:18:57 INFO Cleaning up finished run: 8tqnncf8
+2024-08-21 10:18:58 INFO Agent received command: run
+2024-08-21 10:18:58 INFO Agent starting run with config:
+	batchSize: 475
+	dropout: 0.3329019622115282
+	l2reg: 0.05075656536510482
+	learningRate: 0.0003684840101261275
+	wabTarget: AR
+2024-08-21 10:18:58 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=475 --dropout=0.3329019622115282 --l2reg=0.05075656536510482 --learningRate=0.0003684840101261275 --wabTarget=AR
+2024-08-21 10:19:03 INFO Running runs: ['04wus1i8']
+2024-08-21 10:20:21 INFO Cleaning up finished run: 04wus1i8
+2024-08-21 10:20:21 INFO Agent received command: run
+2024-08-21 10:20:21 INFO Agent starting run with config:
+	batchSize: 92
+	dropout: 0.014326016831238278
+	l2reg: 0.04338928249493047
+	learningRate: 0.008466032092764413
+	wabTarget: AR
+2024-08-21 10:20:21 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=92 --dropout=0.014326016831238278 --l2reg=0.04338928249493047 --learningRate=0.008466032092764413 --wabTarget=AR
+2024-08-21 10:20:26 INFO Running runs: ['c162w49e']
+2024-08-21 10:21:50 INFO Cleaning up finished run: c162w49e
+2024-08-21 10:21:50 INFO Agent received command: run
+2024-08-21 10:21:50 INFO Agent starting run with config:
+	batchSize: 766
+	dropout: 0.3755615422202459
+	l2reg: 0.0729364560398941
+	learningRate: 0.00933050455450146
+	wabTarget: AR
+2024-08-21 10:21:50 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=766 --dropout=0.3755615422202459 --l2reg=0.0729364560398941 --learningRate=0.00933050455450146 --wabTarget=AR
+2024-08-21 10:21:55 INFO Running runs: ['i133mlon']
+2024-08-21 10:33:22 INFO Running runs: []
+2024-08-21 10:33:23 INFO Agent received command: run
+2024-08-21 10:33:23 INFO Agent starting run with config:
+	batchSize: 198
+	dropout: 0.26852907020618183
+	l2reg: 0.053968915158031594
+	learningRate: 0.007754347743738658
+	wabTarget: AR
+2024-08-21 10:33:23 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=198 --dropout=0.26852907020618183 --l2reg=0.053968915158031594 --learningRate=0.007754347743738658 --wabTarget=AR
+2024-08-21 10:33:28 INFO Running runs: ['8feeg1lx']
+2024-08-21 10:33:49 INFO Cleaning up finished run: 8feeg1lx
+2024-08-21 10:33:49 INFO Agent received command: run
+2024-08-21 10:33:49 INFO Agent starting run with config:
+	batchSize: 635
+	dropout: 0.4575054429667245
+	l2reg: 0.08096793016756641
+	learningRate: 0.00229549536036496
+	wabTarget: AR
+2024-08-21 10:33:49 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=635 --dropout=0.4575054429667245 --l2reg=0.08096793016756641 --learningRate=0.00229549536036496 --wabTarget=AR
+2024-08-21 10:33:54 INFO Running runs: ['82636kzq']
+2024-08-21 10:34:15 INFO Cleaning up finished run: 82636kzq
+2024-08-21 10:34:15 INFO Agent received command: run
+2024-08-21 10:34:15 INFO Agent starting run with config:
+	batchSize: 841
+	dropout: 0.3951581991671059
+	l2reg: 0.0639931638470604
+	learningRate: 0.0058912897777506435
+	wabTarget: AR
+2024-08-21 10:34:16 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=841 --dropout=0.3951581991671059 --l2reg=0.0639931638470604 --learningRate=0.0058912897777506435 --wabTarget=AR
+2024-08-21 10:34:21 INFO Running runs: ['g47p4t12']
+2024-08-21 10:34:41 INFO Cleaning up finished run: g47p4t12
+2024-08-21 10:34:42 INFO Agent received command: run
+2024-08-21 10:34:42 INFO Agent starting run with config:
+	batchSize: 98
+	dropout: 0.2430875024165336
+	l2reg: 0.03106013072457668
+	learningRate: 0.005110129134221377
+	wabTarget: AR
+2024-08-21 10:34:42 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=98 --dropout=0.2430875024165336 --l2reg=0.03106013072457668 --learningRate=0.005110129134221377 --wabTarget=AR
+2024-08-21 10:34:47 INFO Running runs: ['64jf5i5e']
+2024-08-21 10:35:08 INFO Cleaning up finished run: 64jf5i5e
+2024-08-21 10:35:08 INFO Agent received command: run
+2024-08-21 10:35:08 INFO Agent starting run with config:
+	batchSize: 595
+	dropout: 0.4971579095686213
+	l2reg: 0.0004443682872421326
+	learningRate: 0.00516066221283562
+	wabTarget: AR
+2024-08-21 10:35:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=595 --dropout=0.4971579095686213 --l2reg=0.0004443682872421326 --learningRate=0.00516066221283562 --wabTarget=AR
+2024-08-21 10:35:13 INFO Running runs: ['819sf5wc']
+2024-08-21 10:36:00 INFO Cleaning up finished run: 819sf5wc
+2024-08-21 10:36:01 INFO Agent received command: run
+2024-08-21 10:36:01 INFO Agent starting run with config:
+	batchSize: 352
+	dropout: 0.09820187450533724
+	l2reg: 0.05760885207666605
+	learningRate: 0.005999960807552228
+	wabTarget: AR
+2024-08-21 10:36:01 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=352 --dropout=0.09820187450533724 --l2reg=0.05760885207666605 --learningRate=0.005999960807552228 --wabTarget=AR
+2024-08-21 10:36:06 INFO Running runs: ['4l34rgdr']
+2024-08-21 10:36:26 INFO Cleaning up finished run: 4l34rgdr
+2024-08-21 10:36:27 INFO Agent received command: run
+2024-08-21 10:36:27 INFO Agent starting run with config:
+	batchSize: 458
+	dropout: 0.09202770059845738
+	l2reg: 0.04049785167404269
+	learningRate: 0.005900079608244334
+	wabTarget: AR
+2024-08-21 10:36:27 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=458 --dropout=0.09202770059845738 --l2reg=0.04049785167404269 --learningRate=0.005900079608244334 --wabTarget=AR
+2024-08-21 10:36:32 INFO Running runs: ['5xc786xb']
+2024-08-21 10:36:58 INFO Cleaning up finished run: 5xc786xb
+2024-08-21 10:36:58 INFO Agent received command: run
+2024-08-21 10:36:58 INFO Agent starting run with config:
+	batchSize: 979
+	dropout: 0.36883443005725464
+	l2reg: 0.001541908122521845
+	learningRate: 0.0013667389224400548
+	wabTarget: AR
+2024-08-21 10:36:58 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=979 --dropout=0.36883443005725464 --l2reg=0.001541908122521845 --learningRate=0.0013667389224400548 --wabTarget=AR
+2024-08-21 10:37:03 INFO Running runs: ['y9h74qa5']
+2024-08-21 10:37:50 INFO Cleaning up finished run: y9h74qa5
+2024-08-21 10:37:51 INFO Agent received command: run
+2024-08-21 10:37:51 INFO Agent starting run with config:
+	batchSize: 535
+	dropout: 0.27908815579743984
+	l2reg: 0.0692308868880791
+	learningRate: 0.002644795653956111
+	wabTarget: AR
+2024-08-21 10:37:51 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=535 --dropout=0.27908815579743984 --l2reg=0.0692308868880791 --learningRate=0.002644795653956111 --wabTarget=AR
+2024-08-21 10:37:56 INFO Running runs: ['u5ensgs4']
+2024-08-21 10:38:17 INFO Cleaning up finished run: u5ensgs4
+2024-08-21 10:38:18 INFO Agent received command: run
+2024-08-21 10:38:18 INFO Agent starting run with config:
+	batchSize: 825
+	dropout: 0.4314133599004343
+	l2reg: 0.09258581243168476
+	learningRate: 0.0048409795389404
+	wabTarget: AR
+2024-08-21 10:38:18 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=825 --dropout=0.4314133599004343 --l2reg=0.09258581243168476 --learningRate=0.0048409795389404 --wabTarget=AR
+2024-08-21 10:38:23 INFO Running runs: ['xho5dxjp']
+2024-08-21 10:38:44 INFO Cleaning up finished run: xho5dxjp
+2024-08-21 10:38:44 INFO Agent received command: run
+2024-08-21 10:38:44 INFO Agent starting run with config:
+	batchSize: 890
+	dropout: 0.2275429199003304
+	l2reg: 0.047085202122279936
+	learningRate: 0.0015485547589925636
+	wabTarget: AR
+2024-08-21 10:38:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=890 --dropout=0.2275429199003304 --l2reg=0.047085202122279936 --learningRate=0.0015485547589925636 --wabTarget=AR
+2024-08-21 10:38:49 INFO Running runs: ['hpuz5tdj']
+2024-08-21 10:39:20 INFO Cleaning up finished run: hpuz5tdj
+2024-08-21 10:39:21 INFO Agent received command: run
+2024-08-21 10:39:21 INFO Agent starting run with config:
+	batchSize: 113
+	dropout: 0.02397802178282998
+	l2reg: 0.04847582311947608
+	learningRate: 0.009170789846340968
+	wabTarget: AR
+2024-08-21 10:39:21 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=113 --dropout=0.02397802178282998 --l2reg=0.04847582311947608 --learningRate=0.009170789846340968 --wabTarget=AR
+2024-08-21 10:39:26 INFO Running runs: ['frekgvy3']
+2024-08-21 10:39:46 INFO Cleaning up finished run: frekgvy3
+2024-08-21 10:39:47 INFO Agent received command: run
+2024-08-21 10:39:47 INFO Agent starting run with config:
+	batchSize: 352
+	dropout: 0.03645371381656703
+	l2reg: 0.0164852582001817
+	learningRate: 0.007015548643596402
+	wabTarget: AR
+2024-08-21 10:39:47 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=352 --dropout=0.03645371381656703 --l2reg=0.0164852582001817 --learningRate=0.007015548643596402 --wabTarget=AR
+2024-08-21 10:39:52 INFO Running runs: ['x583jv2k']
+2024-08-21 10:40:18 INFO Cleaning up finished run: x583jv2k
+2024-08-21 10:40:18 INFO Agent received command: run
+2024-08-21 10:40:18 INFO Agent starting run with config:
+	batchSize: 191
+	dropout: 0.325248742089849
+	l2reg: 0.04338901957623323
+	learningRate: 0.003626537664509735
+	wabTarget: AR
+2024-08-21 10:40:18 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=191 --dropout=0.325248742089849 --l2reg=0.04338901957623323 --learningRate=0.003626537664509735 --wabTarget=AR
+2024-08-21 10:40:23 INFO Running runs: ['jkmt9maj']
+2024-08-21 10:40:44 INFO Cleaning up finished run: jkmt9maj
+2024-08-21 10:40:44 INFO Agent received command: run
+2024-08-21 10:40:44 INFO Agent starting run with config:
+	batchSize: 786
+	dropout: 0.046403670921600665
+	l2reg: 0.07772261899274759
+	learningRate: 0.008893810471260654
+	wabTarget: AR
+2024-08-21 10:40:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=786 --dropout=0.046403670921600665 --l2reg=0.07772261899274759 --learningRate=0.008893810471260654 --wabTarget=AR
+2024-08-21 10:40:49 INFO Running runs: ['rsln95rf']
+2024-08-21 10:41:12 INFO Cleaning up finished run: rsln95rf
+2024-08-21 10:41:12 INFO Agent received command: run
+2024-08-21 10:41:12 INFO Agent starting run with config:
+	batchSize: 202
+	dropout: 0.10851222947335676
+	l2reg: 0.0033329354955836357
+	learningRate: 0.005763565711614917
+	wabTarget: AR
+2024-08-21 10:41:12 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=202 --dropout=0.10851222947335676 --l2reg=0.0033329354955836357 --learningRate=0.005763565711614917 --wabTarget=AR
+2024-08-21 10:41:17 INFO Running runs: ['r7tomp3p']
+2024-08-21 10:41:44 INFO Cleaning up finished run: r7tomp3p
+2024-08-21 10:41:44 INFO Agent received command: run
+2024-08-21 10:41:44 INFO Agent starting run with config:
+	batchSize: 70
+	dropout: 0.2379924236249239
+	l2reg: 0.06892769744686211
+	learningRate: 0.00638015197305196
+	wabTarget: AR
+2024-08-21 10:41:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=70 --dropout=0.2379924236249239 --l2reg=0.06892769744686211 --learningRate=0.00638015197305196 --wabTarget=AR
+2024-08-21 10:41:49 INFO Running runs: ['kcfcxmqn']
+2024-08-21 10:42:10 INFO Cleaning up finished run: kcfcxmqn
+2024-08-21 10:42:10 INFO Agent received command: run
+2024-08-21 10:42:10 INFO Agent starting run with config:
+	batchSize: 728
+	dropout: 0.4635363050656409
+	l2reg: 0.08161008887008336
+	learningRate: 0.006207582491550892
+	wabTarget: AR
+2024-08-21 10:42:10 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=728 --dropout=0.4635363050656409 --l2reg=0.08161008887008336 --learningRate=0.006207582491550892 --wabTarget=AR
+2024-08-21 10:42:16 INFO Running runs: ['d3338hyi']
+2024-08-21 10:42:36 INFO Cleaning up finished run: d3338hyi
+2024-08-21 10:42:37 INFO Agent received command: run
+2024-08-21 10:42:37 INFO Agent starting run with config:
+	batchSize: 191
+	dropout: 0.4330606466432253
+	l2reg: 0.08870244159233429
+	learningRate: 0.002630679792599314
+	wabTarget: AR
+2024-08-21 10:42:37 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=191 --dropout=0.4330606466432253 --l2reg=0.08870244159233429 --learningRate=0.002630679792599314 --wabTarget=AR
+2024-08-21 10:42:42 INFO Running runs: ['hvbj2lxg']
+2024-08-21 10:43:02 INFO Cleaning up finished run: hvbj2lxg
+2024-08-21 10:43:03 INFO Agent received command: run
+2024-08-21 10:43:03 INFO Agent starting run with config:
+	batchSize: 861
+	dropout: 0.04300528590105873
+	l2reg: 0.06980527618017342
+	learningRate: 0.005773919731469799
+	wabTarget: AR
+2024-08-21 10:43:03 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=861 --dropout=0.04300528590105873 --l2reg=0.06980527618017342 --learningRate=0.005773919731469799 --wabTarget=AR
+2024-08-21 10:43:08 INFO Running runs: ['afn265ir']
+2024-08-21 10:43:29 INFO Cleaning up finished run: afn265ir
+2024-08-21 10:43:29 INFO Agent received command: run
+2024-08-21 10:43:29 INFO Agent starting run with config:
+	batchSize: 137
+	dropout: 0.004361206742614158
+	l2reg: 0.022638659002995574
+	learningRate: 0.005075995907647207
+	wabTarget: AR
+2024-08-21 10:43:29 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=137 --dropout=0.004361206742614158 --l2reg=0.022638659002995574 --learningRate=0.005075995907647207 --wabTarget=AR
+2024-08-21 10:43:34 INFO Running runs: ['l5dyu7ie']
+2024-08-21 10:44:00 INFO Cleaning up finished run: l5dyu7ie
+2024-08-21 10:44:03 INFO Agent received command: run
+2024-08-21 10:44:03 INFO Agent starting run with config:
+	batchSize: 688
+	dropout: 0.32707752694013137
+	l2reg: 0.019291094997203623
+	learningRate: 0.007434573036505277
+	wabTarget: AR
+2024-08-21 10:44:03 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=688 --dropout=0.32707752694013137 --l2reg=0.019291094997203623 --learningRate=0.007434573036505277 --wabTarget=AR
+2024-08-21 10:44:08 INFO Running runs: ['ke15sw9e']
+2024-08-21 10:44:34 INFO Cleaning up finished run: ke15sw9e
+2024-08-21 10:44:34 INFO Agent received command: run
+2024-08-21 10:44:34 INFO Agent starting run with config:
+	batchSize: 438
+	dropout: 0.24734733695760489
+	l2reg: 0.03541099174319115
+	learningRate: 0.009078221865528872
+	wabTarget: AR
+2024-08-21 10:44:34 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=438 --dropout=0.24734733695760489 --l2reg=0.03541099174319115 --learningRate=0.009078221865528872 --wabTarget=AR
+2024-08-21 10:44:39 INFO Running runs: ['muktzghi']
+2024-08-21 10:45:00 INFO Cleaning up finished run: muktzghi
+2024-08-21 10:45:00 INFO Agent received command: run
+2024-08-21 10:45:00 INFO Agent starting run with config:
+	batchSize: 146
+	dropout: 0.3712800490611404
+	l2reg: 0.06813282526868791
+	learningRate: 0.008959850266674839
+	wabTarget: AR
+2024-08-21 10:45:00 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=146 --dropout=0.3712800490611404 --l2reg=0.06813282526868791 --learningRate=0.008959850266674839 --wabTarget=AR
+2024-08-21 10:45:05 INFO Running runs: ['pmam7ee9']
+2024-08-21 10:45:26 INFO Cleaning up finished run: pmam7ee9
+2024-08-21 10:45:26 INFO Agent received command: run
+2024-08-21 10:45:26 INFO Agent starting run with config:
+	batchSize: 260
+	dropout: 0.07428518694313567
+	l2reg: 0.05686476457067468
+	learningRate: 0.001105859342825656
+	wabTarget: AR
+2024-08-21 10:45:26 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=260 --dropout=0.07428518694313567 --l2reg=0.05686476457067468 --learningRate=0.001105859342825656 --wabTarget=AR
+2024-08-21 10:45:31 INFO Running runs: ['grxznfi8']
+2024-08-21 10:45:57 INFO Cleaning up finished run: grxznfi8
+2024-08-21 10:45:58 INFO Agent received command: run
+2024-08-21 10:45:58 INFO Agent starting run with config:
+	batchSize: 980
+	dropout: 0.14657527992416322
+	l2reg: 0.00920614717566732
+	learningRate: 0.004756641535639329
+	wabTarget: AR
+2024-08-21 10:45:58 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=980 --dropout=0.14657527992416322 --l2reg=0.00920614717566732 --learningRate=0.004756641535639329 --wabTarget=AR
+2024-08-21 10:46:03 INFO Running runs: ['o4yhdudx']
+2024-08-21 10:46:34 INFO Cleaning up finished run: o4yhdudx
+2024-08-21 10:46:34 INFO Agent received command: run
+2024-08-21 10:46:34 INFO Agent starting run with config:
+	batchSize: 975
+	dropout: 0.42486954343693073
+	l2reg: 0.04605231718223523
+	learningRate: 0.00018228697125674976
+	wabTarget: AR
+2024-08-21 10:46:34 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=975 --dropout=0.42486954343693073 --l2reg=0.04605231718223523 --learningRate=0.00018228697125674976 --wabTarget=AR
+2024-08-21 10:46:39 INFO Running runs: ['cf1u19od']
+2024-08-21 10:47:36 INFO Cleaning up finished run: cf1u19od
+2024-08-21 10:47:37 INFO Agent received command: run
+2024-08-21 10:47:37 INFO Agent starting run with config:
+	batchSize: 295
+	dropout: 0.15539802220353535
+	l2reg: 0.08054827481678385
+	learningRate: 0.001319807816135434
+	wabTarget: AR
+2024-08-21 10:47:37 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=295 --dropout=0.15539802220353535 --l2reg=0.08054827481678385 --learningRate=0.001319807816135434 --wabTarget=AR
+2024-08-21 10:47:42 INFO Running runs: ['jj0qdxug']
+2024-08-21 10:48:13 INFO Cleaning up finished run: jj0qdxug
+2024-08-21 10:48:13 INFO Agent received command: run
+2024-08-21 10:48:13 INFO Agent starting run with config:
+	batchSize: 152
+	dropout: 0.3943216158310764
+	l2reg: 0.08429789848037937
+	learningRate: 0.008785937753639672
+	wabTarget: AR
+2024-08-21 10:48:13 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=152 --dropout=0.3943216158310764 --l2reg=0.08429789848037937 --learningRate=0.008785937753639672 --wabTarget=AR
+2024-08-21 10:48:18 INFO Running runs: ['0izs0ton']
+2024-08-21 10:48:39 INFO Cleaning up finished run: 0izs0ton
+2024-08-21 10:48:39 INFO Agent received command: run
+2024-08-21 10:48:39 INFO Agent starting run with config:
+	batchSize: 414
+	dropout: 0.09215993886229852
+	l2reg: 0.010882870792131278
+	learningRate: 0.008237550010499774
+	wabTarget: AR
+2024-08-21 10:48:39 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=414 --dropout=0.09215993886229852 --l2reg=0.010882870792131278 --learningRate=0.008237550010499774 --wabTarget=AR
+2024-08-21 10:48:44 INFO Running runs: ['x3vz7vo5']
+2024-08-21 10:49:16 INFO Cleaning up finished run: x3vz7vo5
+2024-08-21 10:49:16 INFO Agent received command: run
+2024-08-21 10:49:16 INFO Agent starting run with config:
+	batchSize: 744
+	dropout: 0.03701691690192243
+	l2reg: 0.04902714356848664
+	learningRate: 0.004215355940001835
+	wabTarget: AR
+2024-08-21 10:49:16 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=744 --dropout=0.03701691690192243 --l2reg=0.04902714356848664 --learningRate=0.004215355940001835 --wabTarget=AR
+2024-08-21 10:49:21 INFO Running runs: ['1rkfanvp']
+2024-08-21 10:49:58 INFO Cleaning up finished run: 1rkfanvp
+2024-08-21 10:49:58 INFO Agent received command: run
+2024-08-21 10:49:58 INFO Agent starting run with config:
+	batchSize: 167
+	dropout: 0.1421449354673402
+	l2reg: 0.07702442575457882
+	learningRate: 0.008225443875867234
+	wabTarget: AR
+2024-08-21 10:49:58 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=167 --dropout=0.1421449354673402 --l2reg=0.07702442575457882 --learningRate=0.008225443875867234 --wabTarget=AR
+2024-08-21 10:50:03 INFO Running runs: ['z7ice5qf']
+2024-08-21 10:50:29 INFO Cleaning up finished run: z7ice5qf
+2024-08-21 10:50:29 INFO Agent received command: run
+2024-08-21 10:50:29 INFO Agent starting run with config:
+	batchSize: 188
+	dropout: 0.0027420073968811116
+	l2reg: 0.08391404945052647
+	learningRate: 0.008794380321896621
+	wabTarget: AR
+2024-08-21 10:50:29 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=188 --dropout=0.0027420073968811116 --l2reg=0.08391404945052647 --learningRate=0.008794380321896621 --wabTarget=AR
+2024-08-21 10:50:34 INFO Running runs: ['vpsqznjd']
+2024-08-21 10:50:55 INFO Cleaning up finished run: vpsqznjd
+2024-08-21 10:50:55 INFO Agent received command: run
+2024-08-21 10:50:55 INFO Agent starting run with config:
+	batchSize: 448
+	dropout: 0.49952104628914096
+	l2reg: 0.06084360958174305
+	learningRate: 0.009125584385167682
+	wabTarget: AR
+2024-08-21 10:50:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=448 --dropout=0.49952104628914096 --l2reg=0.06084360958174305 --learningRate=0.009125584385167682 --wabTarget=AR
+2024-08-21 10:51:00 INFO Running runs: ['nwm5vn2a']
+2024-08-21 10:51:21 INFO Cleaning up finished run: nwm5vn2a
+2024-08-21 10:51:22 INFO Agent received command: run
+2024-08-21 10:51:22 INFO Agent starting run with config:
+	batchSize: 758
+	dropout: 0.090322538515422
+	l2reg: 0.029157193633779627
+	learningRate: 0.005992267310450718
+	wabTarget: AR
+2024-08-21 10:51:22 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=758 --dropout=0.090322538515422 --l2reg=0.029157193633779627 --learningRate=0.005992267310450718 --wabTarget=AR
+2024-08-21 10:51:27 INFO Running runs: ['y3uff203']
+2024-08-21 10:51:53 INFO Cleaning up finished run: y3uff203
+2024-08-21 10:51:53 INFO Agent received command: run
+2024-08-21 10:51:53 INFO Agent starting run with config:
+	batchSize: 843
+	dropout: 0.22916454969949063
+	l2reg: 0.08742164715421775
+	learningRate: 0.008043384412385342
+	wabTarget: AR
+2024-08-21 10:51:53 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=843 --dropout=0.22916454969949063 --l2reg=0.08742164715421775 --learningRate=0.008043384412385342 --wabTarget=AR
+2024-08-21 10:51:58 INFO Running runs: ['78h8r98w']
+2024-08-21 10:52:19 INFO Cleaning up finished run: 78h8r98w
+2024-08-21 10:52:19 INFO Agent received command: run
+2024-08-21 10:52:19 INFO Agent starting run with config:
+	batchSize: 880
+	dropout: 0.4480316072068907
+	l2reg: 0.062067878830614605
+	learningRate: 0.00932940258699949
+	wabTarget: AR
+2024-08-21 10:52:19 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=880 --dropout=0.4480316072068907 --l2reg=0.062067878830614605 --learningRate=0.00932940258699949 --wabTarget=AR
+2024-08-21 10:52:24 INFO Running runs: ['v2samrvd']
+2024-08-21 10:52:45 INFO Cleaning up finished run: v2samrvd
+2024-08-21 10:52:45 INFO Agent received command: run
+2024-08-21 10:52:45 INFO Agent starting run with config:
+	batchSize: 309
+	dropout: 0.21504819729141483
+	l2reg: 0.058874398772797015
+	learningRate: 0.0021153691065970443
+	wabTarget: AR
+2024-08-21 10:52:45 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=309 --dropout=0.21504819729141483 --l2reg=0.058874398772797015 --learningRate=0.0021153691065970443 --wabTarget=AR
+2024-08-21 10:52:50 INFO Running runs: ['66q63kff']
+2024-08-21 10:53:16 INFO Cleaning up finished run: 66q63kff
+2024-08-21 10:53:17 INFO Agent received command: run
+2024-08-21 10:53:17 INFO Agent starting run with config:
+	batchSize: 229
+	dropout: 0.48643075092879107
+	l2reg: 0.04780156586983954
+	learningRate: 0.0012870410968386335
+	wabTarget: AR
+2024-08-21 10:53:17 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=229 --dropout=0.48643075092879107 --l2reg=0.04780156586983954 --learningRate=0.0012870410968386335 --wabTarget=AR
+2024-08-21 10:53:22 INFO Running runs: ['4g0hg31a']
+2024-08-21 10:53:44 INFO Cleaning up finished run: 4g0hg31a
+2024-08-21 10:53:44 INFO Agent received command: run
+2024-08-21 10:53:44 INFO Agent starting run with config:
+	batchSize: 311
+	dropout: 0.1911208252952475
+	l2reg: 0.026340244387966946
+	learningRate: 0.006804351544518228
+	wabTarget: AR
+2024-08-21 10:53:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=311 --dropout=0.1911208252952475 --l2reg=0.026340244387966946 --learningRate=0.006804351544518228 --wabTarget=AR
+2024-08-21 10:53:49 INFO Running runs: ['8txaga1p']
+2024-08-21 10:54:15 INFO Cleaning up finished run: 8txaga1p
+2024-08-21 10:54:16 INFO Agent received command: run
+2024-08-21 10:54:16 INFO Agent starting run with config:
+	batchSize: 178
+	dropout: 0.17296541028955517
+	l2reg: 0.039251855742535355
+	learningRate: 0.005352650710101485
+	wabTarget: AR
+2024-08-21 10:54:16 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=178 --dropout=0.17296541028955517 --l2reg=0.039251855742535355 --learningRate=0.005352650710101485 --wabTarget=AR
+2024-08-21 10:54:21 INFO Running runs: ['3i3tj7gf']
+2024-08-21 10:54:43 INFO Cleaning up finished run: 3i3tj7gf
+2024-08-21 10:54:43 INFO Agent received command: run
+2024-08-21 10:54:43 INFO Agent starting run with config:
+	batchSize: 147
+	dropout: 0.21995040755707695
+	l2reg: 0.00606956887902584
+	learningRate: 0.002790078828980426
+	wabTarget: AR
+2024-08-21 10:54:43 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=147 --dropout=0.21995040755707695 --l2reg=0.00606956887902584 --learningRate=0.002790078828980426 --wabTarget=AR
+2024-08-21 10:54:48 INFO Running runs: ['mhq0h6k2']
+2024-08-21 10:55:14 INFO Cleaning up finished run: mhq0h6k2
+2024-08-21 10:55:14 INFO Agent received command: run
+2024-08-21 10:55:14 INFO Agent starting run with config:
+	batchSize: 200
+	dropout: 0.22345363728147913
+	l2reg: 0.07499051102986058
+	learningRate: 0.008281834226482371
+	wabTarget: AR
+2024-08-21 10:55:14 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=200 --dropout=0.22345363728147913 --l2reg=0.07499051102986058 --learningRate=0.008281834226482371 --wabTarget=AR
+2024-08-21 10:55:19 INFO Running runs: ['73z5zsxp']
+2024-08-21 10:55:41 INFO Cleaning up finished run: 73z5zsxp
+2024-08-21 10:55:41 INFO Agent received command: run
+2024-08-21 10:55:41 INFO Agent starting run with config:
+	batchSize: 457
+	dropout: 0.17732760541419318
+	l2reg: 0.02679341733862044
+	learningRate: 0.00840142232355793
+	wabTarget: AR
+2024-08-21 10:55:41 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=457 --dropout=0.17732760541419318 --l2reg=0.02679341733862044 --learningRate=0.00840142232355793 --wabTarget=AR
+2024-08-21 10:55:46 INFO Running runs: ['dk9qn2i3']
+2024-08-21 11:31:12 INFO Running runs: []
+2024-08-21 11:31:12 INFO Agent received command: run
+2024-08-21 11:31:12 INFO Agent starting run with config:
+	batchSize: 218
+	dropout: 0.07355693971147743
+	l2reg: 0.09004564092959813
+	learningRate: 0.008381852786694415
+	wabTarget: AR
+2024-08-21 11:31:12 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=218 --dropout=0.07355693971147743 --l2reg=0.09004564092959813 --learningRate=0.008381852786694415 --wabTarget=AR
+2024-08-21 11:31:18 INFO Running runs: ['qcuvgc8j']
+2024-08-21 11:31:38 INFO Cleaning up finished run: qcuvgc8j
+2024-08-21 11:31:39 INFO Agent received command: run
+2024-08-21 11:31:39 INFO Agent starting run with config:
+	batchSize: 193
+	dropout: 0.4594137233805279
+	l2reg: 0.04352213685610677
+	learningRate: 0.0023716876808921477
+	wabTarget: AR
+2024-08-21 11:31:39 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=193 --dropout=0.4594137233805279 --l2reg=0.04352213685610677 --learningRate=0.0023716876808921477 --wabTarget=AR
+2024-08-21 11:31:44 INFO Running runs: ['au2t74z1']
+2024-08-21 11:32:06 INFO Cleaning up finished run: au2t74z1
+2024-08-21 11:32:06 INFO Agent received command: run
+2024-08-21 11:32:06 INFO Agent starting run with config:
+	batchSize: 406
+	dropout: 0.11355272320902776
+	l2reg: 0.05867648586591636
+	learningRate: 0.008929732752788945
+	wabTarget: AR
+2024-08-21 11:32:06 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=406 --dropout=0.11355272320902776 --l2reg=0.05867648586591636 --learningRate=0.008929732752788945 --wabTarget=AR
+2024-08-21 11:32:11 INFO Running runs: ['yjkns652']
+2024-08-21 11:32:32 INFO Cleaning up finished run: yjkns652
+2024-08-21 11:32:32 INFO Agent received command: run
+2024-08-21 11:32:32 INFO Agent starting run with config:
+	batchSize: 478
+	dropout: 0.1754903333910588
+	l2reg: 0.023479022354949954
+	learningRate: 0.005808084660031752
+	wabTarget: AR
+2024-08-21 11:32:32 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=478 --dropout=0.1754903333910588 --l2reg=0.023479022354949954 --learningRate=0.005808084660031752 --wabTarget=AR
+2024-08-21 11:32:37 INFO Running runs: ['c8xx4z0e']
+2024-08-21 11:33:03 INFO Cleaning up finished run: c8xx4z0e
+2024-08-21 11:33:04 INFO Agent received command: run
+2024-08-21 11:33:04 INFO Agent starting run with config:
+	batchSize: 195
+	dropout: 0.036696126027893655
+	l2reg: 0.06834471667864793
+	learningRate: 0.002376823108422046
+	wabTarget: AR
+2024-08-21 11:33:04 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=195 --dropout=0.036696126027893655 --l2reg=0.06834471667864793 --learningRate=0.002376823108422046 --wabTarget=AR
+2024-08-21 11:33:09 INFO Running runs: ['yvxnb1cb']
+2024-08-21 11:33:35 INFO Cleaning up finished run: yvxnb1cb
+2024-08-21 11:33:35 INFO Agent received command: run
+2024-08-21 11:33:35 INFO Agent starting run with config:
+	batchSize: 672
+	dropout: 0.4347896360637998
+	l2reg: 0.08386555573512239
+	learningRate: 0.004484734807564223
+	wabTarget: AR
+2024-08-21 11:33:35 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=672 --dropout=0.4347896360637998 --l2reg=0.08386555573512239 --learningRate=0.004484734807564223 --wabTarget=AR
+2024-08-21 11:33:40 INFO Running runs: ['q7pfw0w8']
+2024-08-21 11:34:01 INFO Cleaning up finished run: q7pfw0w8
+2024-08-21 11:34:01 INFO Agent received command: run
+2024-08-21 11:34:01 INFO Agent starting run with config:
+	batchSize: 97
+	dropout: 0.3313593877797466
+	l2reg: 0.08215510263911166
+	learningRate: 0.0056092398550953845
+	wabTarget: AR
+2024-08-21 11:34:01 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=97 --dropout=0.3313593877797466 --l2reg=0.08215510263911166 --learningRate=0.0056092398550953845 --wabTarget=AR
+2024-08-21 11:34:06 INFO Running runs: ['ubmz2lfn']
+2024-08-21 11:34:27 INFO Cleaning up finished run: ubmz2lfn
+2024-08-21 11:34:27 INFO Agent received command: run
+2024-08-21 11:34:27 INFO Agent starting run with config:
+	batchSize: 384
+	dropout: 0.4228646737891612
+	l2reg: 0.023350978539791973
+	learningRate: 0.006104149666218489
+	wabTarget: AR
+2024-08-21 11:34:27 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=384 --dropout=0.4228646737891612 --l2reg=0.023350978539791973 --learningRate=0.006104149666218489 --wabTarget=AR
+2024-08-21 11:34:32 INFO Running runs: ['vexssqwe']
+2024-08-21 11:34:53 INFO Cleaning up finished run: vexssqwe
+2024-08-21 11:34:54 INFO Agent received command: run
+2024-08-21 11:34:54 INFO Agent starting run with config:
+	batchSize: 681
+	dropout: 0.008276186937016412
+	l2reg: 0.06657050259526982
+	learningRate: 0.009262008614370246
+	wabTarget: AR
+2024-08-21 11:34:54 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=681 --dropout=0.008276186937016412 --l2reg=0.06657050259526982 --learningRate=0.009262008614370246 --wabTarget=AR
+2024-08-21 11:34:59 INFO Running runs: ['rucvv439']
+2024-08-21 11:35:24 INFO Cleaning up finished run: rucvv439
+2024-08-21 11:35:25 INFO Agent received command: run
+2024-08-21 11:35:25 INFO Agent starting run with config:
+	batchSize: 776
+	dropout: 0.2574828322591826
+	l2reg: 0.08614264603767119
+	learningRate: 0.005434276447986301
+	wabTarget: AR
+2024-08-21 11:35:25 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=776 --dropout=0.2574828322591826 --l2reg=0.08614264603767119 --learningRate=0.005434276447986301 --wabTarget=AR
+2024-08-21 11:35:30 INFO Running runs: ['oc8ueylx']
+2024-08-21 11:35:56 INFO Cleaning up finished run: oc8ueylx
+2024-08-21 11:35:56 INFO Agent received command: run
+2024-08-21 11:35:56 INFO Agent starting run with config:
+	batchSize: 575
+	dropout: 0.45739431356295474
+	l2reg: 0.03782966556033803
+	learningRate: 0.0023550570387570573
+	wabTarget: AR
+2024-08-21 11:35:56 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=575 --dropout=0.45739431356295474 --l2reg=0.03782966556033803 --learningRate=0.0023550570387570573 --wabTarget=AR
+2024-08-21 11:36:01 INFO Running runs: ['l5q40ipg']
+2024-08-21 11:36:27 INFO Cleaning up finished run: l5q40ipg
+2024-08-21 11:36:27 INFO Agent received command: run
+2024-08-21 11:36:27 INFO Agent starting run with config:
+	batchSize: 847
+	dropout: 0.2167565195847776
+	l2reg: 0.04768560518611783
+	learningRate: 0.006221284161672843
+	wabTarget: AR
+2024-08-21 11:36:27 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=847 --dropout=0.2167565195847776 --l2reg=0.04768560518611783 --learningRate=0.006221284161672843 --wabTarget=AR
+2024-08-21 11:36:32 INFO Running runs: ['hdzhtmeh']
+2024-08-21 11:36:58 INFO Cleaning up finished run: hdzhtmeh
+2024-08-21 11:36:59 INFO Agent received command: run
+2024-08-21 11:36:59 INFO Agent starting run with config:
+	batchSize: 826
+	dropout: 0.1896296621697902
+	l2reg: 0.06516796240292279
+	learningRate: 0.004800205672793858
+	wabTarget: AR
+2024-08-21 11:36:59 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=826 --dropout=0.1896296621697902 --l2reg=0.06516796240292279 --learningRate=0.004800205672793858 --wabTarget=AR
+2024-08-21 11:37:04 INFO Running runs: ['jfsp4tak']
+2024-08-21 11:37:24 INFO Cleaning up finished run: jfsp4tak
+2024-08-21 11:37:25 INFO Agent received command: run
+2024-08-21 11:37:25 INFO Agent starting run with config:
+	batchSize: 336
+	dropout: 0.24422989957103225
+	l2reg: 0.04449689493325924
+	learningRate: 0.00828406352870033
+	wabTarget: AR
+2024-08-21 11:37:25 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=336 --dropout=0.24422989957103225 --l2reg=0.04449689493325924 --learningRate=0.00828406352870033 --wabTarget=AR
+2024-08-21 11:37:30 INFO Running runs: ['rcg2rxks']
+2024-08-21 11:37:51 INFO Cleaning up finished run: rcg2rxks
+2024-08-21 11:37:51 INFO Agent received command: run
+2024-08-21 11:37:51 INFO Agent starting run with config:
+	batchSize: 731
+	dropout: 0.31698162249124445
+	l2reg: 0.00964843366079984
+	learningRate: 0.006734691127899712
+	wabTarget: AR
+2024-08-21 11:37:51 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=731 --dropout=0.31698162249124445 --l2reg=0.00964843366079984 --learningRate=0.006734691127899712 --wabTarget=AR
+2024-08-21 11:37:56 INFO Running runs: ['iwjvw9cm']
+2024-08-21 11:38:23 INFO Cleaning up finished run: iwjvw9cm
+2024-08-21 11:38:23 INFO Agent received command: run
+2024-08-21 11:38:23 INFO Agent starting run with config:
+	batchSize: 684
+	dropout: 0.05733347136560917
+	l2reg: 0.03717353956655812
+	learningRate: 0.003883752345022803
+	wabTarget: AR
+2024-08-21 11:38:23 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=684 --dropout=0.05733347136560917 --l2reg=0.03717353956655812 --learningRate=0.003883752345022803 --wabTarget=AR
+2024-08-21 11:38:28 INFO Running runs: ['em9hcg52']
+2024-08-21 11:38:59 INFO Cleaning up finished run: em9hcg52
+2024-08-21 11:39:04 INFO Agent received command: run
+2024-08-21 11:39:04 INFO Agent starting run with config:
+	batchSize: 415
+	dropout: 0.25694489541281995
+	l2reg: 0.043057863741373645
+	learningRate: 0.004696207720514769
+	wabTarget: AR
+2024-08-21 11:39:04 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=415 --dropout=0.25694489541281995 --l2reg=0.043057863741373645 --learningRate=0.004696207720514769 --wabTarget=AR
+2024-08-21 11:39:09 INFO Running runs: ['6lbstjec']
+2024-08-21 11:39:34 INFO Cleaning up finished run: 6lbstjec
+2024-08-21 11:39:35 INFO Agent received command: run
+2024-08-21 11:39:35 INFO Agent starting run with config:
+	batchSize: 1019
+	dropout: 0.26700792640110516
+	l2reg: 0.004518599283394647
+	learningRate: 0.006797101654410765
+	wabTarget: AR
+2024-08-21 11:39:35 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=1019 --dropout=0.26700792640110516 --l2reg=0.004518599283394647 --learningRate=0.006797101654410765 --wabTarget=AR
+2024-08-21 11:39:40 INFO Running runs: ['3x2og6fb']
+2024-08-21 11:40:16 INFO Cleaning up finished run: 3x2og6fb
+2024-08-21 11:40:16 INFO Agent received command: run
+2024-08-21 11:40:16 INFO Agent starting run with config:
+	batchSize: 853
+	dropout: 0.29559542844322695
+	l2reg: 0.0670585395113733
+	learningRate: 0.007729822737767354
+	wabTarget: AR
+2024-08-21 11:40:16 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=853 --dropout=0.29559542844322695 --l2reg=0.0670585395113733 --learningRate=0.007729822737767354 --wabTarget=AR
+2024-08-21 11:40:22 INFO Running runs: ['r588gyfo']
+2024-08-21 11:40:42 INFO Cleaning up finished run: r588gyfo
+2024-08-21 11:40:43 INFO Agent received command: run
+2024-08-21 11:40:43 INFO Agent starting run with config:
+	batchSize: 299
+	dropout: 0.16656463782684833
+	l2reg: 0.034669941150951615
+	learningRate: 0.007948804030005948
+	wabTarget: AR
+2024-08-21 11:40:43 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=299 --dropout=0.16656463782684833 --l2reg=0.034669941150951615 --learningRate=0.007948804030005948 --wabTarget=AR
+2024-08-21 11:40:48 INFO Running runs: ['1q30kcvx']
+2024-08-21 11:41:08 INFO Cleaning up finished run: 1q30kcvx
+2024-08-21 11:41:09 INFO Agent received command: run
+2024-08-21 11:41:09 INFO Agent starting run with config:
+	batchSize: 927
+	dropout: 0.13670651675119944
+	l2reg: 0.09624469653720702
+	learningRate: 0.00020159218889275227
+	wabTarget: AR
+2024-08-21 11:41:09 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=927 --dropout=0.13670651675119944 --l2reg=0.09624469653720702 --learningRate=0.00020159218889275227 --wabTarget=AR
+2024-08-21 11:41:14 INFO Running runs: ['l5ke3snd']
+2024-08-21 11:42:22 INFO Cleaning up finished run: l5ke3snd
+2024-08-21 11:42:23 INFO Agent received command: run
+2024-08-21 11:42:23 INFO Agent starting run with config:
+	batchSize: 251
+	dropout: 0.3225084943648165
+	l2reg: 0.057806763568188944
+	learningRate: 0.004195717532694626
+	wabTarget: AR
+2024-08-21 11:42:23 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=251 --dropout=0.3225084943648165 --l2reg=0.057806763568188944 --learningRate=0.004195717532694626 --wabTarget=AR
+2024-08-21 11:42:28 INFO Running runs: ['m0rey7r9']
+2024-08-21 11:42:49 INFO Cleaning up finished run: m0rey7r9
+2024-08-21 11:42:49 INFO Agent received command: run
+2024-08-21 11:42:49 INFO Agent starting run with config:
+	batchSize: 628
+	dropout: 0.19336739114220355
+	l2reg: 0.008449635007657256
+	learningRate: 0.007191442586476091
+	wabTarget: AR
+2024-08-21 11:42:49 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=628 --dropout=0.19336739114220355 --l2reg=0.008449635007657256 --learningRate=0.007191442586476091 --wabTarget=AR
+2024-08-21 11:42:54 INFO Running runs: ['jbdgybab']
+2024-08-21 11:43:20 INFO Cleaning up finished run: jbdgybab
+2024-08-21 11:43:21 INFO Agent received command: run
+2024-08-21 11:43:21 INFO Agent starting run with config:
+	batchSize: 640
+	dropout: 0.28763496094335417
+	l2reg: 0.016638979007275758
+	learningRate: 0.0064020555945544545
+	wabTarget: AR
+2024-08-21 11:43:21 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=640 --dropout=0.28763496094335417 --l2reg=0.016638979007275758 --learningRate=0.0064020555945544545 --wabTarget=AR
+2024-08-21 11:43:26 INFO Running runs: ['nmt8yhsq']
+2024-08-21 11:43:51 INFO Cleaning up finished run: nmt8yhsq
+2024-08-21 11:43:52 INFO Agent received command: run
+2024-08-21 11:43:52 INFO Agent starting run with config:
+	batchSize: 728
+	dropout: 0.11369394522535474
+	l2reg: 0.06662945693323692
+	learningRate: 0.005893284477343428
+	wabTarget: AR
+2024-08-21 11:43:52 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=728 --dropout=0.11369394522535474 --l2reg=0.06662945693323692 --learningRate=0.005893284477343428 --wabTarget=AR
+2024-08-21 11:43:57 INFO Running runs: ['h6vizqb7']
+2024-08-21 11:44:23 INFO Cleaning up finished run: h6vizqb7
+2024-08-21 11:44:23 INFO Agent received command: run
+2024-08-21 11:44:23 INFO Agent starting run with config:
+	batchSize: 612
+	dropout: 0.17531602867719484
+	l2reg: 0.08403237629559436
+	learningRate: 0.007988284877038699
+	wabTarget: AR
+2024-08-21 11:44:23 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=612 --dropout=0.17531602867719484 --l2reg=0.08403237629559436 --learningRate=0.007988284877038699 --wabTarget=AR
+2024-08-21 11:44:28 INFO Running runs: ['6nhafj4g']
+2024-08-21 11:44:54 INFO Cleaning up finished run: 6nhafj4g
+2024-08-21 11:44:55 INFO Agent received command: run
+2024-08-21 11:44:55 INFO Agent starting run with config:
+	batchSize: 479
+	dropout: 0.28241609352504
+	l2reg: 0.08042021057496064
+	learningRate: 0.006321845628178838
+	wabTarget: AR
+2024-08-21 11:44:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=479 --dropout=0.28241609352504 --l2reg=0.08042021057496064 --learningRate=0.006321845628178838 --wabTarget=AR
+2024-08-21 11:45:00 INFO Running runs: ['10duk5hn']
+2024-08-21 11:45:21 INFO Cleaning up finished run: 10duk5hn
+2024-08-21 11:45:21 INFO Agent received command: run
+2024-08-21 11:45:21 INFO Agent starting run with config:
+	batchSize: 296
+	dropout: 0.3757888414476245
+	l2reg: 0.006676657857168858
+	learningRate: 0.000618134027674697
+	wabTarget: AR
+2024-08-21 11:45:21 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=296 --dropout=0.3757888414476245 --l2reg=0.006676657857168858 --learningRate=0.000618134027674697 --wabTarget=AR
+2024-08-21 11:45:26 INFO Running runs: ['6irsax92']
+2024-08-21 11:45:57 INFO Cleaning up finished run: 6irsax92
+2024-08-21 11:45:58 INFO Agent received command: run
+2024-08-21 11:45:58 INFO Agent starting run with config:
+	batchSize: 722
+	dropout: 0.40491949908858743
+	l2reg: 0.01959986424397334
+	learningRate: 0.004127236148192854
+	wabTarget: AR
+2024-08-21 11:45:58 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=722 --dropout=0.40491949908858743 --l2reg=0.01959986424397334 --learningRate=0.004127236148192854 --wabTarget=AR
+2024-08-21 11:46:03 INFO Running runs: ['himspjrm']
+2024-08-21 11:46:34 INFO Cleaning up finished run: himspjrm
+2024-08-21 11:46:34 INFO Agent received command: run
+2024-08-21 11:46:34 INFO Agent starting run with config:
+	batchSize: 440
+	dropout: 0.2190236486435847
+	l2reg: 0.015478839631830912
+	learningRate: 0.008418405549526753
+	wabTarget: AR
+2024-08-21 11:46:34 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=440 --dropout=0.2190236486435847 --l2reg=0.015478839631830912 --learningRate=0.008418405549526753 --wabTarget=AR
+2024-08-21 11:46:39 INFO Running runs: ['jlkwdl77']
+2024-08-21 11:47:05 INFO Cleaning up finished run: jlkwdl77
+2024-08-21 11:47:06 INFO Agent received command: run
+2024-08-21 11:47:06 INFO Agent starting run with config:
+	batchSize: 829
+	dropout: 0.2706500761254663
+	l2reg: 0.04740006147545797
+	learningRate: 8.157705225228526e-05
+	wabTarget: AR
+2024-08-21 11:47:06 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=829 --dropout=0.2706500761254663 --l2reg=0.04740006147545797 --learningRate=8.157705225228526e-05 --wabTarget=AR
+2024-08-21 11:47:11 INFO Running runs: ['2sezcr3c']
+2024-08-21 11:48:29 INFO Cleaning up finished run: 2sezcr3c
+2024-08-21 11:48:29 INFO Agent received command: run
+2024-08-21 11:48:29 INFO Agent starting run with config:
+	batchSize: 687
+	dropout: 0.38689830843020073
+	l2reg: 0.07196887273480147
+	learningRate: 0.007923301272348872
+	wabTarget: AR
+2024-08-21 11:48:29 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=687 --dropout=0.38689830843020073 --l2reg=0.07196887273480147 --learningRate=0.007923301272348872 --wabTarget=AR
+2024-08-21 11:48:34 INFO Running runs: ['puvgg0c2']
+2024-08-21 11:48:55 INFO Cleaning up finished run: puvgg0c2
+2024-08-21 11:48:55 INFO Agent received command: run
+2024-08-21 11:48:55 INFO Agent starting run with config:
+	batchSize: 256
+	dropout: 0.4154531722150014
+	l2reg: 0.054766023526181214
+	learningRate: 0.009200759303951029
+	wabTarget: AR
+2024-08-21 11:48:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=256 --dropout=0.4154531722150014 --l2reg=0.054766023526181214 --learningRate=0.009200759303951029 --wabTarget=AR
+2024-08-21 11:49:00 INFO Running runs: ['42jbxbiq']
+2024-08-21 11:49:21 INFO Cleaning up finished run: 42jbxbiq
+2024-08-21 11:49:21 INFO Agent received command: run
+2024-08-21 11:49:22 INFO Agent starting run with config:
+	batchSize: 248
+	dropout: 0.3435717953200188
+	l2reg: 0.05668907935226198
+	learningRate: 0.005595862371336259
+	wabTarget: AR
+2024-08-21 11:49:22 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=248 --dropout=0.3435717953200188 --l2reg=0.05668907935226198 --learningRate=0.005595862371336259 --wabTarget=AR
+2024-08-21 11:49:27 INFO Running runs: ['49qm2clv']
+2024-08-21 11:49:47 INFO Cleaning up finished run: 49qm2clv
+2024-08-21 11:49:48 INFO Agent received command: run
+2024-08-21 11:49:48 INFO Agent starting run with config:
+	batchSize: 405
+	dropout: 0.4810904748804128
+	l2reg: 0.07159999041226553
+	learningRate: 0.0022115157642589307
+	wabTarget: AR
+2024-08-21 11:49:48 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=405 --dropout=0.4810904748804128 --l2reg=0.07159999041226553 --learningRate=0.0022115157642589307 --wabTarget=AR
+2024-08-21 11:49:53 INFO Running runs: ['oityvflo']
+2024-08-21 11:50:13 INFO Cleaning up finished run: oityvflo
+2024-08-21 11:50:14 INFO Agent received command: run
+2024-08-21 11:50:14 INFO Agent starting run with config:
+	batchSize: 848
+	dropout: 0.3736945696663288
+	l2reg: 0.04133439065901037
+	learningRate: 0.003423371512262782
+	wabTarget: AR
+2024-08-21 11:50:14 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=848 --dropout=0.3736945696663288 --l2reg=0.04133439065901037 --learningRate=0.003423371512262782 --wabTarget=AR
+2024-08-21 11:50:19 INFO Running runs: ['xr2dor4s']
+2024-08-21 11:50:45 INFO Cleaning up finished run: xr2dor4s
+2024-08-21 11:50:45 INFO Agent received command: run
+2024-08-21 11:50:45 INFO Agent starting run with config:
+	batchSize: 310
+	dropout: 0.3950573964679678
+	l2reg: 0.09611157614979286
+	learningRate: 0.003413424807082272
+	wabTarget: AR
+2024-08-21 11:50:45 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=310 --dropout=0.3950573964679678 --l2reg=0.09611157614979286 --learningRate=0.003413424807082272 --wabTarget=AR
+2024-08-21 11:50:50 INFO Running runs: ['x2jdgyea']
+2024-08-21 11:51:11 INFO Cleaning up finished run: x2jdgyea
+2024-08-21 11:51:12 INFO Agent received command: run
+2024-08-21 11:51:12 INFO Agent starting run with config:
+	batchSize: 703
+	dropout: 0.027014957253454028
+	l2reg: 0.06906811840658852
+	learningRate: 0.0010355685315760843
+	wabTarget: AR
+2024-08-21 11:51:12 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=703 --dropout=0.027014957253454028 --l2reg=0.06906811840658852 --learningRate=0.0010355685315760843 --wabTarget=AR
+2024-08-21 11:51:17 INFO Running runs: ['atiflpp8']
+2024-08-21 11:51:54 INFO Cleaning up finished run: atiflpp8
+2024-08-21 11:51:55 INFO Agent received command: run
+2024-08-21 11:51:55 INFO Agent starting run with config:
+	batchSize: 439
+	dropout: 0.04868090529576545
+	l2reg: 0.0182497578822932
+	learningRate: 0.006997256638404694
+	wabTarget: AR
+2024-08-21 11:51:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=439 --dropout=0.04868090529576545 --l2reg=0.0182497578822932 --learningRate=0.006997256638404694 --wabTarget=AR
+2024-08-21 11:52:00 INFO Running runs: ['4nkcmtgw']
+2024-08-21 11:52:26 INFO Cleaning up finished run: 4nkcmtgw
+2024-08-21 11:52:26 INFO Agent received command: run
+2024-08-21 11:52:26 INFO Agent starting run with config:
+	batchSize: 163
+	dropout: 0.3221563324613985
+	l2reg: 0.07597125440041326
+	learningRate: 0.0008882182348800741
+	wabTarget: AR
+2024-08-21 11:52:26 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=163 --dropout=0.3221563324613985 --l2reg=0.07597125440041326 --learningRate=0.0008882182348800741 --wabTarget=AR
+2024-08-21 11:52:31 INFO Running runs: ['wacqj44b']
+2024-08-21 11:52:58 INFO Cleaning up finished run: wacqj44b
+2024-08-21 11:52:58 INFO Agent received command: run
+2024-08-21 11:52:58 INFO Agent starting run with config:
+	batchSize: 1001
+	dropout: 0.36423095405195266
+	l2reg: 0.07818059130481268
+	learningRate: 0.0026456048393804794
+	wabTarget: AR
+2024-08-21 11:52:58 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=1001 --dropout=0.36423095405195266 --l2reg=0.07818059130481268 --learningRate=0.0026456048393804794 --wabTarget=AR
+2024-08-21 11:53:03 INFO Running runs: ['ydmvuvm1']
+2024-08-21 11:53:30 INFO Cleaning up finished run: ydmvuvm1
+2024-08-21 11:53:33 INFO Agent received command: run
+2024-08-21 11:53:33 INFO Agent starting run with config:
+	batchSize: 829
+	dropout: 0.08357512397610203
+	l2reg: 0.0848932964844523
+	learningRate: 0.00840915432465265
+	wabTarget: AR
+2024-08-21 11:53:33 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=829 --dropout=0.08357512397610203 --l2reg=0.0848932964844523 --learningRate=0.00840915432465265 --wabTarget=AR
+2024-08-21 11:53:38 INFO Running runs: ['g8jyskcu']
+2024-08-21 11:53:59 INFO Cleaning up finished run: g8jyskcu
+2024-08-21 11:53:59 INFO Agent received command: run
+2024-08-21 11:53:59 INFO Agent starting run with config:
+	batchSize: 282
+	dropout: 0.05088096146433274
+	l2reg: 0.030042445910048225
+	learningRate: 0.000953267880282942
+	wabTarget: AR
+2024-08-21 11:53:59 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=282 --dropout=0.05088096146433274 --l2reg=0.030042445910048225 --learningRate=0.000953267880282942 --wabTarget=AR
+2024-08-21 11:54:04 INFO Running runs: ['layze0xg']
+2024-08-21 12:08:26 INFO Running runs: []
+2024-08-21 12:08:26 INFO Agent received command: run
+2024-08-21 12:08:26 INFO Agent starting run with config:
+	batchSize: 441
+	dropout: 0.09791218938712629
+	l2reg: 9.883084141762686e-05
+	learningRate: 0.0004993903005023491
+	wabTarget: AR
+2024-08-21 12:08:26 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=441 --dropout=0.09791218938712629 --l2reg=9.883084141762686e-05 --learningRate=0.0004993903005023491 --wabTarget=AR
+2024-08-21 12:08:31 INFO Running runs: ['vfffvw8i']
+2024-08-21 12:09:35 INFO Cleaning up finished run: vfffvw8i
+2024-08-21 12:09:35 INFO Agent received command: run
+2024-08-21 12:09:35 INFO Agent starting run with config:
+	batchSize: 567
+	dropout: 0.17135171335984947
+	l2reg: 4.18483727443632e-05
+	learningRate: 0.00046073178969304
+	wabTarget: AR
+2024-08-21 12:09:35 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=567 --dropout=0.17135171335984947 --l2reg=4.18483727443632e-05 --learningRate=0.00046073178969304 --wabTarget=AR
+2024-08-21 12:09:40 INFO Running runs: ['s2toadzd']
+2024-08-21 12:10:17 INFO Cleaning up finished run: s2toadzd
+2024-08-21 12:10:17 INFO Agent received command: run
+2024-08-21 12:10:17 INFO Agent starting run with config:
+	batchSize: 305
+	dropout: 0.1856748906745515
+	l2reg: 3.295764074000758e-05
+	learningRate: 0.0004018958693985734
+	wabTarget: AR
+2024-08-21 12:10:17 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=305 --dropout=0.1856748906745515 --l2reg=3.295764074000758e-05 --learningRate=0.0004018958693985734 --wabTarget=AR
+2024-08-21 12:10:22 INFO Running runs: ['qqh8bx9u']
+2024-08-21 12:10:43 INFO Cleaning up finished run: qqh8bx9u
+2024-08-21 12:10:43 INFO Agent received command: run
+2024-08-21 12:10:43 INFO Agent starting run with config:
+	batchSize: 799
+	dropout: 0.06025826697309745
+	l2reg: 2.5313084579511465e-05
+	learningRate: 0.0004401976308724224
+	wabTarget: AR
+2024-08-21 12:10:43 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=799 --dropout=0.06025826697309745 --l2reg=2.5313084579511465e-05 --learningRate=0.0004401976308724224 --wabTarget=AR
+2024-08-21 12:10:48 INFO Running runs: ['qqsre1rf']
+2024-08-21 12:11:14 INFO Cleaning up finished run: qqsre1rf
+2024-08-21 12:11:15 INFO Agent received command: run
+2024-08-21 12:11:15 INFO Agent starting run with config:
+	batchSize: 201
+	dropout: 0.1432578723928732
+	l2reg: 7.566824994745918e-05
+	learningRate: 0.0008446561885854657
+	wabTarget: AR
+2024-08-21 12:11:15 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=201 --dropout=0.1432578723928732 --l2reg=7.566824994745918e-05 --learningRate=0.0008446561885854657 --wabTarget=AR
+2024-08-21 12:11:20 INFO Running runs: ['ez097jw6']
+2024-08-21 12:12:17 INFO Cleaning up finished run: ez097jw6
+2024-08-21 12:12:17 INFO Agent received command: run
+2024-08-21 12:12:17 INFO Agent starting run with config:
+	batchSize: 390
+	dropout: 0.02269519381522582
+	l2reg: 8.569551036423556e-05
+	learningRate: 0.0009961588368395896
+	wabTarget: AR
+2024-08-21 12:12:17 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=390 --dropout=0.02269519381522582 --l2reg=8.569551036423556e-05 --learningRate=0.0009961588368395896 --wabTarget=AR
+2024-08-21 12:12:22 INFO Running runs: ['ht66rw9u']
+2024-08-21 12:13:14 INFO Cleaning up finished run: ht66rw9u
+2024-08-21 12:13:15 INFO Agent received command: run
+2024-08-21 12:13:15 INFO Agent starting run with config:
+	batchSize: 410
+	dropout: 0.032211756099893345
+	l2reg: 5.424016006034452e-05
+	learningRate: 0.0007864344297754998
+	wabTarget: AR
+2024-08-21 12:13:15 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=410 --dropout=0.032211756099893345 --l2reg=5.424016006034452e-05 --learningRate=0.0007864344297754998 --wabTarget=AR
+2024-08-21 12:13:20 INFO Running runs: ['g2c758gf']
+2024-08-21 12:13:56 INFO Cleaning up finished run: g2c758gf
+2024-08-21 12:13:59 INFO Agent received command: run
+2024-08-21 12:13:59 INFO Agent starting run with config:
+	batchSize: 715
+	dropout: 0.12383688750247106
+	l2reg: 4.185410578259114e-05
+	learningRate: 8.890970777410037e-05
+	wabTarget: AR
+2024-08-21 12:13:59 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=715 --dropout=0.12383688750247106 --l2reg=4.185410578259114e-05 --learningRate=8.890970777410037e-05 --wabTarget=AR
+2024-08-21 12:14:04 INFO Running runs: ['6udoz95z']
+2024-08-21 12:14:40 INFO Cleaning up finished run: 6udoz95z
+2024-08-21 12:14:41 INFO Agent received command: run
+2024-08-21 12:14:41 INFO Agent starting run with config:
+	batchSize: 247
+	dropout: 0.1360099139181126
+	l2reg: 4.916582849084638e-05
+	learningRate: 0.0005059248884753323
+	wabTarget: AR
+2024-08-21 12:14:41 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=247 --dropout=0.1360099139181126 --l2reg=4.916582849084638e-05 --learningRate=0.0005059248884753323 --wabTarget=AR
+2024-08-21 12:14:46 INFO Running runs: ['tcng42ud']
+2024-08-21 12:15:43 INFO Cleaning up finished run: tcng42ud
+2024-08-21 12:15:43 INFO Agent received command: run
+2024-08-21 12:15:43 INFO Agent starting run with config:
+	batchSize: 564
+	dropout: 0.16467993748971707
+	l2reg: 9.103364542124368e-05
+	learningRate: 0.0001809728451372228
+	wabTarget: AR
+2024-08-21 12:15:43 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=564 --dropout=0.16467993748971707 --l2reg=9.103364542124368e-05 --learningRate=0.0001809728451372228 --wabTarget=AR
+2024-08-21 12:15:48 INFO Running runs: ['vcpthoyv']
+2024-08-21 12:17:27 INFO Cleaning up finished run: vcpthoyv
+2024-08-21 12:17:28 INFO Agent received command: run
+2024-08-21 12:17:28 INFO Agent starting run with config:
+	batchSize: 817
+	dropout: 0.015590544875115853
+	l2reg: 8.243528770804706e-05
+	learningRate: 8.338020778485607e-05
+	wabTarget: AR
+2024-08-21 12:17:28 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=817 --dropout=0.015590544875115853 --l2reg=8.243528770804706e-05 --learningRate=8.338020778485607e-05 --wabTarget=AR
+2024-08-21 12:17:33 INFO Running runs: ['bc03lavi']
+2024-08-21 12:18:09 INFO Cleaning up finished run: bc03lavi
+2024-08-21 12:18:10 INFO Agent received command: run
+2024-08-21 12:18:10 INFO Agent starting run with config:
+	batchSize: 649
+	dropout: 0.1854136147619252
+	l2reg: 5.151070633240427e-05
+	learningRate: 0.00045354397139745704
+	wabTarget: AR
+2024-08-21 12:18:10 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=649 --dropout=0.1854136147619252 --l2reg=5.151070633240427e-05 --learningRate=0.00045354397139745704 --wabTarget=AR
+2024-08-21 12:18:15 INFO Running runs: ['2xhb2cta']
+2024-08-21 12:19:23 INFO Cleaning up finished run: 2xhb2cta
+2024-08-21 12:19:23 INFO Agent received command: run
+2024-08-21 12:19:23 INFO Agent starting run with config:
+	batchSize: 443
+	dropout: 0.12322990369373447
+	l2reg: 3.749991931928551e-05
+	learningRate: 5.03405616651653e-05
+	wabTarget: AR
+2024-08-21 12:19:23 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=443 --dropout=0.12322990369373447 --l2reg=3.749991931928551e-05 --learningRate=5.03405616651653e-05 --wabTarget=AR
+2024-08-21 12:19:28 INFO Running runs: ['eaaqw7gf']
+2024-08-21 12:19:49 INFO Cleaning up finished run: eaaqw7gf
+2024-08-21 12:19:49 INFO Agent received command: run
+2024-08-21 12:19:49 INFO Agent starting run with config:
+	batchSize: 910
+	dropout: 0.16558394662778728
+	l2reg: 2.3440045813930807e-05
+	learningRate: 2.4295500013159292e-05
+	wabTarget: AR
+2024-08-21 12:19:49 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=910 --dropout=0.16558394662778728 --l2reg=2.3440045813930807e-05 --learningRate=2.4295500013159292e-05 --wabTarget=AR
+2024-08-21 12:19:54 INFO Running runs: ['yq9gxzgv']
+2024-08-21 12:20:10 INFO Cleaning up finished run: yq9gxzgv
+2024-08-21 12:20:10 INFO Agent received command: run
+2024-08-21 12:20:10 INFO Agent starting run with config:
+	batchSize: 536
+	dropout: 0.13527485872137435
+	l2reg: 1.858303561278364e-05
+	learningRate: 0.0005860423944767082
+	wabTarget: AR
+2024-08-21 12:20:10 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=536 --dropout=0.13527485872137435 --l2reg=1.858303561278364e-05 --learningRate=0.0005860423944767082 --wabTarget=AR
+2024-08-21 12:20:15 INFO Running runs: ['cgla1tsf']
+2024-08-21 12:20:36 INFO Cleaning up finished run: cgla1tsf
+2024-08-21 12:20:37 INFO Agent received command: run
+2024-08-21 12:20:37 INFO Agent starting run with config:
+	batchSize: 463
+	dropout: 0.1911872825798189
+	l2reg: 2.373607509718952e-05
+	learningRate: 0.00011626968271481632
+	wabTarget: AR
+2024-08-21 12:20:37 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=463 --dropout=0.1911872825798189 --l2reg=2.373607509718952e-05 --learningRate=0.00011626968271481632 --wabTarget=AR
+2024-08-21 12:20:42 INFO Running runs: ['xdd5r31m']
+2024-08-21 12:21:08 INFO Cleaning up finished run: xdd5r31m
+2024-08-21 12:21:08 INFO Agent received command: run
+2024-08-21 12:21:08 INFO Agent starting run with config:
+	batchSize: 856
+	dropout: 0.044078256893680424
+	l2reg: 5.532130228787322e-05
+	learningRate: 0.00032166471759667326
+	wabTarget: AR
+2024-08-21 12:21:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=856 --dropout=0.044078256893680424 --l2reg=5.532130228787322e-05 --learningRate=0.00032166471759667326 --wabTarget=AR
+2024-08-21 12:21:13 INFO Running runs: ['2ry1j4ol']
+2024-08-21 12:21:44 INFO Cleaning up finished run: 2ry1j4ol
+2024-08-21 12:21:45 INFO Agent received command: run
+2024-08-21 12:21:45 INFO Agent starting run with config:
+	batchSize: 731
+	dropout: 0.05944688746065589
+	l2reg: 5.5805961888619264e-05
+	learningRate: 0.0007347029015752528
+	wabTarget: AR
+2024-08-21 12:21:45 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=731 --dropout=0.05944688746065589 --l2reg=5.5805961888619264e-05 --learningRate=0.0007347029015752528 --wabTarget=AR
+2024-08-21 12:21:50 INFO Running runs: ['egijmvan']
+2024-08-21 12:22:21 INFO Cleaning up finished run: egijmvan
+2024-08-21 12:22:22 INFO Agent received command: run
+2024-08-21 12:22:22 INFO Agent starting run with config:
+	batchSize: 763
+	dropout: 0.031080282452474503
+	l2reg: 8.232825957674282e-05
+	learningRate: 0.000567636383561949
+	wabTarget: AR
+2024-08-21 12:22:22 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=763 --dropout=0.031080282452474503 --l2reg=8.232825957674282e-05 --learningRate=0.000567636383561949 --wabTarget=AR
+2024-08-21 12:22:27 INFO Running runs: ['x97ho4dk']
+2024-08-21 12:37:02 INFO Running runs: []
+2024-08-21 12:37:03 INFO Agent received command: run
+2024-08-21 12:37:03 INFO Agent starting run with config:
+	batchSize: 411
+	dropout: 0.02279951566243333
+	l2reg: 0.0002324976089449645
+	learningRate: 0.0010781929001426982
+	wabTarget: AR
+2024-08-21 12:37:03 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=411 --dropout=0.02279951566243333 --l2reg=0.0002324976089449645 --learningRate=0.0010781929001426982 --wabTarget=AR
+2024-08-21 12:37:08 INFO Running runs: ['4q64xsv8']
+2024-08-21 12:38:16 INFO Cleaning up finished run: 4q64xsv8
+2024-08-21 12:38:16 INFO Agent received command: run
+2024-08-21 12:38:16 INFO Agent starting run with config:
+	batchSize: 136
+	dropout: 0.15215516847442068
+	l2reg: 0.0003506007596190753
+	learningRate: 0.0002481759344955078
+	wabTarget: AR
+2024-08-21 12:38:16 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=136 --dropout=0.15215516847442068 --l2reg=0.0003506007596190753 --learningRate=0.0002481759344955078 --wabTarget=AR
+2024-08-21 12:38:21 INFO Running runs: ['bt8pes8y']
+2024-08-21 12:39:13 INFO Cleaning up finished run: bt8pes8y
+2024-08-21 12:39:14 INFO Agent received command: run
+2024-08-21 12:39:14 INFO Agent starting run with config:
+	batchSize: 324
+	dropout: 0.1110345489951032
+	l2reg: 0.00025537668670615925
+	learningRate: 0.008958771353886659
+	wabTarget: AR
+2024-08-21 12:39:14 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=324 --dropout=0.1110345489951032 --l2reg=0.00025537668670615925 --learningRate=0.008958771353886659 --wabTarget=AR
+2024-08-21 12:39:19 INFO Running runs: ['0mjqylnz']
+2024-08-21 12:39:55 INFO Cleaning up finished run: 0mjqylnz
+2024-08-21 12:39:55 INFO Agent received command: run
+2024-08-21 12:39:55 INFO Agent starting run with config:
+	batchSize: 52
+	dropout: 0.01519061766998999
+	l2reg: 0.0002876630247973225
+	learningRate: 0.004910581616568842
+	wabTarget: AR
+2024-08-21 12:39:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=52 --dropout=0.01519061766998999 --l2reg=0.0002876630247973225 --learningRate=0.004910581616568842 --wabTarget=AR
+2024-08-21 12:40:00 INFO Running runs: ['1jnvlt6i']
+2024-08-21 12:40:31 INFO Cleaning up finished run: 1jnvlt6i
+2024-08-21 12:40:32 INFO Agent received command: run
+2024-08-21 12:40:32 INFO Agent starting run with config:
+	batchSize: 386
+	dropout: 0.066861364354264
+	l2reg: 0.00022593037189591177
+	learningRate: 0.006441542918415821
+	wabTarget: AR
+2024-08-21 12:40:32 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=386 --dropout=0.066861364354264 --l2reg=0.00022593037189591177 --learningRate=0.006441542918415821 --wabTarget=AR
+2024-08-21 12:40:37 INFO Running runs: ['la60cx6s']
+2024-08-21 12:41:14 INFO Cleaning up finished run: la60cx6s
+2024-08-21 12:41:14 INFO Agent received command: run
+2024-08-21 12:41:14 INFO Agent starting run with config:
+	batchSize: 186
+	dropout: 0.037032483748661735
+	l2reg: 0.0006027249672204577
+	learningRate: 0.0031516172715353495
+	wabTarget: AR
+2024-08-21 12:41:14 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=186 --dropout=0.037032483748661735 --l2reg=0.0006027249672204577 --learningRate=0.0031516172715353495 --wabTarget=AR
+2024-08-21 12:41:19 INFO Running runs: ['r4kj2w7q']
+2024-08-21 12:41:50 INFO Cleaning up finished run: r4kj2w7q
+2024-08-21 12:41:51 INFO Agent received command: run
+2024-08-21 12:41:51 INFO Agent starting run with config:
+	batchSize: 79
+	dropout: 0.17919051312991444
+	l2reg: 0.0002008392363798776
+	learningRate: 0.00876640613391755
+	wabTarget: AR
+2024-08-21 12:41:51 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=79 --dropout=0.17919051312991444 --l2reg=0.0002008392363798776 --learningRate=0.00876640613391755 --wabTarget=AR
+2024-08-21 12:41:56 INFO Running runs: ['lypmkhmw']
+2024-08-21 12:42:27 INFO Cleaning up finished run: lypmkhmw
+2024-08-21 12:42:27 INFO Agent received command: run
+2024-08-21 12:42:27 INFO Agent starting run with config:
+	batchSize: 33
+	dropout: 0.02694469486632505
+	l2reg: 0.00035612221596113423
+	learningRate: 0.007185396524297324
+	wabTarget: AR
+2024-08-21 12:42:27 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=33 --dropout=0.02694469486632505 --l2reg=0.00035612221596113423 --learningRate=0.007185396524297324 --wabTarget=AR
+2024-08-21 12:42:32 INFO Running runs: ['lpo1j9i1']
+2024-08-21 12:43:19 INFO Cleaning up finished run: lpo1j9i1
+2024-08-21 12:43:19 INFO Agent received command: run
+2024-08-21 12:43:19 INFO Agent starting run with config:
+	batchSize: 58
+	dropout: 0.18790091401931008
+	l2reg: 0.0002631770939173116
+	learningRate: 0.0014601053881418264
+	wabTarget: AR
+2024-08-21 12:43:19 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=58 --dropout=0.18790091401931008 --l2reg=0.0002631770939173116 --learningRate=0.0014601053881418264 --wabTarget=AR
+2024-08-21 12:43:24 INFO Running runs: ['sqc5w64b']
+2024-08-21 12:44:06 INFO Cleaning up finished run: sqc5w64b
+2024-08-21 12:44:06 INFO Agent received command: run
+2024-08-21 12:44:06 INFO Agent starting run with config:
+	batchSize: 437
+	dropout: 0.007126985624185357
+	l2reg: 0.0003729731728882851
+	learningRate: 0.0018943651104386776
+	wabTarget: AR
+2024-08-21 12:44:06 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=437 --dropout=0.007126985624185357 --l2reg=0.0003729731728882851 --learningRate=0.0018943651104386776 --wabTarget=AR
+2024-08-21 12:44:11 INFO Running runs: ['pti3tbg9']
+2024-08-21 12:45:14 INFO Cleaning up finished run: pti3tbg9
+2024-08-21 12:45:14 INFO Agent received command: run
+2024-08-21 12:45:14 INFO Agent starting run with config:
+	batchSize: 502
+	dropout: 0.0684069522484013
+	l2reg: 0.0004870968049798527
+	learningRate: 0.004811242654970279
+	wabTarget: AR
+2024-08-21 12:45:14 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=502 --dropout=0.0684069522484013 --l2reg=0.0004870968049798527 --learningRate=0.004811242654970279 --wabTarget=AR
+2024-08-21 12:45:19 INFO Running runs: ['bmebsrw0']
+2024-08-21 12:46:07 INFO Cleaning up finished run: bmebsrw0
+2024-08-21 12:46:07 INFO Agent received command: run
+2024-08-21 12:46:07 INFO Agent starting run with config:
+	batchSize: 190
+	dropout: 0.12674638655981338
+	l2reg: 0.0006889032537265268
+	learningRate: 0.004173229037016275
+	wabTarget: AR
+2024-08-21 12:46:07 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=190 --dropout=0.12674638655981338 --l2reg=0.0006889032537265268 --learningRate=0.004173229037016275 --wabTarget=AR
+2024-08-21 12:46:12 INFO Running runs: ['ojhdi73u']
+2024-08-21 12:46:43 INFO Cleaning up finished run: ojhdi73u
+2024-08-21 12:46:43 INFO Agent received command: run
+2024-08-21 12:46:43 INFO Agent starting run with config:
+	batchSize: 328
+	dropout: 0.11605097083884226
+	l2reg: 0.0009729097552435542
+	learningRate: 0.0051049744505166335
+	wabTarget: AR
+2024-08-21 12:46:43 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=328 --dropout=0.11605097083884226 --l2reg=0.0009729097552435542 --learningRate=0.0051049744505166335 --wabTarget=AR
+2024-08-21 12:46:48 INFO Running runs: ['41dlbwny']
+2024-08-21 12:47:25 INFO Cleaning up finished run: 41dlbwny
+2024-08-21 12:47:25 INFO Agent received command: run
+2024-08-21 12:47:25 INFO Agent starting run with config:
+	batchSize: 206
+	dropout: 0.08559445456342481
+	l2reg: 0.0008510808074285339
+	learningRate: 0.0074886705405255985
+	wabTarget: AR
+2024-08-21 12:47:25 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=206 --dropout=0.08559445456342481 --l2reg=0.0008510808074285339 --learningRate=0.0074886705405255985 --wabTarget=AR
+2024-08-21 12:47:30 INFO Running runs: ['pteano0d']
+2024-08-21 12:48:01 INFO Cleaning up finished run: pteano0d
+2024-08-21 12:48:02 INFO Agent received command: run
+2024-08-21 12:48:02 INFO Agent starting run with config:
+	batchSize: 276
+	dropout: 0.03663566821730633
+	l2reg: 0.00032248520324873415
+	learningRate: 0.0009322026366173786
+	wabTarget: AR
+2024-08-21 12:48:02 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=276 --dropout=0.03663566821730633 --l2reg=0.00032248520324873415 --learningRate=0.0009322026366173786 --wabTarget=AR
+2024-08-21 12:48:07 INFO Running runs: ['i84ejc47']
+2024-08-21 12:49:04 INFO Cleaning up finished run: i84ejc47
+2024-08-21 12:49:04 INFO Agent received command: run
+2024-08-21 12:49:04 INFO Agent starting run with config:
+	batchSize: 316
+	dropout: 0.13298320161319624
+	l2reg: 0.0009602847769398482
+	learningRate: 0.008131247298840266
+	wabTarget: AR
+2024-08-21 12:49:04 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=316 --dropout=0.13298320161319624 --l2reg=0.0009602847769398482 --learningRate=0.008131247298840266 --wabTarget=AR
+2024-08-21 12:49:09 INFO Running runs: ['hszkxgjf']
+2024-08-21 12:49:46 INFO Cleaning up finished run: hszkxgjf
+2024-08-21 12:49:46 INFO Agent received command: run
+2024-08-21 12:49:46 INFO Agent starting run with config:
+	batchSize: 305
+	dropout: 0.09753755801469904
+	l2reg: 0.0001506943963194711
+	learningRate: 0.0027165532182342024
+	wabTarget: AR
+2024-08-21 12:49:46 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=305 --dropout=0.09753755801469904 --l2reg=0.0001506943963194711 --learningRate=0.0027165532182342024 --wabTarget=AR
+2024-08-21 12:49:51 INFO Running runs: ['q07miepg']
+2024-08-21 12:50:53 INFO Cleaning up finished run: q07miepg
+2024-08-21 12:50:54 INFO Agent received command: run
+2024-08-21 12:50:54 INFO Agent starting run with config:
+	batchSize: 206
+	dropout: 0.12023915185917064
+	l2reg: 0.0002681170812691741
+	learningRate: 0.0015572411313445405
+	wabTarget: AR
+2024-08-21 12:50:54 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=206 --dropout=0.12023915185917064 --l2reg=0.0002681170812691741 --learningRate=0.0015572411313445405 --wabTarget=AR
+2024-08-21 12:50:59 INFO Running runs: ['7ga8vdvk']
+2024-08-21 12:51:42 INFO Cleaning up finished run: 7ga8vdvk
+2024-08-21 12:51:42 INFO Agent received command: run
+2024-08-21 12:51:42 INFO Agent starting run with config:
+	batchSize: 483
+	dropout: 0.007776368819404341
+	l2reg: 0.0002960065917498899
+	learningRate: 0.002069608156493695
+	wabTarget: AR
+2024-08-21 12:51:42 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=483 --dropout=0.007776368819404341 --l2reg=0.0002960065917498899 --learningRate=0.002069608156493695 --wabTarget=AR
+2024-08-21 12:51:47 INFO Running runs: ['vzn96uon']
+2024-08-21 12:52:39 INFO Cleaning up finished run: vzn96uon
+2024-08-21 12:52:40 INFO Agent received command: run
+2024-08-21 12:52:40 INFO Agent starting run with config:
+	batchSize: 319
+	dropout: 0.15385262191552243
+	l2reg: 0.0009337468953346666
+	learningRate: 0.0038475573831170686
+	wabTarget: AR
+2024-08-21 12:52:40 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=319 --dropout=0.15385262191552243 --l2reg=0.0009337468953346666 --learningRate=0.0038475573831170686 --wabTarget=AR
+2024-08-21 12:52:45 INFO Running runs: ['ahpc1uz9']
+2024-08-21 12:53:44 INFO Running runs: []
+2024-08-21 12:53:44 INFO Agent received command: run
+2024-08-21 12:53:44 INFO Agent starting run with config:
+	batchSize: 568
+	dropout: 0.1367263845349341
+	l2reg: 0.0006990906941330739
+	learningRate: 0.0038168106505741695
+	wabTarget: AR
+2024-08-21 12:53:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=568 --dropout=0.1367263845349341 --l2reg=0.0006990906941330739 --learningRate=0.0038168106505741695 --wabTarget=AR
+2024-08-21 12:53:49 INFO Running runs: ['1e7shiqt']
+2024-08-21 12:54:46 INFO Cleaning up finished run: 1e7shiqt
+2024-08-21 12:54:47 INFO Agent received command: run
+2024-08-21 12:54:47 INFO Agent starting run with config:
+	batchSize: 491
+	dropout: 0.04286331525451744
+	l2reg: 0.0005892593492602305
+	learningRate: 0.0020360520934220375
+	wabTarget: AR
+2024-08-21 12:54:47 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=491 --dropout=0.04286331525451744 --l2reg=0.0005892593492602305 --learningRate=0.0020360520934220375 --wabTarget=AR
+2024-08-21 12:54:52 INFO Running runs: ['w3vfuwbh']
+2024-08-21 12:56:00 INFO Cleaning up finished run: w3vfuwbh
+2024-08-21 12:56:00 INFO Agent received command: run
+2024-08-21 12:56:00 INFO Agent starting run with config:
+	batchSize: 599
+	dropout: 0.008068101897177032
+	l2reg: 0.0009131358105990888
+	learningRate: 0.0003780311327257482
+	wabTarget: AR
+2024-08-21 12:56:00 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=599 --dropout=0.008068101897177032 --l2reg=0.0009131358105990888 --learningRate=0.0003780311327257482 --wabTarget=AR
+2024-08-21 12:56:05 INFO Running runs: ['wccbf9l5']
+2024-08-21 12:57:40 INFO Cleaning up finished run: wccbf9l5
+2024-08-21 12:57:40 INFO Agent received command: run
+2024-08-21 12:57:40 INFO Agent starting run with config:
+	batchSize: 865
+	dropout: 0.08084632877804258
+	l2reg: 0.0009006708437214741
+	learningRate: 0.0012767212315685976
+	wabTarget: AR
+2024-08-21 12:57:40 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=865 --dropout=0.08084632877804258 --l2reg=0.0009006708437214741 --learningRate=0.0012767212315685976 --wabTarget=AR
+2024-08-21 12:57:45 INFO Running runs: ['r00pldiv']
+2024-08-21 12:58:42 INFO Cleaning up finished run: r00pldiv
+2024-08-21 12:58:43 INFO Agent received command: run
+2024-08-21 12:58:43 INFO Agent starting run with config:
+	batchSize: 890
+	dropout: 0.13628572140619966
+	l2reg: 0.00047929934636982354
+	learningRate: 0.008886056402602415
+	wabTarget: AR
+2024-08-21 12:58:43 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=890 --dropout=0.13628572140619966 --l2reg=0.00047929934636982354 --learningRate=0.008886056402602415 --wabTarget=AR
+2024-08-21 12:58:48 INFO Running runs: ['zceoih6y']
+2024-08-21 12:59:24 INFO Cleaning up finished run: zceoih6y
+2024-08-21 12:59:25 INFO Agent received command: run
+2024-08-21 12:59:25 INFO Agent starting run with config:
+	batchSize: 939
+	dropout: 0.19107925968238176
+	l2reg: 0.000998717212845621
+	learningRate: 0.002188142149994093
+	wabTarget: AR
+2024-08-21 12:59:25 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=939 --dropout=0.19107925968238176 --l2reg=0.000998717212845621 --learningRate=0.002188142149994093 --wabTarget=AR
+2024-08-21 12:59:30 INFO Running runs: ['0q39ido1']
+2024-08-21 13:00:32 INFO Cleaning up finished run: 0q39ido1
+2024-08-21 13:00:32 INFO Agent received command: run
+2024-08-21 13:00:32 INFO Agent starting run with config:
+	batchSize: 735
+	dropout: 0.1917923453905341
+	l2reg: 0.00018005814180728312
+	learningRate: 0.0039579285564292355
+	wabTarget: AR
+2024-08-21 13:00:32 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=735 --dropout=0.1917923453905341 --l2reg=0.00018005814180728312 --learningRate=0.0039579285564292355 --wabTarget=AR
+2024-08-21 13:00:37 INFO Running runs: ['i3ue89x2']
+2024-08-21 13:01:40 INFO Cleaning up finished run: i3ue89x2
+2024-08-21 13:01:40 INFO Agent received command: run
+2024-08-21 13:01:40 INFO Agent starting run with config:
+	batchSize: 877
+	dropout: 0.02277922379647722
+	l2reg: 0.0007473082107132211
+	learningRate: 0.005625698216758179
+	wabTarget: AR
+2024-08-21 13:01:40 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=877 --dropout=0.02277922379647722 --l2reg=0.0007473082107132211 --learningRate=0.005625698216758179 --wabTarget=AR
+2024-08-21 13:01:45 INFO Running runs: ['wn7zk1wq']
+2024-08-21 13:02:21 INFO Cleaning up finished run: wn7zk1wq
+2024-08-21 13:02:22 INFO Agent received command: run
+2024-08-21 13:02:22 INFO Agent starting run with config:
+	batchSize: 782
+	dropout: 0.16705067418686173
+	l2reg: 0.0005255760472959514
+	learningRate: 0.005884256844173832
+	wabTarget: AR
+2024-08-21 13:02:22 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=782 --dropout=0.16705067418686173 --l2reg=0.0005255760472959514 --learningRate=0.005884256844173832 --wabTarget=AR
+2024-08-21 13:02:27 INFO Running runs: ['2xol8i7m']
+2024-08-21 13:03:08 INFO Cleaning up finished run: 2xol8i7m
+2024-08-21 13:03:09 INFO Agent received command: run
+2024-08-21 13:03:09 INFO Agent starting run with config:
+	batchSize: 411
+	dropout: 0.1887462412175371
+	l2reg: 0.0001305699846558439
+	learningRate: 0.004283350654144409
+	wabTarget: AR
+2024-08-21 13:03:09 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=411 --dropout=0.1887462412175371 --l2reg=0.0001305699846558439 --learningRate=0.004283350654144409 --wabTarget=AR
+2024-08-21 13:03:14 INFO Running runs: ['d3nldqd6']
+2024-08-21 13:04:01 INFO Cleaning up finished run: d3nldqd6
+2024-08-21 13:04:04 INFO Agent received command: run
+2024-08-21 13:04:04 INFO Agent starting run with config:
+	batchSize: 762
+	dropout: 0.07253008706349645
+	l2reg: 0.00039354966148483943
+	learningRate: 0.008599457131838018
+	wabTarget: AR
+2024-08-21 13:04:04 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=762 --dropout=0.07253008706349645 --l2reg=0.00039354966148483943 --learningRate=0.008599457131838018 --wabTarget=AR
+2024-08-21 13:04:09 INFO Running runs: ['tzoh81t2']
+2024-08-21 13:04:56 INFO Cleaning up finished run: tzoh81t2
+2024-08-21 13:04:56 INFO Agent received command: run
+2024-08-21 13:04:56 INFO Agent starting run with config:
+	batchSize: 946
+	dropout: 0.09192018590577984
+	l2reg: 0.0006783419173494049
+	learningRate: 0.004987578220989047
+	wabTarget: AR
+2024-08-21 13:04:56 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=946 --dropout=0.09192018590577984 --l2reg=0.0006783419173494049 --learningRate=0.004987578220989047 --wabTarget=AR
+2024-08-21 13:05:01 INFO Running runs: ['0ij8amrx']
+2024-08-21 13:05:43 INFO Cleaning up finished run: 0ij8amrx
+2024-08-21 13:05:44 INFO Agent received command: run
+2024-08-21 13:05:44 INFO Agent starting run with config:
+	batchSize: 938
+	dropout: 0.13394542287895597
+	l2reg: 0.0006833575549680623
+	learningRate: 0.0005002872603157179
+	wabTarget: AR
+2024-08-21 13:05:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=938 --dropout=0.13394542287895597 --l2reg=0.0006833575549680623 --learningRate=0.0005002872603157179 --wabTarget=AR
+2024-08-21 13:05:49 INFO Running runs: ['0vafjrsp']
+2024-08-21 13:07:42 INFO Running runs: []
+2024-08-21 13:07:42 INFO Agent received command: run
+2024-08-21 13:07:42 INFO Agent starting run with config:
+	batchSize: 876
+	dropout: 0.14068254034144154
+	l2reg: 0.0002287323786287476
+	learningRate: 0.0056055335194694295
+	wabTarget: AR
+2024-08-21 13:07:42 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=876 --dropout=0.14068254034144154 --l2reg=0.0002287323786287476 --learningRate=0.0056055335194694295 --wabTarget=AR
+2024-08-21 13:07:47 INFO Running runs: ['nhg17a7z']
+2024-08-21 13:14:02 INFO Cleaning up finished run: nhg17a7z
+2024-08-21 13:14:03 INFO Agent received command: run
+2024-08-21 13:14:03 INFO Agent starting run with config:
+	batchSize: 803
+	dropout: 0.07158652667595185
+	l2reg: 0.0007517426389230835
+	learningRate: 0.0005045512689610851
+	wabTarget: AR
+2024-08-21 13:14:03 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=803 --dropout=0.07158652667595185 --l2reg=0.0007517426389230835 --learningRate=0.0005045512689610851 --wabTarget=AR
+2024-08-21 13:14:08 INFO Running runs: ['eco5g7va']
+2024-08-21 13:17:19 INFO Cleaning up finished run: eco5g7va
+2024-08-21 13:17:20 INFO Agent received command: run
+2024-08-21 13:17:20 INFO Agent starting run with config:
+	batchSize: 979
+	dropout: 0.10512284118108148
+	l2reg: 0.0009610583822035792
+	learningRate: 0.00812134622210823
+	wabTarget: AR
+2024-08-21 13:17:20 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=979 --dropout=0.10512284118108148 --l2reg=0.0009610583822035792 --learningRate=0.00812134622210823 --wabTarget=AR
+2024-08-21 13:17:25 INFO Running runs: ['w3cot7ww']
+2024-08-21 13:22:11 INFO Cleaning up finished run: w3cot7ww
+2024-08-21 13:22:11 INFO Agent received command: run
+2024-08-21 13:22:11 INFO Agent starting run with config:
+	batchSize: 483
+	dropout: 0.09607553207117744
+	l2reg: 0.000111821597844015
+	learningRate: 0.00917223002702972
+	wabTarget: AR
+2024-08-21 13:22:11 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=483 --dropout=0.09607553207117744 --l2reg=0.000111821597844015 --learningRate=0.00917223002702972 --wabTarget=AR
+2024-08-21 13:22:16 INFO Running runs: ['vixcghq3']
+2024-08-21 13:26:31 INFO Cleaning up finished run: vixcghq3
+2024-08-21 13:26:32 INFO Agent received command: run
+2024-08-21 13:26:32 INFO Agent starting run with config:
+	batchSize: 931
+	dropout: 0.003355980574595005
+	l2reg: 0.0004567506404524832
+	learningRate: 0.0056760297346977115
+	wabTarget: AR
+2024-08-21 13:26:32 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=931 --dropout=0.003355980574595005 --l2reg=0.0004567506404524832 --learningRate=0.0056760297346977115 --wabTarget=AR
+2024-08-21 13:26:37 INFO Running runs: ['96zxptyr']
+2024-08-21 13:33:41 INFO Cleaning up finished run: 96zxptyr
+2024-08-21 13:33:42 INFO Agent received command: run
+2024-08-21 13:33:42 INFO Agent starting run with config:
+	batchSize: 433
+	dropout: 0.06289847437836167
+	l2reg: 0.000439174832891915
+	learningRate: 0.0066820865543318776
+	wabTarget: AR
+2024-08-21 13:33:42 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=433 --dropout=0.06289847437836167 --l2reg=0.000439174832891915 --learningRate=0.0066820865543318776 --wabTarget=AR
+2024-08-21 13:33:47 INFO Running runs: ['wds3hdud']
+2024-08-21 13:37:57 INFO Cleaning up finished run: wds3hdud
+2024-08-21 13:37:58 INFO Agent received command: run
+2024-08-21 13:37:58 INFO Agent starting run with config:
+	batchSize: 544
+	dropout: 0.12930424077215033
+	l2reg: 0.00035548214295687627
+	learningRate: 0.009146686625807154
+	wabTarget: AR
+2024-08-21 13:37:58 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=544 --dropout=0.12930424077215033 --l2reg=0.00035548214295687627 --learningRate=0.009146686625807154 --wabTarget=AR
+2024-08-21 13:38:03 INFO Running runs: ['yg7t8x2o']
+2024-08-21 13:42:16 INFO Cleaning up finished run: yg7t8x2o
+2024-08-21 13:42:17 INFO Agent received command: run
+2024-08-21 13:42:17 INFO Agent starting run with config:
+	batchSize: 503
+	dropout: 0.04943560486693768
+	l2reg: 0.00030900560820159944
+	learningRate: 0.0017802911744852908
+	wabTarget: AR
+2024-08-21 13:42:17 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=503 --dropout=0.04943560486693768 --l2reg=0.00030900560820159944 --learningRate=0.0017802911744852908 --wabTarget=AR
+2024-08-21 13:42:22 INFO Running runs: ['gmfkq51l']
+2024-08-21 13:49:39 INFO Cleaning up finished run: gmfkq51l
+2024-08-21 13:49:40 INFO Agent received command: run
+2024-08-21 13:49:40 INFO Agent starting run with config:
+	batchSize: 508
+	dropout: 0.09250498769121494
+	l2reg: 0.0003938083693988917
+	learningRate: 0.0013819477964424176
+	wabTarget: AR
+2024-08-21 13:49:40 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=508 --dropout=0.09250498769121494 --l2reg=0.0003938083693988917 --learningRate=0.0013819477964424176 --wabTarget=AR
+2024-08-21 13:49:45 INFO Running runs: ['f7vsp2fm']
+2024-08-21 13:56:40 INFO Cleaning up finished run: f7vsp2fm
+2024-08-21 13:56:40 INFO Agent received command: run
+2024-08-21 13:56:40 INFO Agent starting run with config:
+	batchSize: 860
+	dropout: 0.12793122917854652
+	l2reg: 0.0009094824075325412
+	learningRate: 0.0045027660270299434
+	wabTarget: AR
+2024-08-21 13:56:40 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=860 --dropout=0.12793122917854652 --l2reg=0.0009094824075325412 --learningRate=0.0045027660270299434 --wabTarget=AR
+2024-08-21 13:56:45 INFO Running runs: ['p9ya2mcc']
+2024-08-21 14:04:51 INFO Cleaning up finished run: p9ya2mcc
+2024-08-21 14:04:52 INFO Agent received command: run
+2024-08-21 14:04:52 INFO Agent starting run with config:
+	batchSize: 1019
+	dropout: 0.16729399812789206
+	l2reg: 0.0009748299862954356
+	learningRate: 0.00191866135305834
+	wabTarget: AR
+2024-08-21 14:04:52 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=1019 --dropout=0.16729399812789206 --l2reg=0.0009748299862954356 --learningRate=0.00191866135305834 --wabTarget=AR
+2024-08-21 14:04:57 INFO Running runs: ['jy7apl4k']
+2024-08-21 14:10:53 INFO Running runs: []
+2024-08-21 14:10:53 INFO Agent received command: run
+2024-08-21 14:10:53 INFO Agent starting run with config:
+	batchSize: 357
+	dropout: 0.061398261888890776
+	l2reg: 0.0005949669674066047
+	learningRate: 0.00378067436801061
+	wabTarget: AR
+2024-08-21 14:10:53 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=357 --dropout=0.061398261888890776 --l2reg=0.0005949669674066047 --learningRate=0.00378067436801061 --wabTarget=AR
+2024-08-21 14:10:58 INFO Running runs: ['okevqp62']
+2024-08-21 14:11:45 INFO Cleaning up finished run: okevqp62
+2024-08-21 14:11:45 INFO Agent received command: run
+2024-08-21 14:11:45 INFO Agent starting run with config:
+	batchSize: 552
+	dropout: 0.08255771504513965
+	l2reg: 0.0003757015837475364
+	learningRate: 0.007855797733186887
+	wabTarget: AR
+2024-08-21 14:11:45 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=552 --dropout=0.08255771504513965 --l2reg=0.0003757015837475364 --learningRate=0.007855797733186887 --wabTarget=AR
+2024-08-21 14:11:50 INFO Running runs: ['dsnqostk']
+2024-08-21 14:12:32 INFO Cleaning up finished run: dsnqostk
+2024-08-21 14:12:32 INFO Agent received command: run
+2024-08-21 14:12:32 INFO Agent starting run with config:
+	batchSize: 835
+	dropout: 0.03673629293304573
+	l2reg: 0.0005443261071275112
+	learningRate: 0.004012567620832856
+	wabTarget: AR
+2024-08-21 14:12:32 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=835 --dropout=0.03673629293304573 --l2reg=0.0005443261071275112 --learningRate=0.004012567620832856 --wabTarget=AR
+2024-08-21 14:12:37 INFO Running runs: ['bx9o14io']
+2024-08-21 14:13:20 INFO Cleaning up finished run: bx9o14io
+2024-08-21 14:13:20 INFO Agent received command: run
+2024-08-21 14:13:20 INFO Agent starting run with config:
+	batchSize: 257
+	dropout: 0.050902866426178126
+	l2reg: 0.0008613879121627437
+	learningRate: 0.006223309271099784
+	wabTarget: AR
+2024-08-21 14:13:20 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=257 --dropout=0.050902866426178126 --l2reg=0.0008613879121627437 --learningRate=0.006223309271099784 --wabTarget=AR
+2024-08-21 14:13:25 INFO Running runs: ['0ziu1a73']
+2024-08-21 14:14:01 INFO Cleaning up finished run: 0ziu1a73
+2024-08-21 14:14:02 INFO Agent received command: run
+2024-08-21 14:14:02 INFO Agent starting run with config:
+	batchSize: 550
+	dropout: 0.03245452000177018
+	l2reg: 0.00013483044365520433
+	learningRate: 0.001125513946422289
+	wabTarget: AR
+2024-08-21 14:14:02 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=550 --dropout=0.03245452000177018 --l2reg=0.00013483044365520433 --learningRate=0.001125513946422289 --wabTarget=AR
+2024-08-21 14:14:07 INFO Running runs: ['d9wtj2za']
+2024-08-21 14:14:59 INFO Cleaning up finished run: d9wtj2za
+2024-08-21 14:14:59 INFO Agent received command: run
+2024-08-21 14:14:59 INFO Agent starting run with config:
+	batchSize: 712
+	dropout: 0.028147367381158493
+	l2reg: 0.00015222478106306962
+	learningRate: 0.009998888847654866
+	wabTarget: AR
+2024-08-21 14:14:59 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=712 --dropout=0.028147367381158493 --l2reg=0.00015222478106306962 --learningRate=0.009998888847654866 --wabTarget=AR
+2024-08-21 14:15:04 INFO Running runs: ['ji8yehdp']
+2024-08-21 14:15:45 INFO Cleaning up finished run: ji8yehdp
+2024-08-21 14:15:46 INFO Agent received command: run
+2024-08-21 14:15:46 INFO Agent starting run with config:
+	batchSize: 935
+	dropout: 0.0942364443916042
+	l2reg: 0.00018322156833316445
+	learningRate: 0.003283419402205705
+	wabTarget: AR
+2024-08-21 14:15:46 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=935 --dropout=0.0942364443916042 --l2reg=0.00018322156833316445 --learningRate=0.003283419402205705 --wabTarget=AR
+2024-08-21 14:15:51 INFO Running runs: ['eitmu1if']
+2024-08-21 14:16:44 INFO Cleaning up finished run: eitmu1if
+2024-08-21 14:16:44 INFO Agent received command: run
+2024-08-21 14:16:44 INFO Agent starting run with config:
+	batchSize: 315
+	dropout: 0.006454245718337959
+	l2reg: 0.0001491668217126416
+	learningRate: 0.001200870225132929
+	wabTarget: AR
+2024-08-21 14:16:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=315 --dropout=0.006454245718337959 --l2reg=0.0001491668217126416 --learningRate=0.001200870225132929 --wabTarget=AR
+2024-08-21 14:16:49 INFO Running runs: ['wpf1vwi0']
+2024-08-21 14:17:31 INFO Cleaning up finished run: wpf1vwi0
+2024-08-21 14:17:32 INFO Agent received command: run
+2024-08-21 14:17:32 INFO Agent starting run with config:
+	batchSize: 341
+	dropout: 0.12481558721684842
+	l2reg: 0.0003648940009526852
+	learningRate: 0.00965948100466953
+	wabTarget: AR
+2024-08-21 14:17:32 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=341 --dropout=0.12481558721684842 --l2reg=0.0003648940009526852 --learningRate=0.00965948100466953 --wabTarget=AR
+2024-08-21 14:17:37 INFO Running runs: ['ic808z9h']
+2024-08-21 14:18:18 INFO Cleaning up finished run: ic808z9h
+2024-08-21 14:18:19 INFO Agent received command: run
+2024-08-21 14:18:19 INFO Agent starting run with config:
+	batchSize: 733
+	dropout: 0.14912327324225527
+	l2reg: 0.0006374477075870645
+	learningRate: 0.0013477954989394535
+	wabTarget: AR
+2024-08-21 14:18:19 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=733 --dropout=0.14912327324225527 --l2reg=0.0006374477075870645 --learningRate=0.0013477954989394535 --wabTarget=AR
+2024-08-21 14:18:24 INFO Running runs: ['njm2frok']
+2024-08-21 14:19:31 INFO Cleaning up finished run: njm2frok
+2024-08-21 14:19:31 INFO Agent received command: run
+2024-08-21 14:19:31 INFO Agent starting run with config:
+	batchSize: 858
+	dropout: 0.12883868159296974
+	l2reg: 0.000460735089116031
+	learningRate: 0.0026819394024698534
+	wabTarget: AR
+2024-08-21 14:19:31 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=858 --dropout=0.12883868159296974 --l2reg=0.000460735089116031 --learningRate=0.0026819394024698534 --wabTarget=AR
+2024-08-21 14:19:36 INFO Running runs: ['q34e0jtl']
+2024-08-21 14:20:34 INFO Cleaning up finished run: q34e0jtl
+2024-08-21 14:20:34 INFO Agent received command: run
+2024-08-21 14:20:34 INFO Agent starting run with config:
+	batchSize: 874
+	dropout: 0.1533176953700668
+	l2reg: 0.0003280240587888853
+	learningRate: 0.005542278387513753
+	wabTarget: AR
+2024-08-21 14:20:34 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=874 --dropout=0.1533176953700668 --l2reg=0.0003280240587888853 --learningRate=0.005542278387513753 --wabTarget=AR
+2024-08-21 14:20:39 INFO Running runs: ['wpbowab0']
+2024-08-21 14:21:20 INFO Cleaning up finished run: wpbowab0
+2024-08-21 14:21:21 INFO Agent received command: run
+2024-08-21 14:21:21 INFO Agent starting run with config:
+	batchSize: 256
+	dropout: 0.0948059718488906
+	l2reg: 0.0008551439676698007
+	learningRate: 0.0027203475455324284
+	wabTarget: AR
+2024-08-21 14:21:21 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=256 --dropout=0.0948059718488906 --l2reg=0.0008551439676698007 --learningRate=0.0027203475455324284 --wabTarget=AR
+2024-08-21 14:21:26 INFO Running runs: ['8v7clmqm']
+2024-08-21 14:22:08 INFO Cleaning up finished run: 8v7clmqm
+2024-08-21 14:22:08 INFO Agent received command: run
+2024-08-21 14:22:08 INFO Agent starting run with config:
+	batchSize: 1021
+	dropout: 0.003024446153995671
+	l2reg: 0.00013378637438511213
+	learningRate: 0.004213236678382602
+	wabTarget: AR
+2024-08-21 14:22:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=1021 --dropout=0.003024446153995671 --l2reg=0.00013378637438511213 --learningRate=0.004213236678382602 --wabTarget=AR
+2024-08-21 14:22:13 INFO Running runs: ['wu0eavzm']
+2024-08-21 14:22:39 INFO Cleaning up finished run: wu0eavzm
+2024-08-21 14:22:39 INFO Agent received command: run
+2024-08-21 14:22:39 INFO Agent starting run with config:
+	batchSize: 460
+	dropout: 0.1701123496833698
+	l2reg: 0.00021468721007935997
+	learningRate: 0.008800181543001927
+	wabTarget: AR
+2024-08-21 14:22:39 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=460 --dropout=0.1701123496833698 --l2reg=0.00021468721007935997 --learningRate=0.008800181543001927 --wabTarget=AR
+2024-08-21 14:22:44 INFO Running runs: ['wju6co4w']
+2024-08-21 14:23:26 INFO Cleaning up finished run: wju6co4w
+2024-08-21 14:23:27 INFO Agent received command: run
+2024-08-21 14:23:27 INFO Agent starting run with config:
+	batchSize: 834
+	dropout: 0.06946384967906492
+	l2reg: 0.0009760225832371712
+	learningRate: 0.001041703837628034
+	wabTarget: AR
+2024-08-21 14:23:27 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=834 --dropout=0.06946384967906492 --l2reg=0.0009760225832371712 --learningRate=0.001041703837628034 --wabTarget=AR
+2024-08-21 14:23:32 INFO Running runs: ['8fdhnyit']
+2024-08-21 14:24:36 INFO Cleaning up finished run: 8fdhnyit
+2024-08-21 14:24:36 INFO Agent received command: run
+2024-08-21 14:24:36 INFO Agent starting run with config:
+	batchSize: 745
+	dropout: 0.19992375873482887
+	l2reg: 0.00018385972496502297
+	learningRate: 0.005106096273368575
+	wabTarget: AR
+2024-08-21 14:24:36 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=745 --dropout=0.19992375873482887 --l2reg=0.00018385972496502297 --learningRate=0.005106096273368575 --wabTarget=AR
+2024-08-21 14:24:41 INFO Running runs: ['dw6b926y']
+2024-08-21 14:25:23 INFO Cleaning up finished run: dw6b926y
+2024-08-21 14:25:23 INFO Agent received command: run
+2024-08-21 14:25:23 INFO Agent starting run with config:
+	batchSize: 644
+	dropout: 0.15811637798805267
+	l2reg: 0.0004609466957167384
+	learningRate: 0.004295199448194029
+	wabTarget: AR
+2024-08-21 14:25:23 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=644 --dropout=0.15811637798805267 --l2reg=0.0004609466957167384 --learningRate=0.004295199448194029 --wabTarget=AR
+2024-08-21 14:25:28 INFO Running runs: ['2dddmjmy']
+2024-08-21 14:26:20 INFO Cleaning up finished run: 2dddmjmy
+2024-08-21 14:26:21 INFO Agent received command: run
+2024-08-21 14:26:21 INFO Agent starting run with config:
+	batchSize: 549
+	dropout: 0.07288132501190323
+	l2reg: 0.000385749831872829
+	learningRate: 0.0034179569177399892
+	wabTarget: AR
+2024-08-21 14:26:21 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=549 --dropout=0.07288132501190323 --l2reg=0.000385749831872829 --learningRate=0.0034179569177399892 --wabTarget=AR
+2024-08-21 14:26:26 INFO Running runs: ['xrz0cdqs']
+2024-08-21 14:27:12 INFO Cleaning up finished run: xrz0cdqs
+2024-08-21 14:27:13 INFO Agent received command: run
+2024-08-21 14:27:13 INFO Agent starting run with config:
+	batchSize: 329
+	dropout: 0.004037940988782617
+	l2reg: 0.0009476121742046708
+	learningRate: 0.0032986974448798436
+	wabTarget: AR
+2024-08-21 14:27:13 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=329 --dropout=0.004037940988782617 --l2reg=0.0009476121742046708 --learningRate=0.0032986974448798436 --wabTarget=AR
+2024-08-21 14:27:18 INFO Running runs: ['qybpvu2l']
+2024-08-21 14:27:59 INFO Cleaning up finished run: qybpvu2l
+2024-08-21 14:28:00 INFO Agent received command: run
+2024-08-21 14:28:00 INFO Agent starting run with config:
+	batchSize: 1008
+	dropout: 0.18200143595079657
+	l2reg: 0.0003023658248804999
+	learningRate: 0.0019271512886155332
+	wabTarget: AR
+2024-08-21 14:28:00 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=1008 --dropout=0.18200143595079657 --l2reg=0.0003023658248804999 --learningRate=0.0019271512886155332 --wabTarget=AR
+2024-08-21 14:28:05 INFO Running runs: ['xu63z3lw']
+2024-08-21 14:29:07 INFO Cleaning up finished run: xu63z3lw
+2024-08-21 14:29:08 INFO Agent received command: run
+2024-08-21 14:29:08 INFO Agent starting run with config:
+	batchSize: 338
+	dropout: 0.07521500766111403
+	l2reg: 0.0005795250635837861
+	learningRate: 0.004795490408857576
+	wabTarget: AR
+2024-08-21 14:29:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=338 --dropout=0.07521500766111403 --l2reg=0.0005795250635837861 --learningRate=0.004795490408857576 --wabTarget=AR
+2024-08-21 14:29:13 INFO Running runs: ['ezp4aplo']
+2024-08-21 14:29:54 INFO Cleaning up finished run: ezp4aplo
+2024-08-21 14:29:55 INFO Agent received command: run
+2024-08-21 14:29:55 INFO Agent starting run with config:
+	batchSize: 891
+	dropout: 0.07518306014895966
+	l2reg: 0.0003069384711499809
+	learningRate: 0.0012279327509383791
+	wabTarget: AR
+2024-08-21 14:29:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=891 --dropout=0.07518306014895966 --l2reg=0.0003069384711499809 --learningRate=0.0012279327509383791 --wabTarget=AR
+2024-08-21 14:30:00 INFO Running runs: ['ec7cnn3a']
+2024-08-21 14:30:52 INFO Cleaning up finished run: ec7cnn3a
+2024-08-21 14:30:52 INFO Agent received command: run
+2024-08-21 14:30:52 INFO Agent starting run with config:
+	batchSize: 288
+	dropout: 0.18010176140057454
+	l2reg: 0.0008596328267925541
+	learningRate: 0.009284933969336296
+	wabTarget: AR
+2024-08-21 14:30:52 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=288 --dropout=0.18010176140057454 --l2reg=0.0008596328267925541 --learningRate=0.009284933969336296 --wabTarget=AR
+2024-08-21 14:30:57 INFO Running runs: ['gf3iabrh']
+2024-08-21 14:31:29 INFO Cleaning up finished run: gf3iabrh
+2024-08-21 14:31:29 INFO Agent received command: run
+2024-08-21 14:31:29 INFO Agent starting run with config:
+	batchSize: 945
+	dropout: 0.013410204800070349
+	l2reg: 0.00033682487657079625
+	learningRate: 0.009959855866580025
+	wabTarget: AR
+2024-08-21 14:31:29 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=945 --dropout=0.013410204800070349 --l2reg=0.00033682487657079625 --learningRate=0.009959855866580025 --wabTarget=AR
+2024-08-21 14:31:34 INFO Running runs: ['35ccpc49']
+2024-08-21 14:32:16 INFO Cleaning up finished run: 35ccpc49
+2024-08-21 14:32:16 INFO Agent received command: run
+2024-08-21 14:32:16 INFO Agent starting run with config:
+	batchSize: 295
+	dropout: 0.172400624346376
+	l2reg: 0.0009987309124489343
+	learningRate: 0.002349062642361084
+	wabTarget: AR
+2024-08-21 14:32:16 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=295 --dropout=0.172400624346376 --l2reg=0.0009987309124489343 --learningRate=0.002349062642361084 --wabTarget=AR
+2024-08-21 14:32:21 INFO Running runs: ['mcfjvxib']
+2024-08-21 14:33:08 INFO Cleaning up finished run: mcfjvxib
+2024-08-21 14:33:08 INFO Agent received command: run
+2024-08-21 14:33:08 INFO Agent starting run with config:
+	batchSize: 697
+	dropout: 0.1179830849074456
+	l2reg: 0.000595521674557391
+	learningRate: 0.004915379346314522
+	wabTarget: AR
+2024-08-21 14:33:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=697 --dropout=0.1179830849074456 --l2reg=0.000595521674557391 --learningRate=0.004915379346314522 --wabTarget=AR
+2024-08-21 14:33:13 INFO Running runs: ['6cq2vj7s']
+2024-08-21 14:34:05 INFO Cleaning up finished run: 6cq2vj7s
+2024-08-21 14:34:06 INFO Agent received command: run
+2024-08-21 14:34:06 INFO Agent starting run with config:
+	batchSize: 751
+	dropout: 0.12107433969616896
+	l2reg: 0.00027510722372705264
+	learningRate: 0.006482352150844111
+	wabTarget: AR
+2024-08-21 14:34:06 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=751 --dropout=0.12107433969616896 --l2reg=0.00027510722372705264 --learningRate=0.006482352150844111 --wabTarget=AR
+2024-08-21 14:34:11 INFO Running runs: ['ydo4qfgp']
+2024-08-21 14:34:48 INFO Cleaning up finished run: ydo4qfgp
+2024-08-21 14:34:48 INFO Agent received command: run
+2024-08-21 14:34:48 INFO Agent starting run with config:
+	batchSize: 284
+	dropout: 0.18383436832854083
+	l2reg: 0.00032601625745751217
+	learningRate: 0.008174732328752942
+	wabTarget: AR
+2024-08-21 14:34:48 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=284 --dropout=0.18383436832854083 --l2reg=0.00032601625745751217 --learningRate=0.008174732328752942 --wabTarget=AR
+2024-08-21 14:34:53 INFO Running runs: ['gdd2n1p1']
+2024-08-21 14:35:29 INFO Cleaning up finished run: gdd2n1p1
+2024-08-21 14:35:30 INFO Agent received command: run
+2024-08-21 14:35:30 INFO Agent starting run with config:
+	batchSize: 922
+	dropout: 0.10557872994443113
+	l2reg: 0.0005181588724186262
+	learningRate: 0.009170788838007909
+	wabTarget: AR
+2024-08-21 14:35:30 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=922 --dropout=0.10557872994443113 --l2reg=0.0005181588724186262 --learningRate=0.009170788838007909 --wabTarget=AR
+2024-08-21 14:35:35 INFO Running runs: ['f56f7r8b']
+2024-08-21 14:36:11 INFO Cleaning up finished run: f56f7r8b
+2024-08-21 14:36:12 INFO Agent received command: run
+2024-08-21 14:36:12 INFO Agent starting run with config:
+	batchSize: 905
+	dropout: 0.09621626645683556
+	l2reg: 0.0003235293987039093
+	learningRate: 0.003860434257944744
+	wabTarget: AR
+2024-08-21 14:36:12 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=905 --dropout=0.09621626645683556 --l2reg=0.0003235293987039093 --learningRate=0.003860434257944744 --wabTarget=AR
+2024-08-21 14:36:17 INFO Running runs: ['aibf3uqx']
+2024-08-21 14:56:47 INFO Running runs: []
+2024-08-21 14:56:47 INFO Agent received command: run
+2024-08-21 14:56:47 INFO Agent starting run with config:
+	batchSize: 708
+	dropout: 0.265141159383761
+	l2reg: 0.000524860165537351
+	learningRate: 0.006895012357466444
+	wabTarget: AR
+2024-08-21 14:56:47 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=708 --dropout=0.265141159383761 --l2reg=0.000524860165537351 --learningRate=0.006895012357466444 --wabTarget=AR
+2024-08-21 14:56:52 INFO Running runs: ['qr2563fa']
+2024-08-21 14:57:39 INFO Cleaning up finished run: qr2563fa
+2024-08-21 14:57:39 INFO Agent received command: run
+2024-08-21 14:57:39 INFO Agent starting run with config:
+	batchSize: 916
+	dropout: 0.15027007926867592
+	l2reg: 0.0002069750548801353
+	learningRate: 0.009256033103788253
+	wabTarget: AR
+2024-08-21 14:57:39 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=916 --dropout=0.15027007926867592 --l2reg=0.0002069750548801353 --learningRate=0.009256033103788253 --wabTarget=AR
+2024-08-21 14:57:44 INFO Running runs: ['cnas2hu3']
+2024-08-21 14:58:26 INFO Cleaning up finished run: cnas2hu3
+2024-08-21 14:58:26 INFO Agent received command: run
+2024-08-21 14:58:26 INFO Agent starting run with config:
+	batchSize: 968
+	dropout: 0.06841470259942734
+	l2reg: 0.00022214758585815833
+	learningRate: 0.009363078370449418
+	wabTarget: AR
+2024-08-21 14:58:26 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=968 --dropout=0.06841470259942734 --l2reg=0.00022214758585815833 --learningRate=0.009363078370449418 --wabTarget=AR
+2024-08-21 14:58:31 INFO Running runs: ['jv10tbjh']
+2024-08-21 14:59:13 INFO Cleaning up finished run: jv10tbjh
+2024-08-21 14:59:13 INFO Agent received command: run
+2024-08-21 14:59:13 INFO Agent starting run with config:
+	batchSize: 421
+	dropout: 0.26909102023801124
+	l2reg: 0.00011581572249849384
+	learningRate: 0.004087678331354737
+	wabTarget: AR
+2024-08-21 14:59:13 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=421 --dropout=0.26909102023801124 --l2reg=0.00011581572249849384 --learningRate=0.004087678331354737 --wabTarget=AR
+2024-08-21 14:59:18 INFO Running runs: ['9448rb94']
+2024-08-21 15:00:21 INFO Cleaning up finished run: 9448rb94
+2024-08-21 15:00:21 INFO Agent received command: run
+2024-08-21 15:00:21 INFO Agent starting run with config:
+	batchSize: 233
+	dropout: 0.15048691623942365
+	l2reg: 0.0005793420185366551
+	learningRate: 0.004590346588701374
+	wabTarget: AR
+2024-08-21 15:00:21 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=233 --dropout=0.15048691623942365 --l2reg=0.0005793420185366551 --learningRate=0.004590346588701374 --wabTarget=AR
+2024-08-21 15:00:26 INFO Running runs: ['i847ywr9']
+2024-08-21 15:01:04 INFO Cleaning up finished run: i847ywr9
+2024-08-21 15:01:04 INFO Agent received command: run
+2024-08-21 15:01:04 INFO Agent starting run with config:
+	batchSize: 639
+	dropout: 0.11643490718016132
+	l2reg: 0.0008672433012125408
+	learningRate: 0.008714167884070386
+	wabTarget: AR
+2024-08-21 15:01:04 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=639 --dropout=0.11643490718016132 --l2reg=0.0008672433012125408 --learningRate=0.008714167884070386 --wabTarget=AR
+2024-08-21 15:01:09 INFO Running runs: ['beekw4u9']
+2024-08-21 15:01:46 INFO Cleaning up finished run: beekw4u9
+2024-08-21 15:01:46 INFO Agent received command: run
+2024-08-21 15:01:46 INFO Agent starting run with config:
+	batchSize: 276
+	dropout: 0.2456024069416617
+	l2reg: 0.0005238934919996161
+	learningRate: 0.007161982106600654
+	wabTarget: AR
+2024-08-21 15:01:46 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=276 --dropout=0.2456024069416617 --l2reg=0.0005238934919996161 --learningRate=0.007161982106600654 --wabTarget=AR
+2024-08-21 15:01:51 INFO Running runs: ['qvbdblbm']
+2024-08-21 15:02:33 INFO Cleaning up finished run: qvbdblbm
+2024-08-21 15:02:34 INFO Agent received command: run
+2024-08-21 15:02:34 INFO Agent starting run with config:
+	batchSize: 324
+	dropout: 0.2279255050892737
+	l2reg: 0.0007901706113298573
+	learningRate: 0.007599271274310818
+	wabTarget: AR
+2024-08-21 15:02:34 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=324 --dropout=0.2279255050892737 --l2reg=0.0007901706113298573 --learningRate=0.007599271274310818 --wabTarget=AR
+2024-08-21 15:02:39 INFO Running runs: ['mw8be9sx']
+2024-08-21 15:03:20 INFO Cleaning up finished run: mw8be9sx
+2024-08-21 15:03:20 INFO Agent received command: run
+2024-08-21 15:03:20 INFO Agent starting run with config:
+	batchSize: 894
+	dropout: 0.24516048022997725
+	l2reg: 0.0006436514200190448
+	learningRate: 0.004577159652115361
+	wabTarget: AR
+2024-08-21 15:03:20 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=894 --dropout=0.24516048022997725 --l2reg=0.0006436514200190448 --learningRate=0.004577159652115361 --wabTarget=AR
+2024-08-21 15:03:25 INFO Running runs: ['ffttmqvo']
+2024-08-21 15:04:07 INFO Cleaning up finished run: ffttmqvo
+2024-08-21 15:04:08 INFO Agent received command: run
+2024-08-21 15:04:08 INFO Agent starting run with config:
+	batchSize: 103
+	dropout: 0.25355620910229704
+	l2reg: 0.0005571148277835992
+	learningRate: 0.002453553734778661
+	wabTarget: AR
+2024-08-21 15:04:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=103 --dropout=0.25355620910229704 --l2reg=0.0005571148277835992 --learningRate=0.002453553734778661 --wabTarget=AR
+2024-08-21 15:04:13 INFO Running runs: ['1t9t2iaz']
+2024-08-21 15:04:44 INFO Cleaning up finished run: 1t9t2iaz
+2024-08-21 15:04:44 INFO Agent received command: run
+2024-08-21 15:04:44 INFO Agent starting run with config:
+	batchSize: 251
+	dropout: 0.028097676020663983
+	l2reg: 0.0008403350225351564
+	learningRate: 0.0008388018696232979
+	wabTarget: AR
+2024-08-21 15:04:44 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=251 --dropout=0.028097676020663983 --l2reg=0.0008403350225351564 --learningRate=0.0008388018696232979 --wabTarget=AR
+2024-08-21 15:04:49 INFO Running runs: ['m5dvmnzb']
+2024-08-21 15:05:46 INFO Cleaning up finished run: m5dvmnzb
+2024-08-21 15:05:47 INFO Agent received command: run
+2024-08-21 15:05:47 INFO Agent starting run with config:
+	batchSize: 727
+	dropout: 0.05843214156669876
+	l2reg: 0.0007244349694680637
+	learningRate: 0.000956455778840882
+	wabTarget: AR
+2024-08-21 15:05:47 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=727 --dropout=0.05843214156669876 --l2reg=0.0007244349694680637 --learningRate=0.000956455778840882 --wabTarget=AR
+2024-08-21 15:05:52 INFO Running runs: ['mt5v21z6']
+2024-08-21 15:07:15 INFO Cleaning up finished run: mt5v21z6
+2024-08-21 15:07:16 INFO Agent received command: run
+2024-08-21 15:07:16 INFO Agent starting run with config:
+	batchSize: 406
+	dropout: 0.043982281137223626
+	l2reg: 0.0007130522021057108
+	learningRate: 0.0010995332718003775
+	wabTarget: AR
+2024-08-21 15:07:16 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=406 --dropout=0.043982281137223626 --l2reg=0.0007130522021057108 --learningRate=0.0010995332718003775 --wabTarget=AR
+2024-08-21 15:07:21 INFO Running runs: ['c36t1nqz']
+2024-08-21 15:08:08 INFO Cleaning up finished run: c36t1nqz
+2024-08-21 15:08:08 INFO Agent received command: run
+2024-08-21 15:08:08 INFO Agent starting run with config:
+	batchSize: 290
+	dropout: 0.2935233727258893
+	l2reg: 0.0006393894377640599
+	learningRate: 0.007722273369911106
+	wabTarget: AR
+2024-08-21 15:08:08 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=290 --dropout=0.2935233727258893 --l2reg=0.0006393894377640599 --learningRate=0.007722273369911106 --wabTarget=AR
+2024-08-21 15:08:13 INFO Running runs: ['co9sebdw']
+2024-08-21 15:08:39 INFO Cleaning up finished run: co9sebdw
+2024-08-21 15:08:39 INFO Agent received command: run
+2024-08-21 15:08:39 INFO Agent starting run with config:
+	batchSize: 829
+	dropout: 0.12647605881919022
+	l2reg: 0.0008835529975119593
+	learningRate: 0.00057508145983558
+	wabTarget: AR
+2024-08-21 15:08:39 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=829 --dropout=0.12647605881919022 --l2reg=0.0008835529975119593 --learningRate=0.00057508145983558 --wabTarget=AR
+2024-08-21 15:08:44 INFO Running runs: ['0lksgo3w']
+2024-08-21 15:09:52 INFO Cleaning up finished run: 0lksgo3w
+2024-08-21 15:09:52 INFO Agent received command: run
+2024-08-21 15:09:52 INFO Agent starting run with config:
+	batchSize: 849
+	dropout: 0.015172450566638029
+	l2reg: 0.000814157554177319
+	learningRate: 0.003920495435171433
+	wabTarget: AR
+2024-08-21 15:09:52 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=849 --dropout=0.015172450566638029 --l2reg=0.000814157554177319 --learningRate=0.003920495435171433 --wabTarget=AR
+2024-08-21 15:09:57 INFO Running runs: ['yqvticmj']
+2024-08-21 15:10:39 INFO Cleaning up finished run: yqvticmj
+2024-08-21 15:10:39 INFO Agent received command: run
+2024-08-21 15:10:39 INFO Agent starting run with config:
+	batchSize: 198
+	dropout: 0.11758118641221964
+	l2reg: 0.0003423949752692212
+	learningRate: 0.001406675736568126
+	wabTarget: AR
+2024-08-21 15:10:39 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=198 --dropout=0.11758118641221964 --l2reg=0.0003423949752692212 --learningRate=0.001406675736568126 --wabTarget=AR
+2024-08-21 15:10:44 INFO Running runs: ['mjxz6rra']
+2024-08-21 15:11:37 INFO Cleaning up finished run: mjxz6rra
+2024-08-21 15:11:38 INFO Agent received command: run
+2024-08-21 15:11:38 INFO Agent starting run with config:
+	batchSize: 574
+	dropout: 0.2484183130536911
+	l2reg: 0.00025340265610918853
+	learningRate: 0.006548200435051668
+	wabTarget: AR
+2024-08-21 15:11:38 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=574 --dropout=0.2484183130536911 --l2reg=0.00025340265610918853 --learningRate=0.006548200435051668 --wabTarget=AR
+2024-08-21 15:11:43 INFO Running runs: ['y4y5p903']
+2024-08-21 15:12:40 INFO Cleaning up finished run: y4y5p903
+2024-08-21 15:12:40 INFO Agent received command: run
+2024-08-21 15:12:40 INFO Agent starting run with config:
+	batchSize: 280
+	dropout: 0.2860337449106629
+	l2reg: 0.0005850753631328126
+	learningRate: 0.004145784138652736
+	wabTarget: AR
+2024-08-21 15:12:40 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=280 --dropout=0.2860337449106629 --l2reg=0.0005850753631328126 --learningRate=0.004145784138652736 --wabTarget=AR
+2024-08-21 15:12:45 INFO Running runs: ['bbez1fq9']
+2024-08-21 15:13:22 INFO Cleaning up finished run: bbez1fq9
+2024-08-21 15:13:22 INFO Agent received command: run
+2024-08-21 15:13:22 INFO Agent starting run with config:
+	batchSize: 915
+	dropout: 0.2783417417388717
+	l2reg: 0.00015983171079474883
+	learningRate: 0.0036715768850344743
+	wabTarget: AR
+2024-08-21 15:13:22 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=915 --dropout=0.2783417417388717 --l2reg=0.00015983171079474883 --learningRate=0.0036715768850344743 --wabTarget=AR
+2024-08-21 15:13:27 INFO Running runs: ['m0qg96jv']
+2024-08-21 15:14:29 INFO Cleaning up finished run: m0qg96jv
+2024-08-21 15:14:30 INFO Agent received command: run
+2024-08-21 15:14:30 INFO Agent starting run with config:
+	batchSize: 359
+	dropout: 0.027810981617879385
+	l2reg: 0.0009672676957134046
+	learningRate: 0.0030625230260035727
+	wabTarget: AR
+2024-08-21 15:14:30 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=359 --dropout=0.027810981617879385 --l2reg=0.0009672676957134046 --learningRate=0.0030625230260035727 --wabTarget=AR
+2024-08-21 15:14:35 INFO Running runs: ['ej3zn1dv']
+2024-08-21 15:15:22 INFO Cleaning up finished run: ej3zn1dv
+2024-08-21 15:15:22 INFO Agent received command: run
+2024-08-21 15:15:22 INFO Agent starting run with config:
+	batchSize: 365
+	dropout: 0.20724381516133944
+	l2reg: 0.0009491816461005056
+	learningRate: 0.007940245177215022
+	wabTarget: AR
+2024-08-21 15:15:22 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=365 --dropout=0.20724381516133944 --l2reg=0.0009491816461005056 --learningRate=0.007940245177215022 --wabTarget=AR
+2024-08-21 15:15:27 INFO Running runs: ['6gmy1rqf']
+2024-08-21 15:16:03 INFO Cleaning up finished run: 6gmy1rqf
+2024-08-21 15:16:04 INFO Agent received command: run
+2024-08-21 15:16:04 INFO Agent starting run with config:
+	batchSize: 91
+	dropout: 0.09052050723906756
+	l2reg: 0.0007599587902565265
+	learningRate: 0.005695767715958333
+	wabTarget: AR
+2024-08-21 15:16:04 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=91 --dropout=0.09052050723906756 --l2reg=0.0007599587902565265 --learningRate=0.005695767715958333 --wabTarget=AR
+2024-08-21 15:16:09 INFO Running runs: ['1daodej3']
+2024-08-21 15:16:45 INFO Cleaning up finished run: 1daodej3
+2024-08-21 15:16:46 INFO Agent received command: run
+2024-08-21 15:16:46 INFO Agent starting run with config:
+	batchSize: 117
+	dropout: 0.2584651011123478
+	l2reg: 0.0008318935461959557
+	learningRate: 0.0012104648134966243
+	wabTarget: AR
+2024-08-21 15:16:46 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=117 --dropout=0.2584651011123478 --l2reg=0.0008318935461959557 --learningRate=0.0012104648134966243 --wabTarget=AR
+2024-08-21 15:16:51 INFO Running runs: ['kbwarjw4']
+2024-08-21 15:17:32 INFO Cleaning up finished run: kbwarjw4
+2024-08-21 15:17:33 INFO Agent received command: run
+2024-08-21 15:17:33 INFO Agent starting run with config:
+	batchSize: 94
+	dropout: 0.24943706608758945
+	l2reg: 0.0009635485383647688
+	learningRate: 0.00773015173730373
+	wabTarget: AR
+2024-08-21 15:17:33 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=94 --dropout=0.24943706608758945 --l2reg=0.0009635485383647688 --learningRate=0.00773015173730373 --wabTarget=AR
+2024-08-21 15:17:38 INFO Running runs: ['p0whwdqe']
+2024-08-21 15:18:14 INFO Cleaning up finished run: p0whwdqe
+2024-08-21 15:18:15 INFO Agent received command: run
+2024-08-21 15:18:15 INFO Agent starting run with config:
+	batchSize: 102
+	dropout: 0.15288766719670788
+	l2reg: 0.0003391971455590812
+	learningRate: 0.006211038447367725
+	wabTarget: AR
+2024-08-21 15:18:15 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=102 --dropout=0.15288766719670788 --l2reg=0.0003391971455590812 --learningRate=0.006211038447367725 --wabTarget=AR
+2024-08-21 15:18:20 INFO Running runs: ['dzxfhb8f']
+2024-08-21 15:19:01 INFO Cleaning up finished run: dzxfhb8f
+2024-08-21 15:19:01 INFO Agent received command: run
+2024-08-21 15:19:01 INFO Agent starting run with config:
+	batchSize: 119
+	dropout: 0.02545188784865441
+	l2reg: 0.0005131159015284578
+	learningRate: 0.006154281625920148
+	wabTarget: AR
+2024-08-21 15:19:01 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=119 --dropout=0.02545188784865441 --l2reg=0.0005131159015284578 --learningRate=0.006154281625920148 --wabTarget=AR
+2024-08-21 15:19:06 INFO Running runs: ['saapn16d']
+2024-08-21 15:19:38 INFO Cleaning up finished run: saapn16d
+2024-08-21 15:19:38 INFO Agent received command: run
+2024-08-21 15:19:38 INFO Agent starting run with config:
+	batchSize: 475
+	dropout: 0.0438009959929906
+	l2reg: 0.0006445806337248529
+	learningRate: 0.00020436416903350696
+	wabTarget: AR
+2024-08-21 15:19:38 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=475 --dropout=0.0438009959929906 --l2reg=0.0006445806337248529 --learningRate=0.00020436416903350696 --wabTarget=AR
+2024-08-21 15:19:43 INFO Running runs: ['iet7ef6e']
+2024-08-21 15:21:13 INFO Cleaning up finished run: iet7ef6e
+2024-08-21 15:21:13 INFO Agent received command: run
+2024-08-21 15:21:13 INFO Agent starting run with config:
+	batchSize: 414
+	dropout: 0.07144890943173737
+	l2reg: 0.0006757442508128482
+	learningRate: 0.00631486769544959
+	wabTarget: AR
+2024-08-21 15:21:13 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=414 --dropout=0.07144890943173737 --l2reg=0.0006757442508128482 --learningRate=0.00631486769544959 --wabTarget=AR
+2024-08-21 15:21:18 INFO Running runs: ['690r6zys']
+2024-08-21 15:21:55 INFO Cleaning up finished run: 690r6zys
+2024-08-21 15:21:55 INFO Agent received command: run
+2024-08-21 15:21:55 INFO Agent starting run with config:
+	batchSize: 800
+	dropout: 0.2517493180998402
+	l2reg: 0.0003284471151031015
+	learningRate: 0.005313304325438591
+	wabTarget: AR
+2024-08-21 15:21:55 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=800 --dropout=0.2517493180998402 --l2reg=0.0003284471151031015 --learningRate=0.005313304325438591 --wabTarget=AR
+2024-08-21 15:22:00 INFO Running runs: ['2y241kbj']
+2024-08-21 15:22:43 INFO Cleaning up finished run: 2y241kbj
+2024-08-21 15:22:43 INFO Agent received command: run
+2024-08-21 15:22:43 INFO Agent starting run with config:
+	batchSize: 762
+	dropout: 0.12807502413833605
+	l2reg: 0.0006382542482235565
+	learningRate: 0.000896083957048923
+	wabTarget: AR
+2024-08-21 15:22:43 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=762 --dropout=0.12807502413833605 --l2reg=0.0006382542482235565 --learningRate=0.000896083957048923 --wabTarget=AR
+2024-08-21 15:22:48 INFO Running runs: ['6xbyl5m3']
+2024-08-21 15:24:06 INFO Cleaning up finished run: 6xbyl5m3
+2024-08-21 15:24:07 INFO Agent received command: run
+2024-08-21 15:24:07 INFO Agent starting run with config:
+	batchSize: 302
+	dropout: 0.27233191281699315
+	l2reg: 0.0008696644268060907
+	learningRate: 0.00033552888575067943
+	wabTarget: AR
+2024-08-21 15:24:07 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=302 --dropout=0.27233191281699315 --l2reg=0.0008696644268060907 --learningRate=0.00033552888575067943 --wabTarget=AR
+2024-08-21 15:24:12 INFO Running runs: ['cs91kk53']
+2024-08-21 15:25:14 INFO Cleaning up finished run: cs91kk53
+2024-08-21 15:25:15 INFO Agent received command: run
+2024-08-21 15:25:15 INFO Agent starting run with config:
+	batchSize: 671
+	dropout: 0.054878492599936025
+	l2reg: 0.0007736858494911982
+	learningRate: 0.004093911615024659
+	wabTarget: AR
+2024-08-21 15:25:15 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=671 --dropout=0.054878492599936025 --l2reg=0.0007736858494911982 --learningRate=0.004093911615024659 --wabTarget=AR
+2024-08-21 15:25:20 INFO Running runs: ['jc3yxkra']
+2024-08-21 15:26:11 INFO Cleaning up finished run: jc3yxkra
+2024-08-21 15:26:12 INFO Agent received command: run
+2024-08-21 15:26:12 INFO Agent starting run with config:
+	batchSize: 734
+	dropout: 0.2244269828129851
+	l2reg: 0.0006621499296311739
+	learningRate: 0.00540434422856354
+	wabTarget: AR
+2024-08-21 15:26:12 INFO About to run command: /usr/bin/env /home/shanavas/miniforge3/envs/dfpl_env/bin/python -m dfpl train -f /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json --batchSize=734 --dropout=0.2244269828129851 --l2reg=0.0006621499296311739 --learningRate=0.00540434422856354 --wabTarget=AR
+2024-08-21 15:26:17 INFO Running runs: ['tsx1oc63']

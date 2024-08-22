@@ -1,0 +1,11 @@
+2024-08-21 15:41:26,837 - root - INFO - The following arguments are received or filled with default values:
+Namespace(method='predict', configFile='/home/shanavas/PycharmProjects/deepFPlearn/example/AR_predict_additional.json')
+2024-08-21 15:41:27,212 - tensorflow - WARNING - No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2024-08-21 15:41:27,213 - root - INFO - Adding compressed fingerprints
+2024-08-21 15:41:27,217 - root - INFO - Using input matrix of shape (4128, 2048) with type bool
+2024-08-21 15:41:27,217 - root - INFO - Compressed fingerprints are added to input dataframe.
+2024-08-21 15:41:28,088 - root - INFO - Compressed FP matrix with shape (4128, 256) and type float32
+2024-08-21 15:41:28,351 - root - INFO - Loading scaler from example/AR/comp_normal_additional/scaler.pkl
+2024-08-21 15:41:28,351 - root - INFO - Applying inverse transformation to get pre-normalized values
+2024-08-21 15:41:28,352 - root - INFO - Saving normalized predictions to /home/shanavas/PycharmProjects/deepFPlearn/example/predict/AR/comp_norm_additional/normalized_predictions.csv
+2024-08-21 15:41:31,307 - root - INFO - Prediction successful. Results written to '/home/shanavas/PycharmProjects/deepFPlearn/example/predict/AR/comp_norm_additional/predict_data_AR.csv'

@@ -15,12 +15,12 @@ dfpl/__pycache__
 tests/__pychace__
 example/results_*
 example/data/convert.log
-example/train_predict_json
+example/dilshana-results-old/json_files
 example/dilshana-results-old
-example/dilshana-results-train/normalisation
+example/dilshana-results-old/dilshana-results-train/normalisation
 results
-example/dilshana-results-train/old
-example/dilshana-results-train/sweep
+example/dilshana-results-old/dilshana-results-train/old
+example/dilshana-results-old/dilshana-results-train/sweep
 example/predict/old
 example/predict/normalisation
 example/predict/compressed_sweep_normal
