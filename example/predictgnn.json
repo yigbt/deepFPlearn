@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.GnnOptions",
-  "test_path": "preds_dmpnn_tox24/tox24_challenge_test.csv",
-  "checkpoint_path": "dmpnn-tox24/fold_0/model_0/model.pt",
-  "save_dir": "preds_dmpnn_tox24",
-  "saving_name": "DMPNN_test_scaled.csv"
+  "test_path": "dmpnn-tox24-leaderboard/tox24_train_plus_leaderboard_scaled.csv",
+  "checkpoint_path": "dmpnn-tox24-leaderboard/fold_2/model_0/model.pt",
+  "save_dir": "dmpnn-tox24-leaderboard/train-the-test",
+  "saving_name": "DMPNN_train_scaled.csv"
 }

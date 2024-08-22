@@ -1,0 +1,11 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "example/data/modified_zscore_dilshana-ar.csv",
+  "outputDir": "example/predict/sweep_norm/comp/",
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "example/dilshana-results-train/sweep-results_comp/AR_saved_model",
+  "compressFeatures": true,
+  "trainAC": false,
+  "trainFNN": false
+}

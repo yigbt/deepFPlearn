@@ -1,0 +1,11 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "example/data/predict_data.csv",
+  "outputDir": "example/results_predict",
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "example/models/AR_saved_model",
+  "compressFeatures": true,
+  "trainAC": false,
+  "trainFNN": false
+}

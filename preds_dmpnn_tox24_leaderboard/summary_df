@@ -1,0 +1,8 @@
+ summary(df)
+    SMILES             activity
+ Length:1212        Min.   :-45.00
+ Class :character   1st Qu.: 10.57
+ Mode  :character   Median : 28.00
+                    Mean   : 39.58
+                    3rd Qu.: 69.50
+                    Max.   :111.12
