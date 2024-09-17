@@ -9,12 +9,12 @@ data <- read.csv("predict_data_AR.csv")
 ggplot(data, aes(x = AR, y = predicted)) +
   geom_point(color = 'blue', alpha = 0.6) +  # Adds points with some transparency
   geom_abline(intercept = 0, slope = 1, color = 'red', linetype = "dashed") +  # Adds the y=x reference line
-  labs(title = "Comparison of AR values and Predicted values",
-       x = "AR values (Real)",
+  labs(
+       x = "Actual Values",
        y = "Predicted values") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 
 # Save the plot as a PNG file
-ggsave("ar_vs_predicted_comparison_plot.png")
+ggsave("ar_comp.png")
 

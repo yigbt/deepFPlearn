@@ -1,7 +1,7 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "example/data/regulation_transpcription_m_zscore.csv",
-  "outputDir": "example/sweep-regtransc-uncomp",
+  "outputDir": "example/reg_transc/uncomp_norm",
   "ecModelDir": "example/models/generic_encoder/",
   "type": "smiles",
   "fpType": "topological",
@@ -22,5 +22,6 @@
   "dropout":  0.26619705834373636,
   "learningRate": 0.00006315233496937537,
   "l2reg" : 0.010478953557489946 ,
-  "fnnType": "REG"
+  "fnnType": "REG",
+  "normalize" : true
 }

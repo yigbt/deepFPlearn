@@ -1,12 +1,12 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "example/data/regulation_transpcription_m_zscore.csv",
-  "outputDir": "example/predict/sweep_norm/reg_comp_norm/",
+  "outputDir": "example/predict/reg/reg_comp_norm_2/",
   "outputFile": "predict_data_AR.csv",
   "ecModelDir": "example/models/generic_encoder",
-  "fnnModelDir": "example/reg_transc/comp_normal/AR_saved_model",
+  "fnnModelDir": "example/reg_transc/comp_normal_3/AR_saved_model",
   "compressFeatures": true,
   "trainAC": false,
   "trainFNN": false,
-  "scalerFilePath" : "example/reg_transc/comp_normal/scaler.pkl"
+  "scalerFilePath" : "example/reg_transc/comp_normal_3/scaler.pkl"
 }
