@@ -13,7 +13,10 @@ ggplot(data, aes(x = AR, y = predicted)) +
        x = "Actual Values",
        y = "Predicted values") +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(NA, 175) +  # Set x-axis limit
+  ylim(NA, 175)  # Set y-axis limit
+
 
 # Save the plot as a PNG file
 ggsave("reg_comp.png")
