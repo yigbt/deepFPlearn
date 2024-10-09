@@ -1,12 +1,10 @@
 import dataclasses
 import logging
 import os.path
-import pathlib
 from argparse import Namespace
 from os import path
 
 import chemprop as cp
-import pandas as pd
 from keras.models import load_model
 
 from dfpl import autoencoder as ac
@@ -27,7 +25,7 @@ def traindmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options from a JSON file and replace the relevant attributes in `opts`
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = cp.args.TrainArgs().parse_args(arguments)
     logging.info("Training DMPNN...")
     mean_score, std_score = cp.train.cross_validate(
@@ -45,7 +43,7 @@ def predictdmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options and additional arguments from a JSON file
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = cp.args.PredictArgs().parse_args(arguments)
 
     cp.train.make_predictions(args=opts)

@@ -1,7 +1,6 @@
 import logging
 import math
 import os.path
-from os.path import basename
 from typing import Tuple
 
 import matplotlib.pyplot as plt

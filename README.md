@@ -27,17 +27,22 @@ You have several ways to provide the correct environment to run code from the DF
 The package is also available on Bioconda. You can find the Bioconda recipe here and
 [![install with bioconda](http://bioconda.github.io/recipes/deepfplearn/README.html)]
 
-First create an environment with Python 3.8:
+First create an environment with the following command:
 
 ```shell
-conda create -n dfpl python=3.8
-conda activate dfpl
+conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl python3.8 deepfplearn 
 ```
 
-Then install the package:
+If you have a GPU available you can install the package with additional tensorflow-gpu package:
 
 ```shell
-conda install -c bioconda deepfplearn
+conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl python3.8 deepfplearn tensorflow-gpu==2.9.3
+```
+
+Then activate the environment:
+
+```shell
+conda activate dfpl
 ```
 
 ### Set up DFPL in a python virtual environment
@@ -73,7 +78,7 @@ docker run -v /path/to/local/repo quay.io/biocontainers/deepfplearn:TAG dfpl DFP
 And then you can run the container with the following command:
 
 ```shell
-docker run --gpus GPU_REQUEST quay.io/biocontainers/deepfplearn:TAG dfpl DFPL_ARGS
+docker run quay.io/biocontainers/deepfplearn:TAG dfpl DFPL_ARGS
 ```
 
 where you replace
@@ -81,14 +86,12 @@ where you replace
 - `TAG` by the version you want to use
 - You can see available tags in [biocontainers](https://biocontainers.pro/tools/deepfplearn).
   In general a container should be available for each released version of DFPL.
-- `GPU_REQUEST` by the GPUs you want to use or `all` if all GPUs should be used (remove `--gpus GPU_REQUEST` if only the
-  CPU should)
 - `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
 
 In order to get an interactive bash shell in the container use:
 
 ```shell
-docker run -it --gpus GPU_REQUEST quay.io/biocontainers/deepfplearn:TAG bash
+docker run -it quay.io/biocontainers/deepfplearn:TAG bash
 ```
 
 
@@ -108,11 +111,10 @@ singularity pull dfpl.TAG.sif docker://quay.io/biocontainers/deepfplearn:TAG
 This stores the container as a file `dfpl.TAG.sif` which can be run as follows:
 
 ```shell script
-singularity run --nv dfpl.TAG.sif dfpl DFPL_ARGS
+singularity run dfpl.TAG.sif dfpl DFPL_ARGS
 ```
 
 - replace `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
-- omit the `--nv` tag if you don't want to use GPUs
 
 or you can start a shell script (look at [run-all-cases.sh](scripts/run-all-cases.sh) for an
 example)
@@ -120,16 +122,12 @@ example)
 It's also possible to get an interactive shell into the container
 
 ```shell script
-singularity shell --nv dfpl.TAG.sif
+singularity shell dfpl.TAG.sif
 ```
 
 **Note:** The Singularity container is intended to be used on HPC cluster where your ability to install software might
 be limited.
 For local testing or development, setting up the bioconda environment is preferable.
-
-
-
-
 
 
 ## Prepare data

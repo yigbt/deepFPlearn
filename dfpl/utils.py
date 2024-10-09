@@ -5,7 +5,7 @@ import pathlib
 import warnings
 from collections import defaultdict
 from random import Random
-from typing import Dict, List, Set, Tuple, Union, Type, TypeVar, Any
+from typing import Dict, List, Set, Tuple, Union, Type, TypeVar
 
 # Define a type variable
 
@@ -36,7 +36,7 @@ def parseCmdArgs(cls: Type[T], args: argparse.Namespace) -> T:
     An instance of cls populated with values from the command-line arguments.
     """
     # Extract argument flags from sys.argv
-    arg_flags = {arg.lstrip('-') for arg in sys.argv if arg.startswith('-')}
+    arg_flags = {arg.lstrip("-") for arg in sys.argv if arg.startswith("-")}
 
     # Create the result instance, which will be modified and returned
     result = cls()
@@ -59,6 +59,7 @@ def parseCmdArgs(cls: Type[T], args: argparse.Namespace) -> T:
             setattr(result, key, user_value)
 
     return result
+
 
 def makePathAbsolute(p: str) -> str:
     path = pathlib.Path(p)
