@@ -14,9 +14,6 @@ molecule's structure computationally.
 
 The DFPL package requires a particular Python environment to work properly.
 It consists of a recent Python interpreter and packages for data-science and neural networks.
-The exact dependencies can be found in the
-[`requirements.txt`](requirements_.txt) (which is used when installing the package with pip)
-and [`environment.yml`](environment.yml) (for installation with conda).
 
 You have several ways to provide the correct environment to run code from the DFPL package.
 
