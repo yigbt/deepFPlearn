@@ -49,13 +49,13 @@ def run_single_label_training(opts: opt.Options) -> None:
 
     df = ac.compress_fingerprints(df, encoder)
 
-    # train FNNs with compressed features
+    # train-good1 FNNs with compressed features
     logging.info("Training the FNN using compressed input data.")
     opts.compressFeatures = True
 
     fNN.train_single_label_models(df=df, opts=opts)
 
-    # train FNNs with uncompressed features
+    # train-good1 FNNs with uncompressed features
     opts.outputDir = utils.makePathAbsolute(f"{project_directory}/output_data/fnnTrainingUncompressed")
     utils.createDirectory(opts.outputDir)
     logging.info("Training the FNN using un-compressed input data.")

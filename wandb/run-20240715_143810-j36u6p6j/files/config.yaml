@@ -99,7 +99,7 @@ optimizer:
   value: Adam
 outputDir:
   desc: null
-  value: /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train/scaled_data_AR
+  value: /home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-results-train-good1/scaled_data_AR
 outputFile:
   desc: null
   value: ''

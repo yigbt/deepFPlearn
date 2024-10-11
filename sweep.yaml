@@ -4,7 +4,7 @@ command:
   - "/home/shanavas/miniforge3/envs/dfpl_env/bin/python"
   - "-m"  
   -  ${program} 
-  -  "train" 
+  -  "train"
   -  "-f" 
   -  "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json"
   -  ${args}
@@ -16,19 +16,15 @@ parameters:
   dropout:
     distribution: uniform
     min: 0.01
-    max: 0.3
+    max: 0.1
   l2reg:
     distribution: uniform
-    min: 0.0001
-    max: 0.001
+    min: 0.00001
+    max: 0.0001
   learningRate:
     distribution: uniform
     min: 0.0001
-    max: 0.01
-  batchSize:
-    distribution: int_uniform
-    min: 32
-    max: 1024
+    max: 0.001
   wabTarget:
     value: AR
 

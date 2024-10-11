@@ -5,7 +5,7 @@ command:
   - "source /home/shanavas/miniforge3/bin/activate /home/shanavas/miniforge3/envs/dfpl_env"
   - "/home/shanavas/miniforge3/envs/dfpl_env/bin/python" 
   -  ${program} 
-  -  "train" 
+  -  "train-good1"
   -  "-f" 
   -  "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json"
   -  ${args}

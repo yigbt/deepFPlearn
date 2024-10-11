@@ -2,6 +2,7 @@ import logging
 import math
 import shutil
 import sys
+import os
 from os import path
 from time import time
 
@@ -313,7 +314,7 @@ def acper(y_true, y_pred, t: float = 0.02):
             yield False
 
 
-def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray, file_prefix: str, model: Model,
+def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray,file_prefix: str, model: Model,
                               target: str, fold: int, threshold: float = 0.05) -> pd.DataFrame:
     """
     This function returns the values of performance metrics for the regression model.
@@ -338,7 +339,6 @@ def evaluate_regression_model(x_test: np.ndarray, y_test: np.ndarray, file_prefi
 
     y_predict = model.predict(x_test).flatten()
     pd.DataFrame(y_predict).to_csv(path_or_buf=f"{file_prefix}.y_test_predict.csv")
-
     error = np.array(y_predict) - np.array(y_test)
     abs_error = abs(error)
 
@@ -472,6 +472,7 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
     # use callback model for evaluation
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)
+   # save_split_data(x_train, x_test, y_train, y_test, fold=fold, target=target,opts=opts)
 
     if opts.fnnType == 'REG':
         pl.plot_loss(hist=hist, file=f"{model_file_prefix}.history.jpg")
@@ -485,6 +486,20 @@ def fit_and_evaluate_model(x_train: np.ndarray, x_test: np.ndarray, y_train: np.
                                      target=target, fold=fold)
 
     return performance
+#def save_split_data(x_train, x_test, y_train, y_test, fold, target,opts: options.Options):
+#    """Helper function to save combined x and y data in the same CSV files for train/test splits."""
+#        # Combine x and y into a single DataFrame for train and test
+#    train_df = pd.DataFrame(x_train)
+#    train_df[target] = y_train  # Adding y values as a new column to the x data
+
+#    test_df = pd.DataFrame(x_test)
+#    test_df[target] = y_test  # Adding y values as a new column to the x data
+
+        # Generate file names based on fold_no (0 for single fold) and save CSVs
+#    train_df.to_csv(os.path.join(opts.outputDir, f"train_fold_{fold}_{target}.csv"), index=True)
+#    test_df.to_csv(os.path.join(opts.outputDir, f"test_fold_{fold}_{target}.csv"), index=True)
+
+
 
 
 def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
@@ -542,24 +557,36 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             trained_model.load_weights(path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
             trained_model.save(filepath=path.join(opts.outputDir, f"{target}_saved_model"))
 
+
         elif 1 < opts.kFolds < int(x.shape[0] / 100):
             # do a k-fold cross-validation
             if opts.fnnType != 'REG':
                 kfold_c_validator = StratifiedKFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
             else:
                 kfold_c_validator = KFold(n_splits=opts.kFolds, shuffle=True, random_state=42)
+
+
+
             fold_no = 1
             # split the data
             for train, test in kfold_c_validator.split(x, y):
                 # for testing use one of the splits:
                 # kf = kfold_c_validator.split(x, y)
                 # train, test = next(kf)
+                train_indices_list = pd.DataFrame(train)
+                test_indices_list = pd.DataFrame(test)
+
                 performance = fit_and_evaluate_model(x_train=x[train], x_test=x[test],
                                                      y_train=y[train], y_test=y[test],
                                                      fold=fold_no, target=target, opts=opts)
                 performance_list.append(performance)
-                fold_no += 1
+
+               # fold_no += 1
                 # now next fold
+                train_indices_list.to_csv(os.path.join(opts.outputDir, f"train_fold_{fold_no}.csv"),index=False,header=["Train Index"])
+                test_indices_list.to_csv(os.path.join(opts.outputDir, f"test_fold_{fold_no}.csv"),index=False,header=["Test Index"])
+                fold_no += 1
+
 
         # select and copy best model - how to define the best model?
         if opts.fnnType == 'REG':
@@ -578,6 +605,10 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     ascending=False,
                     ignore_index=True)['fold'][0]
             )
+
+
+
+
 
         # copy checkpoint model weights
         shutil.copy(

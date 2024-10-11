@@ -18,7 +18,7 @@ function call_convert() {
 
 function call_train() {
   if [ -f "$1" ]; then
-    python -m dfpl train -f "$1"
+    python -m dfpl train-good1 -f "$1"
   else
     log_error "Could not find training file $1"
   fi

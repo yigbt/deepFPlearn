@@ -34,6 +34,6 @@ conda develop dfpl
 
 # Run the program:
 #scripts/run-all-cases.sh > eveuge_dfpl_stdout.txt
-python -m dfpl train -f "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_02/train.json"
+python -m dfpl train-good1 -f "/home/hertelj/git-hertelj/code/deepFPlearn/validation/case_02/train.json"
 
 #python /home/hertelj/git-hertelj/code/deepFPlearn/doIgetTheGPU.py

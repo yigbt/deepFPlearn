@@ -15,7 +15,7 @@
   "kFolds": 1,
   "testSize": 0.2,
   "optimizer": "Adam",
-  "batchSize": 803,
+  "batchSize": 64,
   "lossFunction": "mse",
   "epochs": 5000,
   "activationFunction": "tanh",

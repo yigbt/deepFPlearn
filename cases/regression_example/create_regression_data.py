@@ -8,7 +8,7 @@ import argparse
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--filename",
-                        help="Path to CSV file containing classification train data which shall be randomly "
+                        help="Path to CSV file containing classification train-good1 data which shall be randomly "
                              "transformed to regression data")
     args = parser.parse_args()
     return args
@@ -16,7 +16,7 @@ def get_args():
 
 def main():
     """
-    Reads the 'example/train_data.csv' file containing train data. Generates random values in (0, 2] for active
+    Reads the 'example/train_data.csv' file containing train-good1 data. Generates random values in (0, 2] for active
     compounds (class: 1) and 0 for inactive compounds. Values are replaced. The original column names are kept. The
     result is written to a new CSV file 'example/train_data_reg.csv' where '_reg' stands for regression.
 

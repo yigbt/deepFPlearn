@@ -3,7 +3,7 @@ command:
   - ${env}
   - "python"
   - ${program}  
-  - "train"
+  - "train-good1"
   - "-f"
   - "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/train_dilshana.json"
   - ${args}

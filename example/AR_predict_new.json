@@ -1,0 +1,12 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "example/data/modified_zscore_dilshana-ar.csv",
+  "outputDir": "example/predict/AR/new/comp/",
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "example/AR/new/comp/AR_saved_model",
+  "compressFeatures": true,
+  "trainAC": false,
+  "trainFNN": false,
+  "scalerFilePath": "example/AR/new/comp/scaler.pkl"
+}

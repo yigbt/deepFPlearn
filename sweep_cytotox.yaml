@@ -1,0 +1,30 @@
+program: dfpl
+command:
+  - ${env}
+  - "/home/shanavas/miniforge3/envs/dfpl_env/bin/python"
+  - "-m"  
+  -  ${program} 
+  -  "train-good1"
+  -  "-f" 
+  -  "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/cytotox.json"
+  -  ${args}
+method: random
+metric:
+  name: val_loss
+  goal: minimize
+parameters:
+  dropout:
+    distribution: uniform
+    min: 0.1
+    max: 0.5
+  l2reg:
+    distribution: uniform
+    min: 0.00001
+    max: 0.0001
+  learningRate:
+    distribution: uniform
+    min: 0.0001
+    max: 0.001
+  wabTarget:
+    value: AR
+

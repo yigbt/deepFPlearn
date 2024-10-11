@@ -143,15 +143,15 @@ you can provide all necessary information as commandline-parameters. Check
 
 ```shell script
 python -m dfpl --help
-python -m dfpl train --help
-python -m dfpl predict --help
+python -m dfpl train-good1 --help
+python -m dfpl predict-good1 --help
 ```
 
 However, using JSON files that contain all train/predict options an easy way to preserve what was run and you can use
 them instead of providing multiple commandline arguments.
 
 ```shell script
-python -m dfpl train -f path/to/file.json
+python -m dfpl train-good1 -f path/to/file.json
 ```
 
 See, e.g. the JSON files under `validation/case_XX` for examples. Also, you can use the following to create template
@@ -161,7 +161,7 @@ JSON files for training or prediction
 import dfpl.options as opts
 
 train_opts = opts.Options()
-train_opts.saveToFile("train.json")
+train_opts.saveToFile("train-good1.json")
 
 predict_opts = opts.Options()
 predict_opts.saveToFile("predict_bestER03.json")
@@ -176,7 +176,7 @@ of `dfpl.options.TrainingOptions` or
 import dfpl.__main__ as main
 import dfpl.options as opts
 
-o = opts.Options.fromJson("/path/to/train.json")
+o = opts.Options.fromJson("/path/to/train-good1.json")
 main.train(o)
 ```
 

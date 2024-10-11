@@ -37,7 +37,7 @@ def test_predictions():
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
 
-    # predict
+    # predict-good1
     df2 = p.predict_values(df=df,
                            opts=opts,
                            use_compressed=use_compressed)
