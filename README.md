@@ -325,7 +325,7 @@ memory on disk.
 <a id="1">[1]</a>
 Kyriakos Soulios, Patrick Scheibe, Matthias Bernt, Jörg Hackermüller, and Jana Schor.
 deepFPlearn<sup>+</sup>: Enhancing Toxicity Prediction Across the Chemical Universe Using Graph Neural Networks.
-Submitted to a scientific journal, currently under review.
+Bioinformatics, Volume 39, Issue 12, December 2023, btad713, https://doi.org/10.1093/bioinformatics/btad713
 
 <a id="2">[2]</a>
 Jana Schor, Patrick Scheibe, Matthias Bernt, Wibke Busch, Chih Lai, and Jörg Hackermüller.
