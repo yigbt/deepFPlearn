@@ -1,0 +1,12 @@
+{
+  "py/object": "dfpl.options.Options",
+  "inputFile": "example/data/regression_cytotox.csv",
+  "outputDir": "example/cytotox/uncomp/predict",
+  "outputFile": "predict_data_AR.csv",
+  "ecModelDir": "example/models/generic_encoder",
+  "fnnModelDir": "example/cytotox/uncomp/train/AR_saved_model",
+  "compressFeatures": false,
+  "trainAC": false,
+  "trainFNN": false,
+  "scalerFilePath" : "example/cytotox/uncomp/train/scaler.pkl"
+}

@@ -4,7 +4,7 @@ command:
   - "/home/shanavas/miniforge3/envs/dfpl_env/bin/python"
   - "-m"  
   -  ${program} 
-  -  "train-good1"
+  -  "train"
   -  "-f" 
   -  "/home/shanavas/PycharmProjects/deepFPlearn/example/dilshana-sweep-trial/cytotox.json"
   -  ${args}
@@ -15,8 +15,8 @@ metric:
 parameters:
   dropout:
     distribution: uniform
-    min: 0.1
-    max: 0.5
+    min: 0.05
+    max: 0.3
   l2reg:
     distribution: uniform
     min: 0.00001
@@ -25,6 +25,8 @@ parameters:
     distribution: uniform
     min: 0.0001
     max: 0.001
+  batchSize:  # For batch size, it’s better to choose from discrete values
+    values: [32, 64, 128, 256, 512]
   wabTarget:
     value: AR
 
