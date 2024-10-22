@@ -1,12 +1,12 @@
 {
   "py/object": "dfpl.options.Options",
-  "inputFile": "tests/data/smiles.csv",
-  "outputDir": "example/results_predict/",
-  "outputFile": "smiles.csv",
-  "ecModelDir": "example/results_train/random_autoencoder/",
+  "inputFile": "dfpl_uncompressed_blindtest_tox24_prediction/tox24_blindtest_scaled.csv",
+  "outputDir": "dfpl_uncompressed_blindtest_tox24_prediction/prediction",
+  "outputFile": "DFPL_test_pred_scaled.csv",
+  "ecModelDir": "example/models/generic_encoder/",
   "ecWeightsFile": "",
-  "fnnModelDir": "example/results_train/AR_saved_model",
-  "compressFeatures": true,
+  "fnnModelDir": "deepFPlearn_TRAINING/case_tox24_leaderboard_fnn_uncompressed/activity_scaled_saved_model/",
+  "compressFeatures": false,
   "trainAC": false,
   "trainFNN": false
 }

@@ -1,3 +1,4 @@
+LICENSE.pdf
 README.md
 setup.cfg
 setup.py

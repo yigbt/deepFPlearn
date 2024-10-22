@@ -1,0 +1,7 @@
+{
+  "py/object": "dfpl.options.GnnOptions",
+  "test_path": "dmpnn_blindtest_tox24_prediction/tox24_blindtest_scaled.csv",
+  "checkpoint_path": "dmpnn-tox24-leaderboard/fold_2/model_0/model.pt",
+  "save_dir": "dmpnn_blindtest_tox24_prediction/prediction",
+  "saving_name": "DMPNN_test_pred_scaled.csv"
+}
