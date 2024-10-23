@@ -5,7 +5,6 @@ channels:
 dependencies:
   - conda-build=3.21.8
   - conda=4.12.0
-  - jsonpickle=2.1.0
   - matplotlib=3.5.1
   - numpy=1.19.5
   - pandas=1.4.2

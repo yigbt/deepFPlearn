@@ -20,7 +20,6 @@ setup(
     # all packages need for the final usage
     # for additional packages during development, use requirements.txt
     install_requires=[
-        "jsonpickle~=2.1.0",
         "matplotlib==3.5.1",
         "numpy==1.22.0",
         "pandas==1.4.2",

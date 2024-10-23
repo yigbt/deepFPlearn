@@ -4,12 +4,14 @@ from os import path
 
 import dfpl.autoencoder as ac
 import dfpl.fingerprint as fp
-import dfpl.options as opt
+import dfpl.convert as opt
+import dfpl.predict
+import dfpl.train
 import dfpl.predictions as p
 import dfpl.utils as utils
 
 project_directory = pathlib.Path(__file__).parent.absolute()
-test_predict_args = opt.Options(
+test_predict_args = dfpl.predict.PredictOptions(
     inputFile=f"{project_directory}/data/smiles.csv",
     outputDir=f"{project_directory}/preds/",
     ecModelDir=utils.makePathAbsolute(f"{project_directory}/output/"),
@@ -23,7 +25,7 @@ test_predict_args = opt.Options(
 )
 
 
-def test_predictions(opts: opt.Options):
+def test_predictions(opts: dfpl.predict.PredictOptions):
     opts = test_predict_args
 
     logging.basicConfig(

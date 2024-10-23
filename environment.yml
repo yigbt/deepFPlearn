@@ -4,7 +4,6 @@ channels:
   - defaults
 dependencies:
   # application requirements
-  - jsonpickle=2.1
   - matplotlib=3.5.1
   - numpy=1.22.0
   - pandas=1.4.2

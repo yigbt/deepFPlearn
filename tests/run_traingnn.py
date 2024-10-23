@@ -2,19 +2,19 @@ import logging
 import pathlib
 
 import dfpl.__main__ as main
-import dfpl.options as opt
 import dfpl.utils as utils
+from dfpl.traingnn import GnnOptions
 
 project_directory = pathlib.Path(__file__).parent.absolute()
 example_directory = project_directory.parent / "example"
-test_train_args = opt.GnnOptions(
+test_train_args = GnnOptions(
     configFile=utils.makePathAbsolute(f"{example_directory}/traingnn.json"),
     save_dir=utils.makePathAbsolute(f"{project_directory}/output"),
     total_epochs=1,
 )
 
 
-def test_traindmpnn(opts: opt.GnnOptions) -> None:
+def test_traindmpnn(opts: GnnOptions) -> None:
     print("Running traindmpnn test...")
     logging.basicConfig(
         format="DFPL-{levelname}: {message}", style="{", level=logging.INFO
