@@ -1,14 +1,10 @@
 import dataclasses
 import logging
 import os.path
-import pathlib
 from argparse import Namespace
 from os import path
 
 import chemprop as cp
-import pandas as pd
-from keras.models import load_model
-
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
@@ -65,9 +61,9 @@ def train(opts: options.Options):
         df = fp.importDataFile(
             opts.inputFile, import_function=fp.importSmilesCSV, fp_size=opts.fpSize
         )
+
     # initialize (auto)encoders to None
     encoder = None
-    autoencoder = None
     if opts.trainAC:
         if opts.aeType == "deterministic":
             encoder, train_indices, test_indices = ac.train_full_ac(df, opts)
@@ -84,22 +80,19 @@ def train(opts: options.Options):
             else:
                 (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
 
-            if opts.ecWeightsFile == "":
-                encoder = load_model(opts.ecModelDir)
-            else:
+            if opts.ecWeightsFile != "":
                 autoencoder.load_weights(
-                    os.path.join(opts.ecModelDir, opts.ecWeightsFile)
+                    os.path.join(opts.outputDir, opts.ecWeightsFile)
                 )
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        if opts.visualizeLatent:
+        if opts.visualizeLatent: ## visualize latent space only if you train the autoencoder
             ac.visualize_fingerprints(
                 df,
-                before_col="fp",
-                after_col="fpcompressed",
+                comressed_col="fpcompressed",
                 train_indices=train_indices,
                 test_indices=test_indices,
-                save_as=f"UMAP_{opts.aeSplitType}.png",
+                save_as=f"UMAP_{opts.aeType}.png",
             )
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
@@ -129,12 +122,13 @@ def predict(opts: options.Options) -> None:
         # load trained model for autoencoder
         if opts.aeType == "deterministic":
             (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
-        if opts.aeType == "variational":
+        elif opts.aeType == "variational":
             (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
-        # Load trained model for autoencoder
-        if opts.ecWeightsFile == "":
-            encoder = load_model(opts.ecModelDir)
         else:
+            raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
+
+        # Load trained model for autoencoder
+        if opts.ecWeightsFile != "":
             encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
         df = ac.compress_fingerprints(df, encoder)
 
@@ -196,7 +190,6 @@ def main():
                 raise ValueError("Input directory is not a directory")
         elif prog_args.method == "traingnn":
             traingnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            createLogger("traingnn.log")
             traindmpnn(traingnn_opts)
 
         elif prog_args.method == "predictgnn":
@@ -206,7 +199,6 @@ def main():
                 test_path=makePathAbsolute(predictgnn_opts.test_path),
                 preds_path=makePathAbsolute(predictgnn_opts.preds_path),
             )
-            createLogger("predictgnn.log")
             predictdmpnn(fixed_opts)
 
         elif prog_args.method == "train":

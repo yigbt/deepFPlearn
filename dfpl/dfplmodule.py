@@ -118,7 +118,6 @@ def smi2fp(smile, fptype, size=2048):
         # lengths. After all paths have been identified, the fingerprint is typically
         # folded down until a particular density of set bits is obtained.
         try:
-            # fp = Chem.RDKFingerprint(mol, fpSize=size)
             return Chem.RDKFingerprint(mol, fpSize=size)
         except Exception:
             print("SMILES not convertable to topological fingerprint:")
@@ -134,7 +133,6 @@ def smi2fp(smile, fptype, size=2048):
         # things looked pretty good.
 
         try:
-            # fp = MACCSkeys.GenMACCSKeys(mol)
             return MACCSkeys.GenMACCSKeys(mol)
         except Exception:
             print("SMILES not convertable to MACSS fingerprint:")
@@ -166,7 +164,6 @@ def smi2fp(smile, fptype, size=2048):
         # GetTopologicalTorsionFingerprintAsBitVect function.
 
         try:
-            # fp = Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
             return Torsions.GetTopologicalTorsionFingerprintAsIntVect(mol)
         except Exception:
             print("SMILES not convertable to torsions fingerprint:")

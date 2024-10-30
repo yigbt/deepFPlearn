@@ -18,7 +18,7 @@ from dfpl import settings
 default_fp_size = 2048
 
 
-def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
+def addFPColumn(data_frame: pd.DataFrame,fp_size: int) -> pd.DataFrame:
     """
     Adds a fingerprint to each row in the dataframe. This function works on
     parallel chunks of the original dataframe.
@@ -35,15 +35,6 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         None otherwise
         """
 
-        # generate morgan fp (circular, ecfp)
-        # smile = df['smiles'][1]
-        # mol = Chem.MolFromSmiles(smile)
-        # from rdkit.Chem import AllChem
-        # morgan = AllChem.GetMorganFingerprintAsBitVect(mol, 2)
-        # npa = np.zeros((0,), dtype=np.bool)
-        # from rdkit import DataStructs
-        # DataStructs.ConvertToNumpyArray(morgan, npa)
-
         npa = np.zeros((0,), dtype=np.bool_)
         try:
             DataStructs.ConvertToNumpyArray(
@@ -56,13 +47,6 @@ def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
         except Exception:
             return None
 
-        # try:
-        #     return np.array(
-        #         Chem.RDKFingerprint(Chem.MolFromSmiles(smile), fpSize=fp_size),
-        #         dtype=settings.df_fp_numpy_type, copy=settings.numpy_copy_values)
-        # except:
-        #     # Note: We don't need to log here since rdkit already logs
-        #     return None
 
     def inchi2fp(inchi: str) -> Any:
         """
@@ -139,11 +123,6 @@ conversion_rules = {
     "S_dataset.csv": importSmilesCSV,
     "smiles.csv": importSmilesCSV,
     "inchi.tsv": importDstoxTSV
-    # "S_dataset_extended.csv": importSmilesCSV,
-    # "D_dataset.tsv": importDstoxTSV,
-    # "train_data.csv": importSmilesCSV,
-    # "predict_data.csv": importDstoxTSV,
-    # "B_data_ER.csv": importDstoxTSV
 }
 
 

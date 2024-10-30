@@ -197,7 +197,7 @@ def inchi_to_mol(inchi: str) -> Chem.Mol:
 
 
 def weight_split(
-    data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float] = (0.8, 0, 0.2)
+    data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float] = (0.8, 0.1, 0.1)
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if not (len(sizes) == 3 and np.isclose(sum(sizes), 1)):
         raise ValueError(f"Invalid train/val/test splits! got: {sizes}")
@@ -245,7 +245,7 @@ def weight_split(
 
 def ae_scaffold_split(
     data: pd.DataFrame,
-    sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
+    sizes: Tuple[float, float, float] = (0.8, 0.1, 0.1),
     balanced: bool = False,
     key_molecule_index: int = 0,
     seed: int = 0,

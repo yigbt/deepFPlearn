@@ -8,7 +8,7 @@ import jsonpickle
 import torch
 from chemprop.args import TrainArgs
 
-from dfpl.utils import makePathAbsolute, parseCmdArgs
+from dfpl.utils import parseCmdArgs
 
 
 @dataclass
@@ -47,6 +47,7 @@ class Options:
     aeLearningRateDecay: float = 0.96
     aeActivationFunction: str = "selu"
     aeOptimizer: str = "Adam"
+    vaeBeta: float = 0.5
     fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
@@ -327,6 +328,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="UMAP the latent space for exploration",
         default=False
+    )
+    autoencoder_args.add_argument(
+        "--vaeBeta",
+        metavar="FLOAT",
+        type=float,
+        help="Beta parameter for the Beta VAE",
+        default=1.0
     )
     # Training Configuration
     training_args.add_argument(

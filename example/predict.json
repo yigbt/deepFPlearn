@@ -3,10 +3,9 @@
   "inputFile": "tests/data/tox21.csv",
   "outputDir": "example/results_predict/",
   "outputFile": "smiles.csv",
-  "ecModelDir": "example/results_train/random_split_autoencoder",
-  "ecWeightsFile": "random_split_autoencoder_encoder.h5",
-  "fnnModelDir": "example/results_train/NR-AR-1_best_saved_model",
+  "fnnModelDir": "example/results_train/NR-AR",
+  "ecModelDir": "example/results_train/vae",
+  "ecWeightsFile": "encoder_weights.h5",
   "aeType": "variational",
-  "compressFeatures": true,
-  "trainFNN": false
+  "compressFeatures": false
 }
