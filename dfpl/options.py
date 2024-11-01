@@ -83,7 +83,7 @@ class GnnOptions(TrainArgs):
     Dataclass to hold all options used for training the graph models
     """
 
-    total_epochs: int = 30
+    epochs: int = 30
     save: bool = True
     configFile: str = "./example/traingnn.json"
     data_path: str = "./example/data/tox21.csv"
@@ -999,13 +999,6 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     # Training arguments
     training_args.add_argument(
         "--epochs", type=int, metavar="INT", default=30, help="Number of epochs to run"
-    )
-    training_args.add_argument(
-        "--total_epochs",
-        type=int,
-        metavar="INT",
-        default=30,
-        help="Number of total epochs to run",
     )
     training_args.add_argument(
         "--batch_size", type=int, metavar="INT", default=50, help="Batch size"

@@ -2,7 +2,7 @@
   "py/object": "dfpl.options.GnnOptions",
   "data_path": "tests/data/S_dataset.csv",
   "save_dir": "dmpnn-random/",
-  "epochs": 4,
+  "epochs": 2,
   "num_folds": 1,
   "metric": "accuracy",
   "loss_function": "binary_cross_entropy",
