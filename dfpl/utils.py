@@ -1,24 +1,25 @@
+import argparse
 import json
 import logging
 import os
 import pathlib
+import sys
 import warnings
 from collections import defaultdict
-from random import Random
-from typing import Dict, List, Set, Tuple, Union, Type, TypeVar, Any
-
-# Define a type variable
-
 from pathlib import Path
-import argparse
+from random import Random
+from typing import Any, Dict, List, Set, Tuple, Type, TypeVar, Union
+
 import jsonpickle
-import sys
 import numpy as np
 import pandas as pd
 from rdkit import Chem, RDLogger
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from tqdm import tqdm
+
+# Define a type variable
+
 
 RDLogger.DisableLog("rdApp.*")
 T = TypeVar("T")
@@ -36,7 +37,7 @@ def parseCmdArgs(cls: Type[T], args: argparse.Namespace) -> T:
     An instance of cls populated with values from the command-line arguments.
     """
     # Extract argument flags from sys.argv
-    arg_flags = {arg.lstrip('-') for arg in sys.argv if arg.startswith('-')}
+    arg_flags = {arg.lstrip("-") for arg in sys.argv if arg.startswith("-")}
 
     # Create the result instance, which will be modified and returned
     result = cls()
@@ -59,6 +60,7 @@ def parseCmdArgs(cls: Type[T], args: argparse.Namespace) -> T:
             setattr(result, key, user_value)
 
     return result
+
 
 def makePathAbsolute(p: str) -> str:
     path = pathlib.Path(p)

@@ -18,8 +18,9 @@ from tensorflow.python.framework.ops import disable_eager_execution
 from dfpl import callbacks
 from dfpl import history as ht
 from dfpl import options, settings
+from dfpl.autoencoder import create_dense_layer, setup_train_test_split
 from dfpl.utils import ae_scaffold_split, weight_split
-from dfpl.autoencoder import setup_train_test_split, create_dense_layer
+
 disable_eager_execution()
 
 
@@ -43,7 +44,9 @@ def define_vae_model(opts: options.Options) -> Tuple[Model, Model]:
     vae_optimizer = optimizers.legacy.Adam(learning_rate=lr_schedule)
     input_vec = Input(shape=(input_size,))
     initial_layer_size = int(input_size / 2)
-    encoded = create_dense_layer(input_vec, initial_layer_size, opts.aeActivationFunction)
+    encoded = create_dense_layer(
+        input_vec, initial_layer_size, opts.aeActivationFunction
+    )
 
     # Start `layer_sizes` with the initial layer size (1024)
     layer_sizes = [initial_layer_size]
@@ -53,10 +56,10 @@ def define_vae_model(opts: options.Options) -> Tuple[Model, Model]:
     for i in range(1, hidden_layer_count - 1):
         layer_size = int(input_size / (2 ** (i + 1)))
         layer_sizes.append(layer_size)
-        encoded = create_dense_layer(encoded,layer_size, opts.aeActivationFunction)
+        encoded = create_dense_layer(encoded, layer_size, opts.aeActivationFunction)
 
     # Latent space layers
-    z_mean = create_dense_layer (encoded, encoding_dim, opts.aeActivationFunction)
+    z_mean = create_dense_layer(encoded, encoding_dim, opts.aeActivationFunction)
     z_log_var = create_dense_layer(encoded, encoding_dim, opts.aeActivationFunction)
     # Sampling layer
 
@@ -80,9 +83,12 @@ def define_vae_model(opts: options.Options) -> Tuple[Model, Model]:
     # Define VAE and encoder models
     vae = Model(input_vec, decoded)
     encoder = Model(input_vec, z_mean)
+
     # Define custom loss
     def kl_loss(z_mean, z_log_var):
-        return -0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+        return -0.5 * K.sum(
+            1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1
+        )
 
     def bce_loss(y_true, y_pred):
         return metrics.binary_crossentropy(y_true, y_pred)
@@ -96,8 +102,9 @@ def define_vae_model(opts: options.Options) -> Tuple[Model, Model]:
     return vae, encoder
 
 
-
-def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Tuple[Model, np.ndarray, np.ndarray]:
+def train_full_vae(
+    df: pd.DataFrame, opts: options.Options
+) -> Tuple[Model, np.ndarray, np.ndarray]:
     """
     Trains a VAE on the provided data and returns the trained encoder and split indices.
 
@@ -120,8 +127,12 @@ def train_full_vae(df: pd.DataFrame, opts: options.Options) -> Tuple[Model, np.n
     # Set up callbacks and train the VAE model
     callback_list = callbacks.autoencoder_callback(checkpoint_path=save_path, opts=opts)
     vae_hist = vae.fit(
-        x_train, x_train, epochs=opts.aeEpochs, batch_size=opts.aeBatchSize,
-        verbose=opts.verbose, callbacks=[callback_list],
+        x_train,
+        x_train,
+        epochs=opts.aeEpochs,
+        batch_size=opts.aeBatchSize,
+        verbose=opts.verbose,
+        callbacks=[callback_list],
         validation_data=(x_test, x_test) if x_test is not None else None,
     )
 

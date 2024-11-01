@@ -5,6 +5,7 @@ from argparse import Namespace
 from os import path
 
 import chemprop as cp
+
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
 from dfpl import fingerprint as fp
@@ -23,7 +24,7 @@ def traindmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options from a JSON file and replace the relevant attributes in `opts`
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = cp.args.TrainArgs().parse_args(arguments)
     logging.info("Training DMPNN...")
     mean_score, std_score = cp.train.cross_validate(
@@ -41,7 +42,7 @@ def predictdmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options and additional arguments from a JSON file
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = cp.args.PredictArgs().parse_args(arguments)
 
     cp.train.make_predictions(args=opts)
@@ -86,7 +87,9 @@ def train(opts: options.Options):
                 )
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        if opts.visualizeLatent: ## visualize latent space only if you train the autoencoder
+        if (
+            opts.visualizeLatent
+        ):  ## visualize latent space only if you train the autoencoder
             ac.visualize_fingerprints(
                 df,
                 comressed_col="fpcompressed",

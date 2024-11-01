@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import wandb
 from matplotlib.axes import Axes
-from sklearn.metrics import precision_recall_curve, auc
+from sklearn.metrics import auc, precision_recall_curve
+
 # for NN model functions
 from tensorflow.python.keras.callbacks import History
 
@@ -44,6 +45,7 @@ def get_max_training_accuracy(history: History) -> str:
     y_max: float = max(training)
     return "Max training accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
 
+
 def smooth_curve(points: np.ndarray, factor: float = 0.8) -> List[float]:
     smoothed_points: List[float] = []
     for point in points:
@@ -53,6 +55,7 @@ def smooth_curve(points: np.ndarray, factor: float = 0.8) -> List[float]:
         else:
             smoothed_points.append(point)
     return smoothed_points
+
 
 # Plot the accuracy and loss data with enhanced visuals
 def set_plot_history_data(ax: Axes, history: History, which_graph: str) -> None:
@@ -72,11 +75,19 @@ def set_plot_history_data(ax: Axes, history: History, which_graph: str) -> None:
 
     # Plot training and validation data with styles
     ax.plot(epochs, train, color="dodgerblue", linewidth=2, label=f"Training {label}")
-    ax.plot(epochs, valid, color="green", linestyle="--", linewidth=2, label=f"Validation {label}")
+    ax.plot(
+        epochs,
+        valid,
+        color="green",
+        linestyle="--",
+        linewidth=2,
+        label=f"Validation {label}",
+    )
     ax.set_ylabel(label)
     ax.legend(loc="best")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
+
 
 def plot_history(history: History, file: str) -> None:
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(10, 8), sharex="all")
@@ -90,8 +101,16 @@ def plot_history(history: History, file: str) -> None:
     plt.savefig(fname=file, format="svg")
     plt.close()
 
+
 # Enhanced AUC plot
-def plot_auc(fpr: np.ndarray, tpr: np.ndarray, auc_value: float, target: str, filename: str, wandb_logging: bool = False) -> None:
+def plot_auc(
+    fpr: np.ndarray,
+    tpr: np.ndarray,
+    auc_value: float,
+    target: str,
+    filename: str,
+    wandb_logging: bool = False,
+) -> None:
     plt.figure(figsize=(8, 6))
     plt.plot([0, 1], [0, 1], "k--", linewidth=1)
     plt.plot(fpr, tpr, color="darkorange", linewidth=2, label=f"AUC = {auc_value:.3f}")
@@ -105,12 +124,13 @@ def plot_auc(fpr: np.ndarray, tpr: np.ndarray, auc_value: float, target: str, fi
         wandb.log({"roc_plot": plt})
     plt.close()
 
+
 def plot_prc(
-        y_true: np.ndarray,
-        y_scores: np.ndarray,
-        target: str,
-        filename: str,
-        wandb_logging: bool = False
+    y_true: np.ndarray,
+    y_scores: np.ndarray,
+    target: str,
+    filename: str,
+    wandb_logging: bool = False,
 ) -> None:
     """
     Plot the Precision-Recall Curve (PRC) with AUC.
@@ -128,7 +148,13 @@ def plot_prc(
 
     # Plot PRC curve
     plt.figure(figsize=(8, 6))
-    plt.plot(recall, precision, color="purple", linewidth=2, label=f"PRC-AUC = {prc_auc_value:.3f}")
+    plt.plot(
+        recall,
+        precision,
+        color="purple",
+        linewidth=2,
+        label=f"PRC-AUC = {prc_auc_value:.3f}",
+    )
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.title(f"Precision-Recall Curve - {target}")

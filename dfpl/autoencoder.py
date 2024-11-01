@@ -25,7 +25,7 @@ def create_dense_layer(inputs, units, activation):
     return Dense(
         units=units,
         activation=activation,
-        kernel_initializer="lecun_normal" if activation == "selu" else 'glorot_uniform'
+        kernel_initializer="lecun_normal" if activation == "selu" else "glorot_uniform",
     )(inputs)
 
 
@@ -49,7 +49,9 @@ def define_ac_model(opts: options.Options) -> Tuple[Model, Model]:
 
     input_vec = Input(shape=(input_size,))
     initial_layer_size = int(input_size / 2)
-    encoded = create_dense_layer(input_vec, initial_layer_size, opts.aeActivationFunction)
+    encoded = create_dense_layer(
+        input_vec, initial_layer_size, opts.aeActivationFunction
+    )
 
     # Start `layer_sizes` with the initial layer size (1024)
     layer_sizes = [initial_layer_size]
@@ -81,9 +83,9 @@ def define_ac_model(opts: options.Options) -> Tuple[Model, Model]:
     return autoencoder, encoder
 
 
-
-def setup_train_test_split(df: pd.DataFrame, opts: options.Options) -> Tuple[
-    np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def setup_train_test_split(
+    df: pd.DataFrame, opts: options.Options
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Sets up the training and test split based on the provided options.
 
@@ -99,7 +101,9 @@ def setup_train_test_split(df: pd.DataFrame, opts: options.Options) -> Tuple[
         copy=settings.numpy_copy_values,
     )
 
-    logging.info(f"Setting up train/test split on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}")
+    logging.info(
+        f"Setting up train/test split on a matrix of shape {fp_matrix.shape} with type {fp_matrix.dtype}"
+    )
 
     # Validate test size
     assert 0.0 <= opts.testSize <= 0.5
@@ -132,8 +136,12 @@ def setup_train_test_split(df: pd.DataFrame, opts: options.Options) -> Tuple[
             dtype=settings.ac_fp_numpy_type,
             copy=settings.numpy_copy_values,
         )
-        train_indices = df[df.index.isin(train_data[train_data["fp"].notnull()].index)].index.to_numpy()
-        test_indices = df[df.index.isin(test_data[test_data["fp"].notnull()].index)].index.to_numpy()
+        train_indices = df[
+            df.index.isin(train_data[train_data["fp"].notnull()].index)
+        ].index.to_numpy()
+        test_indices = df[
+            df.index.isin(test_data[test_data["fp"].notnull()].index)
+        ].index.to_numpy()
 
     elif opts.aeSplitType == "molecular_weight":
         logging.info("Using molecular weight split for training.")
@@ -213,7 +221,6 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     autoencoder.load_weights(save_path)
     # Save the encoder weights
     encoder.save_weights(os.path.join(opts.ecModelDir, "encoder_weights.h5"))
-
 
     return encoder, train_indices, test_indices
 

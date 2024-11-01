@@ -18,7 +18,7 @@ from dfpl import settings
 default_fp_size = 2048
 
 
-def addFPColumn(data_frame: pd.DataFrame,fp_size: int) -> pd.DataFrame:
+def addFPColumn(data_frame: pd.DataFrame, fp_size: int) -> pd.DataFrame:
     """
     Adds a fingerprint to each row in the dataframe. This function works on
     parallel chunks of the original dataframe.
@@ -46,7 +46,6 @@ def addFPColumn(data_frame: pd.DataFrame,fp_size: int) -> pd.DataFrame:
             return npa
         except Exception:
             return None
-
 
     def inchi2fp(inchi: str) -> Any:
         """
@@ -122,7 +121,7 @@ def importDstoxTSV(tsvfilename: str) -> pd.DataFrame:
 conversion_rules = {
     "S_dataset.csv": importSmilesCSV,
     "smiles.csv": importSmilesCSV,
-    "inchi.tsv": importDstoxTSV
+    "inchi.tsv": importDstoxTSV,
 }
 
 

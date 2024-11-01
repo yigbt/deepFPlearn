@@ -23,24 +23,24 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
         target = "loss"
         # enable this checkpoint to restore the weights of the best performing model
     checkpoint = ModelCheckpoint(
-    checkpoint_path,
-    monitor=target,
-    mode="min",
-    verbose=1,
-    save_best_only=True,
-    save_weights_only=True,
-    period=settings.ac_train_check_period
+        checkpoint_path,
+        monitor=target,
+        mode="min",
+        verbose=1,
+        save_best_only=True,
+        save_weights_only=True,
+        period=settings.ac_train_check_period,
     )
     callbacks.append(checkpoint)
 
     # enable early stopping if val_loss is not improving anymore
     early_stop = EarlyStopping(
-    monitor=target,
-    mode="min",
-    patience=settings.ac_train_patience,
-    min_delta=settings.ac_train_min_delta,
-    verbose=1,
-    restore_best_weights=True,
+        monitor=target,
+        mode="min",
+        patience=settings.ac_train_patience,
+        min_delta=settings.ac_train_min_delta,
+        verbose=1,
+        restore_best_weights=True,
     )
     callbacks.append(early_stop)
     if opts.aeWabTracking:
@@ -68,8 +68,7 @@ def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
             monitor="val_loss",
             mode="min",
             save_weights_only=True,
-            period=settings.nn_train_check_period
-
+            period=settings.nn_train_check_period,
         )
         callbacks.append(checkpoint)
 
@@ -80,7 +79,7 @@ def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
             mode="min",
             min_delta=settings.nn_train_min_delta,
             verbose=1,
-            restore_best_weights=True
+            restore_best_weights=True,
         )
         callbacks.append(early_stop)
     if opts.wabTracking:

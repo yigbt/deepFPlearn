@@ -420,7 +420,7 @@ def evaluate_model(
         y_scores=y_predict,
         target=target,
         filename=f"{file_prefix}/prc.png",
-        wandb_logging=False
+        wandb_logging=False,
     )
     # Add balanced accuracy to the computed metrics
     prf.to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.prec_rec_f1.csv")
@@ -510,13 +510,9 @@ def fit_and_evaluate_model(
 
     # Define file name prefix for saving models
     if fold > 1:
-        model_file_prefix = path.join(
-        "tmp", f"{target_suffix}/fold-{fold}"
-        )
+        model_file_prefix = path.join("tmp", f"{target_suffix}/fold-{fold}")
     else:
-        model_file_prefix = path.join(
-            opts.outputDir, target_suffix
-        )
+        model_file_prefix = path.join(opts.outputDir, target_suffix)
 
     # Compute class imbalance
     ids, counts = np.unique(y_train, return_counts=True)
@@ -663,8 +659,9 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, stratify=y, test_size=opts.testSize, random_state=1
                     )
-                    x_val , x_test, y_val, y_test = train_test_split(
-                        x_test,y_test, stratify=y_test, test_size=0.5, random_state=1)
+                    x_val, x_test, y_val, y_test = train_test_split(
+                        x_test, y_test, stratify=y_test, test_size=0.5, random_state=1
+                    )
                     logging.info(
                         f"Splitting train/test data with fixed random initializer"
                     )
@@ -672,8 +669,9 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, stratify=y, test_size=opts.testSize
                     )
-                    x_val , x_test, y_val, y_test = train_test_split(
-                        x_test,y_test, stratify=y_test, test_size=0.5)
+                    x_val, x_test, y_val, y_test = train_test_split(
+                        x_test, y_test, stratify=y_test, test_size=0.5
+                    )
 
                 performance = fit_and_evaluate_model(
                     x_train=x_train,
@@ -702,7 +700,10 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
                     # Further split test set into val and test set
                     x_val, x_test, y_val, y_test = train_test_split(
-                        x_test, y_test, test_size=0.5, stratify=y_test,
+                        x_test,
+                        y_test,
+                        test_size=0.5,
+                        stratify=y_test,
                     )
                     if opts.wabTracking and not opts.aeWabTracking:
                         wandb.init(
@@ -763,7 +764,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # Optionally, clean up the temporary directory
                 shutil.rmtree("tmp/")
 
-
             else:
                 logging.info(
                     "Your selected number of folds for Cross validation is out of range. "
@@ -792,12 +792,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             if opts.kFolds == 1:
                 train_set, val_set, test_set = ae_scaffold_split(
                     df_task,
-                    sizes=(1 - opts.testSize,  opts.testSize/2, opts.testSize/2),
+                    sizes=(1 - opts.testSize, opts.testSize / 2, opts.testSize / 2),
                     balanced=False,
                     seed=42,
                 )
                 x_train, y_train, x_test, y_test, x_val, y_val = get_x_y(
-                    df_task, target, train_set,val_set, test_set, opts
+                    df_task, target, train_set, val_set, test_set, opts
                 )
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
@@ -812,7 +812,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                         group=f"{target}",
                     )
 
-                performance= fit_and_evaluate_model(
+                performance = fit_and_evaluate_model(
                     x_train=x_train,
                     x_test=x_test,
                     x_val=x_val,
@@ -830,12 +830,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     print(f"Splitting data with seed {fold_no}")
                     train_set, val_set, test_set = ae_scaffold_split(
                         df_task,
-                        sizes=(1 - opts.testSize,opts.testSize/2, opts.testSize/2),
+                        sizes=(1 - opts.testSize, opts.testSize / 2, opts.testSize / 2),
                         balanced=True,
                         seed=fold_no,
                     )
-                    x_train, y_train, x_test, y_test,x_val, y_val = get_x_y(
-                        df_task, target, train_set,val_set, test_set, opts
+                    x_train, y_train, x_test, y_test, x_val, y_val = get_x_y(
+                        df_task, target, train_set, val_set, test_set, opts
                     )
                     if opts.wabTracking and not opts.aeWabTracking:
                         wandb.init(
@@ -886,7 +886,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 # Optionally, clean up the temporary directory
                 shutil.rmtree("tmp/")
 
-
             else:
                 logging.info(
                     "Your selected number of folds for Cross validation is out of range. "
@@ -912,10 +911,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             df_task.reset_index(drop=True, inplace=True)
             if opts.kFolds == 1:
                 train_set, val_set, test_set = weight_split(
-                    df_task, bias="small", sizes=(1 - opts.testSize, opts.testSize/2, opts.testSize/2)
+                    df_task,
+                    bias="small",
+                    sizes=(1 - opts.testSize, opts.testSize / 2, opts.testSize / 2),
                 )
                 x_train, y_train, x_test, y_test, x_val, y_val = get_x_y(
-                    df_task, target, train_set,val_set, test_set, opts
+                    df_task, target, train_set, val_set, test_set, opts
                 )
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
@@ -932,8 +933,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 performance = fit_and_evaluate_model(
                     x_train=x_train,
                     x_test=x_test,
-                    x_val = x_val,
-                    y_val = y_val,
+                    x_val=x_val,
+                    y_val=y_val,
                     y_train=y_train,
                     y_test=y_test,
                     fold=0,
