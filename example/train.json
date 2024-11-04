@@ -3,11 +3,12 @@
   "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/results_train/",
   "ecModelDir": "example/results_train/",
-  "ecWeightsFile": "random_autoencoder.hdf5",
+  "ecWeightsFile": "",
   "verbose": 2,
 
   "trainAC": true,
   "compressFeatures": true,
+  "visualizeLatent": false,
   "encFPSize": 256,
 
   "aeSplitType": "random",
@@ -16,7 +17,7 @@
   "aeOptimizer": "Adam",
   "aeActivationFunction": "relu",
   "aeLearningRate": 0.001,
-  "aeLearningRateDecay": 0.0001,
+  "aeLearningRateDecay": 0.96,
   "aeType": "deterministic",
 
   "type": "smiles",
@@ -29,7 +30,7 @@
   "gpu": "",
 
   "trainFNN": true,
-  "kFolds": 1,
+  "kFolds": 2,
   "threshold": 0.5,
   "testSize": 0.2,
   "fnnType": "FNN",
@@ -40,6 +41,7 @@
   "activationFunction": "selu",
   "dropout": 0.0107,
   "learningRate": 0.0000022,
+  "learningRateDecay": 0.96,
   "l2reg": 0.001,
 
   "aeWabTracking": false,
