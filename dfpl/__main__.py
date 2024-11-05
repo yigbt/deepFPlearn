@@ -87,9 +87,8 @@ def train(opts: options.Options):
                 )
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        if (
-            opts.visualizeLatent
-        ):  ## visualize latent space only if you train the autoencoder
+        if opts.visualizeLatent:
+            # visualize latent space only if you train the autoencoder
             ac.visualize_fingerprints(
                 df,
                 comressed_col="fpcompressed",

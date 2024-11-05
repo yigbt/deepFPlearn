@@ -1,8 +1,6 @@
 import logging
-import os
 import pathlib
 
-import pandas as pd
 from chemprop import args, train
 
 import dfpl.options as opt

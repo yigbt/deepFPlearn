@@ -15,9 +15,9 @@ from rdkit.Chem import MACCSkeys
 from rdkit.Chem.AtomPairs import Pairs, Torsions
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import optimizers, regularizers
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.callbacks import (EarlyStopping, ModelCheckpoint,
+                                        ReduceLROnPlateau)
 from tensorflow.keras.layers import Dense, Dropout, Input
-
 # for NN model functions
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.optimizers import SGD

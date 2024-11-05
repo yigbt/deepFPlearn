@@ -12,21 +12,13 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow.python.keras.backend as K
 import wandb
-from sklearn.metrics import (
-    auc,
-    classification_report,
-    confusion_matrix,
-    matthews_corrcoef,
-    roc_curve,
-)
+from sklearn.metrics import (auc, classification_report, confusion_matrix,
+                             matthews_corrcoef, roc_curve)
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tensorflow.keras import metrics, optimizers, regularizers
 from tensorflow.keras.layers import AlphaDropout, Dense, Dropout
-from tensorflow.keras.losses import (
-    BinaryCrossentropy,
-    BinaryFocalCrossentropy,
-    MeanSquaredError,
-)
+from tensorflow.keras.losses import (BinaryCrossentropy,
+                                     BinaryFocalCrossentropy, MeanSquaredError)
 from tensorflow.keras.models import Model, Sequential
 
 from dfpl import callbacks as cb

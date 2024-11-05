@@ -8,7 +8,7 @@ import warnings
 from collections import defaultdict
 from pathlib import Path
 from random import Random
-from typing import Any, Dict, List, Set, Tuple, Type, TypeVar, Union
+from typing import Dict, List, Set, Tuple, Type, TypeVar, Union
 
 import jsonpickle
 import numpy as np

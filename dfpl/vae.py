@@ -1,25 +1,22 @@
-import csv
 import logging
 import math
 import os.path
-from typing import Tuple, Union
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
 import tensorflow.keras.metrics as metrics
 import wandb
 from keras import backend as K
-from sklearn.model_selection import train_test_split
-from tensorflow.keras import initializers, optimizers
+from tensorflow.keras import optimizers
 from tensorflow.keras.layers import Dense, Input, Lambda
-from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.models import Model
 from tensorflow.python.framework.ops import disable_eager_execution
 
 from dfpl import callbacks
 from dfpl import history as ht
-from dfpl import options, settings
+from dfpl import options
 from dfpl.autoencoder import create_dense_layer, setup_train_test_split
-from dfpl.utils import ae_scaffold_split, weight_split
 
 disable_eager_execution()
 
