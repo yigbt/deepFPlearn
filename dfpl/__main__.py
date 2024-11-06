@@ -1,13 +1,10 @@
 import dataclasses
 import logging
 import os.path
-import pathlib
 from argparse import Namespace
 from os import path
 
 import chemprop as cp
-import pandas as pd
-from keras.models import load_model
 
 from dfpl import autoencoder as ac
 from dfpl import feedforwardNN as fNN
@@ -27,7 +24,7 @@ def traindmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options from a JSON file and replace the relevant attributes in `opts`
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = cp.args.TrainArgs().parse_args(arguments)
     logging.info("Training DMPNN...")
     mean_score, std_score = cp.train.cross_validate(
@@ -45,7 +42,7 @@ def predictdmpnn(opts: options.GnnOptions) -> None:
     - None
     """
     # Load options and additional arguments from a JSON file
-    arguments = createArgsFromJson(jsonFile = opts.configFile)
+    arguments = createArgsFromJson(jsonFile=opts.configFile)
     opts = cp.args.PredictArgs().parse_args(arguments)
 
     cp.train.make_predictions(args=opts)
@@ -84,9 +81,7 @@ def train(opts: options.Options):
             else:
                 (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
 
-            if opts.ecWeightsFile == "":
-                encoder = load_model(opts.ecModelDir)
-            else:
+            if opts.ecWeightsFile != "":
                 autoencoder.load_weights(
                     os.path.join(opts.ecModelDir, opts.ecWeightsFile)
                 )
@@ -132,9 +127,7 @@ def predict(opts: options.Options) -> None:
         if opts.aeType == "variational":
             (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
         # Load trained model for autoencoder
-        if opts.ecWeightsFile == "":
-            encoder = load_model(opts.ecModelDir)
-        else:
+        if opts.ecWeightsFile != "":
             encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
         df = ac.compress_fingerprints(df, encoder)
 

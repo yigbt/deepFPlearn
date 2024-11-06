@@ -4,11 +4,12 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
 import jsonpickle
 import torch
 from chemprop.args import TrainArgs
 
-from dfpl.utils import makePathAbsolute, parseCmdArgs
+from dfpl.utils import parseCmdArgs
 
 
 @dataclass
@@ -57,7 +58,7 @@ class Options:
     l2reg: float = 0.001
     dropout: float = 0.2
     threshold: float = 0.5
-    visualizeLatent: bool = False #only if autoencoder is trained or loaded
+    visualizeLatent: bool = False  # only if autoencoder is trained or loaded
     gpu: int = None
     aeWabTracking: bool = False  # Wand & Biases autoencoder tracking
     wabTracking: bool = False  # Wand & Biases FNN tracking
@@ -182,7 +183,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="The file containing the data for training in "
         "comma separated CSV format.The first column should be smiles.",
-        default="tests/data/smiles.csv"
+        default="tests/data/smiles.csv",
     )
     general_args.add_argument(
         "-o",
@@ -191,7 +192,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Prefix of output file name. Trained model and "
         "respective stats will be returned in this directory.",
-        default="example/results_train/"
+        default="example/results_train/",
     )
 
     # TODO CHECK WHAT IS TYPE DOING?
@@ -202,7 +203,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-        default="fp"
+        default="fp",
     )
     general_args.add_argument(
         "-thr",
@@ -210,7 +211,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=float,
         metavar="FLOAT",
         help="Threshold for binary classification.",
-        default=0.5
+        default=0.5,
     )
     general_args.add_argument(
         "-gpu",
@@ -218,7 +219,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Select which gpu to use by index. If not available, leave empty",
-        default=None
+        default=None,
     )
     general_args.add_argument(
         "--fpType",
@@ -226,25 +227,25 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["topological", "MACCS"],
         help="The type of fingerprint to be generated/used in input file. MACCS or topological are available.",
-        default="topological"
+        default="topological",
     )
     general_args.add_argument(
         "--fpSize",
         type=int,
         help="Length of the fingerprint that should be generated.",
-        default=2048
+        default=2048,
     )
     general_args.add_argument(
         "--compressFeatures",
         action="store_true",
         help="Should the fingerprints be compressed or not. Needs a path of a trained autoencoder or needs the trainAC also set to True.",
-        default=False
+        default=False,
     )
     general_args.add_argument(
         "--enableMultiLabel",
         action="store_true",
         help="Train multi-label classification model in addition to the individual models.",
-        default=False
+        default=False,
     )
     # Autoencoder Configuration
     autoencoder_args.add_argument(
@@ -253,14 +254,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="FILE",
         help="The .hdf5 file of a trained encoder",
-        default=""
+        default="",
     )
     autoencoder_args.add_argument(
         "--ecModelDir",
         type=str,
         metavar="DIR",
         help="The directory where the full model of the encoder will be saved",
-        default="example/results_train/AE_encoder/"
+        default="example/results_train/AE_encoder/",
     )
     autoencoder_args.add_argument(
         "--aeType",
@@ -268,21 +269,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["variational", "deterministic"],
         help="Autoencoder type, variational or deterministic.",
-        default="deterministic"
+        default="deterministic",
     )
     autoencoder_args.add_argument(
         "--aeEpochs",
         metavar="INT",
         type=int,
         help="Number of epochs for autoencoder training.",
-        default=100
+        default=100,
     )
     autoencoder_args.add_argument(
         "--aeBatchSize",
         metavar="INT",
         type=int,
         help="Batch size in autoencoder training.",
-        default=512
+        default=512,
     )
     autoencoder_args.add_argument(
         "--aeActivationFunction",
@@ -290,21 +291,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["relu", "selu"],
         help="The activation function for the hidden layers in the autoencoder.",
-        default="relu"
+        default="relu",
     )
     autoencoder_args.add_argument(
         "--aeLearningRate",
         metavar="FLOAT",
         type=float,
         help="Learning rate for autoencoder training.",
-        default=0.001
+        default=0.001,
     )
     autoencoder_args.add_argument(
         "--aeLearningRateDecay",
         metavar="FLOAT",
         type=float,
         help="Learning rate decay for autoencoder training.",
-        default=0.96
+        default=0.96,
     )
     autoencoder_args.add_argument(
         "--aeSplitType",
@@ -312,7 +313,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the autoencoder",
-        default="random"
+        default="random",
     )
     autoencoder_args.add_argument(
         "-d",
@@ -320,13 +321,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Size of encoded fingerprint (z-layer of autoencoder).",
-        default=256
+        default=256,
     )
     autoencoder_args.add_argument(
         "--visualizeLatent",
         action="store_true",
         help="UMAP the latent space for exploration",
-        default=False
+        default=False,
     )
     # Training Configuration
     training_args.add_argument(
@@ -335,14 +336,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the feedforward neural network",
-        default="random"
+        default="random",
     )
     training_args.add_argument(
         "--testSize",
         metavar="FLOAT",
         type=float,
         help="Fraction of the dataset that should be used for testing. Value in [0,1].",
-        default=0.2
+        default=0.2,
     )
     training_args.add_argument(
         "-K",
@@ -350,7 +351,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="K that is used for K-fold cross-validation in the training procedure.",
-        default=1
+        default=1,
     )
     training_args.add_argument(
         "-v",
@@ -497,7 +498,7 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "--configFile",
         metavar="FILE",
         type=str,
-        help="Input JSON file that contains all information for training/predicting."
+        help="Input JSON file that contains all information for training/predicting.",
     )
     files_args.add_argument(
         "-i",
@@ -576,11 +577,16 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
     general_args.add_argument(
         "-c", "--compressFeatures", action="store_true", default=False
     )
-    (general_args.add_argument(
-        "--aeType", metavar="STRING", type=str,
-         choices=["variational", "deterministic"],
-         help="Autoencoder type, variational or deterministic.",
-         default="deterministic"))
+    (
+        general_args.add_argument(
+            "--aeType",
+            metavar="STRING",
+            type=str,
+            choices=["variational", "deterministic"],
+            help="Autoencoder type, variational or deterministic.",
+            default="deterministic",
+        )
+    )
 
 
 def parseTrainGnn(parser: argparse.ArgumentParser) -> None:

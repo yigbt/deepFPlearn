@@ -1,19 +1,18 @@
 import logging
 import math
 import os.path
-from os.path import basename
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import umap.umap_ as umap
+import umap
 import wandb
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses, optimizers
 from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.models import Model
 
 from dfpl import callbacks
 from dfpl import history as ht
@@ -148,7 +147,8 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     if opts.aeWabTracking and not opts.wabTracking:
         wandb.init(project=f"AE_{opts.aeSplitType}")
 
-    save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_split_autoencoder")
+    os.makedirs(opts.ecModelDir, exist_ok=True)
+    save_path = os.path.join(opts.ecModelDir, "autoencoder_weights.h5")
     # Collect the callbacks for training
 
     # Select all fingerprints that are valid and turn them into a numpy array
@@ -279,18 +279,10 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     )
 
     # Save the autoencoder callback model to disk
-    if opts.testSize > 0.0:
-        # Re-define autoencoder and encoder using your function
-        callback_autoencoder = load_model(filepath=save_path)
-        _, callback_encoder = define_ac_model(opts)
-        for i, layer in enumerate(callback_encoder.layers):
-            layer.set_weights(callback_autoencoder.layers[i].get_weights())
+    autoencoder.load_weights(save_path)
+    # Save the encoder weights
+    encoder.save_weights(os.path.join(opts.ecModelDir, "encoder_weights.h5"))
 
-        # Save the encoder model
-        encoder_save_path = os.path.join(save_path, "encoder_model")
-        callback_encoder.save(filepath=encoder_save_path)
-    else:
-        encoder.save(filepath=save_path)
     # Return the encoder model of the trained autoencoder
     return encoder, train_indices, test_indices
 
@@ -365,7 +357,6 @@ def visualize_fingerprints(
     palette = {"train": "blue", "test": "red"}
 
     # Create the scatter plot
-    sns.set(style="white")
     fig, ax = plt.subplots(figsize=(10, 8))
     split = save_as.split("_", 1)
     part_after_underscore = split[1]

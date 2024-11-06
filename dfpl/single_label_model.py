@@ -403,7 +403,7 @@ def evaluate_model(
                 "target": target,
                 "fold": fold,
             }
-        ).to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.csv")
+        ).to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.csv")
     )
 
     # Compute the confusion matrix
@@ -416,7 +416,7 @@ def evaluate_model(
     prf = pd.DataFrame.from_dict(precision_recall)[["0", "1"]]
 
     # Add balanced accuracy to the computed metrics
-    prf.to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.prec_rec_f1.csv")
+    prf.to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.prec_rec_f1.csv")
 
     # Evaluate the model on the validation set and log the results
     loss, acc, auc_value, precision, recall, balanced_acc = tuple(
@@ -455,14 +455,14 @@ def evaluate_model(
             )
         ),
         columns=["fpr", "tpr", "auc_value", "target", "fold"],
-    ).to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.aucdata.csv")
+    ).to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.aucdata.csv")
     # Generate and save AUC-ROC curve plot
     pl.plot_auc(
         fpr=FPR,
         tpr=TPR,
         target=target,
         auc_value=AUC,
-        filename=f"{file_prefix}_auc_data.png",
+        filename=f"{file_prefix}/auc_data.png",
         wandb_logging=False,
     )
 
@@ -500,9 +500,10 @@ def fit_and_evaluate_model(
     logging.info(f"Training of fold number: {fold}")
 
     # Define file name prefix for saving models
-    model_file_prefix = path.join(
-        opts.outputDir, f"{target}_{opts.split_type}_single-labeled_Fold-{fold}"
-    )
+    if fold > 1:
+        model_file_prefix = path.join("tmp", f"{target}/fold-{fold}")
+    else:
+        model_file_prefix = path.join(opts.outputDir, target)
 
     # Compute class imbalance
     ids, counts = np.unique(y_train, return_counts=True)
@@ -522,7 +523,9 @@ def fit_and_evaluate_model(
     )
 
     # Define checkpoint to save model weights during training
-    checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
+    checkpoint_model_weights_path = os.path.join(
+        model_file_prefix, "model_weights.hdf5"
+    )
     callback_list = cb.nn_callback(
         checkpoint_path=checkpoint_model_weights_path, opts=opts
     )
@@ -544,8 +547,8 @@ def fit_and_evaluate_model(
     )
 
     # Save and plot model history
-    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
-    pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
+    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}/history.csv")
+    pl.plot_history(history=hist, file=f"{model_file_prefix}/history.svg")
     # Evaluate model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)
@@ -663,21 +666,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     opts=opts,
                 )
                 performance_list.append(performance)
-                # save complete model
-                trained_model = define_single_label_model(
-                    input_size=len(x[0]), opts=opts
-                )
-                # trained_model.load_weights
-                # (path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(opts.outputDir, f"{target}_saved_model")
-                )
 
             elif 1 < opts.kFolds < 10:  # int(x.shape[0] / 100):
                 # do a kfold cross-validation
@@ -721,24 +709,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     )
                     performance_list.append(performance)
 
-                    # save complete model
-                    trained_model = define_single_label_model(
-                        input_size=len(x[0]), opts=opts
-                    )
-                    # trained_model.load_weights
-                    # (path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
-                    trained_model.save_weights(
-                        path.join(
-                            opts.outputDir,
-                            f"{target}_single-labeled_Fold-{fold_no}.model.weights.hdf5",
-                        )
-                    )
-                    # create output directory and store complete model
-                    trained_model.save(
-                        filepath=path.join(
-                            opts.outputDir, f"{target}-{fold_no}_saved_model"
-                        )
-                    )
                     if opts.wabTracking:
                         wandb.finish()
                     fold_no += 1
@@ -747,31 +717,21 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
                     by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
                 )["fold"][0]
-                # rename the fold to best fold
-                src = os.path.join(
-                    opts.outputDir,
-                    f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
-                )
-                dst = os.path.join(
-                    opts.outputDir,
-                    f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
-                )
-                os.rename(src, dst)
+                src = os.path.join("tmp/", f"{target}/fold-{best_fold}/")
+                if opts.compressFeatures:
+                    opts.outputDir = opts.ecModelDir
+                dst = os.path.join(opts.outputDir, f"{target}/")
 
-                src_dir = os.path.join(
-                    opts.outputDir, f"{target}-{best_fold}_saved_model"
-                )
-                dst_dir = os.path.join(
-                    opts.outputDir, f"{target}-{best_fold}_best_saved_model"
-                )
+                # Ensure the destination directory exists
+                os.makedirs(src, exist_ok=True)
+                os.makedirs(dst, exist_ok=True)
 
-                if path.isdir(dst_dir):
-                    shutil.rmtree(dst_dir)
+                # Copy all contents from the source (best fold) to the destination
+                shutil.copytree(src, dst, dirs_exist_ok=True)
 
-                # Rename source directory to destination directory
-                os.rename(src_dir, dst_dir)
+                # Optionally, clean up the temporary directory
+                shutil.rmtree("tmp/")
 
-                # save complete model
             else:
                 logging.info(
                     "Your selected number of folds for Cross validation is out of range. "
@@ -830,20 +790,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     opts=opts,
                 )
                 performance_list.append(performance)
-                trained_model = define_single_label_model(
-                    input_size=len(x_train[0]), opts=opts
-                )
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_scaffold_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(
-                        opts.outputDir, f"{target}_scaffold_saved_model_0"
-                    )
-                )
+
             elif opts.kFolds > 1:
                 for fold_no in range(1, opts.kFolds + 1):
                     print(f"Splitting data with seed {fold_no}")
@@ -881,20 +828,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     )
                     performance_list.append(performance)
 
-                    trained_model = define_single_label_model(
-                        input_size=len(x_train[0]), opts=opts
-                    )
-                    trained_model.save_weights(
-                        path.join(
-                            opts.outputDir,
-                            f"{target}_scaffold_single-labeled_Fold-{fold_no}.model.weights.hdf5",
-                        )
-                    )
-                    trained_model.save(
-                        filepath=path.join(
-                            opts.outputDir, f"{target}_scaffold_saved_model_{fold_no}"
-                        )
-                    )
                     if opts.wabTracking:
                         wandb.finish()
                     fold_no += 1
@@ -902,30 +835,20 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
                     by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
                 )["fold"][0]
-                # rename the fold to best fold
-                src = os.path.join(
-                    opts.outputDir,
-                    f"{target}_scaffold_single-labeled_Fold-{best_fold}.model.weights.hdf5",
-                )
-                dst = os.path.join(
-                    opts.outputDir,
-                    f"{target}_scaffold_single-labeled_BEST_Fold-{best_fold}.model.weights.hdf5",
-                )
-                os.rename(src, dst)
+                src = os.path.join("tmp/", f"{target}/fold-{best_fold}/")
+                if opts.compressFeatures:
+                    opts.outputDir = opts.ecModelDir
+                dst = os.path.join(opts.outputDir, f"{target}/")
 
-                src_dir = os.path.join(
-                    opts.outputDir, f"{target}_scaffold_saved_model_{best_fold}"
-                )
-                dst_dir = os.path.join(
-                    opts.outputDir,
-                    f"{target}_scaffold_saved_model_BEST_FOLD_{best_fold}",
-                )
+                # Ensure the destination directory exists
+                os.makedirs(dst, exist_ok=True)
+                os.makedirs(src, exist_ok=True)
 
-                if path.isdir(dst_dir):
-                    shutil.rmtree(dst_dir)
+                # Copy all contents from the source (best fold) to the destination
+                shutil.copytree(src, dst, dirs_exist_ok=True)
 
-                # Rename source directory to destination directory
-                os.rename(src_dir, dst_dir)
+                # Optionally, clean up the temporary directory
+                shutil.rmtree("tmp/")
 
             else:
                 logging.info(
@@ -979,18 +902,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     opts=opts,
                 )
                 performance_list.append(performance)
-                trained_model = define_single_label_model(
-                    input_size=len(x_train[0]), opts=opts
-                )
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_weight_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(opts.outputDir, f"{target}_weight_saved_model_0")
-                )
             elif opts.kFolds > 1:
                 raise Exception(
                     f"Unsupported number of folds: {opts.kFolds} for {opts.split_type} split.\
