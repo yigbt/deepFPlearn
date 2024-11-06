@@ -500,11 +500,11 @@ def fit_and_evaluate_model(
     logging.info(f"Training of fold number: {fold}")
 
     # Define file name prefix for saving models
-    os.makedirs(opts.outputDir, exist_ok=True)
     if fold > 1:
         model_file_prefix = path.join("tmp", f"{target}/fold-{fold}")
     else:
         model_file_prefix = path.join(opts.outputDir, target)
+    os.makedirs(model_file_prefix, exist_ok=True)
 
     # Compute class imbalance
     ids, counts = np.unique(y_train, return_counts=True)
@@ -719,8 +719,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
                 )["fold"][0]
                 src = os.path.join("tmp/", f"{target}/fold-{best_fold}/")
-                if opts.compressFeatures:
-                    opts.outputDir = opts.ecModelDir
                 dst = os.path.join(opts.outputDir, f"{target}/")
 
                 # Ensure the destination directory exists
@@ -837,8 +835,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
                 )["fold"][0]
                 src = os.path.join("tmp/", f"{target}/fold-{best_fold}/")
-                if opts.compressFeatures:
-                    opts.outputDir = opts.ecModelDir
                 dst = os.path.join(opts.outputDir, f"{target}/")
 
                 # Ensure the destination directory exists

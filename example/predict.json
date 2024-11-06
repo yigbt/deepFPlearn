@@ -3,7 +3,7 @@
   "inputFile": "tests/data/S_dataset.csv",
   "outputDir": "example/results_predict/",
   "outputFile": "smiles.csv",
-  "ecModelDir": "example/results_train/",
+  "ecModelDir": "example/results_train/autoencoder",
   "ecWeightsFile": "encoder_weights.h5",
   "fnnModelDir": "example/results_train/AR",
   "aeType": "variational",

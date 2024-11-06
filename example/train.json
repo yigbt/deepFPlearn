@@ -1,13 +1,13 @@
 {
   "py/object": "dfpl.options.Options",
   "inputFile": "tests/data/S_dataset.csv",
-  "outputDir": "example/results_train_ae/",
-  "ecModelDir": "example/results_train_ae/autoencoder",
+  "outputDir": "example/results_train/",
+  "ecModelDir": "example/results_train/autoencoder",
   "ecWeightsFile": "",
   "verbose": 2,
 
-  "trainAC": true,
-  "compressFeatures": true,
+  "trainAC": false,
+  "compressFeatures": false,
   "visualizeLatent": false,
   "encFPSize": 256,
 

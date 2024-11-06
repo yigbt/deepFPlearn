@@ -36,6 +36,7 @@ class Options:
     trainAC: bool = True  # if set to False, an AC weight file must be provided!
     trainFNN: bool = True
     compressFeatures: bool = True
+    visualizeLatent: bool = False
     sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
     split_type: str = "random"
@@ -44,13 +45,14 @@ class Options:
     aeEpochs: int = 3000
     aeBatchSize: int = 512
     aeLearningRate: float = 0.001
-    aeLearningRateDecay: float = 0.01
+    aeLearningRateDecay: float = 0.97
     aeActivationFunction: str = "relu"
     aeOptimizer: str = "Adam"
     fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
     learningRate: float = 0.001
+    learningRateDecay: float = 0.96
     lossFunction: str = "bce"
     activationFunction: str = "relu"
     l2reg: float = 0.001
@@ -295,6 +297,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         default=argparse.SUPPRESS,
     )
     general_args.add_argument(
+        "--visualizeLatent",
+        metavar="BOOL",
+        type=bool,
+        help="Visualize the latent space of the autoencoder.",
+        default=argparse.SUPPRESS,
+    )
+    general_args.add_argument(
         "-m",
         "--enableMultiLabel",
         metavar="BOOL",
@@ -493,6 +502,13 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FLOAT",
         type=float,
         help="Learning rate size in FNN training.",
+        default=argparse.SUPPRESS,
+    )
+    training_args.add_argument(
+        "--learningRateDecay",
+        metavar="FLOAT",
+        type=float,
+        help="Learning rate decay in FNN training.",
         default=argparse.SUPPRESS,
     )
     training_args.add_argument(
