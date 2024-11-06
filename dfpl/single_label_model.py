@@ -506,13 +506,12 @@ def fit_and_evaluate_model(
 ) -> pd.DataFrame:
     # Print info about training
     logging.info(f"Training of fold number: {fold}")
-    target_suffix = f"{target}_compressed" if opts.compressFeatures else target
 
     # Define file name prefix for saving models
     if fold > 1:
-        model_file_prefix = path.join("tmp", f"{target_suffix}/fold-{fold}")
+        model_file_prefix = path.join("tmp", f"{target}/fold-{fold}")
     else:
-        model_file_prefix = path.join(opts.outputDir, target_suffix)
+        model_file_prefix = path.join(opts.outputDir, target)
 
     # Compute class imbalance
     ids, counts = np.unique(y_train, return_counts=True)
