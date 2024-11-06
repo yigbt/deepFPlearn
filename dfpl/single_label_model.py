@@ -531,7 +531,9 @@ def fit_and_evaluate_model(
     )
 
     # Define checkpoint to save model weights during training
-    checkpoint_model_weights_path = f"{model_file_prefix}/model_weights.hdf5"
+    checkpoint_model_weights_path = os.path.join(model_file_prefix, "model_weights.hdf5")
+
+    # Define callbacks
     callback_list = cb.nn_callback(
         checkpoint_path=checkpoint_model_weights_path, opts=opts
     )
