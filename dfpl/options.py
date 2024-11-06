@@ -3,13 +3,12 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import jsonpickle
 import torch
 from chemprop.args import TrainArgs
 
-from dfpl.utils import parseCmdArgs
+from dfpl.utils import makePathAbsolute
 
 
 @dataclass
@@ -18,51 +17,51 @@ class Options:
     Dataclass for all options necessary for training the neural nets
     """
 
-    configFile: str = None
-    inputFile: str = "tests/data/smiles.csv"
-    outputDir: str = "example/results_train/"  # changes according to mode
-    outputFile: str = "results.csv"
-    ecWeightsFile: str = ""
-    ecModelDir: str = "example/results_train/AE_encoder/"
-    fnnModelDir: str = "example/results_train/AR_saved_model/"
+    configFile: str = "./example/train.json"
+    inputFile: str = "/deepFPlearn/CMPNN/data/tox21.csv"
+    outputDir: str = "."
+    outputFile: str = ""
+    ecWeightsFile: str = "AE.encoder.weights.hdf5"
+    ecModelDir: str = "AE_encoder"
+    fnnModelDir: str = "modeltraining"
     type: str = "smiles"
     fpType: str = "topological"  # also "MACCS", "atompairs"
-    epochs: int = 100
+    epochs: int = 512
     fpSize: int = 2048
     encFPSize: int = 256
-    kFolds: int = 1
+    kFolds: int = 0
     testSize: float = 0.2
     enableMultiLabel: bool = False
-    verbose: int = 2
-    trainAC: bool = False
+    verbose: int = 0
+    trainAC: bool = True  # if set to False, an AC weight file must be provided!
     trainFNN: bool = True
-    compressFeatures: bool = False
-    sampleFractionOnes: float = 0.5
+    compressFeatures: bool = True
+    sampleFractionOnes: float = 0.5  # Only used when value is in [0,1]
     sampleDown: bool = False
     split_type: str = "random"
     aeSplitType: str = "random"
     aeType: str = "deterministic"
-    aeEpochs: int = 100
+    aeEpochs: int = 3000
     aeBatchSize: int = 512
     aeLearningRate: float = 0.001
-    aeLearningRateDecay: float = 0.96
-    aeActivationFunction: str = "selu"
+    aeLearningRateDecay: float = 0.01
+    aeActivationFunction: str = "relu"
     aeOptimizer: str = "Adam"
     fnnType: str = "FNN"
     batchSize: int = 128
     optimizer: str = "Adam"
     learningRate: float = 0.001
-    learningRateDecay: float = 0.96
     lossFunction: str = "bce"
     activationFunction: str = "relu"
     l2reg: float = 0.001
     dropout: float = 0.2
     threshold: float = 0.5
-    visualizeLatent: bool = False  # only if autoencoder is trained or loaded
-    gpu: int = None
-    aeWabTracking: bool = False  # Wand & Biases autoencoder tracking
-    wabTracking: bool = False  # Wand & Biases FNN tracking
-    wabTarget: str = "AR"  # Wand & Biases target used for showing training progress
+    gpu: str = ""
+    snnDepth = 8
+    snnWidth = 50
+    aeWabTracking: str = ""  # Wand & Biases autoencoder tracking
+    wabTracking: str = ""  # Wand & Biases FNN tracking
+    wabTarget: str = "ER"  # Wand & Biases target used for showing training progress
 
     def saveToFile(self, file: str) -> None:
         """
@@ -73,8 +72,42 @@ class Options:
             f.write(jsonpickle.encode(self))
 
     @classmethod
-    def fromCmdArgs(cls, args: argparse.Namespace) -> "Options":
-        return parseCmdArgs(cls, args)
+    def fromJson(cls, file: str) -> Options:
+        """
+        Create an instance from a JSON file
+        """
+        jsonFile = Path(file)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = f.read()
+                return jsonpickle.decode(content)
+        raise ValueError("JSON file does not exist or is not readable")
+
+    @classmethod
+    def fromCmdArgs(cls, args: argparse.Namespace) -> Options:
+        """
+        Creates Options instance from cmdline arguments.
+
+        If a training file (JSON) is provided, the values from that file are used.
+        However, additional commandline arguments will be preferred. If, e.g., "fpSize" is specified both in the
+        JSON file and on the commandline, then the value of the commandline argument will be used.
+        """
+        result = Options()
+        if "configFile" in vars(args).keys():
+            jsonFile = Path(makePathAbsolute(args.configFile))
+            if jsonFile.exists() and jsonFile.is_file():
+                with jsonFile.open() as f:
+                    content = f.read()
+                    result = jsonpickle.decode(content)
+            else:
+                raise ValueError("Could not find JSON input file")
+
+        for key, value in vars(args).items():
+            # The args dict will contain a "method" key from the subparser.
+            # We don't use this.
+            if key != "method":
+                result.__setattr__(key, value)
+        return result
 
 
 @dataclass
@@ -101,19 +134,37 @@ class GnnOptions(TrainArgs):
     save_preds: bool = True
 
     @classmethod
-    def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
-        # Initialize with JSON config if provided
-        if json_config:
-            opts = cls(**json_config)
-        else:
-            opts = cls()
+    def fromCmdArgs(cls, args: argparse.Namespace) -> GnnOptions:
+        """
+        Creates Options instance from cmdline arguments.
 
-        # Update with command-line arguments
-        for key, value in vars(args).items():
-            if value is not None:
-                setattr(opts, key, value)
+        If a training file (JSON) is provided, the values from that file are used.
+        However, additional commandline arguments will be preferred. If, e.g., "fpSize" is specified both in the
+        JSON file and on the commandline, then the value of the commandline argument will be used.
+        """
+        result = GnnOptions()
+        if "configFile" in vars(args).keys():
+            jsonFile = Path(makePathAbsolute(args.configFile))
+            if jsonFile.exists() and jsonFile.is_file():
+                with jsonFile.open() as f:
+                    content = f.read()
+                    result = jsonpickle.decode(content)
+            else:
+                raise ValueError("Could not find JSON input file")
 
-        return opts
+        return result
+
+    @classmethod
+    def fromJson(cls, file: str) -> GnnOptions:
+        """
+        Create an instance from a JSON file
+        """
+        jsonFile = Path(file)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = f.read()
+                return jsonpickle.decode(content)
+        raise ValueError("JSON file does not exist or is not readable")
 
 
 def createCommandlineParser() -> argparse.ArgumentParser:
@@ -174,7 +225,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="FILE",
         type=str,
         help="Input JSON file that contains all information for training/predicting.",
-        default="example/train.json",
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
         "-i",
@@ -183,7 +234,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="The file containing the data for training in "
         "comma separated CSV format.The first column should be smiles.",
-        default="tests/data/smiles.csv",
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
         "-o",
@@ -192,10 +243,8 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="Prefix of output file name. Trained model and "
         "respective stats will be returned in this directory.",
-        default="example/results_train/",
+        default=argparse.SUPPRESS,
     )
-
-    # TODO CHECK WHAT IS TYPE DOING?
     general_args.add_argument(
         "-t",
         "--type",
@@ -203,7 +252,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["fp", "smiles"],
         help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-        default="fp",
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
         "-thr",
@@ -211,41 +260,47 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=float,
         metavar="FLOAT",
         help="Threshold for binary classification.",
-        default=0.5,
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
         "-gpu",
         "--gpu",
         metavar="INT",
         type=int,
-        help="Select which gpu to use by index. If not available, leave empty",
-        default=None,
+        help="Select which gpu to use. If not available, leave empty.",
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
+        "-k",
         "--fpType",
         metavar="STR",
         type=str,
-        choices=["topological", "MACCS"],
-        help="The type of fingerprint to be generated/used in input file. MACCS or topological are available.",
-        default="topological",
+        choices=["topological", "MACCS"],  # , 'atompairs', 'torsions'],
+        help="The type of fingerprint to be generated/used in input file.",
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
+        "-s",
         "--fpSize",
         type=int,
-        help="Length of the fingerprint that should be generated.",
-        default=2048,
+        help="Size of fingerprint that should be generated.",
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
+        "-c",
         "--compressFeatures",
-        action="store_true",
-        help="Should the fingerprints be compressed or not. Needs a path of a trained autoencoder or needs the trainAC also set to True.",
-        default=False,
+        metavar="BOOL",
+        type=bool,
+        help="Should the fingerprints be compressed or not. Activates the autoencoder. ",
+        default=argparse.SUPPRESS,
     )
     general_args.add_argument(
+        "-m",
         "--enableMultiLabel",
-        action="store_true",
+        metavar="BOOL",
+        type=bool,
         help="Train multi-label classification model in addition to the individual models.",
-        default=False,
+        default=argparse.SUPPRESS,
     )
     # Autoencoder Configuration
     autoencoder_args.add_argument(
@@ -254,14 +309,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         metavar="FILE",
         help="The .hdf5 file of a trained encoder",
-        default="",
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--ecModelDir",
         type=str,
         metavar="DIR",
         help="The directory where the full model of the encoder will be saved",
-        default="example/results_train/AE_encoder/",
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--aeType",
@@ -269,21 +324,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["variational", "deterministic"],
         help="Autoencoder type, variational or deterministic.",
-        default="deterministic",
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--aeEpochs",
         metavar="INT",
         type=int,
         help="Number of epochs for autoencoder training.",
-        default=100,
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--aeBatchSize",
         metavar="INT",
         type=int,
         help="Batch size in autoencoder training.",
-        default=512,
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--aeActivationFunction",
@@ -291,21 +346,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["relu", "selu"],
         help="The activation function for the hidden layers in the autoencoder.",
-        default="relu",
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--aeLearningRate",
         metavar="FLOAT",
         type=float,
         help="Learning rate for autoencoder training.",
-        default=0.001,
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--aeLearningRateDecay",
         metavar="FLOAT",
         type=float,
         help="Learning rate decay for autoencoder training.",
-        default=0.96,
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "--aeSplitType",
@@ -313,7 +368,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the autoencoder",
-        default="random",
+        default=argparse.SUPPRESS,
     )
     autoencoder_args.add_argument(
         "-d",
@@ -321,13 +376,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Size of encoded fingerprint (z-layer of autoencoder).",
-        default=256,
-    )
-    autoencoder_args.add_argument(
-        "--visualizeLatent",
-        action="store_true",
-        help="UMAP the latent space for exploration",
-        default=False,
+        default=argparse.SUPPRESS,
     )
     # Training Configuration
     training_args.add_argument(
@@ -336,14 +385,15 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["scaffold_balanced", "random", "molecular_weight"],
         help="Set how the data is going to be split for the feedforward neural network",
-        default="random",
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
+        "-l",
         "--testSize",
         metavar="FLOAT",
         type=float,
         help="Fraction of the dataset that should be used for testing. Value in [0,1].",
-        default=0.2,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "-K",
@@ -351,7 +401,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="K that is used for K-fold cross-validation in the training procedure.",
-        default=1,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "-v",
@@ -361,19 +411,21 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         choices=[0, 1, 2],
         help="Verbosity level. O: No additional output, "
         + "1: Some additional output, 2: full additional output",
-        default=2,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--trainAC",
-        action="store_true",
+        metavar="BOOL",
+        type=bool,
         help="Choose to train or not, the autoencoder based on the input file",
-        default=False,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--trainFNN",
-        action="store_false",
-        help="When called it deactivates the training.",
-        default=True,
+        metavar="BOOL",
+        type=bool,
+        help="Train the feedforward network either with provided weights.",
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--sampleFractionOnes",
@@ -381,14 +433,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=float,
         help="This is the fraction of positive target associations (1s) in comparison to the majority class(0s)."
         "only works if --sampleDown is enabled",
-        default=0.5,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--sampleDown",
         metavar="BOOL",
         type=bool,
         help="Enable automatic down sampling of the 0 valued samples.",
-        default=False,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "-e",
@@ -396,60 +448,52 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         type=int,
         help="Number of epochs that should be used for the FNN training",
-        default=100,
+        default=argparse.SUPPRESS,
     )
-    # TODO CHECK IF ALL LOSSES MAKE SENSE HERE
+
     training_args.add_argument(
         "--lossFunction",
         metavar="STRING",
         type=str,
         choices=["mse", "bce", "focal"],
         help="Loss function to use during training. mse - mean squared error, bce - binary cross entropy.",
-        default="bce",
+        default=argparse.SUPPRESS,
     )
-    # TODO DO I NEED ALL ARGUMENTS TO BE USER SPECIFIED? WHAT DOES THE USER KNOW ABOUT OPTIMIZERS?
     training_args.add_argument(
         "--optimizer",
         metavar="STRING",
         type=str,
         choices=["Adam", "SGD"],
         help='Optimizer to use for backpropagation in the FNN. Possible values: "Adam", "SGD"',
-        default="Adam",
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--batchSize",
         metavar="INT",
         type=int,
         help="Batch size in FNN training.",
-        default=128,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--l2reg",
         metavar="FLOAT",
         type=float,
         help="Value for l2 kernel regularizer.",
-        default=0.001,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--dropout",
         metavar="FLOAT",
         type=float,
         help="The fraction of data that is dropped out in each dropout layer.",
-        default=0.2,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--learningRate",
         metavar="FLOAT",
         type=float,
         help="Learning rate size in FNN training.",
-        default=0.000022,
-    )
-    training_args.add_argument(
-        "--learningRateDecay",
-        metavar="FLOAT",
-        type=float,
-        help="Learning rate size in FNN training.",
-        default=0.96,
+        default=argparse.SUPPRESS,
     )
     training_args.add_argument(
         "--activationFunction",
@@ -457,7 +501,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["relu", "selu"],
         help="The activation function for hidden layers in the FNN.",
-        default="relu",
+        default=argparse.SUPPRESS,
     )
     # Tracking Configuration
     tracking_args.add_argument(
@@ -465,14 +509,14 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         metavar="BOOL",
         type=bool,
         help="Track autoencoder performance via Weights & Biases, see https://wandb.ai.",
-        default=False,
+        default=argparse.SUPPRESS,
     )
     tracking_args.add_argument(
         "--wabTracking",
         metavar="BOOL",
         type=bool,
         help="Track FNN performance via Weights & Biases, see https://wandb.ai.",
-        default=False,
+        default=argparse.SUPPRESS,
     )
     tracking_args.add_argument(
         "--wabTarget",
@@ -480,112 +524,7 @@ def parseInputTrain(parser: argparse.ArgumentParser) -> None:
         type=str,
         choices=["AR", "ER", "ED", "GR", "TR", "PPARg", "Aromatase"],
         help="Which target to use for tracking performance via Weights & Biases, see https://wandb.ai.",
-        default="AR",
-    )
-
-
-def parseInputPredict(parser: argparse.ArgumentParser) -> None:
-    """
-    Parse the input arguments.
-
-    :return: A namespace object built up from attributes parsed out of the cmd line.
-    """
-
-    general_args = parser.add_argument_group("General Configuration")
-    files_args = parser.add_argument_group("Files")
-    files_args.add_argument(
-        "-f",
-        "--configFile",
-        metavar="FILE",
-        type=str,
-        help="Input JSON file that contains all information for training/predicting.",
-    )
-    files_args.add_argument(
-        "-i",
-        "--inputFile",
-        metavar="FILE",
-        type=str,
-        help="The file containing the data for the prediction in (unquoted) "
-        "comma separated CSV format. The column named 'smiles' or 'fp'"
-        "contains the field to be predicted. Please adjust the type "
-        "that should be predicted (fp or smile) with -t option appropriately."
-        "An optional column 'id' is used to assign the outcomes to the"
-        "original identifiers. If this column is missing, the results are"
-        "numbered in the order of their appearance in the input file."
-        "A header is expected and respective column names are used.",
-        default="tests/data/smiles.csv",
-    )
-    files_args.add_argument(
-        "-o",
-        "--outputDir",
-        metavar="DIR",
-        type=str,
-        help="Prefix of output directory. It will contain a log file and the file specified"
-        "with --outputFile.",
-        default="example/results_predict/",
-    )
-    files_args.add_argument(
-        "--outputFile",
-        metavar="FILE",
-        type=str,
-        help="Output .CSV file name which will contain one prediction per input line. "
-        "Default: prefix of input file name.",
-        default="results.csv",
-    )
-    # TODO AGAIN THIS TRASH HERE? CAN WE EVEN PROCESS SMILES?
-    general_args.add_argument(
-        "-t",
-        "--type",
-        metavar="STR",
-        type=str,
-        choices=["fp", "smiles"],
-        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
-        default="fp",
-    )
-    general_args.add_argument(
-        "-k",
-        "--fpType",
-        metavar="STR",
-        type=str,
-        choices=["topological", "MACCS"],
-        help="The type of fingerprint to be generated/used in input file. Should be the same as the type of the fps that the model was trained upon.",
-        default="topological",
-    )
-    files_args.add_argument(
-        "--ecModelDir",
-        type=str,
-        metavar="DIR",
-        help="The directory where the full model of the encoder will be saved (if trainAE=True) or "
-        "loaded from (if trainAE=False). Provide a full path here.",
-        default="",
-    )
-    files_args.add_argument(
-        "--ecWeightsFile",
-        type=str,
-        metavar="STR",
-        help="The file  where the full model of the encoder will be loaded from, to compress the fingerprints. Provide a full path here.",
-        default="",
-    )
-    files_args.add_argument(
-        "--fnnModelDir",
-        type=str,
-        metavar="DIR",
-        help="The directory where the full model of the fnn is loaded from. "
-        "Provide a full path here.",
-        default="example/results_train/AR_saved_model",
-    )
-    general_args.add_argument(
-        "-c", "--compressFeatures", action="store_true", default=False
-    )
-    (
-        general_args.add_argument(
-            "--aeType",
-            metavar="STRING",
-            type=str,
-            choices=["variational", "deterministic"],
-            help="Autoencoder type, variational or deterministic.",
-            default="deterministic",
-        )
+        default=argparse.SUPPRESS,
     )
 
 
@@ -635,6 +574,9 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         default=10,
         help="The number of batches between each logging of the training loss",
+    )
+    general_args.add_argument(
+        "--no_cuda", action="store_true", default=True, help="Turn off cuda"
     )
     general_args.add_argument(
         "--no_cache",
@@ -1092,6 +1034,91 @@ def parseTrainGnn(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def parseInputPredict(parser: argparse.ArgumentParser) -> None:
+    """
+    Parse the input arguments.
+
+    :return: A namespace object built up from attributes parsed out of the cmd line.
+    """
+
+    general_args = parser.add_argument_group("General Configuration")
+    files_args = parser.add_argument_group("Files")
+    files_args.add_argument(
+        "-f",
+        "--configFile",
+        metavar="FILE",
+        type=str,
+        help="Input JSON file that contains all information for training/predicting.",
+        default=argparse.SUPPRESS,
+    )
+    files_args.add_argument(
+        "-i",
+        "--inputFile",
+        metavar="FILE",
+        type=str,
+        help="The file containing the data for the prediction in (unquoted) "
+        "comma separated CSV format. The column named 'smiles' or 'fp'"
+        "contains the field to be predicted. Please adjust the type "
+        "that should be predicted (fp or smile) with -t option appropriately."
+        "An optional column 'id' is used to assign the outcomes to the"
+        "original identifiers. If this column is missing, the results are"
+        "numbered in the order of their appearance in the input file."
+        "A header is expected and respective column names are used.",
+        default=argparse.SUPPRESS,
+    )
+    files_args.add_argument(
+        "-o",
+        "--outputDir",
+        metavar="DIR",
+        type=str,
+        help="Prefix of output directory. It will contain a log file and the file specified"
+        "with --outputFile.",
+        default=argparse.SUPPRESS,
+    )
+    files_args.add_argument(
+        "--outputFile",
+        metavar="FILE",
+        type=str,
+        help="Output .CSV file name which will contain one prediction per input line. "
+        "Default: prefix of input file name.",
+        default=argparse.SUPPRESS,
+    )
+    general_args.add_argument(
+        "-t",
+        "--type",
+        metavar="STR",
+        type=str,
+        choices=["fp", "smiles"],
+        help="Type of the chemical representation. Choices: 'fp', 'smiles'.",
+        default=argparse.SUPPRESS,
+    )
+    general_args.add_argument(
+        "-k",
+        "--fpType",
+        metavar="STR",
+        type=str,
+        choices=["topological", "MACCS"],  # , 'atompairs', 'torsions'],
+        help="The type of fingerprint to be generated/used in input file.",
+        default=argparse.SUPPRESS,
+    )
+    files_args.add_argument(
+        "--ecModelDir",
+        type=str,
+        metavar="DIR",
+        help="The directory where the full model of the encoder will be saved (if trainAE=True) or "
+        "loaded from (if trainAE=False). Provide a full path here.",
+        default=argparse.SUPPRESS,
+    )
+    files_args.add_argument(
+        "--fnnModelDir",
+        type=str,
+        metavar="DIR",
+        help="The directory where the full model of the fnn is loaded from. "
+        "Provide a full path here.",
+        default=argparse.SUPPRESS,
+    )
+
+
 def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
     general_args = parser.add_argument_group("General Configuration")
     data_args = parser.add_argument_group("Data Configuration")
@@ -1111,6 +1138,9 @@ def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
         metavar="INT",
         choices=list(range(torch.cuda.device_count())),
         help="Which GPU to use",
+    )
+    general_args.add_argument(
+        "--no_cuda", action="store_true", default=False, help="Turn off cuda"
     )
     general_args.add_argument(
         "--num_workers",

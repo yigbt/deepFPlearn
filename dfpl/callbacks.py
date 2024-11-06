@@ -27,9 +27,9 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
         monitor=target,
         mode="min",
         verbose=1,
+        period=settings.ac_train_check_period,
         save_best_only=True,
         save_weights_only=True,
-        period=settings.ac_train_check_period,
     )
     callbacks.append(checkpoint)
 
@@ -43,7 +43,8 @@ def autoencoder_callback(checkpoint_path: str, opts: options.Options) -> list:
         restore_best_weights=True,
     )
     callbacks.append(early_stop)
-    if opts.aeWabTracking:
+
+    if opts.aeWabTracking and not opts.wabTracking:
         callbacks.append(WandbCallback(save_model=False))
     return callbacks
 
@@ -64,11 +65,11 @@ def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
         checkpoint = ModelCheckpoint(
             checkpoint_path,
             verbose=1,
+            period=settings.nn_train_check_period,
             save_best_only=True,
             monitor="val_loss",
             mode="min",
             save_weights_only=True,
-            period=settings.nn_train_check_period,
         )
         callbacks.append(checkpoint)
 
@@ -82,6 +83,7 @@ def nn_callback(checkpoint_path: str, opts: options.Options) -> list:
             restore_best_weights=True,
         )
         callbacks.append(early_stop)
+
     if opts.wabTracking:
         callbacks.append(WandbCallback(save_model=False))
     return callbacks

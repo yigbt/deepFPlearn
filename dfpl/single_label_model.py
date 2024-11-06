@@ -500,6 +500,7 @@ def fit_and_evaluate_model(
     logging.info(f"Training of fold number: {fold}")
 
     # Define file name prefix for saving models
+    os.makedirs(opts.outputDir, exist_ok=True)
     if fold > 1:
         model_file_prefix = path.join("tmp", f"{target}/fold-{fold}")
     else:
