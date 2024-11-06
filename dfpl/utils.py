@@ -1,12 +1,16 @@
+import argparse
 import json
 import logging
 import os
 import pathlib
+import sys
 import warnings
 from collections import defaultdict
+from pathlib import Path
 from random import Random
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set, Tuple, Type, TypeVar, Union
 
+import jsonpickle
 import numpy as np
 import pandas as pd
 from rdkit import Chem, RDLogger
@@ -14,7 +18,48 @@ from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from tqdm import tqdm
 
+# Define a type variable
+
+
 RDLogger.DisableLog("rdApp.*")
+T = TypeVar("T")
+
+
+def parseCmdArgs(cls: Type[T], args: argparse.Namespace) -> T:
+    """
+    Parses command-line arguments to create an instance of the given class.
+
+    Args:
+    cls: The class to create an instance of.
+    args: argparse.Namespace containing the command-line arguments.
+
+    Returns:
+    An instance of cls populated with values from the command-line arguments.
+    """
+    # Extract argument flags from sys.argv
+    arg_flags = {arg.lstrip("-") for arg in sys.argv if arg.startswith("-")}
+
+    # Create the result instance, which will be modified and returned
+    result = cls()
+
+    # Load JSON file if specified
+    if hasattr(args, "configFile") and args.configFile:
+        jsonFile = Path(args.configFile)
+        if jsonFile.exists() and jsonFile.is_file():
+            with jsonFile.open() as f:
+                content = jsonpickle.decode(f.read())
+                for key, value in vars(content).items():
+                    setattr(result, key, value)
+        else:
+            raise ValueError("Could not find JSON input file")
+
+    # Override with user-provided command-line arguments
+    for key in arg_flags:
+        if hasattr(args, key):
+            user_value = getattr(args, key, None)
+            setattr(result, key, user_value)
+
+    return result
 
 
 def makePathAbsolute(p: str) -> str:
@@ -31,20 +76,34 @@ def createDirectory(directory: str):
         os.makedirs(path)
 
 
-def createArgsFromJson(in_json: str, ignore_elements: list, return_json_object: bool):
+def createArgsFromJson(jsonFile: str):
     arguments = []
-    with open(in_json, "r") as f:
+    ignore_elements = ["py/object"]
+
+    with open(jsonFile, "r") as f:
         data = json.load(f)
+
+    # Check each key in the JSON file against command-line arguments
     for key, value in data.items():
         if key not in ignore_elements:
+            # Prepare the command-line argument format
+            cli_arg_key = f"--{key}"
+
+            # Check if this argument is provided in the command line
+            if cli_arg_key in sys.argv:
+                # Find the index of the argument in sys.argv and get its value
+                arg_index = sys.argv.index(cli_arg_key) + 1
+                if arg_index < len(sys.argv):
+                    cli_value = sys.argv[arg_index]
+                    value = cli_value  # Override JSON value with command-line value
+
+            # Append the argument and its value to the list
             if key == "extra_metrics" and isinstance(value, list):
-                arguments.append("--extra_metrics")
+                arguments.append(cli_arg_key)
                 arguments.extend(value)
             else:
-                arguments.append("--" + str(key))
-                arguments.append(str(value))
-    if return_json_object:
-        return arguments, data
+                arguments.extend([cli_arg_key, str(value)])
+
     return arguments
 
 
@@ -140,7 +199,7 @@ def inchi_to_mol(inchi: str) -> Chem.Mol:
 
 
 def weight_split(
-    data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float] = (0.8, 0, 0.2)
+    data: pd.DataFrame, bias: str, sizes: Tuple[float, float, float] = (0.8, 0.1, 0.1)
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if not (len(sizes) == 3 and np.isclose(sum(sizes), 1)):
         raise ValueError(f"Invalid train/val/test splits! got: {sizes}")
@@ -188,7 +247,7 @@ def weight_split(
 
 def ae_scaffold_split(
     data: pd.DataFrame,
-    sizes: Tuple[float, float, float] = (0.8, 0, 0.2),
+    sizes: Tuple[float, float, float] = (0.8, 0.1, 0.1),
     balanced: bool = False,
     key_molecule_index: int = 0,
     seed: int = 0,

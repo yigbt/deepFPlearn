@@ -10,7 +10,6 @@ example_directory = project_directory.parent / "example"
 test_train_args = opt.GnnOptions(
     configFile=utils.makePathAbsolute(f"{example_directory}/traingnn.json"),
     save_dir=utils.makePathAbsolute(f"{project_directory}/output"),
-    total_epochs=1,
 )
 
 

@@ -5,7 +5,7 @@ import logging
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
-from tensorflow.keras.callbacks import History
+from tensorflow.python.keras.callbacks import History
 
 mpl.use("Agg")
 

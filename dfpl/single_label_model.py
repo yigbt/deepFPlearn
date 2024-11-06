@@ -10,7 +10,7 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import tensorflow.keras.backend as K
+import tensorflow.python.keras.backend as K
 import wandb
 from sklearn.metrics import (
     auc,
@@ -187,7 +187,7 @@ def build_fnn_network(
         output_bias = tf.keras.initializers.Constant(output_bias)
 
     # Define the number of hidden layers based on the input size
-    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3}
+    my_hidden_layers = {"2048": 6, "1024": 5, "999": 5, "512": 4, "256": 3, "167": 3}
     if not str(input_size) in my_hidden_layers.keys():
         raise ValueError("Wrong input-size. Must be in {2048, 1024, 999, 512, 256}.")
     nhl = int(math.log2(input_size) / 2 - 1)
@@ -333,12 +333,17 @@ def define_single_label_model(
     else:
         logging.error(f"Your selected loss is not supported: {opts.lossFunction}.")
         sys.exit("Unsupported loss function")
-
+    lr_schedule = optimizers.schedules.ExponentialDecay(
+        opts.learningRate,
+        decay_steps=1000,
+        decay_rate=opts.learningRateDecay,
+        staircase=True,
+    )
     # Set the optimizer according to the option selected
     if opts.optimizer == "Adam":
-        my_optimizer = optimizers.Adam(learning_rate=opts.learningRate)
+        my_optimizer = optimizers.legacy.Adam(learning_rate=lr_schedule)
     elif opts.optimizer == "SGD":
-        my_optimizer = optimizers.SGD(lr=opts.learningRate, momentum=0.9)
+        my_optimizer = optimizers.legacy.SGD(lr=lr_schedule, momentum=0.9)
     else:
         logging.error(f"Your selected optimizer is not supported: {opts.optimizer}.")
         sys.exit("Unsupported optimizer")
@@ -398,7 +403,7 @@ def evaluate_model(
                 "target": target,
                 "fold": fold,
             }
-        ).to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.csv")
+        ).to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.csv")
     )
 
     # Compute the confusion matrix
@@ -409,9 +414,16 @@ def evaluate_model(
         y_test_int, y_predict_int, output_dict=True
     )
     prf = pd.DataFrame.from_dict(precision_recall)[["0", "1"]]
-
+    # plot the precision-recall curve
+    pl.plot_prc(
+        y_true=y_test,
+        y_scores=y_predict,
+        target=target,
+        filename=f"{file_prefix}/prc.png",
+        wandb_logging=False,
+    )
     # Add balanced accuracy to the computed metrics
-    prf.to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.prec_rec_f1.csv")
+    prf.to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.prec_rec_f1.csv")
 
     # Evaluate the model on the validation set and log the results
     loss, acc, auc_value, precision, recall, balanced_acc = tuple(
@@ -450,17 +462,16 @@ def evaluate_model(
             )
         ),
         columns=["fpr", "tpr", "auc_value", "target", "fold"],
-    ).to_csv(path_or_buf=f"{file_prefix}.predicted.testdata.aucdata.csv")
+    ).to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.aucdata.csv")
     # Generate and save AUC-ROC curve plot
     pl.plot_auc(
         fpr=FPR,
         tpr=TPR,
         target=target,
         auc_value=AUC,
-        filename=f"{file_prefix}_auc_data.png",
+        filename=f"{file_prefix}/auc_data.png",
         wandb_logging=False,
     )
-
     # Return a DataFrame containing the computed metrics
     return pd.DataFrame.from_dict(
         {
@@ -485,8 +496,10 @@ def evaluate_model(
 def fit_and_evaluate_model(
     x_train: np.ndarray,
     x_test: np.ndarray,
+    x_val: np.ndarray,
     y_train: np.ndarray,
     y_test: np.ndarray,
+    y_val: np.ndarray,
     fold: int,
     target: str,
     opts: options.Options,
@@ -495,9 +508,10 @@ def fit_and_evaluate_model(
     logging.info(f"Training of fold number: {fold}")
 
     # Define file name prefix for saving models
-    model_file_prefix = path.join(
-        opts.outputDir, f"{target}_{opts.split_type}_single-labeled_Fold-{fold}"
-    )
+    if fold > 1:
+        model_file_prefix = path.join("tmp", f"{target}/fold-{fold}")
+    else:
+        model_file_prefix = path.join(opts.outputDir, target)
 
     # Compute class imbalance
     ids, counts = np.unique(y_train, return_counts=True)
@@ -517,7 +531,11 @@ def fit_and_evaluate_model(
     )
 
     # Define checkpoint to save model weights during training
-    checkpoint_model_weights_path = f"{model_file_prefix}.model.weights.hdf5"
+    checkpoint_model_weights_path = os.path.join(
+        model_file_prefix, "model_weights.hdf5"
+    )
+
+    # Define callbacks
     callback_list = cb.nn_callback(
         checkpoint_path=checkpoint_model_weights_path, opts=opts
     )
@@ -531,7 +549,7 @@ def fit_and_evaluate_model(
         epochs=opts.epochs,
         batch_size=opts.batchSize,
         verbose=opts.verbose,
-        validation_data=(x_test, y_test),
+        validation_data=(x_val, y_val),
     )
     trainTime = str(round((time() - start) / 60, ndigits=2))
     logging.info(
@@ -539,8 +557,8 @@ def fit_and_evaluate_model(
     )
 
     # Save and plot model history
-    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}.history.csv")
-    pl.plot_history(history=hist, file=f"{model_file_prefix}.history.svg")
+    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}/history.csv")
+    pl.plot_history(history=hist, file=f"{model_file_prefix}/history.svg")
     # Evaluate model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)
@@ -560,6 +578,7 @@ def get_x_y(
     df: pd.DataFrame,
     target: str,
     train_set: pd.DataFrame,
+    val_set: pd.DataFrame,
     test_set: pd.DataFrame,
     opts: options.Options,
 ):
@@ -577,11 +596,15 @@ def get_x_y(
     y_train = df.iloc[train_indices][target].values
     x_test = new_df.iloc[test_indices, :].values
     y_test = df.iloc[test_indices][target].values
+    x_val = new_df.iloc[val_set.index, :].values
+    y_val = df.iloc[val_set.index][target].values
+    x_val = x_val.astype("float32")
+    y_val = y_val.astype("float32")
     x_train = x_train.astype("float32")
     y_train = y_train.astype("float32")
     x_test = x_test.astype("float32")
     y_test = y_test.astype("float32")
-    return x_train, y_train, x_test, y_test
+    return x_train, y_train, x_test, y_test, x_val, y_val
 
 
 def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
@@ -594,13 +617,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     :param opts: The command line arguments in the options class
     :param df: The dataframe containing x matrix and at least one column for a y target.
     """
-
     # find target columns
-    targets = [
-        c
-        for c in df.columns
-        if c in ["AR", "ER", "ED", "TR", "GR", "PPARg", "Aromatase"]
-    ]
+    targets = [c for c in df.columns if c not in ["smiles", "fp", "fpcompressed"]]
     if opts.wabTracking and opts.wabTarget != "":
         # For W&B tracking, we only train one target that's specified as wabTarget "ER".
         # In case it's not there, we use the first one available
@@ -644,6 +662,9 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, stratify=y, test_size=opts.testSize, random_state=1
                     )
+                    x_val, x_test, y_val, y_test = train_test_split(
+                        x_test, y_test, stratify=y_test, test_size=0.5, random_state=1
+                    )
                     logging.info(
                         f"Splitting train/test data with fixed random initializer"
                     )
@@ -651,32 +672,22 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     x_train, x_test, y_train, y_test = train_test_split(
                         x, y, stratify=y, test_size=opts.testSize
                     )
+                    x_val, x_test, y_val, y_test = train_test_split(
+                        x_test, y_test, stratify=y_test, test_size=0.5
+                    )
 
                 performance = fit_and_evaluate_model(
                     x_train=x_train,
                     x_test=x_test,
+                    x_val=x_val,
                     y_train=y_train,
                     y_test=y_test,
+                    y_val=y_val,
                     fold=0,
                     target=target,
                     opts=opts,
                 )
                 performance_list.append(performance)
-                # save complete model
-                trained_model = define_single_label_model(
-                    input_size=len(x[0]), opts=opts
-                )
-                # trained_model.load_weights
-                # (path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(opts.outputDir, f"{target}_saved_model")
-                )
 
             elif 1 < opts.kFolds < 10:  # int(x.shape[0] / 100):
                 # do a kfold cross-validation
@@ -685,10 +696,21 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 )
                 fold_no = 1
                 # split the data
-                for train, test in kfold_c_validator.split(x, y):
+                for train_idx, test_idx in kfold_c_validator.split(x, y):
+                    # Split test into validation and actual test set
+                    x_train, x_test = x[train_idx], x[test_idx]
+                    y_train, y_test = y[train_idx], y[test_idx]
+
+                    # Further split test set into val and test set
+                    x_val, x_test, y_val, y_test = train_test_split(
+                        x_test,
+                        y_test,
+                        test_size=0.5,
+                        stratify=y_test,
+                    )
                     if opts.wabTracking and not opts.aeWabTracking:
                         wandb.init(
-                            project=f"FNN_{opts.threshold}_{opts.split_type}",
+                            project=f"FNN_{opts.split_type}",
                             group=f"{target}",
                             name=f"{target}-{fold_no}",
                             reinit=True,
@@ -703,41 +725,25 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
 
                         # Initialize wandb for the feed forward model
                         wandb.init(
-                            project=f"FNN_{opts.threshold}_{opts.split_type}",
+                            project=f"FNN_{opts.split_type}",
                             group=f"{target}",
                             name=f"FNN_{target}-{fold_no}",
                             reinit=True,
                         )
 
                     performance = fit_and_evaluate_model(
-                        x_train=x[train],
-                        x_test=x[test],
-                        y_train=y[train],
-                        y_test=y[test],
+                        x_train=x_train,
+                        x_test=x_test,
+                        x_val=x_val,
+                        y_train=y_train,
+                        y_test=y_test,
+                        y_val=y_val,
                         fold=fold_no,
                         target=target,
                         opts=opts,
                     )
                     performance_list.append(performance)
 
-                    # save complete model
-                    trained_model = define_single_label_model(
-                        input_size=len(x[0]), opts=opts
-                    )
-                    # trained_model.load_weights
-                    # (path.join(opts.outputDir, f"{target}_single-labeled_Fold-0.model.weights.hdf5"))
-                    trained_model.save_weights(
-                        path.join(
-                            opts.outputDir,
-                            f"{target}_single-labeled_Fold-{fold_no}.model.weights.hdf5",
-                        )
-                    )
-                    # create output directory and store complete model
-                    trained_model.save(
-                        filepath=path.join(
-                            opts.outputDir, f"{target}-{fold_no}_saved_model"
-                        )
-                    )
                     if opts.wabTracking:
                         wandb.finish()
                     fold_no += 1
@@ -746,31 +752,21 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
                     by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
                 )["fold"][0]
-                # rename the fold to best fold
-                src = os.path.join(
-                    opts.outputDir,
-                    f"{target}_single-labeled_Fold-{best_fold}.model.weights.hdf5",
-                )
-                dst = os.path.join(
-                    opts.outputDir,
-                    f"{target}_single-labeled_Best_Fold-{best_fold}.model.weights.hdf5",
-                )
-                os.rename(src, dst)
+                src = os.path.join("tmp/", f"{target}/fold-{best_fold}/")
+                if opts.compressFeatures:
+                    opts.outputDir = opts.ecModelDir
+                dst = os.path.join(opts.outputDir, f"{target}/")
 
-                src_dir = os.path.join(
-                    opts.outputDir, f"{target}-{best_fold}_saved_model"
-                )
-                dst_dir = os.path.join(
-                    opts.outputDir, f"{target}-{best_fold}_best_saved_model"
-                )
+                # Ensure the destination directory exists
+                os.makedirs(src, exist_ok=True)
+                os.makedirs(dst, exist_ok=True)
 
-                if path.isdir(dst_dir):
-                    shutil.rmtree(dst_dir)
+                # Copy all contents from the source (best fold) to the destination
+                shutil.copytree(src, dst, dirs_exist_ok=True)
 
-                # Rename source directory to destination directory
-                os.rename(src_dir, dst_dir)
+                # Optionally, clean up the temporary directory
+                shutil.rmtree("tmp/")
 
-                # save complete model
             else:
                 logging.info(
                     "Your selected number of folds for Cross validation is out of range. "
@@ -787,7 +783,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
     # For each individual target train a model
     elif opts.split_type == "scaffold_balanced":
         # df, irrelevant_columns = preprocess_dataframe(df, opts)
-        for idx, target in enumerate(targets):
+        for target in targets:
             df = prepare_nn_training_data(df, target, opts, return_dataframe=True)
             relevant_cols = ["smiles"] + ["fp"] + [target]  # list(irrelevant_columns)
             if opts.compressFeatures:
@@ -799,12 +795,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             if opts.kFolds == 1:
                 train_set, val_set, test_set = ae_scaffold_split(
                     df_task,
-                    sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                    sizes=(1 - opts.testSize, opts.testSize / 2, opts.testSize / 2),
                     balanced=False,
                     seed=42,
                 )
-                x_train, y_train, x_test, y_test = get_x_y(
-                    df_task, target, train_set, test_set, opts
+                x_train, y_train, x_test, y_test, x_val, y_val = get_x_y(
+                    df_task, target, train_set, val_set, test_set, opts
                 )
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
@@ -822,38 +818,27 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 performance = fit_and_evaluate_model(
                     x_train=x_train,
                     x_test=x_test,
+                    x_val=x_val,
                     y_train=y_train,
                     y_test=y_test,
+                    y_val=y_val,
                     fold=0,
                     target=target,
                     opts=opts,
                 )
                 performance_list.append(performance)
-                trained_model = define_single_label_model(
-                    input_size=len(x_train[0]), opts=opts
-                )
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_scaffold_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(
-                        opts.outputDir, f"{target}_scaffold_saved_model_0"
-                    )
-                )
+
             elif opts.kFolds > 1:
                 for fold_no in range(1, opts.kFolds + 1):
                     print(f"Splitting data with seed {fold_no}")
                     train_set, val_set, test_set = ae_scaffold_split(
                         df_task,
-                        sizes=(1 - opts.testSize, 0.0, opts.testSize),
+                        sizes=(1 - opts.testSize, opts.testSize / 2, opts.testSize / 2),
                         balanced=True,
                         seed=fold_no,
                     )
-                    x_train, y_train, x_test, y_test = get_x_y(
-                        df_task, target, train_set, test_set, opts
+                    x_train, y_train, x_test, y_test, x_val, y_val = get_x_y(
+                        df_task, target, train_set, val_set, test_set, opts
                     )
                     if opts.wabTracking and not opts.aeWabTracking:
                         wandb.init(
@@ -872,6 +857,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     performance = fit_and_evaluate_model(
                         x_train=x_train,
                         x_test=x_test,
+                        x_val=x_val,
+                        y_val=y_val,
                         y_train=y_train,
                         y_test=y_test,
                         fold=fold_no,
@@ -880,20 +867,6 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     )
                     performance_list.append(performance)
 
-                    trained_model = define_single_label_model(
-                        input_size=len(x_train[0]), opts=opts
-                    )
-                    trained_model.save_weights(
-                        path.join(
-                            opts.outputDir,
-                            f"{target}_scaffold_single-labeled_Fold-{fold_no}.model.weights.hdf5",
-                        )
-                    )
-                    trained_model.save(
-                        filepath=path.join(
-                            opts.outputDir, f"{target}_scaffold_saved_model_{fold_no}"
-                        )
-                    )
                     if opts.wabTracking:
                         wandb.finish()
                     fold_no += 1
@@ -901,30 +874,20 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 best_fold = pd.concat(performance_list, ignore_index=True).sort_values(
                     by=["p_1", "r_1", "MCC"], ascending=False, ignore_index=True
                 )["fold"][0]
-                # rename the fold to best fold
-                src = os.path.join(
-                    opts.outputDir,
-                    f"{target}_scaffold_single-labeled_Fold-{best_fold}.model.weights.hdf5",
-                )
-                dst = os.path.join(
-                    opts.outputDir,
-                    f"{target}_scaffold_single-labeled_BEST_Fold-{best_fold}.model.weights.hdf5",
-                )
-                os.rename(src, dst)
+                src = os.path.join("tmp/", f"{target}/fold-{best_fold}/")
+                if opts.compressFeatures:
+                    opts.outputDir = opts.ecModelDir
+                dst = os.path.join(opts.outputDir, f"{target}/")
 
-                src_dir = os.path.join(
-                    opts.outputDir, f"{target}_scaffold_saved_model_{best_fold}"
-                )
-                dst_dir = os.path.join(
-                    opts.outputDir,
-                    f"{target}_scaffold_saved_model_BEST_FOLD_{best_fold}",
-                )
+                # Ensure the destination directory exists
+                os.makedirs(dst, exist_ok=True)
+                os.makedirs(src, exist_ok=True)
 
-                if path.isdir(dst_dir):
-                    shutil.rmtree(dst_dir)
+                # Copy all contents from the source (best fold) to the destination
+                shutil.copytree(src, dst, dirs_exist_ok=True)
 
-                # Rename source directory to destination directory
-                os.rename(src_dir, dst_dir)
+                # Optionally, clean up the temporary directory
+                shutil.rmtree("tmp/")
 
             else:
                 logging.info(
@@ -941,7 +904,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
         )
     elif opts.split_type == "molecular_weight":
         logging.info("You can use molecular_weight split once.")
-        for idx, target in enumerate(targets):
+        for target in targets:
             df = prepare_nn_training_data(df, target, opts, return_dataframe=True)
             relevant_cols = ["smiles"] + ["fp"] + [target]
             if opts.compressFeatures:
@@ -951,10 +914,12 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
             df_task.reset_index(drop=True, inplace=True)
             if opts.kFolds == 1:
                 train_set, val_set, test_set = weight_split(
-                    df_task, bias="small", sizes=(1 - opts.testSize, 0.0, opts.testSize)
+                    df_task,
+                    bias="small",
+                    sizes=(1 - opts.testSize, opts.testSize / 2, opts.testSize / 2),
                 )
-                x_train, y_train, x_test, y_test = get_x_y(
-                    df_task, target, train_set, test_set, opts
+                x_train, y_train, x_test, y_test, x_val, y_val = get_x_y(
+                    df_task, target, train_set, val_set, test_set, opts
                 )
                 if opts.wabTracking and not opts.aeWabTracking:
                     wandb.init(
@@ -971,6 +936,8 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                 performance = fit_and_evaluate_model(
                     x_train=x_train,
                     x_test=x_test,
+                    x_val=x_val,
+                    y_val=y_val,
                     y_train=y_train,
                     y_test=y_test,
                     fold=0,
@@ -978,18 +945,7 @@ def train_single_label_models(df: pd.DataFrame, opts: options.Options) -> None:
                     opts=opts,
                 )
                 performance_list.append(performance)
-                trained_model = define_single_label_model(
-                    input_size=len(x_train[0]), opts=opts
-                )
-                trained_model.save_weights(
-                    path.join(
-                        opts.outputDir,
-                        f"{target}_weight_single-labeled_Fold-0.model.weights.hdf5",
-                    )
-                )
-                trained_model.save(
-                    filepath=path.join(opts.outputDir, f"{target}_weight_saved_model_0")
-                )
+
             elif opts.kFolds > 1:
                 raise Exception(
                     f"Unsupported number of folds: {opts.kFolds} for {opts.split_type} split.\
