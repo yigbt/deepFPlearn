@@ -194,27 +194,17 @@ def main():
 
         elif prog_args.method == "predictgnn":
             predictgnn_opts = options.GnnOptions.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                predictgnn_opts,
-                test_path=makePathAbsolute(predictgnn_opts.test_path),
-                preds_path=makePathAbsolute(predictgnn_opts.preds_path),
-            )
             createLogger("predictgnn.log")
-            predictdmpnn(fixed_opts)
+            predictdmpnn(predictgnn_opts)
 
         elif prog_args.method == "train":
             train_opts = options.Options.fromCmdArgs(prog_args)
-            fixed_opts = dataclasses.replace(
-                train_opts,
-                inputFile=makePathAbsolute(train_opts.inputFile),
-                outputDir=makePathAbsolute(train_opts.outputDir),
-            )
-            createDirectory(fixed_opts.outputDir)
-            createLogger(path.join(fixed_opts.outputDir, "train.log"))
+            createDirectory(train_opts.outputDir)
+            createLogger(path.join(train_opts.outputDir, "train.log"))
             logging.info(
-                f"The following arguments are received or filled with default values:\n{fixed_opts}"
+                f"The following arguments are received or filled with default values:\n{train_opts}"
             )
-            train(fixed_opts)
+            train(train_opts)
         elif prog_args.method == "predict":
             predict_opts = options.Options.fromCmdArgs(prog_args)
             fixed_opts = dataclasses.replace(

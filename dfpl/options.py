@@ -3,12 +3,13 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 import jsonpickle
 import torch
 from chemprop.args import TrainArgs
 
-from dfpl.utils import makePathAbsolute
+from dfpl.utils import parseCmdArgs
 
 
 @dataclass
@@ -74,42 +75,8 @@ class Options:
             f.write(jsonpickle.encode(self))
 
     @classmethod
-    def fromJson(cls, file: str) -> Options:
-        """
-        Create an instance from a JSON file
-        """
-        jsonFile = Path(file)
-        if jsonFile.exists() and jsonFile.is_file():
-            with jsonFile.open() as f:
-                content = f.read()
-                return jsonpickle.decode(content)
-        raise ValueError("JSON file does not exist or is not readable")
-
-    @classmethod
-    def fromCmdArgs(cls, args: argparse.Namespace) -> Options:
-        """
-        Creates Options instance from cmdline arguments.
-
-        If a training file (JSON) is provided, the values from that file are used.
-        However, additional commandline arguments will be preferred. If, e.g., "fpSize" is specified both in the
-        JSON file and on the commandline, then the value of the commandline argument will be used.
-        """
-        result = Options()
-        if "configFile" in vars(args).keys():
-            jsonFile = Path(makePathAbsolute(args.configFile))
-            if jsonFile.exists() and jsonFile.is_file():
-                with jsonFile.open() as f:
-                    content = f.read()
-                    result = jsonpickle.decode(content)
-            else:
-                raise ValueError("Could not find JSON input file")
-
-        for key, value in vars(args).items():
-            # The args dict will contain a "method" key from the subparser.
-            # We don't use this.
-            if key != "method":
-                result.__setattr__(key, value)
-        return result
+    def fromCmdArgs(cls, args: argparse.Namespace) -> "Options":
+        return parseCmdArgs(cls, args)
 
 
 @dataclass
@@ -136,37 +103,19 @@ class GnnOptions(TrainArgs):
     save_preds: bool = True
 
     @classmethod
-    def fromCmdArgs(cls, args: argparse.Namespace) -> GnnOptions:
-        """
-        Creates Options instance from cmdline arguments.
+    def fromCmdArgs(cls, args: argparse.Namespace, json_config: Optional[dict] = None):
+        # Initialize with JSON config if provided
+        if json_config:
+            opts = cls(**json_config)
+        else:
+            opts = cls()
 
-        If a training file (JSON) is provided, the values from that file are used.
-        However, additional commandline arguments will be preferred. If, e.g., "fpSize" is specified both in the
-        JSON file and on the commandline, then the value of the commandline argument will be used.
-        """
-        result = GnnOptions()
-        if "configFile" in vars(args).keys():
-            jsonFile = Path(makePathAbsolute(args.configFile))
-            if jsonFile.exists() and jsonFile.is_file():
-                with jsonFile.open() as f:
-                    content = f.read()
-                    result = jsonpickle.decode(content)
-            else:
-                raise ValueError("Could not find JSON input file")
+        # Update with command-line arguments
+        for key, value in vars(args).items():
+            if value is not None:
+                setattr(opts, key, value)
 
-        return result
-
-    @classmethod
-    def fromJson(cls, file: str) -> GnnOptions:
-        """
-        Create an instance from a JSON file
-        """
-        jsonFile = Path(file)
-        if jsonFile.exists() and jsonFile.is_file():
-            with jsonFile.open() as f:
-                content = f.read()
-                return jsonpickle.decode(content)
-        raise ValueError("JSON file does not exist or is not readable")
+        return opts
 
 
 def createCommandlineParser() -> argparse.ArgumentParser:
