@@ -108,7 +108,7 @@ def define_vae_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mo
     decoded = z
 
     # decoding layers
-    for i in range(hidden_layer_count - 2, 0, -1):
+    for i in range(hidden_layer_count - 1, 0, -1):
         factor_units = 2**i
         if opts.aeActivationFunction != "selu":
             decoded = Dense(

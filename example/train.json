@@ -6,8 +6,8 @@
   "ecWeightsFile": "",
   "verbose": 2,
 
-  "trainAC": false,
-  "compressFeatures": false,
+  "trainAC": true,
+  "compressFeatures": true,
   "visualizeLatent": false,
   "encFPSize": 256,
 

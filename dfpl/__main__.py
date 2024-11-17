@@ -78,24 +78,25 @@ def train(opts: options.Options):
         if not opts.trainAC:
             if opts.aeType == "variational":
                 (autoencoder, encoder) = vae.define_vae_model(opts=options.Options())
-            else:
+            elif opts.aeType == "deterministic":
                 (autoencoder, encoder) = ac.define_ac_model(opts=options.Options())
+            else:
+                raise ValueError(f"Unknown autoencoder type: {opts.aeType}")
 
             if opts.ecWeightsFile != "":
-                autoencoder.load_weights(
-                    os.path.join(opts.ecModelDir, opts.ecWeightsFile)
-                )
+                encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
         # compress the fingerprints using the autoencoder
         df = ac.compress_fingerprints(df, encoder)
-        if opts.visualizeLatent:
-            ac.visualize_fingerprints(
-                df,
-                before_col="fp",
-                after_col="fpcompressed",
-                train_indices=train_indices,
-                test_indices=test_indices,
-                save_as=f"UMAP_{opts.aeSplitType}.png",
-            )
+    if opts.visualizeLatent and opts.trainAC:
+        logging.info("Visualizing latent space")
+        ac.visualize_fingerprints(
+            df,
+            before_col="fp",
+            after_col="fpcompressed",
+            train_indices=train_indices,
+            test_indices=test_indices,
+            save_as=f"UMAP_{opts.aeSplitType}.png",
+        )
     # train single label models if requested
     if opts.trainFNN and not opts.enableMultiLabel:
         sl.train_single_label_models(df=df, opts=opts)
@@ -129,6 +130,8 @@ def predict(opts: options.Options) -> None:
         # Load trained model for autoencoder
         if opts.ecWeightsFile != "":
             encoder.load_weights(os.path.join(opts.ecModelDir, opts.ecWeightsFile))
+        else:
+            raise ValueError("No weights file specified for encoder")
         df = ac.compress_fingerprints(df, encoder)
 
     # Run predictions on the compressed fingerprints and store the results in a dataframe

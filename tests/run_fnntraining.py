@@ -14,7 +14,7 @@ test_train_args = opt.Options(
         f"{project_directory}/output/fnnTrainingCompressed/"
     ),
     outputDir=utils.makePathAbsolute(f"{project_directory}/output/fnnTraining"),
-    ecWeightsFile="",
+    ecWeightsFile="/encoder_weights.h5",
     type="smiles",
     fpType="topological",
     epochs=11,
@@ -26,6 +26,7 @@ test_train_args = opt.Options(
     verbose=2,
     trainAC=False,
     trainFNN=True,
+    compressFeatures=True,
 )
 
 
@@ -53,7 +54,8 @@ def run_single_label_training(opts: opt.Options) -> None:
         # encoder.save_weights(opts.acFile)
     else:
         logging.info("Using trained autoencoder")
-        (_, encoder) = ac.define_ac_model(opts)
+        (autoencoder, encoder) = ac.define_ac_model(opts)
+        encoder.load_weights(opts.ecWeightsFile)
 
     df = ac.compress_fingerprints(df, encoder)
 

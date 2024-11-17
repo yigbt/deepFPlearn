@@ -345,8 +345,9 @@ def define_single_label_model(
     elif opts.optimizer == "SGD":
         my_optimizer = optimizers.legacy.SGD(lr=lr_schedule, momentum=0.9)
     else:
-        logging.error(f"Your selected optimizer is not supported: {opts.optimizer}.")
-        sys.exit("Unsupported optimizer")
+        raise ValueError(
+            f'Option Optimizer is not "Adam" or "SGD", but {opts.optimizer}.'
+        )
 
     # Set the type of neural network according to the option selected
     if opts.fnnType == "FNN":
@@ -403,7 +404,7 @@ def evaluate_model(
                 "target": target,
                 "fold": fold,
             }
-        ).to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.csv")
+        ).to_csv(path_or_buf=path.join(file_prefix, "predicted.testdata.csv"))
     )
 
     # Compute the confusion matrix
@@ -416,7 +417,7 @@ def evaluate_model(
     prf = pd.DataFrame.from_dict(precision_recall)[["0", "1"]]
 
     # Add balanced accuracy to the computed metrics
-    prf.to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.prec_rec_f1.csv")
+    prf.to_csv(path_or_buf=path.join(file_prefix, "testdata.prec_rec_f1.csv"))
 
     # Evaluate the model on the validation set and log the results
     loss, acc, auc_value, precision, recall, balanced_acc = tuple(
@@ -455,14 +456,14 @@ def evaluate_model(
             )
         ),
         columns=["fpr", "tpr", "auc_value", "target", "fold"],
-    ).to_csv(path_or_buf=f"{file_prefix}/predicted.testdata.aucdata.csv")
+    ).to_csv(path_or_buf=path.join(file_prefix, "predicted.testdata.aucdata.csv"))
     # Generate and save AUC-ROC curve plot
     pl.plot_auc(
         fpr=FPR,
         tpr=TPR,
         target=target,
         auc_value=AUC,
-        filename=f"{file_prefix}/auc_data.png",
+        filename=path.join(file_prefix, "auc_data.png"),
         wandb_logging=False,
     )
 
@@ -524,9 +525,7 @@ def fit_and_evaluate_model(
     )
 
     # Define checkpoint to save model weights during training
-    checkpoint_model_weights_path = os.path.join(
-        model_file_prefix, "model_weights.hdf5"
-    )
+    checkpoint_model_weights_path = os.path.join(model_file_prefix, "model_weights.h5")
     callback_list = cb.nn_callback(
         checkpoint_path=checkpoint_model_weights_path, opts=opts
     )
@@ -548,8 +547,10 @@ def fit_and_evaluate_model(
     )
 
     # Save and plot model history
-    pd.DataFrame(hist.history).to_csv(path_or_buf=f"{model_file_prefix}/history.csv")
-    pl.plot_history(history=hist, file=f"{model_file_prefix}/history.svg")
+    pd.DataFrame(hist.history).to_csv(
+        path_or_buf=path.join(model_file_prefix, "history.csv")
+    )
+    pl.plot_history(history=hist, file=path.join(model_file_prefix, "history.svg"))
     # Evaluate model
     callback_model = define_single_label_model(input_size=x_train.shape[1], opts=opts)
     callback_model.load_weights(filepath=checkpoint_model_weights_path)

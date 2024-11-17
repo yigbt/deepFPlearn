@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import umap
+import umap.umap_ as umap
 import wandb
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses, optimizers
