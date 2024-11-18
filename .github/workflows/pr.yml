@@ -84,7 +84,7 @@ jobs:
         fi
         tree example
 
-        dfpl predict -f example/predict.json --compressFeatures
+        dfpl predict -f example/predict.json --compressFeatures TRUE --aeType deterministic
         if [ ! -d example/results_predict/ ]; then
           echo "predict result directory missing" >&2 
           exit 1
