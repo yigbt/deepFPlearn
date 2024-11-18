@@ -42,7 +42,7 @@ def predict_values(df: pd.DataFrame, opts: options.Options) -> pd.DataFrame:
     model = sl.define_single_label_model(input_size=feature_input_size, opts=opts)
 
     # Load the model weights
-    weights_path = os.path.join(opts.fnnModelDir, "model_weights.hdf5")
+    weights_path = os.path.join(opts.fnnModelDir, "model_weights.h5")
     model.load_weights(weights_path)
     logging.info(f"Model weights loaded from {weights_path}")
 

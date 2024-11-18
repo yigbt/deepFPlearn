@@ -1082,6 +1082,16 @@ def parseInputPredict(parser: argparse.ArgumentParser) -> None:
         "Provide a full path here.",
         default=argparse.SUPPRESS,
     )
+    general_args.add_argument(
+        "--compressFeatures", type=bool, metavar="BOOL", default=False
+    )
+    general_args.add_argument(
+        "--aeType",
+        metavar="STRING",
+        type=str,
+        default="deterministic",
+        choices=["variational", "deterministic"],
+    )
 
 
 def parsePredictGnn(parser: argparse.ArgumentParser) -> None:
