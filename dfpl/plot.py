@@ -7,7 +7,7 @@ import wandb
 from matplotlib.axes import Axes
 
 # for NN model functions
-from tensorflow.keras.callbacks import History
+from tensorflow.python.keras.callbacks import History
 
 
 def get_max_validation_accuracy(history: History) -> str:
@@ -46,8 +46,8 @@ def get_max_training_accuracy(history: History) -> str:
     return "Max training accuracy ≈ " + str(round(y_max, 3) * 100) + "%"
 
 
-def smooth_curve(points: np.ndarray, factor: float = 0.75) -> np.ndarray:
-    smoothed_points: List[float] = []
+def smooth_curve(points: np.ndarray, factor: float = 0.8) -> List[float]:
+    smoothed_points = []
     for point in points:
         if smoothed_points:
             previous = smoothed_points[-1]
@@ -57,81 +57,46 @@ def smooth_curve(points: np.ndarray, factor: float = 0.75) -> np.ndarray:
     return smoothed_points
 
 
+# Plot the accuracy and loss data with enhanced visuals
 def set_plot_history_data(ax: Axes, history: History, which_graph: str) -> None:
-    (train, valid) = (None, None)
-
-    if which_graph == "acc":
-        train = smooth_curve(history.history["accuracy"])
-        valid = smooth_curve(history.history["val_accuracy"])
-
-    if which_graph == "loss":
-        train = smooth_curve(history.history["loss"])
-        valid = smooth_curve(history.history["val_loss"])
-
-    # plt.xkcd() # make plots look like xkcd
+    if which_graph == "balanced_acc":
+        # Plot balanced accuracy when "acc" is specified
+        train = smooth_curve(np.array(history.history["balanced_accuracy"]))
+        valid = smooth_curve(np.array(history.history["val_balanced_accuracy"]))
+        label = "Balanced Accuracy"
+    elif which_graph == "loss":
+        train = smooth_curve(np.array(history.history["loss"]))
+        valid = smooth_curve(np.array(history.history["val_loss"]))
+        label = "Loss"
+    else:
+        return
 
     epochs = range(1, len(train) + 1)
 
-    trim = 0  # remove first 5 epochs
-    # when graphing loss the first few epochs may skew the (loss) graph
-
-    ax.plot(epochs[trim:], train[trim:], "dodgerblue", linewidth=15, alpha=0.1)
-    ax.plot(epochs[trim:], train[trim:], "dodgerblue", label="Training")
-
-    ax.plot(epochs[trim:], valid[trim:], "g", linewidth=15, alpha=0.1)
-    ax.plot(epochs[trim:], valid[trim:], "g", label="Validation")
+    # Plot training and validation data with styles
+    ax.plot(epochs, train, color="dodgerblue", linewidth=2, label=f"Training {label}")
+    ax.plot(
+        epochs,
+        valid,
+        color="green",
+        linestyle="--",
+        linewidth=2,
+        label=f"Validation {label}",
+    )
+    ax.set_ylabel(label)
+    ax.legend(loc="best")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
 
 def plot_history(history: History, file: str) -> None:
-    fig, (ax1, ax2) = plt.subplots(
-        nrows=2,
-        ncols=1,
-        figsize=(10, 6),
-        sharex="all",
-        gridspec_kw={"height_ratios": [5, 2]},
-    )
+    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(10, 8), sharex="all")
 
-    set_plot_history_data(ax1, history, "acc")
-
+    set_plot_history_data(ax1, history, "balanced_acc")
     set_plot_history_data(ax2, history, "loss")
 
-    # Accuracy graph
-    ax1.set_ylabel("Accuracy")
-    ax1.set_ylim(bottom=0.5, top=1)
-    ax1.legend(loc="lower right")
-    ax1.spines["top"].set_visible(False)
-    ax1.spines["right"].set_visible(False)
-    ax1.xaxis.set_ticks_position("none")
-    ax1.spines["bottom"].set_visible(False)
-
-    # max accuracy text
-    plt.text(
-        0.5,
-        0.6,
-        get_max_validation_balanced_accuracy(history),
-        horizontalalignment="right",
-        verticalalignment="top",
-        transform=ax1.transAxes,
-        fontsize=12,
-    )
-    plt.text(
-        0.5,
-        0.8,
-        get_max_training_balanced_accuracy(history),
-        horizontalalignment="right",
-        verticalalignment="top",
-        transform=ax1.transAxes,
-        fontsize=12,
-    )
-
-    # Loss graph
-    ax2.set_ylabel("Loss")
-    ax2.set_yticks([])
-    ax2.plot(legend=False)
+    # Set shared x-axis label and save the plot
     ax2.set_xlabel("Epochs")
-    ax2.spines["top"].set_visible(False)
-    ax2.spines["right"].set_visible(False)
-
     plt.tight_layout()
     plt.savefig(fname=file, format="svg")
     plt.close()
@@ -195,6 +160,7 @@ def plot_history_vis(
     )
 
 
+# Enhanced AUC plot
 def plot_auc(
     fpr: np.ndarray,
     tpr: np.ndarray,
@@ -203,25 +169,14 @@ def plot_auc(
     filename: str,
     wandb_logging: bool = False,
 ) -> None:
-    """
-    Plot the area under the curve to the provided file
-
-    :param fpr: An array containing the false positives
-    :param tpr: An array containing the true positives
-    :param auc_value: The value of the area under the curve
-    :param target: The name of the training target
-    :param filename: The filename to which the plot should be stored
-    :param wandb_logging: Whether to log the plot to wandb
-    :rtype: None
-    """
-    # Create a boolean mask to filter out zero values
-    plt.figure()
-    plt.plot([0, 1], [0, 1], "k--")
-    plt.plot(fpr, tpr, label=f"Keras (area = {auc_value:.3f})")
-    plt.xlabel("False positive rate")
-    plt.ylabel("True positive rate")
-    plt.title("ROC curve " + target)
-    plt.legend(loc="best")
+    plt.figure(figsize=(8, 6))
+    plt.plot([0, 1], [0, 1], "k--", linewidth=1)
+    plt.plot(fpr, tpr, color="darkorange", linewidth=2, label=f"AUC = {auc_value:.3f}")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title(f"ROC Curve - {target}")
+    plt.legend(loc="lower right")
+    plt.grid(True, linestyle="--", alpha=0.5)
     plt.savefig(fname=filename, format="png")
     if wandb_logging:
         wandb.log({"roc_plot": plt})

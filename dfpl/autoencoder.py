@@ -1,14 +1,13 @@
 import logging
 import math
 import os.path
-from os.path import basename
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import umap
+import umap.umap_ as umap
 import wandb
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import initializers, losses, optimizers
@@ -32,9 +31,13 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
     """
     input_size = opts.fpSize
     encoding_dim = opts.encFPSize
-    ac_optimizer = optimizers.Adam(
-        learning_rate=opts.aeLearningRate, decay=opts.aeLearningRateDecay
+    lr_schedule = optimizers.schedules.ExponentialDecay(
+        opts.aeLearningRate,
+        decay_steps=1000,
+        decay_rate=opts.aeLearningRateDecay,
+        staircase=True,
     )
+    ac_optimizer = optimizers.legacy.Adam(learning_rate=lr_schedule)
 
     if output_bias is not None:
         output_bias = initializers.Constant(output_bias)
@@ -104,7 +107,6 @@ def define_ac_model(opts: options.Options, output_bias=None) -> Tuple[Model, Mod
                 )(decoded)
 
         # output layer
-        # to either 0 or 1 and hence we use sigmoid activation function.
         decoded = Dense(
             units=input_size, activation="sigmoid", bias_initializer=output_bias
         )(decoded)
@@ -145,37 +147,9 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
     if opts.aeWabTracking and not opts.wabTracking:
         wandb.init(project=f"AE_{opts.aeSplitType}")
 
-    # Define output files for autoencoder and encoder weights
-    if opts.ecWeightsFile == "":
-        # If no encoder weights file is specified, use the input file name to generate a default file name
-        logging.info("No AE encoder weights file specified")
-        base_file_name = (
-            os.path.splitext(basename(opts.inputFile))[0] + opts.aeSplitType
-        )
-        logging.info(
-            f"(auto)encoder weights will be saved in {base_file_name}.autoencoder.hdf5"
-        )
-        ac_weights_file = os.path.join(
-            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
-        )
-        # ec_weights_file = os.path.join(
-        #     opts.outputDir, base_file_name + ".encoder.weights.hdf5"
-        # )
-    else:
-        # If an encoder weights file is specified, use it as the encoder weights file name
-        logging.info(f"AE encoder will be saved in {opts.ecWeightsFile}")
-        base_file_name = (
-            os.path.splitext(basename(opts.ecWeightsFile))[0] + opts.aeSplitType
-        )
-        ac_weights_file = os.path.join(
-            opts.outputDir, base_file_name + ".autoencoder.weights.hdf5"
-        )
-        # ec_weights_file = os.path.join(opts.outputDir, opts.ecWeightsFile)
-
+    os.makedirs(opts.ecModelDir, exist_ok=True)
+    save_path = os.path.join(opts.ecModelDir, "autoencoder_weights.h5")
     # Collect the callbacks for training
-    callback_list = callbacks.autoencoder_callback(
-        checkpoint_path=ac_weights_file, opts=opts
-    )
 
     # Select all fingerprints that are valid and turn them into a numpy array
     fp_matrix = np.array(
@@ -286,32 +260,29 @@ def train_full_ac(df: pd.DataFrame, opts: options.Options) -> Model:
 
     # Set up the model of the AC w.r.t. the input size and the dimension of the bottle neck (z!)
     (autoencoder, encoder) = define_ac_model(opts, output_bias=initial_bias)
-
+    callback_list = callbacks.autoencoder_callback(checkpoint_path=save_path, opts=opts)
     # Train the autoencoder on the training data
     auto_hist = autoencoder.fit(
         x_train,
         x_train,
-        callbacks=callback_list,
+        callbacks=[callback_list],
         epochs=opts.aeEpochs,
         batch_size=opts.aeBatchSize,
         verbose=opts.verbose,
         validation_data=(x_test, x_test) if opts.testSize > 0.0 else None,
     )
-    logging.info(f"Autoencoder weights stored in file: {ac_weights_file}")
 
     # Store the autoencoder training history and plot the metrics
     ht.store_and_plot_history(
-        base_file_name=os.path.join(opts.outputDir, base_file_name + ".AC"),
+        base_file_name=save_path,
         hist=auto_hist,
     )
 
     # Save the autoencoder callback model to disk
-    save_path = os.path.join(opts.ecModelDir, f"{opts.aeSplitType}_autoencoder")
-    if opts.testSize > 0.0:
-        (callback_autoencoder, callback_encoder) = define_ac_model(opts)
-        callback_encoder.save(filepath=save_path)
-    else:
-        encoder.save(filepath=save_path)
+    autoencoder.load_weights(save_path)
+    # Save the encoder weights
+    encoder.save_weights(os.path.join(opts.ecModelDir, "encoder_weights.h5"))
+
     # Return the encoder model of the trained autoencoder
     return encoder, train_indices, test_indices
 
@@ -386,7 +357,6 @@ def visualize_fingerprints(
     palette = {"train": "blue", "test": "red"}
 
     # Create the scatter plot
-    sns.set(style="white")
     fig, ax = plt.subplots(figsize=(10, 8))
     split = save_as.split("_", 1)
     part_after_underscore = split[1]

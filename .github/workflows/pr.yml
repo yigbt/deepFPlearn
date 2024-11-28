@@ -75,6 +75,20 @@ jobs:
           echo "predict result directory missing" >&2 
           exit 1
         fi
+        rm -rf example/results_predict/
+        rm -rf example/results_train/
+        dfpl train -f example/train.json --trainAC TRUE --compressFeatures TRUE --aeType deterministic
+        if [ ! -d example/results_train/ ]; then
+          echo "training result directory missing" >&2 
+          exit 1
+        fi
+        tree example
+
+        dfpl predict -f example/predict.json --compressFeatures TRUE --aeType deterministic
+        if [ ! -d example/results_predict/ ]; then
+          echo "predict result directory missing" >&2 
+          exit 1
+        fi
         echo "result lines "$(wc -l example/results_predict/smiles.csv)
         if [ "$(cat example/results_predict/smiles.csv | wc -l)" -lt "6" ]; then
           echo "predict result should have at least 6 lines. But had only $(cat example/results_predict/smiles.csv | wc -l)" >&2 
