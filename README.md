@@ -17,12 +17,12 @@ It consists of a recent Python interpreter and packages for data-science and neu
 
 You have several ways to provide the correct environment to run code from the DFPL package.
 
-1. Use bioconda to install the package
+1. Use conda (bioconda) to install the package
 2. Set up a Python virtual environment
 3. Use the automatically built Docker
 4. Use the automatically built Singularity containers
 
-### Bioconda
+### Conda (bioconda)
 
 The package is also available on Bioconda. You can find the Bioconda recipe here and
 [![install with bioconda](http://bioconda.github.io/recipes/deepfplearn/README.html)]
