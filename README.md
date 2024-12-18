@@ -30,13 +30,13 @@ The package is also available on Bioconda. You can find the Bioconda recipe here
 First create an environment with the following command:
 
 ```shell
-conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl python3.8 deepfplearn 
+conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl deepfplearn 
 ```
 
 If you have a GPU available you can install the package with additional tensorflow-gpu package:
 
 ```shell
-conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl python3.8 deepfplearn tensorflow-gpu==2.9.3
+conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl deepfplearn tensorflow-gpu
 ```
 
 Then activate the environment:
@@ -91,7 +91,7 @@ where you replace
 In order to get an interactive bash shell in the container use:
 
 ```shell
-docker run -it quay.io/biocontainers/deepfplearn:TAG bash
+docker run -it quay.io/biocontainers/deepfplearn:TAG /bin/bash
 ```
 
 
