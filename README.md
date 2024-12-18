@@ -45,11 +45,19 @@ Then activate the environment:
 conda activate dfpl
 ```
 
+Now, you can start using deepFPlearn as described in section **Running deepFPlearn**
+
 ### Set up DFPL in a python virtual environment
+
+Clone the `deepFPlearn` repository` on your machine
+
+```shell
+git clone git@github.com:yigbt/deepFPlearn.git
+```
 
 From within the `deepFPlearn` directory call
 
-```
+```shell
 virtualenv -p python3 ENV_PATH
 . ENV_PATH/bin/activate
 pip install ./
