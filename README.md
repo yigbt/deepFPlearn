@@ -10,87 +10,40 @@ neural network (GNN) that predicts an association to a target molecule, e.g., a 
 DeepFPlearn<sup>+</sup> is an extension of deepFPlearn[[2]](#2), which uses binary fingerprints to represent the
 molecule's structure computationally.
 
-## Setting up Python environment
+## Installation
 
 The DFPL package requires a particular Python environment to work properly.
 It consists of a recent Python interpreter and packages for data-science and neural networks.
-The exact dependencies can be found in the
-[`requirements.txt`](requirements.txt) (which is used when installing the package with pip)
-and [`environment.yml`](environment.yml) (for installation with conda).
 
 You have several ways to provide the correct environment to run code from the DFPL package.
 
-1. Use the automatically built docker/Singularity containers
-2. Build your own container [following the steps here](container/README.md)
-3. Setup a python virtual environment
-4. Set up a conda environment install the requirements via conda and the DFPL package via pip
+1. Use conda (bioconda) to install the package
+2. Set up a Python virtual environment
+3. Use the automatically built Docker
+4. Use the automatically built Singularity containers
 
-In the following, you find details for option 1., 3., and 4.
+### Conda (bioconda)
 
-### Docker container
+The package is also available on Bioconda. You can find the Bioconda recipe here and
+[![install with bioconda](http://bioconda.github.io/recipes/deepfplearn/README.html)]
 
-You need docker installed on you machine.
-
-In order to run DFPL use the following command line
-
-```shell
-docker run --gpus GPU_REQUEST registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG dfpl DFPL_ARGS
-```
-
-where you replace
-
-- `TAG` by the version you want to use or `latest` if you want to use latest available version)
-- You can see available tags
-  here https://gitlab.hzdr.de/department-computational-biology/deepfplearn/container_registry/5827.
-  In general a container should be available for each released version of DFPL.
-- `GPU_REQUEST` by the GPUs you want to use or `all` if all GPUs should be used (remove `--gpus GPU_REQUEST` if only the
-  CPU should)
-- `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
-
-In order to get an interactive bash shell in the container use:
+First create an environment with the following command:
 
 ```shell
-docker run -it --gpus GPU_REQUEST registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG bash
+conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl python3.8 deepfplearn 
 ```
 
-### Singularity container
-
-You need Singularity installed on your machine. You can download a container with
+If you have a GPU available you can install the package with additional tensorflow-gpu package:
 
 ```shell
-singularity pull dfpl.TAG.sif docker://registry.hzdr.de/department-computational-biology/deepfplearn/deepfplearn:TAG
+conda create --override-channels --channel conda-forge --channel bioconda  -n dfpl python3.8 deepfplearn tensorflow-gpu==2.9.3
 ```
 
-- replace `TAG` by the version you want to use or `latest` if you want to use latest available version)
-- You can see available tags
-  here https://gitlab.hzdr.de/department-computational-biology/deepfplearn/container_registry/5827.
-  In general a container should be available for each released version of DFPL.
+Then activate the environment:
 
-This stores the container as a file `dfpl.TAG.sif` which can be run as follows:
-
-```shell script
-singularity run --nv dfpl.TAG.sif dfpl DFPL_ARGS
+```shell
+conda activate dfpl
 ```
-
-- replace `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
-- omit the `--nv` tag if you don't want to use GPUs
-
-or you can start a shell script (look at [run-all-cases.sh](scripts/run-all-cases.sh) for an
-example)
-
-```shell script
-singularity run --nv dfpl.sif ". ./example/run-multiple-cases.sh"
-```
-
-It's also possible to get an interactive shell into the container
-
-```shell script
-singularity shell --nv dfpl.TAG.sif
-```
-
-**Note:** The Singularity container is intended to be used on HPC cluster where your ability to install software might
-be limited.
-For local testing or development, setting up the conda environment is preferable.
 
 ### Set up DFPL in a python virtual environment
 
@@ -105,32 +58,77 @@ pip install ./
 replace `ENV_PATH` by the directory where the python virtual environment should be created.
 If your system has only python3 installed `-p python3` may be removed.
 
-In order to use the environment it needs to be activated with `. ENV_PATH/bin/activate`.
+In order to use the environment, it needs to be activated with `. ENV_PATH/bin/activate`.
 
-### Set up DFPL in a conda environment
+### Docker container
 
-To use this tool in a conda environment:
+You need docker installed on your machine. If you don't have it installed yet, you can find the installation
+instructions [here](https://docs.docker.com/engine/install/).
 
-1. Create the conda env from scratch
+In order to run DFPL pull the image using the following command line:
 
-   From within the `deepFPlearn` directory, you can create the conda environment with the provided yaml file that
-   contains all information and necessary packages
+```shell
+docker pull quay.io/biocontainers/deepfplearn:TAG
+```
+Then mount the directory containing the data you want to process and run the container with the following command:
 
-   ```shell
-   conda env create -f environment.yml
-   ```
+```shell
+docker run -v /path/to/local/repo quay.io/biocontainers/deepfplearn:TAG dfpl DFPL_ARGS
+```
+And then you can run the container with the following command:
 
-2. Activate the `dfpl_env` environment with
+```shell
+docker run quay.io/biocontainers/deepfplearn:TAG dfpl DFPL_ARGS
+```
 
-   ```shell
-   conda activate dfpl_env
-   ```
+where you replace
 
-3. Install the local `dfpl` package by calling
+- `TAG` by the version you want to use
+- You can see available tags in [biocontainers](https://biocontainers.pro/tools/deepfplearn).
+  In general a container should be available for each released version of DFPL.
+- `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
 
-   ```shell
-   pip install --no-deps ./
-   ```
+In order to get an interactive bash shell in the container use:
+
+```shell
+docker run -it quay.io/biocontainers/deepfplearn:TAG bash
+```
+
+
+### Singularity container
+
+You need Singularity installed on your machine. You can find the installation instructions
+[here](https://apptainer.org/user-docs/master/quick_start.html).
+
+```shell
+singularity pull dfpl.TAG.sif docker://quay.io/biocontainers/deepfplearn:TAG
+```
+
+- replace `TAG` by the version you want to use 
+- You can see available tags
+  [here](https://biocontainers.pro/tools/deepfplearn).
+
+This stores the container as a file `dfpl.TAG.sif` which can be run as follows:
+
+```shell script
+singularity run dfpl.TAG.sif dfpl DFPL_ARGS
+```
+
+- replace `DFPL_ARGS` by arguments that should be passed to DFPL (use `--help` to see available options)
+
+or you can start a shell script (look at [run-all-cases.sh](scripts/run-all-cases.sh) for an
+example)
+
+It's also possible to get an interactive shell into the container
+
+```shell script
+singularity shell dfpl.TAG.sif
+```
+
+**Note:** The Singularity container is intended to be used on HPC cluster where your ability to install software might
+be limited.
+For local testing or development, setting up the bioconda environment is preferable.
+
 
 ## Prepare data
 
@@ -325,7 +323,7 @@ memory on disk.
 <a id="1">[1]</a>
 Kyriakos Soulios, Patrick Scheibe, Matthias Bernt, Jörg Hackermüller, and Jana Schor.
 deepFPlearn<sup>+</sup>: Enhancing Toxicity Prediction Across the Chemical Universe Using Graph Neural Networks.
-Bioinformatics, Volume 39, Issue 12, December 2023, btad713, https://doi.org/10.1093/bioinformatics/btad713
+Submitted to a scientific journal, currently under review.
 
 <a id="2">[2]</a>
 Jana Schor, Patrick Scheibe, Matthias Bernt, Wibke Busch, Chih Lai, and Jörg Hackermüller.
