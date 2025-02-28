@@ -1,4 +1,7 @@
 {
+  
+  "no_cache_mol": true,
+  "empty_cache": false,
   "py/object": "dfpl.options.GnnOptions",
   "test_path": "tests/data/smiles.csv",
   "preds_path": "preds_dmpnn/DMPNN_preds.csv",
